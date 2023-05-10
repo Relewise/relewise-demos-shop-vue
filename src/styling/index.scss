@@ -1,0 +1,35 @@
+/* ./src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --slider-tooltip-bg: #3764E4;
+    --slider-connect-bg: #3764E4;
+    --slider-handle-ring-color: rgba(55,100,228,.188);
+}
+
+html, body { @apply h-full; }
+#app {
+    @apply flex flex-col min-h-full bg-zinc-100;
+}
+
+input[type="text"] {
+    @apply block w-full rounded-md border border-zinc-100 py-2.5 px-4 bg-zinc-100 shadow-sm focus:border-zinc-300 focus:ring-1 focus:ring-zinc-200 focus:outline-none;
+}
+
+button {
+    @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded shadow-sm;
+}
+
+a {
+    @apply text-brand-500;
+
+    // &:hover {
+    //     @apply text-brand-700 no-underline;
+    // }
+}
+
+select {
+    @apply mt-1 block w-full rounded-md border-zinc-100 py-2.5 px-4 bg-zinc-100 shadow-sm focus:border-zinc-300 focus:ring focus:ring-zinc-200 focus:ring-opacity-50 focus:outline-none;
+}
