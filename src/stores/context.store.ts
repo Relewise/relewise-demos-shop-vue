@@ -28,7 +28,7 @@ export interface IAppErrorContext {
 }
 
 class AppContext {
-    private readonly localStorageName = 'appContextV2';
+    private readonly localStorageName = 'shopContext';
     private state = reactive<IAppContext>({ datasets: [{datasetId: '', apiKey: '', language: '', currencyCode: ''}], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
