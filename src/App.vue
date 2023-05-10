@@ -12,15 +12,14 @@ const mainCategories = ref<CategoryResult[]>([]);
 const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
 
-try {
-    if (router.currentRoute.value.path !== '/app-settings') {
-        const searcher = contextStore.getSearcher();
+if (contextStore.isConfigured()) {
+    const searcher = contextStore.getSearcher();
 
-        getCategories(searcher);
-    }
+    getCategories(searcher);
 }
-catch (_) {
-    router.push({ path: '/app-settings' });
+else {
+    const params = new URLSearchParams(window.location.search);
+    router.push({ path: '/app-settings', query: {share: params.get('share')} });
 }
 
 async function getCategories(searcher: Searcher) {
@@ -66,7 +65,7 @@ async function getCategories(searcher: Searcher) {
                         <li v-for="category in mainCategories" :key="category.categoryId ?? ''" class="inline-flex">
                             <RouterLink :to="{ name: 'category', params: { id: category.categoryId } }"
                                         class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:opacity-80 transitions ease-in-out delay-150">
-                                {{ category.displayName }}
+                                {{ category.displayName ?? category.categoryId }}
                             </RouterLink>
                         </li>
                     </ul>
@@ -108,4 +107,5 @@ async function getCategories(searcher: Searcher) {
         border-radius: 20px;
         border: transparent;
     }
-}</style>
+}
+</style>

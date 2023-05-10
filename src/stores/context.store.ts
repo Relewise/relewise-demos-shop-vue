@@ -120,7 +120,7 @@ class AppContext {
     }
 
     public addDataset(newDataset: IDataset) {
-        if (!localStorage.getItem(this.localStorageName)) {
+        if (!localStorage.getItem(this.localStorageName) || (this.state.datasets.length === 1 && !this.isConfigured())) {
             // when first coming here via share link we want to remove the default created dataset
             this.state.datasets = [];
         }

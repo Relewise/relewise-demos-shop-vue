@@ -3,12 +3,14 @@
         <h1 class="mb-8 text-4xl">
             Settings
         </h1>
-        
+
         <template v-if="datasets.length > 1">
             <div class="flex gap-3 items-center">
                 <div class="flex-grow">
                     <label class="text-sm block">Select dataset</label>
-                    <select :value="context.datasetId" class="mb-6" @change="setDataset(($event.target as HTMLInputElement).value)">
+                    <select :value="context.datasetId"
+                            class="mb-6"
+                            @change="setDataset(($event.target as HTMLInputElement).value)">
                         <option v-for="dataset in datasets" :key="dataset.datasetId" :value="dataset.datasetId">
                             {{ dataset.displayName }} ({{ dataset.datasetId }})
                         </option>
@@ -26,40 +28,22 @@
         </template>
 
         <label class="text-sm block">Name</label>
-        <input
-            v-model="context.displayName"
-            type="text"
-            placeholder="Name">
+        <input v-model="context.displayName" type="text" placeholder="Name">
 
         <label class="text-sm block mt-6">Dataset Id</label>
-        <input
-            v-model="context.datasetId"
-            type="text"
-            placeholder="Dataset id">
+        <input v-model="context.datasetId" type="text" placeholder="Dataset id">
 
         <label class="text-sm  block mt-6">API Key</label>
-        <input
-            v-model="context.apiKey"
-            type="text"
-            placeholder="Api key">
+        <input v-model="context.apiKey" type="text" placeholder="Api key">
 
         <label class="text-sm  block mt-6">Language</label>
-        <input
-            v-model="context.language"
-            type="text"
-            placeholder="LanguageCode">
+        <input v-model="context.language" type="text" placeholder="LanguageCode">
 
         <label class="text-sm block mt-6">Currency</label>
-        <input
-            v-model="context.currencyCode"
-            type="text"
-            placeholder="CurrencyCode">
+        <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
 
         <label class="text-sm block mt-6">Image Url Data Key Name</label>
-        <input
-            v-model="context.imageUrlDataKey"
-            type="text"
-            placeholder="Image Url Data Key Name">
+        <input v-model="context.imageUrlDataKey" type="text" placeholder="Image Url Data Key Name">
 
         <div class="flex mt-4 gap-3">
             <button class="bg-gray-500 text-white" @click="addEmptyDataset">
@@ -81,14 +65,11 @@
         </h2>
 
         <label class="block mb-6 flex items-center">
-            <input
-                v-model="tracking.enabled"
-                class="accent-brand-500 mr-3 h-5 w-5"
-                type="checkbox">
+            <input v-model="tracking.enabled" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
             Tracking enabled</label>
-        
+
         <button class="bg-gray-500 text-white" @click="resetTracking">
-            Reset Tracking
+            Reset Personal Tracking
         </button>
 
         <hr class="my-10">
@@ -120,13 +101,22 @@ function init() {
     const params = new URLSearchParams(window.location.search);
     if (params.has('share')) {
         const parsedFromUrl = atob(params.get('share')!);
-        const settings =  JSON.parse(parsedFromUrl);
+        const settings = JSON.parse(parsedFromUrl);
 
-        contextStore.addDataset(settings);
-        contextStore.persistState();
+        if (datasets.value.every(x => x.datasetId !== settings.datasetId)) {
+            contextStore.addDataset(settings);
+            contextStore.persistState();
+        }
+        else {
+            contextStore.setDataset(settings.datasetId);
+        }
+
         const url = new URL(window.location.href);
         url.searchParams.delete('share');
         history.replaceState(null, '', url);
+
+        // reload to get navigation
+        window.location.reload();
     }
 }
 
@@ -169,7 +159,7 @@ function shareLink() {
         imageUrlDataKey: context.value.imageUrlDataKey,
     };
 
-    navigator.clipboard.writeText(window.location.href+'?share='+btoa(JSON.stringify(model)));
+    navigator.clipboard.writeText(window.location.href + '?share=' + btoa(JSON.stringify(model)));
     copied.value = true;
     setTimeout(() => copied.value = false, 3000);
 }
