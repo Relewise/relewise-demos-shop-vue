@@ -8,7 +8,7 @@
             <div class="flex gap-3 items-center">
                 <div class="flex-grow">
                     <label class="text-sm block">Select dataset</label>
-                    <select :value="context.datasetId" class="mb-6" @change="setDataset($event.target.value)">
+                    <select :value="context.datasetId" class="mb-6" @change="setDataset(($event.target as HTMLInputElement).value)">
                         <option v-for="dataset in datasets" :key="dataset.datasetId" :value="dataset.datasetId">
                             {{ dataset.displayName }} ({{ dataset.datasetId }})
                         </option>

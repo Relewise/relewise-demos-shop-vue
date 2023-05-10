@@ -1,15 +1,8 @@
 import contextStore from '@/stores/context.store';
-import type Plugin from 'vue';
 
-declare module 'vue' {
-    export interface Vue {
-        $format(value: number | null): string;
-    }
-}
-
-export const formatting: Plugin = {
-    install: (app) => {
-        app.config.globalProperties.$format = (value: number | null) => {
+export default {
+    install: (app: any) => {
+        app.config.globalProperties.$format = (value: string | number | null | undefined) => {
             if (!value) {
                 return '';
             }
@@ -21,7 +14,7 @@ export const formatting: Plugin = {
                         style: 'currency',
                         currency: contextStore.context.value.currencyCode,
                     })
-                    .format(value);
+                    .format(Number(value));
             }
             catch {
                 console.warn(`Could not format price using the currency: '${contextStore.context.value.currencyCode}'`);

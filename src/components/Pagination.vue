@@ -9,7 +9,7 @@
             :disabled="currentPage === item || typeof item !== 'number'"
             class="item"
             :class="{'active': modelValue == item}"
-            @click="selectPage(item)">
+            @click="selectPage(Number(item))">
             {{ item }}
         </button>
         
@@ -82,7 +82,7 @@ const range = computed(() => {
     if (pages[0] !== 1) {
         pages = withDots(1, [1, '...']).concat(pages);
     }
-    if (pages[pages.length - 1] < pageCount.value) {
+    if (Number(pages[pages.length - 1]) < pageCount.value) {
         pages = pages.concat(withDots(pageCount.value, ['...', pageCount.value]));
     }
     return pages;

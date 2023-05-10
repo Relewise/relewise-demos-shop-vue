@@ -30,7 +30,7 @@ import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type ProductSearchResponse } from '@relewise/client';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -80,8 +80,11 @@ async function search() {
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);
     contextStore.assertApiCall(response);
 
-    if (Object.keys(response?.facets?.items[0].selected).length === 0) {
-        filters.value.price = [response?.facets?.items[0].available.value.lowerBoundInclusive, response?.facets?.items[0].available.value.upperBoundInclusive];
+    if (response && response.facets && response.facets.items && response.facets.items[0] !== null) {
+        const salesPriceFacet = response.facets!.items[0] as PriceRangeFacetResult;
+        if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
+            filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString()?? ''];
+        }
     }
 
     result.value = response;

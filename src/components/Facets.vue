@@ -4,15 +4,15 @@
             {{ facet.field }}
         </div>
 
-        <ul v-if="facet.field == 'Category' || facet.field == 'Brand'">
-            <li v-for="option in facet.available.slice(0, 10)" :key="option.value.id" class="flex pb-1.5">
+        <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)">
+            <li v-for="option in (facet.available ?? []).slice(0, 10)" :key="option.value.id" class="flex pb-1.5">
                 <label class="flex items-center cursor-pointer">
                     <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer"
                            type="checkbox"
                            :value="option.value.id"
                            :selected="option.selected"
                            @click="applyFacet(facet.field, option.value.id)">
-                    {{ option.value.displayName ?? option.value.id }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                    {{ option.value?.displayName ?? option.value.id }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
                 </label>
             </li>
         </ul>
@@ -20,12 +20,12 @@
             <div v-if="filters.price.length == 2" class="w-full flex justify-between mb-3">
                 {{ $format(filters.price[0]) }} - {{ $format(filters.price[1]) }}
             </div>
-            <div v-if="filters.price.length == 2" class="px-1">
+            <div v-if="filters.price.length == 2 && 'available' in facet && facet.available && 'value' in facet.available" class="px-1">
                 <Slider 
                     v-model="filters.price"
                     :tooltips="false"
-                    :max="facet.available.value.upperBoundInclusive"
-                    :min="facet.available.value.lowerBoundInclusive"
+                    :max="facet.available?.value?.upperBoundInclusive"
+                    :min="facet.available?.value?.lowerBoundInclusive"
                     @update="priceChange"/>
             </div>
         </div>

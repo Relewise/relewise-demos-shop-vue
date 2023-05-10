@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacet, type PriceRangeFacetResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
 import { ref, watch } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import ProductTile from './ProductTile.vue';
@@ -97,10 +97,13 @@ async function search() {
             fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
         }
         else {
-            const salesPriceFacet = result.value.facets!.items[0] as PriceRangeFacetResult;
-            if (Object.keys(salesPriceFacet.selected ?? {}).length === 0) {
-                filters.value.price = [salesPriceFacet.available.value.lowerBoundInclusive, salesPriceFacet.available.value.upperBoundInclusive];
+            if (result.value?.facets && result.value.facets.items && result.value.facets.items[0] !== null) {
+                const salesPriceFacet = result.value.facets!.items[0] as PriceRangeFacetResult;
+                if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
+                    filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString()?? ''];
+                }
             }
+            
             fallbackRecommendations.value = null;
         }
     } 
@@ -140,7 +143,11 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
-                        <Facets v-model:page="page" :filters="filters" :facets="result.facets" @search="search"/>
+                        <Facets v-if="result.facets"
+                                v-model:page="page"
+                                :filters="filters"
+                                :facets="result.facets"
+                                @search="search"/>
                     </div>
                     <div class="w-4/5">
                         <div class="p-3 flex gap-6 items-end bg-white rounded mb-3">
