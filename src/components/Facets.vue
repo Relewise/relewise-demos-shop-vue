@@ -5,8 +5,8 @@
         </div>
 
         <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)">
-            <li v-for="option in (facet.available ?? []).slice(0, 10)" :key="option.value.id" class="flex pb-1.5">
-                <label class="flex items-center cursor-pointer">
+            <li v-for="(option, oIndex) in facet.available.slice(0, 10)" :key="oIndex" class="flex pb-1.5">
+                <label v-if="option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer">
                     <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer"
                            type="checkbox"
                            :value="option.value.id"
@@ -47,7 +47,9 @@ const emit = defineEmits(['search']);
 
 const { filters, page, facets } = toRefs(props);
 
-function applyFacet(name: string, value: string) {
+function applyFacet(name: string, value: string | null | undefined) {
+    if (!value) return;
+    
     const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
 
     if (filters.value[nameAsProp]) {

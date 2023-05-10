@@ -7,7 +7,7 @@
     </div>
     <div class=" justify-center px-6 md:flex md:space-x-6 xl:px-0">
         <div class="rounded md:w-2/3">
-            <div v-for="item in model.lineItems" class="justify-between mb-3 rounded bg-white p-3 sm:flex sm:justify-start">
+            <div v-for="item in model.lineItems" :key="item.product.productId ?? ''" class="justify-between mb-3 rounded bg-white p-3 sm:flex sm:justify-start">
                 <ProductImage :product="item.product" class="w-full rounded sm:w-20"/>
                 <div class="sm:ml-4 sm:flex sm:w-full sm:justify-between">
                     <div class="mt-5 sm:mt-0">
@@ -56,7 +56,7 @@
                 </p>
                 <div class="">
                     <p class="mb-1 text-lg font-bold">
-                        {{ $format(model.lineItems.map(x => x.product.salesPrice * x.quantity).reduce((partialSum, a) => partialSum + a, 0)) }}
+                        {{ $format(model.lineItems.map(x => (x.product.salesPrice ?? 0) * x.quantity).reduce((partialSum, a) => partialSum + a, 0)) }}
                     </p>
                     <p class="text-sm text-gray-700">
                         including VAT

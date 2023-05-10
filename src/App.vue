@@ -63,7 +63,7 @@ async function getCategories(searcher: Searcher) {
             <nav class="hidden lg:block">
                 <ul class="flex w-full gap-2">
                     <ul class="flex overflow-auto scrollable-element">
-                        <li v-for="category in mainCategories" :key="category.categoryId" class="inline-flex">
+                        <li v-for="category in mainCategories" :key="category.categoryId ?? ''" class="inline-flex">
                             <RouterLink :to="{ name: 'category', params: { id: category.categoryId } }"
                                         class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:opacity-80 transitions ease-in-out delay-150">
                                 {{ category.displayName }}
