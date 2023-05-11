@@ -19,7 +19,11 @@ if (contextStore.isConfigured()) {
 }
 else {
     const params = new URLSearchParams(window.location.search);
-    router.push({ path: '/app-settings', query: {share: params.get('share')} });
+    let query = undefined;
+    if (params.has('share')) {
+        query = { share: params.get('share')};
+    }
+    router.push({ path: '/app-settings', query: query });
 }
 
 async function getCategories(searcher: Searcher) {

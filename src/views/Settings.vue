@@ -42,8 +42,8 @@
         <label class="text-sm block mt-6">Currency</label>
         <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
 
-        <label class="text-sm block mt-6">Image Url Data Key Name</label>
-        <input v-model="context.imageUrlDataKey" type="text" placeholder="Image Url Data Key Name">
+        <label class="text-sm block mt-6">Server url</label>
+        <input v-model="context.serverUrl" type="text" placeholder="Server Url">
 
         <div class="flex mt-4 gap-3">
             <button class="bg-gray-500 text-white" @click="addEmptyDataset">

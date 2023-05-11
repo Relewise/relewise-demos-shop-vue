@@ -7,7 +7,7 @@ export interface IDataset {
     displayName?: string|null;
     language: string;
     currencyCode: string;
-    imageUrlDataKey?: string;
+    serverUrl?: string;
 }
 
 export interface ITracking {
@@ -91,21 +91,21 @@ class AppContext {
         if (!this.context.value.apiKey || !this.context.value.datasetId) {
             throw new Error('Missing apiKey or datasetId');
         }
-        return new Searcher(this.context.value.datasetId, this.context.value.apiKey);
+        return new Searcher(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
     }
 
     public getRecommender(): Recommender {
         if (!this.context.value.apiKey || !this.context.value.datasetId) {
             throw new Error('Missing apiKey or datasetId');
         }
-        return new Recommender(this.context.value.datasetId, this.context.value.apiKey);
+        return new Recommender(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
     }
 
     public getTracker(): Tracker {
         if (!this.context.value.apiKey || !this.context.value.datasetId) {
             throw new Error('Missing apiKey or datasetId');
         }
-        return new Tracker(this.context.value.datasetId, this.context.value.apiKey);
+        return new Tracker(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
     }
 
     public persistState() {
