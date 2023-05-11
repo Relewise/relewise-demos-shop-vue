@@ -156,7 +156,7 @@ function shareLink() {
         datasetId: context.value.datasetId,
         currencyCode: context.value.currencyCode,
         language: context.value.language,
-        imageUrlDataKey: context.value.imageUrlDataKey,
+        serverUrl: context.value.serverUrl,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + btoa(JSON.stringify(model)));
