@@ -3,7 +3,7 @@ import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
 import { ref, watch } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
+//import { useDebounceFn } from '@vueuse/core';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
@@ -43,13 +43,15 @@ function showOrHide(show: boolean) {
     show ? window.document.body.classList.add('overflow-hidden') : window.document.body.classList.remove('overflow-hidden');
 }
 
-const debouncedSearch = useDebounceFn(() => {
-    if (usedSearchTerm.value !== searchTerm.value) {
-        search();
-    }
-}, 200);
+// const debouncedSearch = useDebounceFn(() => {
+//     if (usedSearchTerm.value !== searchTerm.value) {
+//         search();
+//     }
+// }, 200);
 
 async function search() {
+    if (usedSearchTerm.value === searchTerm.value) return;
+
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
 
     if (!show) return; else showOrHide(show); 
@@ -123,7 +125,7 @@ function searchFor(term: string) {
                type="text"
                placeholder="Search..."
                class="!rounded-none focus:!border-zinc-100 focus:!ring-0"
-               @keyup="debouncedSearch()"> 
+               @keyup="search()"> 
         <button class="bg-zinc-300 rounded-none px-3" @click="search()">
             <MagnifyingGlassIcon class="h-6 w-6 text-zinc-600"/>
         </button>
