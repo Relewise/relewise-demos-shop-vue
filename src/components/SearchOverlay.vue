@@ -49,9 +49,13 @@ function showOrHide(show: boolean) {
 //     }
 // }, 200);
 
-async function search() {
-    if (usedSearchTerm.value === searchTerm.value) return;
+function typeAHeadSearch() {
+    if (usedSearchTerm.value !== searchTerm.value) {
+        search();
+    }
+}
 
+async function search() {
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
 
     if (!show) return; else showOrHide(show); 
@@ -125,7 +129,7 @@ function searchFor(term: string) {
                type="text"
                placeholder="Search..."
                class="!rounded-none focus:!border-zinc-100 focus:!ring-0"
-               @keyup="search()"> 
+               @keyup="typeAHeadSearch()"> 
         <button class="bg-zinc-300 rounded-none px-3" @click="search()">
             <MagnifyingGlassIcon class="h-6 w-6 text-zinc-600"/>
         </button>
