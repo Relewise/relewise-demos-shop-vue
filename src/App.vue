@@ -33,7 +33,7 @@ async function getCategories(searcher: Searcher) {
         .build();
 
     const categories = (await searcher.searchProductCategories(request))?.results ?? [];
-    mainCategories.value = categories.sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0);
+    mainCategories.value = categories.filter(x => x.displayName).sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0);
 }
 </script>
 
