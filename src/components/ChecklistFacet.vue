@@ -1,5 +1,5 @@
 <template>
-    <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)">
+    <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && allOptions.length > 0">
         <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
             <label v-if="option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer">
                 <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer"
@@ -10,8 +10,8 @@
                 {{ option.value?.displayName ?? option.value.id }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
             </label>
         </li>
-        <li v-if="'available' in facet && Array.isArray(facet.available) && elementsToShow < facet.available.length">
-            <button class="bg-zinc-500 py-1 px-2" @click="elementsToShow = facet.available.length">
+        <li v-if="elementsToShow < allOptions.length">
+            <button class="bg-zinc-500 py-1 px-2" @click="elementsToShow = allOptions.length">
                 Show all
             </button>
         </li>
@@ -29,10 +29,16 @@ const props = defineProps({
 
 const elementsToShow = ref(10);
 
-const options = computed(() => {
-    if (!('available' in facet.value) || !Array.isArray(facet.value.available)) return [];
+const allOptions = computed(() => {
+    if (!('available' in facet.value)) return [];
 
-    const sorted = [...facet.value.available].sort((a, b) => a.value?.displayName?.localeCompare(b.value?.displayName ?? '') ?? 0);
+    return (facet.value as any).available; // Vite does not recognize the "in" operator used above
+});
+
+const options = computed(() => {
+    if (!('available' in facet.value)) return [];
+
+    const sorted = [...(facet.value as any).available].sort((a, b) => a.value?.displayName?.localeCompare(b.value?.displayName ?? '') ?? 0);
     return sorted.slice(0, elementsToShow.value);
 });
 
