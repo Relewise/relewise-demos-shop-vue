@@ -118,12 +118,12 @@ async function search() {
             fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
         }
         else {
-            // if (result.value?.facets && result.value.facets.items && result.value.facets.items[2] !== null) {
-            //     const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
-            //     if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-            //         filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString()?? ''];
-            //     }
-            // }
+            if (result.value?.facets && result.value.facets.items && result.value.facets.items[2] !== null) {
+                const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
+                if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
+                    filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString()?? ''];
+                }
+            }
             
             fallbackRecommendations.value = null;
         }

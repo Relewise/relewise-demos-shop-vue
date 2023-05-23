@@ -35,7 +35,7 @@ import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
 
 const props = defineProps({
-    filters: { type: Object as PropType<Record<string, string[]>>, required: true },
+    filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
 });
@@ -48,15 +48,17 @@ function applyFacet(name: string, value: string | null | undefined) {
     if (!value) return;
 
     const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
-
-    if (filters.value[nameAsProp]) {
-        const index = filters.value[nameAsProp].indexOf(value);
+ 
+    const existing = filters.value[nameAsProp];
+    if (existing && Array.isArray(existing)) {
+        const index = existing.indexOf(value);
         index === -1
-            ? filters.value[nameAsProp].push(value)
-            : filters.value[nameAsProp].splice(index, 1);
+            ? existing.push(value)
+            : existing.splice(index, 1);
     } else if (value !== null) {
         filters.value[nameAsProp] = [];
-        filters.value[nameAsProp].push(value);
+        const t = filters.value[nameAsProp];
+        Array.isArray(t) && t.push(value);
     }
 
     page.value = 1;
