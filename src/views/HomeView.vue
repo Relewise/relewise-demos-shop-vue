@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ProductTile from '../components/ProductTile.vue';
 import contextStore from '@/stores/context.store';
-import { PopularBrandsRecommendationBuilder, PopularProductsBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse, DataValueFactory, PopularProductCategoriesRecommendationBuilder, Recommender } from '@relewise/client';
+import { PopularBrandsRecommendationBuilder, PopularProductsBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
 import { type Ref, ref } from 'vue';
 
 const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecommendationResponse | undefined>({} as ProductRecommendationResponse);
@@ -63,7 +63,7 @@ async function recommend() {
             </h2>
 
             <div class="grid gap-3 grid-cols-2 lg:grid-cols-5 mt-3">
-                <RouterLink v-for="(brand, index) in brands.recommendations" :key="index" :to="{ query: { brand: brand.id } }" class="rounded bg-white hover:bg-zinc-200 px-3 py-3">
+                <RouterLink v-for="(brand, index) in brands.recommendations" :key="index" :to="{ query: { brand: brand.id, open: '1' } }" class="rounded bg-white hover:bg-zinc-200 px-3 py-3">
                     {{ brand.displayName ?? brand.id }}
                 </RouterLink>
             </div>
