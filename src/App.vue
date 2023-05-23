@@ -28,7 +28,7 @@ else {
 
 async function getCategories(searcher: Searcher) {
     const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-        .setSelectedCategoryProperties({ displayName: true })
+        .setSelectedCategoryProperties({ displayName: true, paths: true })
         .filters(f => f.addProductCategoryLevelFilter(1))
         .build();
 

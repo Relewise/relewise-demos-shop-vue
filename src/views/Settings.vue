@@ -1,11 +1,16 @@
 <template>
     <div class="bg-white rounded p-6">
-        <h1 class="mb-8 text-4xl">
-            Settings
-        </h1>
+        <div class="flex items-center mb-8">
+            <h1 class="text-4xl">
+                Settings
+            </h1>
+        </div>
 
         <template v-if="datasets.length > 1">
             <div class="flex gap-3 items-center">
+                <button class="bg-gray-500 text-white" @click="addEmptyDataset">
+                    Add new dataset
+                </button>
                 <div class="flex-grow">
                     <label class="text-sm block">Select dataset</label>
                     <select :value="context.datasetId"
@@ -25,6 +30,11 @@
             </div>
 
             <hr class="mb-6">
+        </template>
+        <template v-else>
+            <button class="bg-gray-500 text-white" @click="addEmptyDataset">
+                Add new dataset
+            </button>
         </template>
 
         <label class="text-sm block">Name</label>
@@ -46,9 +56,6 @@
         <input v-model="context.serverUrl" type="text" placeholder="Server Url">
 
         <div class="flex mt-4 gap-3">
-            <button class="bg-gray-500 text-white" @click="addEmptyDataset">
-                Add new dataset
-            </button>
             <button class="bg-gray-500 text-white" @click="shareLink">
                 Get share link
             </button>
@@ -61,16 +68,25 @@
         <hr class="my-10">
 
         <h2 class="mb-8 text-4xl">
-            Behavior tracking
+            Behavioral tracking
         </h2>
 
         <label class="block mb-6 flex items-center">
             <input v-model="tracking.enabled" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
             Tracking enabled</label>
 
-        <button class="bg-gray-500 text-white" @click="resetTracking">
-            Reset Personal Tracking
-        </button>
+        <p>When tracking is enabled, all your actions are tracked to Relewise to give you a personal experience</p>
+
+        <hr class="my-10">
+
+        <div class="flex gap-5">
+            <button class="bg-gray-500 text-white" @click="resetTracking">
+                Reset Personal Tracking
+            </button>
+            <div class="p-3 bg-zinc-300 rounded leading-tight font-mono flex-grow">
+                Temporary Id: <strong> {{ tracking.temporaryId }}</strong>
+            </div>
+        </div>
 
         <hr class="my-10">
 

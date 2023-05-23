@@ -8,9 +8,10 @@
                 <div v-if="result?.results">
                     <div class="bg-white rounded flex items-end p-3 gap-4">
                         <h1 class="text-3xl font-semibold">
-                            Products
+                            {{ category?.displayName }}
                         </h1>
-                        <span v-if="result.hits > 0">Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of {{ result?.hits }}</span>
+                        <span v-if="result.hits > 0">Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits :
+                            page * 40 }} of {{ result?.hits }}</span>
                     </div>
                     <div class="grid gap-3 grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in result?.results" :key="pIndex" :product="product"/>
@@ -30,22 +31,43 @@ import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse } from '@relewise/client';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
+import router from '@/router';
 
+const category = ref<CategoryResult | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
 const page = ref<number>(1);
-const filters = ref<Record<string, string[]>>({ price: []});
+const filters = ref<Record<string, string[]>>({ price: [] });
 const route = useRoute();
-    
-function init() {
+
+async function init() {
     const id = route.params.id;
 
-    if (id && !Array.isArray(id)) {
+    if (id && !Array.isArray(id) && id !== categoryId.value) {
         trackingService.trackProductCategoryView(id);
+
+        const facets = new URLSearchParams(window.location.search);
+        facets.forEach((value, key) => { 
+            const existing = filters.value[key];
+            existing ? filters.value[key].push(value) : filters.value[key] = [value];
+        });
+        
+        const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
+            .setSelectedCategoryProperties({ displayName: true })
+            .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
+            .build();
+
+        const searcher = contextStore.getSearcher();
+        const response: ProductCategorySearchResponse | undefined = await searcher.searchProductCategories(request);
+        contextStore.assertApiCall(response);
+
+        if (response?.results) {
+            category.value = response.results[0];
+        }
 
         categoryId.value = id;
         search();
@@ -55,35 +77,47 @@ function init() {
 init();
 
 watch(route, () => {
-    init();
+    if (route.query.open !== '1')
+        init();
 });
 
 async function search() {
     scrollTo({ top: 0 });
 
+    let applySalesPriceFacet = false;
+    if (result.value?.facets?.items?.length === 3) {
+        const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
+        applySalesPriceFacet = salesPriceFacet && filters.value.price.length === 2 && Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive || Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive;
+    }
+    
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({allData: true})
+        .setSelectedVariantProperties({ allData: true })
         .setExplodedVariants(1)
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
         })
-        .facets(f => f
-            .addSalesPriceRangeFacet('Product', filters.value.price.length === 2 ? Number(filters.value.price[0]) : undefined, filters.value.price.length === 2 ? Number(filters.value.price[1]) : undefined)
+        .facets(f => f        
             .addCategoryFacet('ImmediateParent', filters.value['category']?.length > 0 ? filters.value['category'] : null)
-            .addBrandFacet(filters.value['brand']?.length > 0 ? filters.value['brand'] : null),
+            .addBrandFacet(filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
+            .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
         )
         .pagination(p => p.setPageSize(40).setPage(page.value))
         .build();
 
+    const query = {...filters.value };
+    if (!applySalesPriceFacet) delete query.price;
+
+    await router.push({ path: route.path, query: query });
+    
     const searcher = contextStore.getSearcher();
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);
     contextStore.assertApiCall(response);
 
-    if (response && response.facets && response.facets.items && response.facets.items[0] !== null) {
-        const salesPriceFacet = response.facets!.items[0] as PriceRangeFacetResult;
+    if (response && response.facets && response.facets.items && response.facets.items[2] !== null) {
+        const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
         if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-            filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString()?? ''];
+            filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
         }
     }
 
