@@ -1,18 +1,23 @@
 <template>
-    <img class="object-cover" :src="image" alt="product image">
+    <img v-if="!error"
+         class="object-cover"
+         :src="image"
+         alt="product image"
+         @error="error=true">
+    <PhotoIcon v-else class="h-full w-full text-zinc-300"/>
 </template>
 
 <script setup lang="ts">
 import type { DataValue, ProductResult } from '@relewise/client';
-import { computed, toRefs, type PropType } from 'vue';
-
+import { computed, toRefs, type PropType, ref } from 'vue';
+import { PhotoIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
 });
 
 const { product } = toRefs(props);
-
+const error = ref(false);
 const image = computed(() => {
 
     return mapDataKey(product.value.data ?? {}) ??

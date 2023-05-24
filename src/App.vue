@@ -7,10 +7,18 @@ import { ProductCategorySearchBuilder, Searcher, type CategoryResult } from '@re
 import { ref } from 'vue';
 import { computed } from 'vue';
 import basketService from './services/basket.service';
+import { watch } from 'vue';
+import { onClickOutside } from '@vueuse/core';
 
-const mainCategories = ref<CategoryResult[]>([]);
+type NavigationItem = { id: string, category: CategoryResult, children: CategoryResult[]; }
+
+const mainCategories = ref<NavigationItem[]>([]);
+const open = ref<string | null>(null);
 const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
+const navigationmodal = ref(null);
+
+onClickOutside(navigationmodal, () => open.value = null);
 
 if (contextStore.isConfigured()) {
     const searcher = contextStore.getSearcher();
@@ -21,20 +29,47 @@ else {
     const params = new URLSearchParams(window.location.search);
     let query = undefined;
     if (params.has('share')) {
-        query = { share: params.get('share')};
+        query = { share: params.get('share') };
     }
     router.push({ path: '/app-settings', query: query });
 }
 
 async function getCategories(searcher: Searcher) {
     const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-        .setSelectedCategoryProperties({ displayName: true, paths: true })
+        .setSelectedCategoryProperties({ displayName: true })
         .filters(f => f.addProductCategoryLevelFilter(1))
         .build();
 
     const categories = (await searcher.searchProductCategories(request))?.results ?? [];
-    mainCategories.value = categories.filter(x => x.displayName).sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0);
+    const navigation: NavigationItem[] = categories
+        .filter(x => x.displayName)
+        .sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0)
+        .map(x => ({ id: x.categoryId!, category: x, children: [] }));
+
+    const subCategoriesRequest = new ProductCategorySearchBuilder(contextStore.defaultSettings)
+        .setSelectedCategoryProperties({ displayName: true, paths: true })
+        .filters(f => f.addProductCategoryHasParentFilter(categories.filter(x => !!x.categoryId).map(x => x.categoryId!)))
+        .pagination(p => p.setPageSize(10_000))
+        .build();
+
+    let subCategories = (await searcher.searchProductCategories(subCategoriesRequest))?.results ?? [];
+    subCategories = subCategories.filter(x => x.displayName).sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0);
+    subCategories.forEach(x => {
+        const parentId = x.paths![0].pathFromRoot![0].id!;
+        const parent = navigation.filter(x => x.id === parentId)[0];
+        parent && parent.children.push(x);
+    });
+
+    mainCategories.value = navigation;
 }
+
+watch(open, () => {
+    if (open.value) {
+        window.document.body.classList.add('overflow-hidden');
+    } else {
+        window.document.body.classList.remove('overflow-hidden');
+    }
+});
 </script>
 
 <template>
@@ -65,12 +100,33 @@ async function getCategories(searcher: Searcher) {
 
             <nav class="hidden lg:block">
                 <ul class="flex w-full gap-2">
-                    <ul class="flex overflow-auto scrollable-element">
-                        <li v-for="category in mainCategories" :key="category.categoryId ?? ''" class="inline-flex">
-                            <RouterLink :to="{ name: 'category', params: { id: category.categoryId } }"
-                                        class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:opacity-80 transitions ease-in-out delay-150">
-                                {{ category.displayName ?? category.categoryId }}
-                            </RouterLink>
+                    <ul class="flex overflow-y-auto scrollable-element">
+                        <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative">
+                            <span
+                                class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                                @click="open = category.id">
+                                {{ category.category.displayName ?? category.category.categoryId }}
+                            </span>
+
+                            <Teleport v-if="open == category.id" to="#navigationmodal">
+                                <div ref="navigationmodal" class="navigationmodal" @click="open = null">
+                                    <div class="bg-white overflow-x-auto">
+                                        <div class="container mx-auto">
+                                            <ul v-if="category.children.length > 0"
+                                                class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
+                                                <li v-for="child in category.children"
+                                                    :key="child.categoryId ?? ''"
+                                                    class="text-sm block">
+                                                    <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }"
+                                                                class="text-gray-700 block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
+                                                        {{ child.displayName }}
+                                                    </RouterLink>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Teleport>
                         </li>
                     </ul>
                     <li class="flex-grow"></li>
@@ -96,7 +152,7 @@ async function getCategories(searcher: Searcher) {
     </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 .scrollable-element {
     &::-webkit-scrollbar {
         height: 4px !important;
@@ -112,4 +168,16 @@ async function getCategories(searcher: Searcher) {
         border: transparent;
     }
 }
-</style>
+
+$headerHeight: 104px;
+
+.navigationmodal {
+    @apply bg-white overflow-hidden;
+    background: rgba(155, 155, 155, 0.5);
+    position: fixed;
+    z-index: 1000;
+    top: $headerHeight; // height of header
+    left: 0;
+    width: 100%;
+    height: calc(100% - $headerHeight);
+}</style>
