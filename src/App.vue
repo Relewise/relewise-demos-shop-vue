@@ -60,7 +60,6 @@ async function getCategories(searcher: Searcher) {
         parent && parent.children.push(x);
     });
 
-    console.log(navigation);
     mainCategories.value = navigation;
 }
 
