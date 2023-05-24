@@ -13,6 +13,7 @@ import { onClickOutside } from '@vueuse/core';
 type NavigationItem = { id: string, category: CategoryResult, children: CategoryResult[]; }
 
 const mainCategories = ref<NavigationItem[]>([]);
+const footer = ref<NavigationItem[]>([]);
 const open = ref<string | null>(null);
 const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
@@ -61,6 +62,7 @@ async function getCategories(searcher: Searcher) {
     });
 
     mainCategories.value = navigation;
+    footer.value = navigation.splice(0,4);
 }
 
 watch(open, () => {
@@ -145,11 +147,35 @@ watch(open, () => {
         <RouterView/>
     </div>
 
-    <div class="bg-white">
-        <div class="container mx-auto py-5 px-3 ">
-            © Copyright Relewise {{ new Date().getFullYear() }}
+    <footer class="bg-white">
+        <div class="container px-6 py-12 mx-auto">
+            <div v-if="footer" class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                <div v-for="category in footer.splice(0, 4)" :key="category.id">
+                    <h3 class="text-lg font-medium text-zinc-800">
+                        {{ category.category.displayName }}
+                    </h3>
+
+                    <div v-for="child in category.children" :key="child.categoryId ?? ''" class="flex flex-col items-start mt-2 space-y-4">
+                        <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }" class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
+                            {{ child.displayName }}
+                        </RouterLink>
+                    </div>
+                </div>
+            </div>
+        
+            <hr class="my-6 border-zinc-200 md:my-5">
+        
+            <div class="flex flex-col items-center justify-between sm:flex-row">
+                <a href="https://relewise.com/contact-us/">
+                    <img src="https://relewise.com/wp-content/uploads/2022/09/hdr_logo.png" class="h-14">
+                </a>
+
+                <p class="mt-4 text-sm text-zinc-500 sm:mt-0 text-zinc-300">
+                    © Copyright {{ new Date().getFullYear() }}
+                </p>
+            </div>
         </div>
-    </div>
+    </footer>
 </template>
 
 <style lang="scss">
