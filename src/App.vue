@@ -62,7 +62,7 @@ async function getCategories(searcher: Searcher) {
     });
 
     mainCategories.value = navigation;
-    footer.value = navigation.splice(0,4);
+    footer.value = navigation.slice(0,4);
 }
 
 watch(open, () => {
