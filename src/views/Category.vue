@@ -10,8 +10,21 @@
                         <h1 class="text-3xl font-semibold">
                             {{ category?.displayName }}
                         </h1>
-                        <span v-if="result.hits > 0">Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits :
+                        <span v-if="result.hits > 0" class="whitespace-nowrap">Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits :
                             page * 40 }} of {{ result?.hits }}</span>
+
+                        <div class="flex-grow">
+                        </div>
+                        <select v-model="filters.sort" class="w-1/6" @change="search">
+                            <option>Recommended</option>
+                            <option>Popular</option>
+                            <option value="SalesPriceDesc">
+                                Sales Price desc
+                            </option>
+                            <option value="SalesPriceAsc">
+                                Sales Price asc
+                            </option>
+                        </select>
                     </div>
                     <div class="grid gap-3 grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in result?.results" :key="pIndex" :product="product"/>
@@ -37,12 +50,12 @@ import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
 import router from '@/router';
 
+const route = useRoute();
 const category = ref<CategoryResult | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
 const page = ref<number>(1);
-const filters = ref<Record<string, string[]>>({ price: [] });
-const route = useRoute();
+const filters = ref<Record<string, string | string[]>>({ price: [], sort: 'Recommended' });
 
 async function init() {
     const id = route.params.id;
@@ -52,8 +65,9 @@ async function init() {
 
         const facets = new URLSearchParams(window.location.search);
         facets.forEach((value, key) => { 
+            if (key === 'sort') { filters.value.sort = value; return; }
             const existing = filters.value[key];
-            existing ? filters.value[key].push(value) : filters.value[key] = [value];
+            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
         });
         
         const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
@@ -103,6 +117,17 @@ async function search() {
             .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
         )
         .pagination(p => p.setPageSize(40).setPage(page.value))
+        .sorting(s => {
+            if (filters.value.sort === 'Popular') {
+                s.sortByProductPopularity();
+            }
+            else if(filters.value.sort === 'SalesPriceDesc'){
+                s.sortByProductAttribute('SalesPrice', 'Descending');
+            }
+            else if(filters.value.sort === 'SalesPriceAsc') {
+                s.sortByProductAttribute('SalesPrice', 'Ascending');
+            }
+        })
         .build();
 
     const query = {...filters.value };

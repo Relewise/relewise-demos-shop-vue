@@ -62,7 +62,7 @@ async function getCategories(searcher: Searcher) {
     });
 
     mainCategories.value = navigation;
-    footer.value = navigation.slice(0,4);
+    footer.value = navigation.slice(0, 4);
 }
 
 watch(open, () => {
@@ -104,22 +104,22 @@ watch(open, () => {
                 <ul class="flex w-full gap-2">
                     <ul class="flex overflow-y-auto scrollable-element">
                         <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative">
-                            <span
-                                class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                                @click="open = category.id">
+                            <RouterLink :to="{ name: 'category', params: { id: category.id } }"
+                                        class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                                        @mouseover="open = category.id">
                                 {{ category.category.displayName ?? category.category.categoryId }}
-                            </span>
+                            </RouterLink>
 
                             <Teleport v-if="open == category.id" to="#navigationmodal">
-                                <div ref="navigationmodal" class="navigationmodal" @click="open = null">
-                                    <div class="bg-white overflow-x-auto">
+                                <div ref="navigationmodal" class="navigationmodal">
+                                    <div class="bg-white overflow-x-auto  modalcontent">
                                         <div class="container mx-auto">
                                             <ul v-if="category.children.length > 0"
                                                 class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
                                                 <li v-for="child in category.children"
                                                     :key="child.categoryId ?? ''"
                                                     class="text-sm block">
-                                                    <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }"
+                                                    <RouterLink :to="{ name: 'sub-category', params: { parent: category.id, id: child.categoryId } }"
                                                                 class="text-gray-700 block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
                                                         {{ child.displayName }}
                                                     </RouterLink>
@@ -127,6 +127,7 @@ watch(open, () => {
                                             </ul>
                                         </div>
                                     </div>
+                                    <div class="backdrop" @click="open = null" @mouseenter="open = null"></div>
                                 </div>
                             </Teleport>
                         </li>
@@ -155,16 +156,19 @@ watch(open, () => {
                         {{ category.category.displayName }}
                     </h3>
 
-                    <div v-for="child in category.children" :key="child.categoryId ?? ''" class="flex flex-col items-start mt-2 space-y-4">
-                        <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }" class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
+                    <div v-for="child in category.children"
+                         :key="child.categoryId ?? ''"
+                         class="flex flex-col items-start mt-2 space-y-4">
+                        <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }"
+                                    class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
                             {{ child.displayName }}
                         </RouterLink>
                     </div>
                 </div>
             </div>
-        
+
             <hr class="my-6 border-zinc-200 md:my-5">
-        
+
             <div class="flex flex-col items-center justify-between sm:flex-row">
                 <a href="https://relewise.com/contact-us/">
                     <img src="https://relewise.com/wp-content/uploads/2022/09/hdr_logo.png" class="h-14">
@@ -199,11 +203,23 @@ $headerHeight: 104px;
 
 .navigationmodal {
     @apply bg-white overflow-hidden;
-    background: rgba(155, 155, 155, 0.5);
     position: fixed;
     z-index: 1000;
     top: $headerHeight; // height of header
     left: 0;
     width: 100%;
     height: calc(100% - $headerHeight);
-}</style>
+
+    .backdrop {
+        background: rgba(155, 155, 155, 0.5);
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        width: 100%;
+        height: calc(100% - $headerHeight);
+    }
+    .modalcontent {
+        z-index: 1002;
+    }
+}
+</style>
