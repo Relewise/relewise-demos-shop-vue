@@ -112,8 +112,8 @@ async function search() {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
         })
         .facets(f => f        
-            .addCategoryFacet('ImmediateParent', filters.value['category']?.length > 0 ? filters.value['category'] : null)
-            .addBrandFacet(filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
+            .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null)
+            .addBrandFacet( Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null)
             .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
         )
         .pagination(p => p.setPageSize(40).setPage(page.value))
