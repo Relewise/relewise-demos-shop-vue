@@ -106,7 +106,7 @@ watch(open, () => {
                         <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative">
                             <RouterLink :to="{ name: 'category', params: { id: category.id } }"
                                         class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                                        @mouseover="open = category.id">
+                                        @mouseover="category.children.length > 0 ? open = category.id : open = null">
                                 {{ category.category.displayName ?? category.category.categoryId }}
                             </RouterLink>
 
