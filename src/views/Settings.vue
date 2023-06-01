@@ -103,6 +103,7 @@
 </template>
 
 <script lang="ts" setup>
+import router from '@/router';
 import basketService from '@/services/basket.service';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { ref } from 'vue';
@@ -113,7 +114,7 @@ const context = contextStore.context;
 const tracking = contextStore.tracking;
 const datasets = contextStore.datasets;
 
-function init() {
+async function init() {
     const params = new URLSearchParams(window.location.search);
     if (params.has('share')) {
         const parsedFromUrl = atob(params.get('share')!);
@@ -132,6 +133,7 @@ function init() {
         history.replaceState(null, '', url);
 
         // reload to get navigation
+        await router.push('/');
         window.location.reload();
     }
 }

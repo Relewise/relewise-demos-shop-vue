@@ -20,19 +20,21 @@ const lineItemsCount = computed(() => basketService.model.value.lineItems.length
 const navigationmodal = ref(null);
 
 onClickOutside(navigationmodal, () => open.value = null);
+init();
 
-if (contextStore.isConfigured()) {
-    const searcher = contextStore.getSearcher();
-
-    getCategories(searcher);
-}
-else {
+async function init() {
     const params = new URLSearchParams(window.location.search);
     let query = undefined;
     if (params.has('share')) {
         query = { share: params.get('share') };
+        await router.push({ path: '/app-settings', query: query });
     }
-    router.push({ path: '/app-settings', query: query });
+
+    if (contextStore.isConfigured()) {
+        const searcher = contextStore.getSearcher();
+
+        getCategories(searcher);
+    }
 }
 
 async function getCategories(searcher: Searcher) {
@@ -119,8 +121,9 @@ watch(open, () => {
                                                 <li v-for="child in category.children"
                                                     :key="child.categoryId ?? ''"
                                                     class="text-sm block">
-                                                    <RouterLink :to="{ name: 'sub-category', params: { parent: category.id, id: child.categoryId } }"
-                                                                class="text-gray-700 block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
+                                                    <RouterLink
+                                                        :to="{ name: 'sub-category', params: { parent: category.id, id: child.categoryId } }"
+                                                        class="text-gray-700 block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
                                                         {{ child.displayName }}
                                                     </RouterLink>
                                                 </li>
@@ -218,6 +221,7 @@ $headerHeight: 104px;
         width: 100%;
         height: calc(100% - $headerHeight);
     }
+
     .modalcontent {
         z-index: 1002;
     }
