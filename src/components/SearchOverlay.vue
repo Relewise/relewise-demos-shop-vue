@@ -164,7 +164,7 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
-                        <Facets v-if="result.facets"
+                        <Facets v-if="result.facets && result.hits > 0"
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
@@ -177,12 +177,22 @@ function searchFor(term: string) {
                             </h2> 
                             <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
                         </div>
-                    
-                        <div v-if="result.hits == 0" class="p-3 bg-white">
-                            No results found
+                        <div v-if="result && result?.redirects && result.redirects.length > 0" class="mb-3 p-3 bg-white">
+                            <h2 class="text-xl font-semibold mb-2">
+                                Redirect(s)
+                            </h2>
+
+                            <div v-for="redirect in result.redirects" :key="redirect.id" class="mb-1 pb-1 flex border-b border-solid border-gray-300">
+                                {{ redirect.destination }}
+                            </div>
                         </div>
-                        <div v-else class="grid gap-3 grid-cols-4">
-                            <ProductTile v-for="(product, index) in result.results" :key="index" :product="product"/>
+                        <div v-if="result.hits == 0" class="p-3 text-xl bg-white">
+                            No products found
+                        </div>
+                        <div v-else>
+                            <div class="grid gap-3 grid-cols-4">
+                                <ProductTile v-for="(product, index) in result.results" :key="index" :product="product"/>
+                            </div>
                         </div>
                     </div>
                     <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0">

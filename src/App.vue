@@ -15,6 +15,7 @@ type NavigationItem = { id: string, category: CategoryResult, children: Category
 const mainCategories = ref<NavigationItem[]>([]);
 const footer = ref<NavigationItem[]>([]);
 const open = ref<string | null>(null);
+const hasChildCategories = ref(true);
 const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
 const navigationmodal = ref(null);
@@ -41,21 +42,23 @@ async function getCategories(searcher: Searcher) {
     const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
         .setSelectedCategoryProperties({ displayName: true })
         .filters(f => f.addProductCategoryLevelFilter(1))
+        .pagination(p => p.setPageSize(10_000))
         .build();
 
     const categories = (await searcher.searchProductCategories(request))?.results ?? [];
     const navigation: NavigationItem[] = categories
-        .filter(x => x.displayName)
+        .filter(x => !!x.displayName)
         .sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0)
         .map(x => ({ id: x.categoryId!, category: x, children: [] }));
 
     const subCategoriesRequest = new ProductCategorySearchBuilder(contextStore.defaultSettings)
         .setSelectedCategoryProperties({ displayName: true, paths: true })
-        .filters(f => f.addProductCategoryHasParentFilter(categories.filter(x => !!x.categoryId).map(x => x.categoryId!)))
+        .filters(f => f.addProductCategoryHasParentFilter(navigation.map(x => x.id)))
         .pagination(p => p.setPageSize(10_000))
         .build();
 
     let subCategories = (await searcher.searchProductCategories(subCategoriesRequest))?.results ?? [];
+    hasChildCategories.value = subCategories.length > 0;
     subCategories = subCategories.filter(x => x.displayName).sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0);
     subCategories.forEach(x => {
         const parentId = x.paths![0].pathFromRoot![0].id!;
@@ -77,7 +80,7 @@ watch(open, () => {
 </script>
 
 <template>
-    <header class="bg-white">
+    <header class="bg-white shadow-sm">
         <div class="container mx-auto">
             <div class="flex gap-10 py-2">
                 <div class="flex items-center">
@@ -104,10 +107,10 @@ watch(open, () => {
 
             <nav class="hidden lg:block">
                 <ul class="flex w-full gap-2">
-                    <ul class="flex overflow-y-auto scrollable-element">
-                        <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative">
+                    <ul v-if="hasChildCategories" class="flex overflow-y-auto scrollable-element">
+                        <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative pr-5">
                             <RouterLink :to="{ name: 'category', params: { id: category.id } }"
-                                        class="font-semibold uppercase pr-6 py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                                        class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
                                         @mouseover="category.children.length > 0 ? open = category.id : open = null">
                                 {{ category.category.displayName ?? category.category.categoryId }}
                             </RouterLink>
@@ -135,8 +138,36 @@ watch(open, () => {
                             </Teleport>
                         </li>
                     </ul>
+                    <ul v-else>
+                        <div class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                             @mouseover="open = '1'">
+                            Categories
+                        </div>
+                        <Teleport v-if="open == '1'" to="#navigationmodal">
+                            <div ref="navigationmodal" class="navigationmodal">
+                                <div class="bg-white overflow-x-auto mb-5 modalcontent">
+                                    <div class="container mx-auto">
+                                        <ul
+                                            class="text-base z-10 max-h-96 list-none grid grid-cols-4 mb-3">
+                                            <li v-for="category in mainCategories"
+                                                :key="category.id ?? ''"
+                                                class="text-sm block">
+                                                <RouterLink
+                                                    :to="{ name: 'category', params: { id: category.id } }"
+                                                    class="text-gray-700 block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
+                                                    @click="open = null">
+                                                    {{ category.category.displayName }}
+                                                </RouterLink>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="backdrop" @click="open = null" @mouseenter="open = null"></div>
+                            </div>
+                        </Teleport>
+                    </ul>
                     <li class="flex-grow"></li>
-                    <li>
+                    <li class="inline-flex items-center">
                         <RouterLink to="/app-settings"
                                     class="text-zinc-600 inline-flex items-center whitespace-nowrap hover:text-black">
                             <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
@@ -153,22 +184,39 @@ watch(open, () => {
 
     <footer class="bg-white">
         <div class="container px-6 py-12 mx-auto">
-            <div v-if="footer" class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-                <div v-for="category in footer.splice(0, 4)" :key="category.id">
-                    <h3 class="text-lg font-medium text-zinc-800">
-                        {{ category.category.displayName }}
-                    </h3>
+            <template v-if="hasChildCategories">
+                <div v-if="footer"
+                     class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                    <div v-for="category in footer" :key="category.id">
+                        <h3 class="text-lg font-medium text-zinc-800">
+                            {{ category.category.displayName }}
+                        </h3>
 
-                    <div v-for="child in category.children"
-                         :key="child.categoryId ?? ''"
-                         class="flex flex-col items-start mt-2 space-y-4">
-                        <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }"
+                        <div v-for="child in category.children"
+                             :key="child.categoryId ?? ''"
+                             class="flex flex-col items-start mt-2 space-y-4">
+                            <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }"
+                                        class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
+                                {{ child.displayName }}
+                            </RouterLink>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <template v-else>
+                <h3 class="font-medium text-zinc-800 text-xl mb-2">
+                    Categories
+                </h3>
+                <div class="grid grid-cols-2 gap-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                    <div v-for="cat in mainCategories" :key="cat.id ?? ''" class="flex flex-col items-start mt-2 space-y-4">
+                        <RouterLink :to="{ name: 'category', params: { id: cat.id } }"
                                     class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
-                            {{ child.displayName }}
+                            {{ cat.category.displayName }}
                         </RouterLink>
                     </div>
                 </div>
-            </div>
+            </template>
+
 
             <hr class="my-6 border-zinc-200 md:my-5">
 
