@@ -76,7 +76,6 @@ async function search() {
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({allData: true})
-            .setExplodedVariants(1)
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .facets(f => f              
                 .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category']?.length > 0 ? filters.value['category'] : null)
@@ -171,7 +170,7 @@ function searchFor(term: string) {
                                 @search="search"/>
                     </div>
                     <div class="w-4/5">
-                        <div class="p-3 flex gap-6 items-end bg-white rounded mb-3">
+                        <div class="flex gap-6 items-end p-3 bg-white rounded mb-3">
                             <h2 v-if="filters.term" class="text-3xl">
                                 Showing results for <strong>{{ filters.term }}</strong>
                             </h2> 
@@ -194,9 +193,14 @@ function searchFor(term: string) {
                                 <ProductTile v-for="(product, index) in result.results" :key="index" :product="product"/>
                             </div>
                         </div>
-                    </div>
-                    <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0">
-                        <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations" :key="index" :product="product"/>
+                        <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0" class="w-full p-3 bg-white rounded mb-6">
+                            <h2 class="text-xl">
+                                You may like
+                            </h2> 
+                            <div class="grid gap-3 grid-cols-4">
+                                <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations" :key="index" :product="product"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
