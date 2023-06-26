@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import basketService from './services/basket.service';
 import { watch } from 'vue';
 import { onClickOutside } from '@vueuse/core';
+import ApiErrors from './components/ApiErrors.vue';
 
 type NavigationItem = { id: string, category: CategoryResult, children: CategoryResult[]; }
 
@@ -80,6 +81,7 @@ watch(open, () => {
 </script>
 
 <template>
+    <ApiErrors/>
     <header class="bg-white shadow-sm">
         <div class="container mx-auto">
             <div class="flex gap-10 py-2">
