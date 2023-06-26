@@ -13,7 +13,7 @@ const { product } = toRefs(props);
 
 <template>
     <RouterLink :to="{name: 'product', params: { id: product.productId }}" class="relative rounded flex flex-col overflow-hidden py-3 bg-white hover:bg-brand-50 transition duration-200">
-        <div class="relative mx-3 flex h-[275px] overflow-hidden">
+        <div class="relative mx-3 flex h-[275px] overflow-hidden justify-center">
             <ProductImage :product="product"/>
             <span v-if="product.salesPrice !== product.listPrice" class="absolute top-0 left-0 m-2 rounded-full bg-black px-2 text-center text-sm font-medium text-white">ON SALE</span>
         </div>
