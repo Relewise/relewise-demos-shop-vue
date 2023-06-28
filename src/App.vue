@@ -3,7 +3,7 @@ import { RouterLink, RouterView, useRouter } from 'vue-router';
 import SearchOverlay from './components/SearchOverlay.vue';
 import { ShoppingBagIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import contextStore from './stores/context.store';
-import { ProductCategorySearchBuilder, Searcher, type CategoryResult } from '@relewise/client';
+import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
 import { computed } from 'vue';
 import basketService from './services/basket.service';
@@ -11,7 +11,7 @@ import { watch } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 import ApiErrors from './components/ApiErrors.vue';
 
-type NavigationItem = { id: string, category: CategoryResult, children: CategoryResult[]; }
+type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
 const mainCategories = ref<NavigationItem[]>([]);
 const footer = ref<NavigationItem[]>([]);
@@ -35,38 +35,25 @@ async function init() {
     if (contextStore.isConfigured()) {
         const searcher = contextStore.getSearcher();
 
-        getCategories(searcher);
+        getCategoriesV2(searcher);
     }
 }
 
-async function getCategories(searcher: Searcher) {
-    const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-        .setSelectedCategoryProperties({ displayName: true })
-        .filters(f => f.addProductCategoryLevelFilter(1))
-        .pagination(p => p.setPageSize(10_000))
+async function getCategoriesV2(searcher: Searcher) {
+    const request = new ProductSearchBuilder(contextStore.defaultSettings)
+        .pagination(p => p.setPageSize(0))
+        .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true }))
         .build();
 
-    const categories = (await searcher.searchProductCategories(request))?.results ?? [];
-    const navigation: NavigationItem[] = categories
-        .filter(x => !!x.displayName)
-        .sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0)
-        .map(x => ({ id: x.categoryId!, category: x, children: [] }));
+    const response = await searcher.searchProducts(request);
 
-    const subCategoriesRequest = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-        .setSelectedCategoryProperties({ displayName: true, paths: true })
-        .filters(f => f.addProductCategoryHasParentFilter(navigation.map(x => x.id)))
-        .pagination(p => p.setPageSize(10_000))
-        .build();
+    const categoryFacet = response?.facets?.items![0] as CategoryHierarchyFacetResult;
+    const navigation: NavigationItem[] = categoryFacet.nodes
+        .filter(x => !!x.category.displayName)
+        .sort((a, b) => a.category.displayName?.localeCompare(b?.category.displayName ?? '') ?? 0)
+        .map(x => ({ id: x.category.categoryId!, category: x.category, children: x.children ?? [] }));
 
-    let subCategories = (await searcher.searchProductCategories(subCategoriesRequest))?.results ?? [];
-    hasChildCategories.value = subCategories.length > 0;
-    subCategories = subCategories.filter(x => x.displayName).sort((a, b) => a.displayName?.localeCompare(b?.displayName ?? '') ?? 0);
-    subCategories.forEach(x => {
-        const parentId = x.paths![0].pathFromRoot![0].id!;
-        const parent = navigation.filter(x => x.id === parentId)[0];
-        parent && parent.children.push(x);
-    });
-
+    hasChildCategories.value = navigation.some(x => x.children.length > 0);
     mainCategories.value = navigation;
     footer.value = navigation.slice(0, 4);
 }
@@ -124,12 +111,12 @@ watch(open, () => {
                                             <ul v-if="category.children.length > 0"
                                                 class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
                                                 <li v-for="child in category.children"
-                                                    :key="child.categoryId ?? ''"
+                                                    :key="child.category.categoryId ?? ''"
                                                     class="text-sm block">
                                                     <RouterLink
-                                                        :to="{ name: 'sub-category', params: { parent: category.id, id: child.categoryId } }"
+                                                        :to="{ name: 'sub-category', params: { parent: category.id, id: child.category.categoryId } }"
                                                         class="text-gray-700 block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
-                                                        {{ child.displayName }}
+                                                        {{ child.category.displayName }}
                                                     </RouterLink>
                                                 </li>
                                             </ul>
@@ -149,15 +136,13 @@ watch(open, () => {
                             <div ref="navigationmodal" class="navigationmodal">
                                 <div class="bg-white overflow-x-auto mb-5 modalcontent">
                                     <div class="container mx-auto">
-                                        <ul
-                                            class="text-base z-10 max-h-96 list-none grid grid-cols-4 mb-3">
+                                        <ul class="text-base z-10 max-h-96 list-none grid grid-cols-4 mb-3">
                                             <li v-for="category in mainCategories"
                                                 :key="category.id ?? ''"
                                                 class="text-sm block">
-                                                <RouterLink
-                                                    :to="{ name: 'category', params: { id: category.id } }"
-                                                    class="text-gray-700 block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
-                                                    @click="open = null">
+                                                <RouterLink :to="{ name: 'category', params: { id: category.id } }"
+                                                            class="text-gray-700 block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
+                                                            @click="open = null">
                                                     {{ category.category.displayName }}
                                                 </RouterLink>
                                             </li>
@@ -195,11 +180,11 @@ watch(open, () => {
                         </h3>
 
                         <div v-for="child in category.children"
-                             :key="child.categoryId ?? ''"
+                             :key="child.category.categoryId ?? ''"
                              class="flex flex-col items-start mt-2 space-y-4">
-                            <RouterLink :to="{ name: 'category', params: { id: child.categoryId } }"
+                            <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }"
                                         class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
-                                {{ child.displayName }}
+                                {{ child.category.displayName }}
                             </RouterLink>
                         </div>
                     </div>
