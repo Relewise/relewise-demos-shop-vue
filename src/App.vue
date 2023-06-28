@@ -192,7 +192,7 @@ watch(open, () => {
                     </div>
                 </div>
             </template>
-            <template v-else>
+            <template v-else-if="mainCategories.length > 0">
                 <h3 class="font-medium text-zinc-800 text-xl mb-2">
                     Categories
                 </h3>
@@ -207,7 +207,7 @@ watch(open, () => {
             </template>
 
 
-            <hr class="my-6 border-zinc-200 md:my-5">
+            <hr v-if="hasChildCategories || mainCategories.length > 0" class="my-6 border-zinc-200 md:my-5">
 
             <div class="flex flex-col items-center justify-between sm:flex-row">
                 <a href="https://relewise.com/contact-us/">
