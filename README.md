@@ -9,6 +9,6 @@
 
 ## Deployment to PROD
 
-Project is hosted on Github pages and is auto deployed for every commit to the main branch
+Project is hosted on Github pages and can be deployed using the workflow dispatch under 'Actions' on github
 
 Link to the demo shop is here: https://relewise.github.io/relewise-demos-shop/
