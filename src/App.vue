@@ -35,11 +35,11 @@ async function init() {
     if (contextStore.isConfigured()) {
         const searcher = contextStore.getSearcher();
 
-        getCategoriesV2(searcher);
+        getCategories(searcher);
     }
 }
 
-async function getCategoriesV2(searcher: Searcher) {
+async function getCategories(searcher: Searcher) {
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .pagination(p => p.setPageSize(0))
         .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true }))
@@ -61,8 +61,10 @@ async function getCategoriesV2(searcher: Searcher) {
 watch(open, () => {
     if (open.value) {
         window.document.body.classList.add('overflow-hidden');
+        window.document.body.classList.add('pr-[17px]');
     } else {
         window.document.body.classList.remove('overflow-hidden');
+        window.document.body.classList.remove('pr-[17px]');
     }
 });
 </script>
@@ -127,7 +129,7 @@ watch(open, () => {
                             </Teleport>
                         </li>
                     </ul>
-                    <ul v-else>
+                    <ul v-else-if="mainCategories.length > 0">
                         <div class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
                              @mouseover="open = '1'">
                             Categories
@@ -156,7 +158,7 @@ watch(open, () => {
                     <li class="flex-grow"></li>
                     <li class="inline-flex items-center">
                         <RouterLink to="/app-settings"
-                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap hover:text-black">
+                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
                             <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
                         </RouterLink>
                     </li>

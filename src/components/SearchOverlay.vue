@@ -49,7 +49,13 @@ function showOrHide(show: boolean) {
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
     open.value = show;
-    show ? window.document.body.classList.add('overflow-hidden') : window.document.body.classList.remove('overflow-hidden');
+    if (show) {
+        window.document.body.classList.add('overflow-hidden');
+        window.document.body.classList.add('pr-[17px]');
+    } else {
+        window.document.body.classList.remove('overflow-hidden');
+        window.document.body.classList.remove('pr-[17px]');
+    }
 }
 
 function typeAHeadSearch() {
