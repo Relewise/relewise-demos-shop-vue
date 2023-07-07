@@ -2,7 +2,7 @@
 
 This is the Relewise demo shop featuring Search & Recommendations built on top of the JavaScript SDK. The Demo is built using Vue/Vue.js.
 
-Link to the demo shop is here: https://relewise.github.io/relewise-demos-shop/
+Link to the demo shop is here: https://relewise.github.io/relewise-demos-shop-vue/
 
 In order to run the demo shop you access to a dataset in Relewise.
 
