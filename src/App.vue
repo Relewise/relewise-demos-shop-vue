@@ -211,7 +211,7 @@ watch(open, () => {
 
             <div class="flex flex-col items-center justify-between sm:flex-row">
                 <a href="https://relewise.com/contact-us/">
-                    <img src="https://relewise.com/wp-content/uploads/2022/09/hdr_logo.png" class="h-14">
+                    <img src="/logo.svg" class="h-14">
                 </a>
 
                 <p class="mt-4 text-sm text-zinc-500 sm:mt-0 text-zinc-300">
