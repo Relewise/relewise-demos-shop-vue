@@ -33,36 +33,37 @@
             </div>
         </div>
 
-        <div v-if="result?.responses">
-            <div v-for="(response, index) in result?.responses" :key="index" class="mb-10">
-                <div class="my-3">
-                    <div class="text-2xl font-semibold">
-                        {{ (index === 0 ? "Purchased with" : "Products viewed after viewing") }}
-                    </div>
-                </div>
-                <div class="grid gap-3 grid-cols-5 mt-3">
-                    <ProductTile v-for="(p, pIndex) in response?.recommendations ?? []" :key="pIndex" :product="p"/>
-                </div>
+        <div class="my-3">
+            <div class="text-2xl font-semibold">
+                Purchased with
             </div>
+            <relewise-purchased-with-product numberofrecommendations="5" displayedatlocation="Demo store" :productid="productId"/>
+        </div>
+        <div class="my-3">
+            <div class="text-2xl font-semibold">
+                Products viewed after viewing
+            </div>
+            <relewise-products-viewed-after-viewing-product numberofrecommendations="5" displayedatlocation="Demo store" :productid="productId"/>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-import ProductTile from '../components/ProductTile.vue';
-import ProductImage from '../components/ProductImage.vue';
-import { ref, watch } from 'vue';
-import { type ProductRecommendationRequestCollection, type ProductRecommendationResponseCollection, PurchasedWithProductBuilder, ProductsRecommendationCollectionBuilder, ProductsViewedAfterViewingProductBuilder, ProductSearchBuilder, type ProductResult } from '@relewise/client';
-import contextStore from '@/stores/context.store';
-import { useRoute } from 'vue-router';
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
+import contextStore from '@/stores/context.store';
+import { ProductSearchBuilder, ProductsRecommendationCollectionBuilder, ProductsViewedAfterViewingProductBuilder, PurchasedWithProductBuilder, type ProductRecommendationRequestCollection, type ProductRecommendationResponseCollection, type ProductResult } from '@relewise/client';
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import ProductImage from '../components/ProductImage.vue';
 
 const result= ref<ProductRecommendationResponseCollection | undefined| null>(null);
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
 const recommender = contextStore.getRecommender();
 const route = useRoute();
+
+contextStore.initializeWebComponents();
 
 async function init() {
     

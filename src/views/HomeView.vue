@@ -3,8 +3,6 @@ import contextStore from '@/stores/context.store';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
 import { ref, type Ref } from 'vue';
 import ProductTile from '../components/ProductTile.vue';
-import { initializeRelewiseUI } from '@relewise/web-components';
-import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
 
 const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecommendationResponse | undefined>({} as ProductRecommendationResponse);
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
@@ -12,36 +10,7 @@ const recommender = contextStore.getRecommender();
 
 recommend();
 
-const context = contextStore.context;
-initializeRelewiseUI(
-    {
-        contextSettings: {
-            getUser: () => {
-                return contextStore.getUser();
-            },
-            language: 'da-dk',
-            currency: 'DKK',
-        },
-        datasetId: context.value.datasetId,
-        apiKey: context.value.apiKey,
-        clientOptions: {
-            serverUrl: context.value.serverUrl,
-        },
-        selectedPropertiesSettings: {
-            product:  {
-                displayName: true,
-                allData: true,
-                brand: true,
-                categoryPaths: true,
-                pricing: true,
-            },
-        },
-        templates: {
-            product: (product, extentions) => {
-                return WebComponentProductTemplate(product, extentions);
-            },
-        },
-    });
+contextStore.initializeWebComponents();
 
 async function recommend() {
     const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).build();
@@ -50,7 +19,6 @@ async function recommend() {
 }
 
 </script>
-
 <template>
     <main class="">
         <div class="flex justify-center">
@@ -73,7 +41,7 @@ async function recommend() {
             Popular products
         </h2>
 
-        <relewise-popular-products displayedatlocation="Demo Store"/>
+        <relewise-popular-products displayedatlocation="Demo Store" numberofrecommendations="5"/>
         <div class="grid gap-3 grid-cols-5 mt-3">
             <ProductTile v-for="(product, index) in result!.recommendations" :key="index" :product="product"/>
         </div>
@@ -91,3 +59,9 @@ async function recommend() {
         </template>
     </main>
 </template>
+
+<style>
+:root {
+    --relewise-grid-template-columns: repeat(5, 1fr); 
+}
+</style>

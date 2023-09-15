@@ -1,4 +1,6 @@
+import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
 import { Searcher, type Settings, UserFactory, Recommender, type SelectedProductPropertiesSettings, Tracker } from '@relewise/client';
+import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 
 export interface IDataset {
@@ -167,6 +169,34 @@ class AppContext {
         return this.state.tracking.enabled && this.state.tracking.temporaryId 
             ? UserFactory.byTemporaryId(this.state.tracking.temporaryId)
             : UserFactory.anonymous();
+    }
+
+    public initializeWebComponents() {
+        const context = this.context;
+
+        initializeRelewiseUI(
+            {
+                contextSettings: {
+                    getUser: () => {
+                        return this.getUser();
+                    },
+                    language: this.context.value.language,
+                    currency: this.context.value.currencyCode,
+                },
+                datasetId: context.value.datasetId,
+                apiKey: context.value.apiKey,
+                clientOptions: {
+                    serverUrl: context.value.serverUrl,
+                },
+                selectedPropertiesSettings: {
+                    product: this.selectedProductProperties,
+                },
+                templates: {
+                    product: (product, extentions) => {
+                        return WebComponentProductTemplate(product, extentions);
+                    },
+                },
+            });
     }
 }
 
