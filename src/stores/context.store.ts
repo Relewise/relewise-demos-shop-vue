@@ -172,8 +172,6 @@ class AppContext {
     }
 
     public initializeWebComponents() {
-        const context = this.context;
-
         initializeRelewiseUI(
             {
                 contextSettings: {
@@ -183,10 +181,10 @@ class AppContext {
                     language: this.context.value.language,
                     currency: this.context.value.currencyCode,
                 },
-                datasetId: context.value.datasetId,
-                apiKey: context.value.apiKey,
+                datasetId: this.context.value.datasetId,
+                apiKey: this.context.value.apiKey,
                 clientOptions: {
-                    serverUrl: context.value.serverUrl,
+                    serverUrl: this.context.value.serverUrl,
                 },
                 selectedPropertiesSettings: {
                     product: this.selectedProductProperties,
