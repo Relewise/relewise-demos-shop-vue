@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import ProductTile from '../components/ProductTile.vue';
 import contextStore from '@/stores/context.store';
-import { PopularBrandsRecommendationBuilder, PopularProductsBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
-import { type Ref, ref } from 'vue';
+import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
+import { ref, type Ref } from 'vue';
+import ProductTile from '../components/ProductTile.vue';
 
 const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecommendationResponse | undefined>({} as ProductRecommendationResponse);
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
@@ -11,24 +11,12 @@ const recommender = contextStore.getRecommender();
 recommend();
 
 async function recommend() {
-    const request = new PopularProductsBuilder(contextStore.defaultSettings)
-        .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({allData: true})
-        .sinceMinutesAgo(7 * 24 * 60) // One Week
-        .setNumberOfRecommendations(30)
-        .build();
-
-    const response: ProductRecommendationResponse|undefined = await recommender.recommendPopularProducts(request);
-    contextStore.assertApiCall(response);
-    result.value = response;
-
     const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
 }
 
 </script>
-
 <template>
     <main class="">
         <div class="flex justify-center">
@@ -47,15 +35,14 @@ async function recommend() {
             </div>
         </div>
 
-        <template v-if="result?.recommendations">
-            <h2 class="text-3xl font-semibold mb-3">
-                Popular products
-            </h2>
+        <h2 class="text-3xl font-semibold mb-3">
+            Popular products
+        </h2>
 
-            <div class="grid gap-3 grid-cols-5 mt-3">
-                <ProductTile v-for="(product, index) in result.recommendations" :key="index" :product="product"/>
-            </div>
-        </template>
+        <relewise-popular-products displayedatlocation="Demo Store" numberofrecommendations="30"/>
+        <div class="grid gap-3 grid-cols-5 mt-3">
+            <ProductTile v-for="(product, index) in result!.recommendations" :key="index" :product="product"/>
+        </div>
 
         <template v-if="brands?.recommendations">
             <h2 class="text-3xl font-semibold mb-3 mt-10">
@@ -70,3 +57,9 @@ async function recommend() {
         </template>
     </main>
 </template>
+
+<style>
+:root {
+    --relewise-grid-template-columns: repeat(5, 1fr); 
+}
+</style>

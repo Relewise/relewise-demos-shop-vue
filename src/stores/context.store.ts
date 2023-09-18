@@ -1,4 +1,6 @@
+import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
 import { Searcher, type Settings, UserFactory, Recommender, type SelectedProductPropertiesSettings, Tracker } from '@relewise/client';
+import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 
 export interface IDataset {
@@ -37,6 +39,7 @@ class AppContext {
 
         if (storedContext) {
             Object.assign(this.state, JSON.parse(storedContext));
+            this.initializeWebComponents();
         }
 
         if (!this.state.tracking.temporaryId) {
@@ -133,6 +136,7 @@ class AppContext {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
         this.generateNewTemporaryId();
         this.persistState();
+        this.initializeWebComponents();
     }
 
     public generateNewTemporaryId() {
@@ -144,7 +148,8 @@ class AppContext {
         this.state.datasets.splice(this.state.selectedDatasetIndex, 1);
 
         this.state.selectedDatasetIndex = 0;
-
+        
+        this.initializeWebComponents();
         this.persistState();
     }
 
@@ -167,6 +172,32 @@ class AppContext {
         return this.state.tracking.enabled && this.state.tracking.temporaryId 
             ? UserFactory.byTemporaryId(this.state.tracking.temporaryId)
             : UserFactory.anonymous();
+    }
+
+    public initializeWebComponents() {
+        initializeRelewiseUI(
+            {
+                contextSettings: {
+                    getUser: () => {
+                        return this.getUser();
+                    },
+                    language: this.context.value.language,
+                    currency: this.context.value.currencyCode,
+                },
+                datasetId: this.context.value.datasetId,
+                apiKey: this.context.value.apiKey,
+                clientOptions: {
+                    serverUrl: this.context.value.serverUrl,
+                },
+                selectedPropertiesSettings: {
+                    product: this.selectedProductProperties,
+                },
+                templates: {
+                    product: (product, extentions) => {
+                        return WebComponentProductTemplate(product, extentions);
+                    },
+                },
+            });
     }
 }
 
