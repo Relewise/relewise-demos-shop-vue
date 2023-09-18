@@ -1,9 +1,9 @@
-import { findImage } from '@/services/image.service';
+import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { TemplateExtensions } from '@relewise/web-components';
 
-export const WebComponentProductTemplate = (product: ProductResult, extensions: TemplateExtensions) => {
-    return extensions.html`
+export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {
+    return html`
         <style>
             a {
                 text-decoration: none;
@@ -107,19 +107,19 @@ export const WebComponentProductTemplate = (product: ProductResult, extensions: 
         <a href="/product/${product.productId}" class="product-link">
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
-                ${product.salesPrice !== product.listPrice ? extensions.html`<span class="on-sale">ON SALE</span>` :extensions.html``}
+                ${product.salesPrice !== product.listPrice ? html`<span class="on-sale">ON SALE</span>` :html``}
             </div>
             <div class="padding">
             <div class="text-left">
-                ${product.brand ? extensions.html`<span class="brand">${product.brand.displayName}</span>` : ''}
+                ${product.brand ? html`<span class="brand">${product.brand.displayName}</span>` : ''}
                 <h5 class="display-name">
                     ${product.displayName}
                 </h5>
             </div>
             <div class="price-container">
                 <p>
-                    <span class="sales-price">${extensions.helpers.formatPrice(product.salesPrice)}</span>
-                    ${product.salesPrice !== product.listPrice ? extensions.html`<span class="list-price">${extensions.helpers.formatPrice(product.listPrice)}</span>` : ''}
+                    <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
+                    ${product.salesPrice !== product.listPrice ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
                 </p>
             </div>
         </div>

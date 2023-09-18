@@ -1,7 +1,7 @@
 <template>
     <img v-if="!error"
          class="object-cover"
-         :src="findImage(product)"
+         :src="image"
          alt="product image"
          @error="error=true">
     <PhotoIcon v-else class="h-full w-full text-zinc-300"/>
@@ -11,10 +11,15 @@
 import { PhotoIcon } from '@heroicons/vue/24/outline';
 import type { ProductResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
-import { findImage } from '@/services/image.service';
+import { findImage } from '@/helpers/imageHelper';
+import { computed } from 'vue';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
+});
+
+const image = computed(() => {
+    return findImage(product.value);
 });
 
 const { product } = toRefs(props);

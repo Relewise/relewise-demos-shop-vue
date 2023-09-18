@@ -10,8 +10,6 @@ const recommender = contextStore.getRecommender();
 
 recommend();
 
-contextStore.initializeWebComponents();
-
 async function recommend() {
     const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);

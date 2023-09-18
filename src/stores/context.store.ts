@@ -39,6 +39,7 @@ class AppContext {
 
         if (storedContext) {
             Object.assign(this.state, JSON.parse(storedContext));
+            this.initializeWebComponents();
         }
 
         if (!this.state.tracking.temporaryId) {
@@ -135,6 +136,7 @@ class AppContext {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
         this.generateNewTemporaryId();
         this.persistState();
+        this.initializeWebComponents();
     }
 
     public generateNewTemporaryId() {
@@ -146,7 +148,8 @@ class AppContext {
         this.state.datasets.splice(this.state.selectedDatasetIndex, 1);
 
         this.state.selectedDatasetIndex = 0;
-
+        
+        this.initializeWebComponents();
         this.persistState();
     }
 

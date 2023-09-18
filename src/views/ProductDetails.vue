@@ -63,8 +63,6 @@ const product = ref<ProductResult|null|undefined>(null);
 const recommender = contextStore.getRecommender();
 const route = useRoute();
 
-contextStore.initializeWebComponents();
-
 async function init() {
     
     const id = route.params.id;
