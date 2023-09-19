@@ -3,6 +3,7 @@ import type { ProductResult } from '@relewise/client';
 import type { TemplateExtensions } from '@relewise/web-components';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {
+    const path = (process.env.NODE_ENV === 'production' ? '/relewise-demos-shop-vue' : '') + `/product/${product.productId}`;
     return html`
         <style>
             a {
@@ -104,7 +105,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             }
 
         </style>
-        <a href="/product/${product.productId}" class="product-link">
+        <a href="${path}" class="product-link">
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
                 ${product.salesPrice !== product.listPrice ? html`<span class="on-sale">ON SALE</span>` :html``}
