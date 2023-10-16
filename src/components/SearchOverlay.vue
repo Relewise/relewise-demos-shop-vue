@@ -25,8 +25,14 @@ watch(() => ({...route}), (value, oldValue) => {
     if (route.query.open === '1' && !open.value) {
         scrollTo({top: 0});
 
-        const facets = new URLSearchParams(window.location.search);
-        facets.forEach((value, key) => { 
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.forEach((value, key) => { 
+            console.log(value, key);
+            if(key === 'term') {
+                searchTerm.value = value;
+                return;
+            }
+
             const existing = filters.value[key];
             existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
         });

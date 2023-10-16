@@ -2,7 +2,7 @@
     <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && allOptions.length > 0">
         <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
             <label v-if="option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer">
-                <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer"
+                <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
                        type="checkbox"
                        :value="option.value.id"
                        :checked="option.selected"
