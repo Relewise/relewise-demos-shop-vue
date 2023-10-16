@@ -27,7 +27,6 @@ watch(() => ({...route}), (value, oldValue) => {
 
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.forEach((value, key) => { 
-            console.log(value, key);
             if(key === 'term') {
                 searchTerm.value = value;
                 return;
