@@ -64,10 +64,20 @@ function showOrHide(show: boolean) {
     }
 }
 
+let debounceTimeoutHandlerId: ReturnType<typeof setTimeout> | null = null;
+
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
         filters.value['open'] = '1';
+        
+        if (debounceTimeoutHandlerId) {
+            clearTimeout(debounceTimeoutHandlerId);
+        }
+
         search();
+        debounceTimeoutHandlerId = setTimeout(() => {
+            search();
+        }, 250);
     }
 }
 
