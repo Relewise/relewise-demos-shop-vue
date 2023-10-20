@@ -74,7 +74,6 @@ function typeAHeadSearch() {
             clearTimeout(debounceTimeoutHandlerId);
         }
 
-        search();
         debounceTimeoutHandlerId = setTimeout(() => {
             search();
         }, 250);
