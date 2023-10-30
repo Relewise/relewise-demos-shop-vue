@@ -16,6 +16,7 @@ const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '' });
 const route = useRoute();
+let abortController = new AbortController();
 
 function close() {
     showOrHide(false);
@@ -64,23 +65,16 @@ function showOrHide(show: boolean) {
     }
 }
 
-let debounceTimeoutHandlerId: ReturnType<typeof setTimeout> | null = null;
-
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
         filters.value['open'] = '1';
-        
-        if (debounceTimeoutHandlerId) {
-            clearTimeout(debounceTimeoutHandlerId);
-        }
 
-        debounceTimeoutHandlerId = setTimeout(() => {
-            search();
-        }, 250);
+        search();
     }
 }
 
 async function search() {
+    abortController.abort();
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
 
     if (!show) return; else showOrHide(show); 
@@ -112,8 +106,9 @@ async function search() {
             .build())
         .build();
 
+    abortController = new AbortController();
     const searcher = contextStore.getSearcher();
-    const response = await searcher.batch(request);
+    const response = await searcher.batch(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
 
     const query = {...filters.value };
