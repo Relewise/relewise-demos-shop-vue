@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import router from '@/router';
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { ProductSearchBuilder, SearchCollectionBuilder, SearchTermBasedProductRecommendationBuilder, SearchTermPredictionBuilder, Searcher, type PriceRangeFacetResult, type ProductRecommendationResponse, type ProductSearchResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
 import { ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import Facets from './Facets.vue';
 import ProductTile from './ProductTile.vue';
+import Facets from './Facets.vue';
+import { useRoute } from 'vue-router';
+import router from '@/router';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
