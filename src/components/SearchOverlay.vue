@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import router from '@/router';
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
+import { ProductSearchBuilder, SearchCollectionBuilder, SearchTermBasedProductRecommendationBuilder, SearchTermPredictionBuilder, Searcher, type PriceRangeFacetResult, type ProductRecommendationResponse, type ProductSearchResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult } from '@relewise/client';
 import { ref, watch } from 'vue';
-import ProductTile from './ProductTile.vue';
-import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
-import router from '@/router';
+import Facets from './Facets.vue';
+import ProductTile from './ProductTile.vue';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -16,7 +16,6 @@ const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '' });
 const route = useRoute();
-const searcher = contextStore.getSearcher();
 let abortController = new AbortController();
 
 function close() {
@@ -108,6 +107,7 @@ async function search() {
         .build();
 
     abortController = new AbortController();
+    const searcher = contextStore.getSearcher();
     const response = await searcher.batch(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
 
