@@ -8,6 +8,8 @@ const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecomm
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 const recommender = contextStore.getRecommender();
 
+const defaultSettings = ref(contextStore.defaultSettings);
+
 recommend();
 
 async function recommend() {
@@ -39,7 +41,7 @@ async function recommend() {
             Popular products
         </h2>
 
-        <relewise-popular-products displayedatlocation="Demo Store" numberofrecommendations="30"/>
+        <relewise-popular-products :displayedatlocation="defaultSettings.displayedAtLocation" numberofrecommendations="30"/>
         <div class="grid gap-3 grid-cols-5 mt-3">
             <ProductTile v-for="(product, index) in result!.recommendations" :key="index" :product="product"/>
         </div>

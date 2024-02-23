@@ -37,13 +37,13 @@
             <div class="text-2xl font-semibold">
                 Purchased with
             </div>
-            <relewise-purchased-with-product numberofrecommendations="5" displayedatlocation="Demo store" :productid="productId"/>
+            <relewise-purchased-with-product numberofrecommendations="5" :displayedatlocation="defaultSettings.displayedAtLocation" :productid="productId"/>
         </div>
         <div class="my-3">
             <div class="text-2xl font-semibold">
                 Products viewed after viewing
             </div>
-            <relewise-products-viewed-after-viewing-product numberofrecommendations="5" displayedatlocation="Demo store" :productid="productId"/>
+            <relewise-products-viewed-after-viewing-product numberofrecommendations="5" :displayedatlocation="defaultSettings.displayedAtLocation" :productid="productId"/>
         </div>
     </div>
 </template>
@@ -52,16 +52,16 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductSearchBuilder, ProductsRecommendationCollectionBuilder, ProductsViewedAfterViewingProductBuilder, PurchasedWithProductBuilder, type ProductRecommendationRequestCollection, type ProductRecommendationResponseCollection, type ProductResult } from '@relewise/client';
+import { ProductSearchBuilder, type ProductResult } from '@relewise/client';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 
-const result= ref<ProductRecommendationResponseCollection | undefined| null>(null);
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
-const recommender = contextStore.getRecommender();
 const route = useRoute();
+
+const defaultSettings = ref(contextStore.defaultSettings);
 
 async function init() {
     
@@ -82,7 +82,6 @@ async function init() {
 
         const searcher = contextStore.getSearcher();
         product.value = (await searcher.searchProducts(request))?.results![0];
-        recommend();
     }
 }
 
@@ -91,29 +90,6 @@ init();
 watch(route, () => {
     init();
 });
-
-async function recommend() {
-    const take = 5;
-    const request: ProductRecommendationRequestCollection = new ProductsRecommendationCollectionBuilder()
-        .addRequest(new PurchasedWithProductBuilder(contextStore.defaultSettings)
-            .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({allData: true})
-            .product({ productId: productId.value })
-            .setNumberOfRecommendations(take)
-            .build())
-        .addRequest(new ProductsViewedAfterViewingProductBuilder(contextStore.defaultSettings)
-            .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({allData: true})
-            .product({ productId: productId.value })
-            .setNumberOfRecommendations(take)
-            .build())
-        .build();
-
-    const response: ProductRecommendationResponseCollection | undefined = await recommender.batchProductRecommendations(request);
-    contextStore.assertApiCall(response);
-
-    result.value = response;
-}
 
 function addToBasket() {
     if (!product.value) return;
