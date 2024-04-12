@@ -1,7 +1,7 @@
 <template>
     <header class="bg-white shadow-sm">
         <div class="container mx-auto">
-            <div class="flex gap-10 py-2 justify-between">
+            <div class="flex gap-10 py-2">
                 <div class="flex items-center">
                     <RouterLink to="/"
                                 class="font-semibold lg:text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
@@ -9,18 +9,19 @@
                     </RouterLink>
                 </div>
 
-                <div class="ml-auto lg:items-center lg:flex-grow">
-                    <SearchOverlay/>
-                </div>
-
-                <div class="flex items-center">
-                    <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
-                        <ShoppingBagIcon class="h-8 w-8"/>
-                        <span v-if="lineItemsCount > 0"
-                              class="absolute top-0 right-0 leading-none inline-flex items-center justify-center -mr-1 h-4 w-4 pb-0.5 bg-brand-500 rounded-full text-white text-[11px]">
-                            {{ lineItemsCount }}
-                        </span>
-                    </RouterLink>
+                <div class="ml-auto lg:ml-0 flex gap-2 lg:flex-grow">
+                    <div class="lg:items-center lg:flex-grow">
+                        <SearchOverlay/>
+                    </div>
+                    <div class="flex items-center">
+                        <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
+                            <ShoppingBagIcon class="h-8 w-8"/>
+                            <span v-if="lineItemsCount > 0"
+                                  class="absolute top-0 right-0 leading-none inline-flex items-center justify-center -mr-1 h-4 w-4 pb-0.5 bg-brand-500 rounded-full text-white text-[11px]">
+                                {{ lineItemsCount }}
+                            </span>
+                        </RouterLink>
+                    </div>
                 </div>
             </div>
             <nav class="hidden lg:block">

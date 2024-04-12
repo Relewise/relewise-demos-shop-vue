@@ -153,7 +153,7 @@ function searchFor(term: string) {
 </script>
 
 <template>
-    <div class="inline-flex overflow-hidden rounded-full w-full max-w-2xl border-1 border-white focus:border-zinc-100 relative">
+    <div class="hidden lg:inline-flex overflow-hidden rounded-full w-full max-w-2xl border-1 border-white focus:border-zinc-100 relative">
         <XMarkIcon v-if="open" class="h-6 w-6 text-zinc-600 absolute right-14 top-2.5 cursor-pointer" @click="close"/>
         <input v-model="searchTerm"
                type="text"
@@ -162,6 +162,12 @@ function searchFor(term: string) {
                @keyup="typeAHeadSearch()"> 
         <button class="bg-zinc-300 rounded-none px-3" @click="search()">
             <MagnifyingGlassIcon class="h-6 w-6 text-zinc-600"/>
+        </button>
+    </div>
+
+    <div v-if="!open" class="lg:hidden flex items-center">
+        <button class="relative rounded-full bg-zinc-100 text-zinc-600 p-2 hover:bg-zinc-200" @click="search()">
+            <MagnifyingGlassIcon class="h-8 w-8 text-zinc-600"/>
         </button>
     </div>
 
