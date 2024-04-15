@@ -1,16 +1,19 @@
 <template>
     <header class="bg-white shadow-sm">
         <div class="container mx-auto">
-            <div class="flex gap-10 py-2">
+            <div class="grid lg:flex gap-2 py-2">
                 <div class="flex items-center">
+                    <div class="lg:hidden m-2">
+                        <Bars3Icon class="h-8 w-8" />
+                    </div>
                     <RouterLink to="/"
-                                class="font-semibold lg:text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
+                                class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
                         Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
                     </RouterLink>
                 </div>
 
-                <div class="ml-auto lg:ml-0 flex gap-2 lg:flex-grow">
-                    <div class="lg:items-center lg:flex-grow">
+                <div class="ml-0 flex gap-2 flex-grow">
+                    <div class="lg:items-center flex-grow">
                         <SearchOverlay/>
                     </div>
                     <div class="flex items-center">
@@ -97,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { Cog6ToothIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon, ShoppingBagIcon, Bars3Icon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, watch, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
