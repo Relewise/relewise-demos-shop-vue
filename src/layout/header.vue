@@ -3,9 +3,7 @@
         <div class="container mx-auto">
             <div class="grid lg:flex gap-2 py-2">
                 <div class="flex items-center">
-                    <div class="lg:hidden m-2">
-                        <Bars3Icon class="h-8 w-8" />
-                    </div>
+                    <SideMenu class="lg:hidden"/>
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
                         Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
@@ -36,7 +34,6 @@
                                         @mouseover="category.children.length > 0 ? open = category.id : open = null">
                                 {{ category.category.displayName ?? category.category.categoryId }}
                             </RouterLink>
-
                             <Teleport v-if="open == category.id" to="#navigationmodal">
                                 <div ref="navigationmodal" class="navigationmodal">
                                     <div class="bg-white overflow-x-auto  modalcontent">
@@ -105,7 +102,7 @@ import { onClickOutside } from '@vueuse/core';
 import { ref, watch, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
-
+import SideMenu from '@/components/SideMenu.vue';
 
 const props = defineProps({
     lineItemsCount: { type: Number, required: true},
