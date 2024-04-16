@@ -65,7 +65,7 @@ async function getCategories(searcher: Searcher) {
         :has-child-categories="hasChildCategories"
         :main-categories="mainCategories" />
 
-    <div id="main-container" class="container mx-auto pt-3 pb-10 flex-grow">
+    <div id="main-container" class="container px-4 mx-auto pt-3 pb-10 flex-grow">
         <RouterView />
     </div>
 
