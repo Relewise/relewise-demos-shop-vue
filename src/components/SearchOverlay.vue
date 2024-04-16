@@ -169,7 +169,7 @@ function searchFor(term: string) {
         <div v-if="open" class="modal">
             <div v-if="result" class="container mx-auto pt-3 pb-10">
                 <div class="flex gap-3">
-                    <div class="w-1/5">
+                    <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0" class="p-3 bg-white mb-3">
                             <span class="font-semibold">Suggestions</span>
                             <a v-for="(prediction) in predictionsList"
@@ -185,7 +185,7 @@ function searchFor(term: string) {
                                 :facets="result.facets"
                                 @search="search"/>
                     </div>
-                    <div class="w-4/5">
+                    <div class="w-full lg:w-4/5">
                         <div class="flex gap-6 items-end p-3 bg-white rounded mb-3">
                             <h2 v-if="filters.term" class="text-3xl">
                                 Showing results for <strong>{{ filters.term }}</strong>
@@ -205,7 +205,7 @@ function searchFor(term: string) {
                             No products found
                         </div>
                         <div v-else>
-                            <div class="grid gap-3 grid-cols-4">
+                            <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
                                 <ProductTile v-for="(product, index) in result.results" :key="index" :product="product"/>
                             </div>
                         </div>
@@ -213,7 +213,7 @@ function searchFor(term: string) {
                             <h2 class="text-xl">
                                 You may like
                             </h2> 
-                            <div class="grid gap-3 grid-cols-4">
+                            <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
                                 <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations" :key="index" :product="product"/>
                             </div>
                         </div>
@@ -225,7 +225,7 @@ function searchFor(term: string) {
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 104px;
+$headerHeight: 115px;
 
 .modal {
     @apply bg-zinc-50 overflow-scroll;
