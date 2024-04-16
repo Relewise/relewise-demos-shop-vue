@@ -83,6 +83,8 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 font-size: 1rem;
                 margin-top: 0.5rem;
                 margin-bottom: 0;
+                text-overflow: ellipsis;
+                overflow: hidden;
             }
 
             .price-container {
@@ -108,7 +110,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
         <a href="${path}" class="product-link">
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
-                ${product.salesPrice !== product.listPrice ? html`<span class="on-sale">ON SALE</span>` :html``}
+                ${product.salesPrice !== product.listPrice ? html`<span class="on-sale">ON SALE</span>` : html``}
             </div>
             <div class="padding">
             <div class="text-left">
