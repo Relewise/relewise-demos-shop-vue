@@ -1,9 +1,9 @@
 <template>
     <header class="bg-white shadow-sm">
-        <div class="container mx-auto">
+        <div class="container mx-auto px-2">
             <div class="grid lg:flex gap-2 py-2">
                 <div class="flex items-center">
-                    <SideMenu class="lg:hidden"/>
+                    <SideMenu class="lg:hidden" :has-child-categories="hasChildCategories" :main-categories="mainCategories"/>
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
                         Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
