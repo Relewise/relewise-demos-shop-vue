@@ -1,15 +1,11 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router';
-import SearchOverlay from './components/SearchOverlay.vue';
-import Header from './layout/header.vue';
-import { ShoppingBagIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import Header from './layout/Header.vue';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
 import { computed } from 'vue';
 import basketService from './services/basket.service';
-import { watch } from 'vue';
-import { onClickOutside } from '@vueuse/core';
 import ApiErrors from './components/ApiErrors.vue';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
