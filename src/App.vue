@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router';
-import Header from './layout/Header.vue';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
 import { computed } from 'vue';
 import basketService from './services/basket.service';
 import ApiErrors from './components/ApiErrors.vue';
+import Header from './layout/Header.vue';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
