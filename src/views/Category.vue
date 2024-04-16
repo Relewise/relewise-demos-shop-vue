@@ -1,21 +1,23 @@
 <template>
     <div class="search">
         <div class="flex gap-3">
-            <div v-if="result?.facets" class="w-1/5">
+            <div v-if="result?.facets" class="hidden lg:block w-1/5">
                 <Facets v-model:page="page" :filters="filters" :facets="result.facets" @search="search"/>
             </div>
-            <div class="w-4/5">
+            <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
-                    <div class="bg-white rounded flex items-end p-3 gap-4">
-                        <h1 class="text-3xl font-semibold">
-                            {{ category?.displayName }}
-                        </h1>
-                        <span v-if="result.hits > 0" class="whitespace-nowrap">Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits :
-                            page * 40 }} of {{ result?.hits }}</span>
-
-                        <div class="flex-grow">
+                    <div class="grid grid-cols-2 bg-white rounded p-3 gap-1 items-end lg:flex lg:gap-4">
+                        <div>
+                            <h1 class="text-xl lg:text-3xl font-semibold">
+                                {{ category?.displayName }}
+                            </h1>
+                            <span v-if="result.hits > 0" class="text-sm lg:text-base whitespace-nowrap">Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits :
+                                page * 40 }} of {{ result?.hits }}</span>
                         </div>
-                        <select v-model="filters.sort" class="w-1/6" @change="search">
+
+                        <div class="hidden lg:block lg:flex-grow">
+                        </div>
+                        <select v-model="filters.sort" class="text-sm lg:text-base w-full lg:w-1/6" @change="search">
                             <option>Recommended</option>
                             <option>Popular</option>
                             <option value="SalesPriceDesc">
@@ -26,7 +28,7 @@
                             </option>
                         </select>
                     </div>
-                    <div class="grid gap-3 grid-cols-4 mt-3">
+                    <div class="grid gap-3 grid-cols-2 lg:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in result?.results" :key="pIndex" :product="product"/>
                     </div>
 
