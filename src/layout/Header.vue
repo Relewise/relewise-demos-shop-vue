@@ -6,7 +6,7 @@ import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 
-const props = defineProps({
+defineProps({
     lineItemsCount: { type: Number, required: true},
     hasChildCategories: { type: Boolean, required: true},
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
@@ -16,16 +16,6 @@ const navigationmodal = ref(null);
 onClickOutside(navigationmodal, () => open.value = null);
 
 const open = ref<string | null>(null);
-
-watch(open, () => {
-    if (open.value) {
-        window.document.body.classList.add('overflow-hidden');
-        window.document.body.classList.add('pr-[17px]');
-    } else {
-        window.document.body.classList.remove('overflow-hidden');
-        window.document.body.classList.remove('pr-[17px]');
-    }
-});
 
 </script>
 
