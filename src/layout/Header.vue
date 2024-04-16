@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Cog6ToothIcon, ShoppingBagIcon, Bars3Icon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, watch, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
