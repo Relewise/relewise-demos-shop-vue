@@ -1,3 +1,34 @@
+<script setup lang="ts">
+import { Cog6ToothIcon, ShoppingBagIcon, Bars3Icon } from '@heroicons/vue/24/outline';
+import { onClickOutside } from '@vueuse/core';
+import { ref, watch, type PropType } from 'vue';
+import SearchOverlay from '../components/SearchOverlay.vue';
+import type { NavigationItem } from '@/App.vue';
+import SideMenu from '@/components/SideMenu.vue';
+
+const props = defineProps({
+    lineItemsCount: { type: Number, required: true},
+    hasChildCategories: { type: Boolean, required: true},
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
+});
+
+const navigationmodal = ref(null);
+onClickOutside(navigationmodal, () => open.value = null);
+
+const open = ref<string | null>(null);
+
+watch(open, () => {
+    if (open.value) {
+        window.document.body.classList.add('overflow-hidden');
+        window.document.body.classList.add('pr-[17px]');
+    } else {
+        window.document.body.classList.remove('overflow-hidden');
+        window.document.body.classList.remove('pr-[17px]');
+    }
+});
+
+</script>
+
 <template>
     <header class="bg-white shadow-sm">
         <div class="container mx-auto px-2">
@@ -95,34 +126,3 @@
         </div>
     </header>
 </template>
-
-<script setup lang="ts">
-import { Cog6ToothIcon, ShoppingBagIcon, Bars3Icon } from '@heroicons/vue/24/outline';
-import { onClickOutside } from '@vueuse/core';
-import { ref, watch, type PropType } from 'vue';
-import SearchOverlay from '../components/SearchOverlay.vue';
-import type { NavigationItem } from '@/App.vue';
-import SideMenu from '@/components/SideMenu.vue';
-
-const props = defineProps({
-    lineItemsCount: { type: Number, required: true},
-    hasChildCategories: { type: Boolean, required: true},
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
-});
-
-const navigationmodal = ref(null);
-onClickOutside(navigationmodal, () => open.value = null);
-
-const open = ref<string | null>(null);
-
-watch(open, () => {
-    if (open.value) {
-        window.document.body.classList.add('overflow-hidden');
-        window.document.body.classList.add('pr-[17px]');
-    } else {
-        window.document.body.classList.remove('overflow-hidden');
-        window.document.body.classList.remove('pr-[17px]');
-    }
-});
-
-</script>
