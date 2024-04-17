@@ -2,13 +2,11 @@
 import type { NavigationItem } from '@/App.vue';
 import type { PropType } from 'vue';
 
-
 defineProps({
-    hasChildCategories: { type: Boolean, required: true},
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true},
-    footer: { type: Object as PropType<NavigationItem[]>, required: true}
+    hasChildCategories: { type: Boolean, required: true },
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
+    footer: { type: Object as PropType<NavigationItem[]>, required: true },
 });
-
 </script>
 
 <template>
@@ -16,16 +14,17 @@ defineProps({
         <div class="container px-6 py-12 mx-auto">
             <template v-if="hasChildCategories">
                 <div v-if="footer"
-                    class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                     class="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                     <div v-for="category in footer" :key="category.id">
                         <h3 class="text-lg font-medium text-zinc-800">
                             {{ category.category.displayName }}
                         </h3>
 
-                        <div v-for="child in category.children" :key="child.category.categoryId ?? ''"
-                            class="flex flex-col items-start mt-2 space-y-4">
+                        <div v-for="child in category.children"
+                             :key="child.category.categoryId ?? ''"
+                             class="flex flex-col items-start mt-2 space-y-4">
                             <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }"
-                                class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
+                                        class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
                                 {{ child.category.displayName }}
                             </RouterLink>
                         </div>
@@ -37,10 +36,11 @@ defineProps({
                     Categories
                 </h3>
                 <div class="grid grid-cols-2 gap-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-                    <div v-for="cat in mainCategories" :key="cat.id ?? ''"
-                        class="flex flex-col items-start mt-2 space-y-4">
+                    <div v-for="cat in mainCategories"
+                         :key="cat.id ?? ''"
+                         class="flex flex-col items-start mt-2 space-y-4">
                         <RouterLink :to="{ name: 'category', params: { id: cat.id } }"
-                            class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
+                                    class="text-zinc-700 transition-colors duration-200 hover:underline hover:text-brand-500">
                             {{ cat.category.displayName }}
                         </RouterLink>
                     </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Cog6ToothIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
-import { ref, watch, type PropType } from 'vue';
+import { ref, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
@@ -9,7 +9,7 @@ import SideMenu from '@/components/SideMenu.vue';
 defineProps({
     lineItemsCount: { type: Number, required: true},
     hasChildCategories: { type: Boolean, required: true},
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true},
 });
 
 const navigationmodal = ref(null);
