@@ -70,7 +70,7 @@
     </div>
 
     <div v-if="result" class="">
-        <h2 class="text-2xl font-semibold">
+        <h2 class="text-2xl font-semibold mt-4">
             Recommendations
         </h2>
         <div class="grid gap-3 grid-cols-2 lg:grid-cols-5 mt-3">
