@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RouterLink, RouterView, useRouter } from 'vue-router';
+import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
@@ -56,19 +56,15 @@ async function getCategories(searcher: Searcher) {
 </script>
 
 <template>
-    <ApiErrors />
-    <Header
-        :line-items-count="lineItemsCount"
-        :has-child-categories="hasChildCategories"
-        :main-categories="mainCategories" />
+    <ApiErrors/>
+    <Header :line-items-count="lineItemsCount"
+            :has-child-categories="hasChildCategories"
+            :main-categories="mainCategories"/>
 
-    <div id="main-container" class="container px-4 mx-auto pt-3 pb-10 flex-grow">
-        <RouterView />
-    </div>    
-    <Footer 
-        :has-child-categories="hasChildCategories"
-        :main-categories="mainCategories"
-        :footer="footer" />
+    <div id="main-container" class="container px-2 mx-auto pt-3 pb-10 flex-grow">
+        <RouterView/>
+    </div>
+    <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
 </template>
 
 <style lang="scss">

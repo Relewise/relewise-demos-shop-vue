@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@/App.vue';
 import { Bars3Icon, XMarkIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
-import { ref, type PropType } from 'vue';
+import { ref, toRefs, type PropType } from 'vue';
 
 const menuOpen = ref<boolean>(false);
 
@@ -10,20 +10,24 @@ function toggleMenu() {
 }
 
 const props = defineProps({
-    hasChildCategories: { type: Boolean, required: true},
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
+    hasChildCategories: { type: Boolean, required: true },
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
 });
+
+const { hasChildCategories, mainCategories } = toRefs(props);
 
 </script>
 
 <template>
-    <div class="lg:hidden m-2" @click="toggleMenu">
-        <Bars3Icon class="h-8 w-8" />
+    <div class="lg:hidden mr-2" @click="toggleMenu">
+        <Bars3Icon class="h-8 w-8"/>
     </div>
     <Teleport to="#modal">
         <div v-if="menuOpen" class="px-4 mx-auto top-0 left-0 w-full h-full z-10 fixed overflow-scroll bg-white">
             <div class="flex w-full">
-                <RouterLink to="/app-settings" class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 flex-grow" @click="toggleMenu">
+                <RouterLink to="/app-settings"
+                            class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
+                            @click="toggleMenu">
                     <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
                 </RouterLink>
                 <div class="lg:hidden m-2 flex justify-end">
@@ -31,15 +35,16 @@ const props = defineProps({
                 </div>
             </div>
             <ul>
-                <li v-for="category in mainCategories" :key="category.id ?? ''" >
+                <li v-for="category in mainCategories" :key="category.id ?? ''">
                     <RouterLink :to="{ name: 'category', params: { id: category.id } }" @click="toggleMenu">
                         {{ category.category.displayName ?? category.category.categoryId }}
                     </RouterLink>
-                    <li v-for="child in category.children" :key="child.category.categoryId ?? ''" class="relative pl-5">
-                        <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }" @click="toggleMenu">
-                            {{  child.category.displayName ??  child.category.categoryId }}
-                        </RouterLink>
-                    </li>
+                </li>
+                <li v-for="child in category.children" :key="child.category.categoryId ?? ''" class="relative pl-5">
+                    <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }"
+                                @click="toggleMenu">
+                        {{ child.category.displayName ?? child.category.categoryId }}
+                    </RouterLink>
                 </li>
             </ul>
         </div>
@@ -58,7 +63,8 @@ $headerHeight: 104px;
     width: 100%;
     height: 100%;
 }
+
 :root {
-    --relewise-grid-template-columns: repeat(5, 1fr); 
+    --relewise-grid-template-columns: repeat(5, 1fr);
 }
 </style>
