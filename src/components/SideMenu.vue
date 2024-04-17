@@ -9,12 +9,9 @@ function toggleMenu() {
     menuOpen.value = !menuOpen.value;
 }
 
-const props = defineProps({
-    hasChildCategories: { type: Boolean, required: true },
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
+defineProps({
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
 });
-
-const { hasChildCategories, mainCategories } = toRefs(props);
 
 </script>
 
@@ -35,23 +32,23 @@ const { hasChildCategories, mainCategories } = toRefs(props);
                 </div>
             </div>
             <ul>
-                <li v-for="category in mainCategories" :key="category.id ?? ''">
-                    <RouterLink :to="{ name: 'category', params: { id: category.id } }" @click="toggleMenu">
-                        {{ category.category.displayName ?? category.category.categoryId }}
-                    </RouterLink>
-                </li>
-                <li v-for="child in category.children" :key="child.category.categoryId ?? ''" class="relative pl-5">
-                    <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }"
-                                @click="toggleMenu">
-                        {{ child.category.displayName ?? child.category.categoryId }}
-                    </RouterLink>
+                <li v-for="category in mainCategories" :key="category.id ?? ''" >
+                    <div>
+                        <RouterLink :to="{ name: 'category', params: { id: category.id } }" @click="toggleMenu">
+                            {{ category.category.displayName ?? category.category.categoryId }}
+                        </RouterLink>
+                        <li v-for="child in category.children" :key="child.category.categoryId ?? ''" class="relative pl-5">
+                            <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }" @click="toggleMenu">
+                                {{  child.category.displayName ??  child.category.categoryId }}
+                            </RouterLink>
+                        </li>
+                    </div>
                 </li>
             </ul>
         </div>
     </Teleport>
 </template>
-
-<style scoped lang="scss">
+<style scoped lang="scss">  
 $headerHeight: 104px;
 
 .modal {
