@@ -5,7 +5,7 @@
     <div v-if="isEmpty">
         Cart is empty
     </div>
-    <div class=" justify-center px-6 md:flex md:space-x-6 xl:px-0">
+    <div class=" justify-center md:flex md:space-x-6 xl:px-0">
         <div class="rounded md:w-2/3">
             <div v-for="item in model.lineItems" :key="item.product.productId ?? ''" class="justify-between mb-3 rounded bg-white p-3 sm:flex sm:justify-start">
                 <ProductImage :product="item.product" class="w-full rounded sm:w-20"/>
@@ -70,10 +70,10 @@
     </div>
 
     <div v-if="result" class="">
-        <h2 class="text-2xl font-semibold">
+        <h2 class="text-2xl font-semibold mt-4">
             Recommendations
         </h2>
-        <div class="grid gap-3 grid-cols-5 mt-3">
+        <div class="grid gap-3 grid-cols-2 lg:grid-cols-5 mt-3">
             <ProductTile v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex" :product="product"/>
         </div>
     </div>
