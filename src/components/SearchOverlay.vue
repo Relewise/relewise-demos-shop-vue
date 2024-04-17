@@ -186,8 +186,8 @@ function searchFor(term: string) {
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
-                        <div class="flex gap-6 items-end p-3 bg-white rounded mb-3">
-                            <h2 v-if="filters.term" class="text-3xl">
+                        <div class="lg:flex lg:gap-6 p-3 items-end bg-white rounded mb-3">
+                            <h2 v-if="filters.term" class="text-xl lg:text-3xl">
                                 Showing results for <strong>{{ filters.term }}</strong>
                             </h2> 
                             <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
