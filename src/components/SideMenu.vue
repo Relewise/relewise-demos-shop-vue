@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@/App.vue';
 import { Bars3Icon, XMarkIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import { toRefs } from '@vueuse/core';
 import { ref, type PropType } from 'vue';
 
 const menuOpen = ref<boolean>(false);
@@ -9,9 +10,11 @@ function toggleMenu() {
     menuOpen.value = !menuOpen.value;
 }
 
-defineProps({
+const props = defineProps({
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true},
 });
+
+const { mainCategories } = toRefs(props);
 
 </script>
 
