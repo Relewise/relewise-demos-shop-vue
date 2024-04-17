@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@/App.vue';
 import { Bars3Icon, XMarkIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
-import { ref, toRefs, type PropType } from 'vue';
+import { ref, type PropType } from 'vue';
 
 const menuOpen = ref<boolean>(false);
 
@@ -10,7 +10,7 @@ function toggleMenu() {
 }
 
 defineProps({
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true}
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true},
 });
 
 </script>
@@ -32,14 +32,14 @@ defineProps({
                 </div>
             </div>
             <ul>
-                <li v-for="category in mainCategories" :key="category.id ?? ''" >
+                <li v-for="category in mainCategories" :key="category.id ?? ''">
                     <div>
                         <RouterLink :to="{ name: 'category', params: { id: category.id } }" @click="toggleMenu">
                             {{ category.category.displayName ?? category.category.categoryId }}
                         </RouterLink>
                         <li v-for="child in category.children" :key="child.category.categoryId ?? ''" class="relative pl-5">
                             <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }" @click="toggleMenu">
-                                {{  child.category.displayName ??  child.category.categoryId }}
+                                {{ child.category.displayName ?? child.category.categoryId }}
                             </RouterLink>
                         </li>
                     </div>
