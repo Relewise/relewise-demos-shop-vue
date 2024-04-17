@@ -68,7 +68,7 @@ const open = ref<string | null>(null);
                                                     class="text-sm block">
                                                     <RouterLink
                                                         :to="{ name: 'sub-category', params: { parent: category.id, id: child.category.categoryId } }"
-                                                        class="text-gray-700 block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
+                                                        class="block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
                                                         {{ child.category.displayName }}
                                                     </RouterLink>
                                                 </li>
@@ -94,7 +94,7 @@ const open = ref<string | null>(null);
                                                 :key="category.id ?? ''"
                                                 class="text-sm block">
                                                 <RouterLink :to="{ name: 'category', params: { id: category.id } }"
-                                                            class="text-gray-700 block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
+                                                            class="block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
                                                             @click="open = null">
                                                     {{ category.category.displayName }}
                                                 </RouterLink>
