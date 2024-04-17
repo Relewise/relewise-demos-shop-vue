@@ -20,7 +20,7 @@ defineProps({
         <Bars3Icon class="h-8 w-8"/>
     </div>
     <Teleport to="#modal">
-        <div v-if="menuOpen" class="p-4 mx-auto top-0 left-0 w-full h-full z-10 fixed overflow-scroll bg-white">
+        <div v-if="menuOpen" class="pb-4 px-4 mx-auto top-0 left-0 w-full h-full z-10 fixed overflow-scroll bg-white">
             <div class="flex w-full">
                 <RouterLink to="/app-settings"
                             class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
