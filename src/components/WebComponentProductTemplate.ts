@@ -110,7 +110,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
         <a href="${path}" class="product-link">
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
-                ${product.salesPrice !== product.listPrice ? html`<span class="on-sale">ON SALE</span>` : html``}
+                ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
             </div>
             <div class="padding">
             <div class="text-left">
@@ -122,7 +122,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             <div class="price-container">
                 <p>
                     <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
-                    ${product.salesPrice !== product.listPrice ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
+                    ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
                 </p>
             </div>
         </div>
