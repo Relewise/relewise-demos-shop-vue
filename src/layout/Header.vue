@@ -22,9 +22,9 @@ const open = ref<string | null>(null);
 <template>
     <header class="bg-white shadow-sm">
         <div class="container mx-auto px-2">
-            <div class="grid lg:flex gap-2 py-2">
+            <div class="grid xl:flex gap-2 py-2">
                 <div class="flex items-center">
-                    <div class="lg:hidden">
+                    <div class="xl:hidden">
                         <SideMenu :main-categories="mainCategories"/>
                     </div>
                     <RouterLink to="/"
@@ -34,7 +34,7 @@ const open = ref<string | null>(null);
                 </div>
 
                 <div class="ml-0 flex gap-2 flex-grow">
-                    <div class="lg:items-center flex-grow">
+                    <div class="xl:items-center flex-grow">
                         <SearchOverlay/>
                     </div>
                     <div class="flex items-center">
@@ -48,7 +48,7 @@ const open = ref<string | null>(null);
                     </div>
                 </div>
             </div>
-            <nav class="hidden lg:block">
+            <nav class="hidden xl:block">
                 <ul class="flex w-full gap-2">
                     <ul v-if="hasChildCategories" class="flex overflow-y-auto scrollable-element">
                         <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative pr-5">

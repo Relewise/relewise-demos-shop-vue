@@ -8,6 +8,7 @@ import basketService from './services/basket.service';
 import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
+import breakpointService from './services/breakpoint.service';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -16,6 +17,7 @@ const footer = ref<NavigationItem[]>([]);
 const hasChildCategories = ref(true);
 const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
+const breakpoint = computed(() => breakpointService.active.value);
 
 init();
 
@@ -61,10 +63,14 @@ async function getCategories(searcher: Searcher) {
             :has-child-categories="hasChildCategories"
             :main-categories="mainCategories"/>
 
-    <div id="main-container" class="container px-2 mx-auto pt-3 pb-10 flex-grow">
+    <div id="main-container" class="container px-2 mx-auto pt-3 pb-10 flex-grow relative">
         <RouterView/>
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
+
+    <div class="fixed px-2 py-0.5 rounded bg-red-600 bottom-0 right-0 z-[10000] text-white text-xs font-mono uppercase">
+        {{ breakpoint }}
+    </div>
 </template>
 
 <style lang="scss">
