@@ -6,6 +6,7 @@ class BreakpointsService {
         mobile: 0, // optional
         tablet: 1024,
         desktop: 1280,
+        largeDesktop: 2000,
     });
       
     // Can be 'mobile' or 'tablet' or 'laptop' or 'desktop'

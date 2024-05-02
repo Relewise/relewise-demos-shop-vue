@@ -14,16 +14,16 @@ const { product } = toRefs(props);
 
 <template>
     <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
-                class="relative rounded flex flex-col overflow-hidden py-3 bg-white hover:bg-brand-50 transition duration-200">
-        <div class="relative mx-3 flex h-[275px] overflow-hidden justify-center">
+                class="relative rounded flex flex-col overflow-hidden py-3 bg-white text-zinc-900 hover:!text-brand-500 transition duration-200">
+        <div class="relative mx-3 flex h-max-[275px] overflow-hidden justify-center">
             <ProductImage :product="product"/>
-            <div class="absolute top-0 left-0 m-2 flex gap-1">
-                <span v-if="isPromotion" class="rounded-full bg-brand-200 px-2 text-center text-sm font-medium text-white">
-                    AD
+            <div class="absolute top-0 left-0 flex gap-1">
+                <span v-if="isPromotion" class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white">
+                    SPONSORED
                 </span>
                 <span
                     v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
-                    class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">
+                    class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
                     ON SALE
                 </span>
             </div>
@@ -31,7 +31,7 @@ const { product } = toRefs(props);
         <div class="mt-3 px-3">
             <div class="text-left">
                 <span v-if="product.brand" class="text-sm text-zinc-500">{{ product.brand.displayName }}</span>
-                <h5 class="tracking-tight text-zinc-900 font-semibold leading-tight overflow-hidden text-ellipsis h-10">
+                <h5 class="tracking-tight font-semibold leading-tight overflow-hidden text-ellipsis h-10">
                     {{ product.displayName }}
                 </h5>
             </div>

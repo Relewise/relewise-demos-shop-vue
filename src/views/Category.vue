@@ -1,5 +1,5 @@
 <template>
-    <div class="search">
+    <div class="category-page">
         <div class="flex gap-3">
             <div v-if="result?.facets" class="hidden lg:block w-1/5">
                 <Facets v-model:page="page" :filters="filters" :facets="result.facets" @search="search"/>
@@ -12,8 +12,8 @@
                                 {{ category?.displayName }}
                             </h1>
                             <span v-if="result.hits > 0" class="text-sm lg:text-base whitespace-nowrap">
-                                Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of {{ result?.hits }}
-                            </span>
+                                Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of
+                                {{ result?.hits }} </span>
                         </div>
 
                         <div class="hidden lg:block lg:flex-grow">
@@ -43,6 +43,13 @@
             </div>
         </div>
     </div>
+    <div v-if="rightProducts" class="absolute flex flex-col gap-3" style="top:110px; right: -220px">
+        <ProductTile v-for="(product, pIndex) in rightProducts.slice(0, 4)"
+                     :key="pIndex"
+                     :product="product.product"
+                     :is-promotion="product.isPromotion"
+                     class="w-[200px]"/>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -50,7 +57,7 @@ import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult } from '@relewise/client2';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult } from '@relewise/client3';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -59,6 +66,7 @@ import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 
 const products = ref<ProductWithType[] | null>(null);
+const rightProducts = ref<ProductWithType[] | null>(null);
 const route = useRoute();
 const category = ref<CategoryResult | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
@@ -124,8 +132,14 @@ async function search() {
         .setSelectedVariantProperties({ allData: true })
         .setExplodedVariants(1)
         .setRetailMediaSelectors([
-            { locationSlug: 'CATEGORY_LISTING_PAGE', placeholderSlug: 'TOP', variationSlug: variationName },
+            { locationSlug: 'PRODUCT_LISTING_PAGE', placeholderSlug: 'TOP', variationSlug: variationName },
+            { locationSlug: 'PRODUCT_LISTING_PAGE', placeholderSlug: 'RIGHT', variationSlug: variationName },
         ])
+        // .setRetailMediaPlacement({ 
+        //     locationSlug: 'PRODUCT_LISTING_PAGE', 
+        //     placementSlugs: ['TOP', 'RIGHT'], 
+        //     variationSlug: variationName },
+        // )
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
         })
@@ -165,16 +179,28 @@ async function search() {
     }
 
     products.value = response?.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
+    rightProducts.value = [];
     if (response?.promotions?.locations) {
-        
-        const variations = response.promotions.locations.CATEGORY_LISTING_PAGE?.placeholders?.TOP?.variations;
-        if (!variations) return;
-        const variation = variations[variationName];
+        const variations = response.promotions.locations.PRODUCT_LISTING_PAGE?.placeholders?.TOP?.variations;
+        if (variations) {
+            const variation = variations[variationName];
 
-        if (variation?.products) {
-            products.value = variation.products.flatMap(x => x.entries ?? [])
-                .map(x => ({ isPromotion: true, product: x.product! }))
-                .concat(products.value ?? []);
+            if (variation?.products) {
+                products.value = variation.products.flatMap(x => x.entries ?? [])
+                    .map(x => ({ isPromotion: true, product: x.product! }))
+                    .concat(products.value ?? []);
+            }
+        }
+
+        const rightVariations = response.promotions.locations.PRODUCT_LISTING_PAGE?.placeholders?.RIGHT?.variations;
+        if (rightVariations && breakpointService.active.value === 'largeDesktop') {
+            const rightVariation = rightVariations[variationName];
+
+            if (rightVariation?.products) {
+                rightProducts.value = rightVariation.products.flatMap(x => x.entries ?? [])
+                    .map(x => ({ isPromotion: true, product: x.product! }))
+                    .concat(products.value ?? []);
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-import type { ProductResult } from '@relewise/client2';
+import type { ProductResult } from '@relewise/client3';
 
 export type ProductWithType = {
     isPromotion: boolean;
