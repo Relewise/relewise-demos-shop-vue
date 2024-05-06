@@ -38,7 +38,7 @@ async function recommend() {
         <h2 class="text-3xl font-semibold mb-3">
             Popular products
         </h2>
-        <relewise-popular-products :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30"/>
+        <relewise-popular-products class="recommendations-grid" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30"/>
 
         <template v-if="brands?.recommendations">
             <h2 class="text-3xl font-semibold mb-3 mt-10">
@@ -55,7 +55,7 @@ async function recommend() {
 </template>
 
 <style>
-:root {
-    --relewise-grid-template-columns: repeat(5, 1fr); 
+.recommendations-grid {
+    grid-template-columns: repeat(5, 1fr); 
 }
 </style>

@@ -63,8 +63,4 @@ $headerHeight: 104px;
     width: 100%;
     height: 100%;
 }
-
-:root {
-    --relewise-grid-template-columns: repeat(5, 1fr);
-}
 </style>
