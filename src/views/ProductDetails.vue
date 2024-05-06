@@ -32,19 +32,26 @@
                 </div>
             </div>
         </div>
-
-        <div class="my-3">
-            <div class="text-2xl font-semibold">
-                Purchased with
+        <relewise-product-recommendation-batcher>
+            <div class="my-3">
+                <div class="text-2xl font-semibold">
+                    Purchased with
+                </div>
+                <relewise-purchased-with-product 
+                    number-of-recommendations="5" 
+                    :displayed-at-location="defaultSettings.displayedAtLocation" 
+                    :product-id="productId"/>
             </div>
-            <relewise-purchased-with-product numberofrecommendations="5" :displayedatlocation="defaultSettings.displayedAtLocation" :productid="productId"/>
-        </div>
-        <div class="my-3">
-            <div class="text-2xl font-semibold">
-                Products viewed after viewing
+            <div class="my-3">
+                <div class="text-2xl font-semibold">
+                    Products viewed after viewing
+                </div>
+                <relewise-products-viewed-after-viewing-product 
+                    number-of-recommendations="5" 
+                    :displayed-at-location="defaultSettings.displayedAtLocation" 
+                    :product-id="productId"/>
             </div>
-            <relewise-products-viewed-after-viewing-product numberofrecommendations="5" :displayedatlocation="defaultSettings.displayedAtLocation" :productid="productId"/>
-        </div>
+        </relewise-product-recommendation-batcher>
     </div>
 </template>
 

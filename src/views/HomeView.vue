@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
-import { ref, type Ref } from 'vue';
-import ProductTile from '../components/ProductTile.vue';
+import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
+import { ref } from 'vue';
 
-const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecommendationResponse | undefined>({} as ProductRecommendationResponse);
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 const recommender = contextStore.getRecommender();
 
@@ -40,11 +38,7 @@ async function recommend() {
         <h2 class="text-3xl font-semibold mb-3">
             Popular products
         </h2>
-
-        <relewise-popular-products :displayedatlocation="defaultSettings.displayedAtLocation" numberofrecommendations="30"/>
-        <div class="grid gap-3 grid-cols-5 mt-3">
-            <ProductTile v-for="(product, index) in result!.recommendations" :key="index" :product="product"/>
-        </div>
+        <relewise-popular-products :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30"/>
 
         <template v-if="brands?.recommendations">
             <h2 class="text-3xl font-semibold mb-3 mt-10">

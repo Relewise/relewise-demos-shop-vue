@@ -191,13 +191,14 @@ class AppContext {
                 },
                 selectedPropertiesSettings: {
                     product: this.selectedProductProperties,
+                    variant: { allData: true},
                 },
                 templates: {
                     product: (product, extentions) => {
                         return WebComponentProductTemplate(product, extentions);
                     },
                 },
-            });
+            }).useRecommendations();
     }
 }
 
