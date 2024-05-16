@@ -93,7 +93,7 @@ async function search() {
         const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
                 && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
 
-        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero;
+        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
     }
     
     const request = new SearchCollectionBuilder()
