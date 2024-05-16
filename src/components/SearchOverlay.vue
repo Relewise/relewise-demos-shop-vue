@@ -84,7 +84,16 @@ async function search() {
     let applySalesPriceFacet = false;
     if (result.value?.facets?.items?.length === 3) {
         const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
-        applySalesPriceFacet = salesPriceFacet && filters.value.price.length === 2 && Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive || Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive;
+        
+        const bothPriceFiltersSet = filters.value.price.length === 2;
+
+        const lowerBoundNotEqualOrZero = (Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
+                && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
+
+        const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
+                && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
+
+        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
     }
     
     const request = new SearchCollectionBuilder()
