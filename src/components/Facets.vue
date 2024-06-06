@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ProductFacetResult } from '@relewise/client';
+import type { ProductFacetResult } from '@relewise/client8';
 import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';

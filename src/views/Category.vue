@@ -57,7 +57,7 @@ import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult } from '@relewise/client3';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult } from '@relewise/client8';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -131,15 +131,13 @@ async function search() {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .setExplodedVariants(1)
-        .setRetailMediaSelectors([
-            { locationSlug: 'PRODUCT_LISTING_PAGE', placeholderSlug: 'TOP', variationSlug: variationName },
-            { locationSlug: 'PRODUCT_LISTING_PAGE', placeholderSlug: 'RIGHT', variationSlug: variationName },
-        ])
-        // .setRetailMediaPlacement({ 
-        //     locationSlug: 'PRODUCT_LISTING_PAGE', 
-        //     placementSlugs: ['TOP', 'RIGHT'], 
-        //     variationSlug: variationName },
-        // )
+        .setRetailMedia({
+            location: {
+                key: 'PRODUCT_LISTING_PAGE',
+                placements: [{ key: 'TOP' }, { key: 'RIGHT' }],
+                variation: { key: variationName },
+            },
+        })
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
         })
@@ -180,26 +178,23 @@ async function search() {
 
     products.value = response?.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
     rightProducts.value = [];
-    if (response?.promotions?.locations) {
-        const variations = response.promotions.locations.PRODUCT_LISTING_PAGE?.placeholders?.TOP?.variations;
-        if (variations) {
-            const variation = variations[variationName];
+    if (response?.retailMedia?.placements) {
+        const placement = response.retailMedia.placements.TOP;
+        if (placement) {
 
-            if (variation?.products) {
-                products.value = variation.products.flatMap(x => x.entries ?? [])
-                    .map(x => ({ isPromotion: true, product: x.product! }))
+            if (placement?.results) {
+                products.value = placement.results
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
                     .concat(products.value ?? []);
             }
         }
 
-        const rightVariations = response.promotions.locations.PRODUCT_LISTING_PAGE?.placeholders?.RIGHT?.variations;
-        if (rightVariations && breakpointService.active.value === 'largeDesktop') {
-            const rightVariation = rightVariations[variationName];
+        const rightPlacement = response.retailMedia.placements.RIGHT;
+        if (rightPlacement && breakpointService.active.value === 'largeDesktop') {
 
-            if (rightVariation?.products) {
-                rightProducts.value = rightVariation.products.flatMap(x => x.entries ?? [])
-                    .map(x => ({ isPromotion: true, product: x.product! }))
-                    .concat(products.value ?? []);
+            if (rightPlacement?.results) {
+                rightProducts.value = rightPlacement.results
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }));
             }
         }
     }

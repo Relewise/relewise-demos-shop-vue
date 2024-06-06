@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
+import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client8';
 import { ref, type Ref } from 'vue';
 import ProductTile from '../components/ProductTile.vue';
 

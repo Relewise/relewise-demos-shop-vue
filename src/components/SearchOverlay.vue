@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client3';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client8';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
+import breakpointService from '@/services/breakpoint.service';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -49,6 +50,11 @@ watch(() => ({ ...route }), (value, oldValue) => {
     }
 });
 
+watch(breakpointService.active, () => {
+    if (route.query.open === '1')
+        search();
+});
+
 function showOrHide(show: boolean) {
     if (!show) {
         searchTerm.value = '';
@@ -88,6 +94,7 @@ async function search() {
         const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
         applySalesPriceFacet = salesPriceFacet && filters.value.price.length === 2 && Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive || Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive;
     }
+    const variationName = breakpointService.active.value.toUpperCase();
 
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
@@ -100,9 +107,13 @@ async function search() {
                 .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
             )
             .pagination(p => p.setPageSize(30).setPage(page.value))
-            .setRetailMediaSelectors([
-                { locationSlug: 'SEARCH_RESULTS_PAGE', placeholderSlug: 'TOP', variationSlug: 'DESKTOP' },
-            ])
+            .setRetailMedia({
+                location: {
+                    key: 'SEARCH_RESULTS_PAGE',
+                    placements: [{ key: 'TOP' }],
+                    variation: { key: variationName },
+                },
+            })
             .build())
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product')
@@ -148,12 +159,13 @@ async function search() {
             }
 
             fallbackRecommendations.value = null;
-            if (result.value.promotions?.locations) {
-                const variation = result.value.promotions.locations.SEARCH_RESULTS_PAGE?.placeholders?.TOP?.variations?.DESKTOP;
 
-                if (variation?.products) {
-                    products.value = variation.products.flatMap(x => x.entries ?? [])
-                        .map(x => ({ isPromotion: true, product: x.product! }))
+            const placement = result.value.retailMedia?.placements?.TOP;
+            if (placement) {
+
+                if (placement?.results) {
+                    products.value = placement.results
+                        .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
                         .concat(products.value ?? []);
                 }
             }
@@ -227,7 +239,7 @@ function searchFor(term: string) {
                             No products found
                         </div>
                         <div v-else>
-                            <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                            <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 <ProductTile v-for="(product, index) in products"
                                              :key="index"
                                              :product="product.product"

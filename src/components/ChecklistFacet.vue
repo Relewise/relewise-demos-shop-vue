@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FacetResult } from '@relewise/client';
+import type { FacetResult } from '@relewise/client8';
 import { computed, ref } from 'vue';
 import { toRefs, type PropType } from 'vue';
 
