@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@/App.vue';
-import { Bars3Icon, XMarkIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import { Bars3Icon, XMarkIcon, Cog6ToothIcon, MapPinIcon } from '@heroicons/vue/24/outline';
 import { toRefs } from '@vueuse/core';
 import { ref, type PropType } from 'vue';
 
@@ -25,6 +25,11 @@ const { mainCategories } = toRefs(props);
     <Teleport to="#modal">
         <div v-if="menuOpen" class="pb-4 px-4 mx-auto top-0 left-0 w-full h-full z-10 fixed overflow-scroll bg-white">
             <div class="flex w-full">
+                <RouterLink to="/tracking"
+                            class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
+                            @click="toggleMenu">
+                    <MapPinIcon class="w-5 h-5 mr-1"/> Tracking
+                </RouterLink>
                 <RouterLink to="/app-settings"
                             class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
                             @click="toggleMenu">
