@@ -1,19 +1,22 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, UserFactory, Recommender, type SelectedProductPropertiesSettings, Tracker } from '@relewise/client';
+import { Searcher, type Settings, UserFactory, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 
 export interface IDataset {
     datasetId: string;
     apiKey: string;
-    displayName?: string|null;
+    displayName?: string | null;
     language: string;
     currencyCode: string;
     serverUrl?: string;
+    users: User[];
+    companies: Company[];
 }
 
 export interface ITracking {
-    temporaryId?: string;
+    user?: User;
+    company?: Company;
     enabled: boolean;
 }
 
@@ -31,7 +34,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{datasetId: '', apiKey: '', language: '', currencyCode: ''}], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [], companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {
@@ -40,10 +43,6 @@ class AppContext {
         if (storedContext) {
             Object.assign(this.state, JSON.parse(storedContext));
             this.initializeWebComponents();
-        }
-
-        if (!this.state.tracking.temporaryId) {
-            this.generateNewTemporaryId();
         }
     }
 
@@ -118,6 +117,17 @@ class AppContext {
         localStorage.setItem(this.localStorageName, JSON.stringify(this.state));
     }
 
+    public setUser(user: User) {
+        this.tracking.value.user = user;
+
+        if (!this.context.value.users)
+            this.context.value.users = [];
+
+        this.context.value.users.push(user);
+
+        this.persistState();
+    }
+
     public isConfigured() {
         return this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language;
     }
@@ -132,28 +142,23 @@ class AppContext {
         this.setDataset(newDataset.datasetId);
     }
 
-    public setDataset(datasetId: string) {        
+    public setDataset(datasetId: string) {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
-        this.generateNewTemporaryId();
+        // this.generateNewTemporaryId();
         this.persistState();
         this.initializeWebComponents();
-    }
-
-    public generateNewTemporaryId() {
-        this.tracking.value.temporaryId = crypto.randomUUID();
-        this.persistState();
     }
 
     public deleteSelected() {
         this.state.datasets.splice(this.state.selectedDatasetIndex, 1);
 
         this.state.selectedDatasetIndex = 0;
-        
+
         this.initializeWebComponents();
         this.persistState();
     }
 
-    public assertApiCall(response: any|undefined) {
+    public assertApiCall(response: any | undefined) {
         if (response.status === 401) {
             this.errorState.datasetIdError = false;
             this.errorState.apiKeyError = true;
@@ -169,9 +174,7 @@ class AppContext {
     }
 
     public getUser() {
-        return this.state.tracking.enabled && this.state.tracking.temporaryId 
-            ? UserFactory.byTemporaryId(this.state.tracking.temporaryId)
-            : UserFactory.anonymous();
+        return this.state.tracking.enabled && this.state.tracking.user ? this.state.tracking.user : UserFactory.anonymous();
     }
 
     public initializeWebComponents() {
@@ -191,7 +194,7 @@ class AppContext {
                 },
                 selectedPropertiesSettings: {
                     product: this.selectedProductProperties,
-                    variant: { allData: true},
+                    variant: { allData: true },
                 },
                 templates: {
                     product: (product, extentions) => {
