@@ -1,5 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, UserFactory, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 
@@ -10,13 +10,13 @@ export interface IDataset {
     language: string;
     currencyCode: string;
     serverUrl?: string;
-    users: User[];
-    companies: Company[];
+    users?: User[];
+    selectedUserIndex?: number;
+    companies?: Company[];
+    selectedCompanyIndex?: number;
 }
 
 export interface ITracking {
-    user?: User;
-    company?: Company;
     enabled: boolean;
 }
 
@@ -24,7 +24,6 @@ export interface IAppContext {
     tracking: ITracking;
     selectedDatasetIndex: number;
     datasets: IDataset[];
-
 }
 
 export interface IAppErrorContext {
@@ -34,7 +33,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [], companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [], selectedCompanyIndex: 0 }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {
@@ -66,6 +65,21 @@ class AppContext {
         return computed(() => this.errorState.datasetIdError);
     }
 
+    public get user() {
+        return computed(() => {
+
+            if (!this.context.value.users) {
+                this.context.value.users = [UserFactory.anonymous()];
+            }
+
+            if (!this.context.value.selectedUserIndex) {
+                this.context.value.selectedUserIndex = 0;
+            }
+
+            return this.context.value.users[this.context.value.selectedUserIndex];
+        });
+    }
+
     public get defaultSettings(): Settings {
         if (this.state.selectedDatasetIndex < -1) {
             throw new Error('Missing language or currencycode');
@@ -75,7 +89,7 @@ class AppContext {
             language: this.context.value.language,
             currency: this.context.value.currencyCode,
             displayedAtLocation: 'Relewise Demo Store',
-            user: this.getUser(),
+            user: this.user.value,
         };
     }
 
@@ -118,12 +132,10 @@ class AppContext {
     }
 
     public setUser(user: User) {
-        this.tracking.value.user = user;
+        this.context.value.selectedUserIndex = this.context.value.users?.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
 
         if (!this.context.value.users)
             this.context.value.users = [];
-
-        this.context.value.users.push(user);
 
         this.persistState();
     }
@@ -173,16 +185,12 @@ class AppContext {
         }
     }
 
-    public getUser() {
-        return this.state.tracking.enabled && this.state.tracking.user ? this.state.tracking.user : UserFactory.anonymous();
-    }
-
     public initializeWebComponents() {
         initializeRelewiseUI(
             {
                 contextSettings: {
                     getUser: () => {
-                        return this.getUser();
+                        return this.user.value;
                     },
                     language: this.context.value.language,
                     currency: this.context.value.currencyCode,
