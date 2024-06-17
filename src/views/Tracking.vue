@@ -21,10 +21,10 @@
             <template v-if="dataset.users && dataset.users?.length > 1">
                 <div class="flex-grow">
                     <label class="text-sm block">Select user</label>
-                    <select :value="user"
+                    <select :value="JSON.stringify(user)"
                             class="mb-6"
-                            @change="setUser(($event.target as HTMLInputElement).value as User)">
-                        <option v-for="(userOption, index) in dataset.users" :key="index" :value="userOption">
+                            @change="setUser((JSON.parse(($event.target as HTMLInputElement).value) as User))">
+                        <option v-for="(userOption, index) in dataset.users" :key="index" :value="JSON.stringify(userOption)">
                             {{ userOption.temporaryId }} ({{ userOption.email }})
                         </option>
                     </select>
@@ -126,9 +126,8 @@ function generateId(type: 'temporary' | 'authenticated') {
     }
 }
 
-function setUser(user1: User) {
-    console.log(user1);
-    contextStore.setUser(user1);
+function setUser(userToSet: User) {
+    contextStore.setUser(userToSet);
     basketService.clear();
 
     window.location.reload();
@@ -146,11 +145,11 @@ function addEmptyUser() {
 }
 
 function deleteUser() {
-    dataset.value.users?.forEach((element, index) => {
-        if (JSON.stringify(element) === JSON.stringify(user.value)) {
-            dataset.value.users = dataset.value.users?.splice(index, 1);
-        }
-    });
+    const confirmed = confirm('delete user?');
+
+    if (confirmed) {
+        contextStore.deleteSelectedUser();
+    }
 }
 
 function addClassification() {
