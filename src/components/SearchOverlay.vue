@@ -14,7 +14,7 @@ const result = ref<ProductSearchResponse | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse|null|undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: 'RelevanceSorter' });
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -106,6 +106,13 @@ async function search() {
                 .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
                 .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
             )
+            .sorting(s => {
+                if (filters.value.sort === 'RelevanceSorter') {
+                    s.sortByProductRelevance();
+                } else if (filters.value.sort === 'PopularitySorter') {
+                    s.sortByProductPopularity();
+                }
+            })
             .pagination(p => p.setPageSize(30).setPage(page.value))
             .build())
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
@@ -200,6 +207,12 @@ function searchFor(term: string) {
                                 Showing results for <strong>{{ filters.term }}</strong>
                             </h2> 
                             <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
+                            <div class="hidden lg:block lg:flex-grow">
+                            </div>
+                            <select v-model="filters.sort" class="text-sm lg:text-base w-full lg:w-1/6" @change="search">
+                                <option>RelevanceSorter</option>
+                                <option>PopularitySorter</option>
+                            </select>
                         </div>
                         <div v-if="result && result?.redirects && result.redirects.length > 0" class="mb-3 p-3 bg-white">
                             <h2 class="text-xl font-semibold mb-2">
