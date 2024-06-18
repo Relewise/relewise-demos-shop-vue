@@ -187,6 +187,7 @@ class AppContext {
 
     public deleteCompanyById(id: string) {
         this.context.value.companies = this.context.value.companies?.filter(x => x.id !== id);
+        this.persistState();
     }
 
     public assertApiCall(response: any | undefined) {

@@ -6,11 +6,21 @@
             </h1>
         </div>
 
+        <hr class="mb-6">
+
         <label class="block mb-6 items-center">
             <input v-model="tracking.enabled" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
             Tracking enabled</label>
 
         <p>When tracking is enabled, all your actions are tracked to Relewise to give you a personal experience</p>
+    </div>
+
+    <div class="bg-white rounded p-6 mt-6">
+        <div class="flex items-center mb-8">
+            <h1 class="text-4xl">
+                User
+            </h1>
+        </div>
 
         <hr class="mb-6">
 
@@ -76,6 +86,16 @@
                 </button>
             </div>
         </div>
+
+        <label class="text-sm block mt-6">Select company</label>
+        <select :value="user.company?.id"
+                class="mb-6"
+                @change="setUserCompany(($event.target as HTMLInputElement).value)">
+            <option v-for="(userCompanyOption, index) in dataset.companies" :key="index" :value="userCompanyOption.id">
+                {{ userCompanyOption.id }}
+            </option>
+        </select>
+
         <div class="mt-6">
             <button @click="saveUser">
                 Save
@@ -90,7 +110,7 @@
     <div class="bg-white rounded p-6 mt-4">
         <div class="flex items-center mb-8">
             <h1 class="text-4xl">
-                Companies
+                Company
             </h1>
         </div>
 
@@ -131,7 +151,7 @@
         </div>
 
         <div class="mt-6">
-            <label class="text-sm block">Select company</label>
+            <label class="text-sm block">Select parent company</label>
             <select :value="company?.parent?.id"
                     class="mb-6"
                     @change="setParrentCompany(($event.target as HTMLInputElement).value)">
@@ -205,6 +225,13 @@ function setUser(userToSet: User) {
     window.location.reload();
 }
 
+function setUserCompany(companyToSet: string) {
+    const selectedCompany = dataset.value.companies?.find(x => x.id === companyToSet);
+
+    if (selectedCompany)
+        user.value.company = selectedCompany;
+}
+
 function setCompany(companyToSet: string) {
     const selectedCompany = dataset.value.companies?.find(x => x.id === companyToSet);
 
@@ -250,7 +277,7 @@ function addEmptyUser() {
 }
 
 function deleteUser() {
-    const confirmed = confirm('delete user?');
+    const confirmed = confirm('Delete user?');
 
     if (confirmed) {
         contextStore.deleteSelectedUser();
@@ -262,7 +289,7 @@ function addEmptyCompany() {
 }
 
 function deleteCompany() {
-    const confirmed = confirm('delete company?');
+    const confirmed = confirm('Delete company?');
 
     if (confirmed && company.value) {
         contextStore.deleteCompanyById(company.value.id);

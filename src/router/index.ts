@@ -35,9 +35,9 @@ const router = createRouter({
             component: () => import('../views/Category.vue'),
         },
         {
-            path: '/tracking',
-            name: 'tracking',
-            component: () => import('../views/Tracking.vue'),
+            path: '/personalisation',
+            name: 'personalisation',
+            component: () => import('../views/Personalisation.vue'),
         },
         // {
         //   path: '/about',

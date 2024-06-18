@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Cog6ToothIcon, MapPinIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
@@ -108,9 +108,9 @@ const open = ref<string | null>(null);
                     </ul>
                     <li class="flex-grow"></li>
                     <li class="inline-flex items-center gap-2">
-                        <RouterLink to="/tracking"
+                        <RouterLink to="/personalisation"
                                     class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
-                            <MapPinIcon class="w-5 h-5 mr-1"/> Tracking
+                            <UserIcon class="w-5 h-5 mr-1"/> Personalisation
                         </RouterLink>
                         <RouterLink to="/app-settings"
                                     class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
