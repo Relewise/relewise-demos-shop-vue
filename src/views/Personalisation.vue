@@ -237,8 +237,6 @@ function saveUser() {
 function setUser(userToSet: User) {
     contextStore.setUser(userToSet);
     basketService.clear();
-
-    window.location.reload();
 }
 
 function addEmptyUser() {
