@@ -66,7 +66,6 @@ class AppContext {
 
     public get user() {
         return computed(() => {
-
             if (!this.context.value.users) {
                 this.context.value.users = [UserFactory.anonymous()];
             }
@@ -131,11 +130,13 @@ class AppContext {
     }
 
     public setUser(user: User) {
-        if (!this.context.value.users)
+        if (!this.context.value.users) {
             this.context.value.users = [UserFactory.anonymous()];
+        }
 
-        if (!this.context.value.selectedUserIndex)
+        if (!this.context.value.selectedUserIndex) {
             this.context.value.selectedUserIndex = 0;
+        }
 
         this.context.value.selectedUserIndex = this.context.value.users.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
         this.persistState();
@@ -157,7 +158,6 @@ class AppContext {
 
     public setDataset(datasetId: string) {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
-        // this.generateNewTemporaryId();
         this.persistState();
         this.initializeWebComponents();
     }
