@@ -48,7 +48,7 @@
             </template>
         </div>
 
-        <label class="text-sm block">Temporary Id</label>
+        <label class="text-sm block mt-6">Temporary Id</label>
         <div class="flex gap-2">
             <input v-if="user" v-model="user.temporaryId" type="text" placeholder="Temporary Id">
             <button class="bg-gray-500 text-white" @click="generateId('temporary')">
