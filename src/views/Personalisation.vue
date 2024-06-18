@@ -90,9 +90,14 @@
         </div>
 
         <label class="text-sm block mt-6">Select company</label>
-        <select :value="user.company?.id"
-                class="mb-6"
-                @change="setUserCompany(($event.target as HTMLInputElement).value)">
+        <select
+            :value="user.company?.id"
+            class="mb-6"
+            :disabled="!dataset.companies || dataset.companies.length < 1"
+            @change="setUserCompany(($event.target as HTMLInputElement).value)">
+            <option value="" disabled selected>
+                {{ dataset.companies && dataset.companies.length > 0 ? "Select a company" : "No companies" }}
+            </option>
             <option v-for="(userCompanyOption, index) in dataset.companies" :key="index" :value="userCompanyOption.id">
                 {{ userCompanyOption.id }}
             </option>
@@ -154,9 +159,14 @@
 
         <div class="mt-6">
             <label class="text-sm block">Select parent company</label>
-            <select :value="company?.parent?.id"
-                    class="mb-6"
-                    @change="setParentCompany(($event.target as HTMLInputElement).value)">
+            <select
+                :value="company?.parent?.id"
+                :disabled="!dataset.companies || dataset.companies.length < 2"
+                class="mb-6"
+                @change="setParentCompany(($event.target as HTMLInputElement).value)">
+                <option value="" disabled selected>
+                    {{ dataset.companies && dataset.companies.length > 1 ? "Select a company" : "No other companies" }}
+                </option>
                 <option v-for="(parentCompanyOption, index) in dataset.companies?.filter(x => x.id !== company.id)" :key="index" :value="parentCompanyOption.id">
                     {{ parentCompanyOption.id }}
                 </option>
