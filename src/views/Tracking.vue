@@ -130,6 +130,17 @@
             </div>
         </div>
 
+        <div class="mt-6">
+            <label class="text-sm block">Select company</label>
+            <select :value="company?.parent?.id"
+                    class="mb-6"
+                    @change="setParrentCompany(($event.target as HTMLInputElement).value)">
+                <option v-for="(parrentCompanyOption, index) in dataset.companies?.filter(x => x.id !== company.id)" :key="index" :value="parrentCompanyOption.id">
+                    {{ parrentCompanyOption.id }}
+                </option>
+            </select>
+        </div>
+
         <div>
             <button @click="saveCompany">
                 Save
@@ -201,6 +212,13 @@ function setCompany(companyToSet: string) {
         company.value = selectedCompany;
 }
 
+function setParrentCompany(companyToSet: string) {
+    const selectedCompany = dataset.value.companies?.find(x => x.id === companyToSet);
+
+    if (selectedCompany)
+        company.value.parent = selectedCompany;
+}
+
 function saveCompany() {
     if (!dataset.value.companies) 
         dataset.value.companies = [];
@@ -210,7 +228,7 @@ function saveCompany() {
         return;
     }
 
-    dataset.value.companies.filter(x => x.id === company.value!.id);
+    dataset.value.companies = dataset.value.companies.filter(x => x.id !== company.value.id);
 
     dataset.value.companies.push(company.value);
     
