@@ -35,7 +35,7 @@
                             class="mb-6"
                             @change="setUser((JSON.parse(($event.target as HTMLInputElement).value) as User))">
                         <option v-for="(userOption, index) in dataset.users" :key="index" :value="JSON.stringify(userOption)">
-                            {{ userOption.temporaryId }} ({{ userOption.email }})
+                            {{ userOption.email || userOption.authenticatedId || userOption.temporaryId || "Unknown" }}
                         </option>
                     </select>
                 </div>
@@ -188,7 +188,6 @@ const user = contextStore.user;
 const newClassificationKey = ref('');
 const newClassificationValue = ref('');
 const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
-
 
 function saveUser() {
     contextStore.persistState();
