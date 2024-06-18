@@ -13,7 +13,6 @@ export interface IDataset {
     users?: User[];
     selectedUserIndex?: number;
     companies?: Company[];
-    selectedCompanyIndex?: number;
 }
 
 export interface ITracking {
@@ -33,7 +32,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [], selectedCompanyIndex: 0 }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {

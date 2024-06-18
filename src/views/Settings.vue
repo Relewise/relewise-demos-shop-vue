@@ -140,7 +140,6 @@ function addEmptyDataset() {
         users: [],
         companies: [],
         selectedUserIndex: 0,
-        selectedCompanyIndex: 0,
     });
 
     contextStore.setDataset('');
@@ -158,7 +157,6 @@ function shareLink() {
         users: context.value.users,
         companies: context.value.companies,
         selectedUserIndex: context.value.selectedUserIndex,
-        selectedCompanyIndex: context.value.selectedCompanyIndex,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + btoa(JSON.stringify(model)));
