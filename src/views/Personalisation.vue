@@ -179,22 +179,15 @@ import { UserFactory, type Company, type User } from '@relewise/client';
 import { ref } from 'vue';
 import basketService from '@/services/basket.service';
 
-const savedUser = ref(false);
-const savedCompany = ref(false);
-
 const tracking = contextStore.tracking;
 const dataset = contextStore.context;
 const user = contextStore.user;
+
+const savedUser = ref(false);
+const savedCompany = ref(false);
 const newClassificationKey = ref('');
 const newClassificationValue = ref('');
 const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
-
-function saveUser() {
-    contextStore.persistState();
-
-    savedUser.value = true;
-    setTimeout(() => savedUser.value = false, 3000);
-}
 
 function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
     const id = crypto.randomUUID();
@@ -217,11 +210,54 @@ function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
     }
 }
 
+function addClassification() {
+    if (!user.value.classifications) 
+        user.value.classifications = {};
+
+    user.value.classifications[newClassificationKey.value] = newClassificationValue.value;
+
+    newClassificationKey.value = '';
+    newClassificationValue.value = '';
+}
+
+function removeClassification(key: string) {
+    if (!user.value.classifications) 
+        return;
+
+    delete user.value.classifications[key];
+}
+
+function saveUser() {
+    contextStore.persistState();
+
+    savedUser.value = true;
+    setTimeout(() => savedUser.value = false, 3000);
+}
+
 function setUser(userToSet: User) {
     contextStore.setUser(userToSet);
     basketService.clear();
 
     window.location.reload();
+}
+
+function addEmptyUser() {
+    const newEmptyUser = UserFactory.anonymous();
+
+    if (!dataset.value.users)
+        dataset.value.users = [];
+
+    dataset.value.users.push(newEmptyUser);
+
+    setUser(newEmptyUser);
+}
+
+function deleteUser() {
+    const confirmed = confirm('Delete user?');
+
+    if (confirmed) {
+        contextStore.deleteSelectedUser();
+    }
 }
 
 function setUserCompany(companyToSet: string) {
@@ -264,25 +300,6 @@ function saveCompany() {
     setTimeout(() => savedCompany.value = false, 3000);
 }
 
-function addEmptyUser() {
-    const newEmptyUser = UserFactory.anonymous();
-
-    if (!dataset.value.users)
-        dataset.value.users = [];
-
-    dataset.value.users.push(newEmptyUser);
-
-    setUser(newEmptyUser);
-}
-
-function deleteUser() {
-    const confirmed = confirm('Delete user?');
-
-    if (confirmed) {
-        contextStore.deleteSelectedUser();
-    }
-}
-
 function addEmptyCompany() {
     company.value = { id: '' };
 }
@@ -294,23 +311,6 @@ function deleteCompany() {
         contextStore.deleteCompanyById(company.value.id);
         addEmptyCompany();
     }
-}
-
-function addClassification() {
-    if (!user.value.classifications) 
-        user.value.classifications = {};
-
-    user.value.classifications[newClassificationKey.value] = newClassificationValue.value;
-
-    newClassificationKey.value = '';
-    newClassificationValue.value = '';
-}
-
-function removeClassification(key: string) {
-    if (!user.value.classifications) 
-        return;
-
-    delete user.value.classifications[key];
 }
 
 </script>
