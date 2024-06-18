@@ -75,44 +75,98 @@
                     +
                 </button>
             </div>
-        
-       
-            <div>
-                <button class="" @click="save">
-                    Save
-                </button>
+        </div>
+        <div class="mt-6">
+            <button @click="saveUser">
+                Save
+            </button>
 
-                <span v-if="saved" class="ml-4 text-green-600">
-                    Settings have been saved.
-                </span>
+            <span v-if="savedUser" class="ml-4 text-green-600">
+                User has been saved.
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded p-6 mt-4">
+        <div class="flex items-center mb-8">
+            <h1 class="text-4xl">
+                Companies
+            </h1>
+        </div>
+
+        <hr class="mb-6">
+
+        <div class="flex gap-3 items-center">
+            <button v-if="dataset.companies && dataset.companies.length > 0" class="bg-gray-500 text-white" @click="addEmptyCompany">
+                Add new company
+            </button>
+            <template v-if="dataset.companies && dataset.companies?.length > 0">
+                <div class="flex-grow">
+                    <label class="text-sm block">Select company</label>
+                    <select :value="company?.id"
+                            class="mb-6"
+                            @change="setCompany(($event.target as HTMLInputElement).value)">
+                        <option v-for="(companyOption, index) in dataset.companies" :key="index" :value="companyOption.id">
+                            {{ companyOption.id }}
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <button class="bg-gray-500 text-white" @click="deleteCompany">
+                        Delete selected company
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <div class="mt-6">
+            <label class="text-sm block">Id</label>
+            <div class="flex gap-2">
+                <input v-if="company" v-model="company.id" type="text" placeholder="Id">
+                <button class="bg-gray-500 text-white" @click="generateId('companyId')">
+                    Generate
+                </button>
             </div>
+        </div>
+
+        <div>
+            <button @click="saveCompany">
+                Save
+            </button>
+
+            <span v-if="savedCompany" class="ml-4 text-green-600">
+                Company has been saved.
+            </span>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import contextStore from '@/stores/context.store';
-import { UserFactory, type User } from '@relewise/client';
+import { UserFactory, type Company, type User } from '@relewise/client';
 import { ref } from 'vue';
 import basketService from '@/services/basket.service';
 
-const saved = ref(false);
+const savedUser = ref(false);
+const savedCompany = ref(false);
 
 const tracking = contextStore.tracking;
 const dataset = contextStore.context;
 const user = contextStore.user;
 const newClassificationKey = ref('');
 const newClassificationValue = ref('');
+const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
 
 
-function save() {
+function saveUser() {
     contextStore.persistState();
 
-    saved.value = true;
-    setTimeout(() => saved.value = false, 3000);
+    savedUser.value = true;
+    setTimeout(() => savedUser.value = false, 3000);
 }
 
-function generateId(type: 'temporary' | 'authenticated') {
+function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
     const id = crypto.randomUUID();
     switch (type) {
     case 'temporary': {
@@ -123,6 +177,13 @@ function generateId(type: 'temporary' | 'authenticated') {
         user.value.authenticatedId = id;
         break;
     }
+    case 'companyId': {
+        if (!company.value)
+            company.value = { id: '' };
+
+        company.value.id = id;
+        break;
+    }
     }
 }
 
@@ -131,6 +192,32 @@ function setUser(userToSet: User) {
     basketService.clear();
 
     window.location.reload();
+}
+
+function setCompany(companyToSet: string) {
+    const selectedCompany = dataset.value.companies?.find(x => x.id === companyToSet);
+
+    if (selectedCompany)
+        company.value = selectedCompany;
+}
+
+function saveCompany() {
+    if (!dataset.value.companies) 
+        dataset.value.companies = [];
+
+    if (!company.value || !company.value.id) {
+        alert('A company id is required!');
+        return;
+    }
+
+    dataset.value.companies.filter(x => x.id === company.value!.id);
+
+    dataset.value.companies.push(company.value);
+    
+    contextStore.persistState();
+
+    savedCompany.value = true;
+    setTimeout(() => savedCompany.value = false, 3000);
 }
 
 function addEmptyUser() {
@@ -149,6 +236,19 @@ function deleteUser() {
 
     if (confirmed) {
         contextStore.deleteSelectedUser();
+    }
+}
+
+function addEmptyCompany() {
+    company.value = { id: '' };
+}
+
+function deleteCompany() {
+    const confirmed = confirm('delete company?');
+
+    if (confirmed && company.value) {
+        contextStore.deleteCompanyById(company.value.id);
+        addEmptyCompany();
     }
 }
 

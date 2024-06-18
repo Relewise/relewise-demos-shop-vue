@@ -185,6 +185,10 @@ class AppContext {
         this.persistState();
     }
 
+    public deleteCompanyById(id: string) {
+        this.context.value.companies = this.context.value.companies?.filter(x => x.id !== id);
+    }
+
     public assertApiCall(response: any | undefined) {
         if (response.status === 401) {
             this.errorState.datasetIdError = false;
