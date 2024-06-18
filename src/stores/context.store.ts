@@ -66,15 +66,9 @@ class AppContext {
 
     public get user() {
         return computed(() => {
-            if (!this.context.value.users) {
-                this.context.value.users = [UserFactory.anonymous()];
-            }
+            this.ensureUsers();
 
-            if (!this.context.value.selectedUserIndex) {
-                this.context.value.selectedUserIndex = 0;
-            }
-
-            return this.context.value.users[this.context.value.selectedUserIndex];
+            return this.context.value.users![this.context.value.selectedUserIndex!];
         });
     }
 
@@ -129,18 +123,6 @@ class AppContext {
         localStorage.setItem(this.localStorageName, JSON.stringify(this.state));
     }
 
-    public setUser(user: User) {
-        if (!this.context.value.users) {
-            this.context.value.users = [UserFactory.anonymous()];
-        }
-
-        if (!this.context.value.selectedUserIndex) {
-            this.context.value.selectedUserIndex = 0;
-        }
-
-        this.context.value.selectedUserIndex = this.context.value.users.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
-        this.persistState();
-    }
 
     public isConfigured() {
         return this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language;
@@ -171,6 +153,13 @@ class AppContext {
         this.persistState();
     }
 
+    public setUser(user: User) {
+        this.ensureUsers();
+
+        this.context.value.selectedUserIndex = this.context.value.users!.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
+        this.persistState();
+    }
+
     public deleteSelectedUser() {
         if (!this.context.value.users || this.context.value.selectedUserIndex === undefined) {
             return;
@@ -182,6 +171,16 @@ class AppContext {
 
         this.initializeWebComponents();
         this.persistState();
+    }
+
+    private ensureUsers() {
+        if (!this.context.value.users) {
+            this.context.value.users = [UserFactory.anonymous()];
+        }
+
+        if (!this.context.value.selectedUserIndex) {
+            this.context.value.selectedUserIndex = 0;
+        }
     }
 
     public deleteCompanyById(id: string) {
