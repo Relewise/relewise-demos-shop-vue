@@ -12,7 +12,9 @@
             <input v-model="tracking.enabled" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
             Tracking enabled</label>
 
-        <p>When tracking is enabled, all your actions are tracked to Relewise to give you a personal experience</p>
+        <p class="text-gray-400">
+            When tracking is enabled, all your actions are tracked to Relewise to give you a personal experience
+        </p>
     </div>
 
     <div class="bg-white rounded p-6 mt-6">
