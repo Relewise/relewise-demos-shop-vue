@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Cog6ToothIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
@@ -107,7 +107,11 @@ const open = ref<string | null>(null);
                         </Teleport>
                     </ul>
                     <li class="flex-grow"></li>
-                    <li class="inline-flex items-center">
+                    <li class="inline-flex items-center gap-2">
+                        <RouterLink to="/personalisation"
+                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
+                            <UserIcon class="w-5 h-5 mr-1"/> Personalisation
+                        </RouterLink>
                         <RouterLink to="/app-settings"
                                     class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
                             <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
