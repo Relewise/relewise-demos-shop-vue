@@ -7,6 +7,7 @@ import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
+import Sorting from '../components/Sorting.vue';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -29,8 +30,12 @@ watch(() => ({...route}), (value, oldValue) => {
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.forEach((value, key) => { 
             
-            if(key === 'term') {
+            if (key === 'term') {
                 searchTerm.value = value;
+                return;
+            }
+            if (key === 'sort') {
+                filters.value.sort = value;
                 return;
             }
 
@@ -46,6 +51,8 @@ watch(() => ({...route}), (value, oldValue) => {
         close();
     }
 });
+
+watch(() => filters.value.sort, search, { deep: true });
 
 function showOrHide(show: boolean) {
     if (!show) {
@@ -66,7 +73,6 @@ function showOrHide(show: boolean) {
 }
 
 function typeAHeadSearch() {
-    console.log(filters.value);
     if (filters.value.term !== searchTerm.value) {
         filters.value['open'] = '1';
 
@@ -110,6 +116,12 @@ async function search() {
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
+                }
+                else if(filters.value.sort === 'SalesPriceDesc'){
+                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                }
+                else if(filters.value.sort === 'SalesPriceAsc') {
+                    s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
             .pagination(p => p.setPageSize(30).setPage(page.value))
@@ -208,10 +220,7 @@ function searchFor(term: string) {
                             <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
-                            <select v-model="filters.sort" class="text-sm lg:text-base w-full lg:w-1/6" @change="search">
-                                <option>Relevance</option>
-                                <option>Popular</option>
-                            </select>
+                            <Sorting v-model="filters.sort"/>
                         </div>
                         <div v-if="result && result?.redirects && result.redirects.length > 0" class="mb-3 p-3 bg-white">
                             <h2 class="text-xl font-semibold mb-2">
