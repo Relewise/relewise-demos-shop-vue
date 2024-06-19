@@ -24,8 +24,6 @@
             </h1>
         </div>
 
-        <hr class="mb-6">
-
         <div class="flex gap-3 items-center">
             <button class="bg-gray-500 text-white" @click="addEmptyUser">
                 Add new user
@@ -50,7 +48,9 @@
             </template>
         </div>
 
-        <label class="text-sm block mt-6">Temporary Id</label>
+        <hr class="mb-6">
+
+        <label class="text-sm block">Temporary Id</label>
         <div class="flex gap-2">
             <input v-if="user" v-model="user.temporaryId" type="text" placeholder="Temporary Id">
             <button class="bg-gray-500 text-white" @click="generateId('temporary')">
@@ -121,8 +121,6 @@
             </h1>
         </div>
 
-        <hr class="mb-6">
-
         <div class="flex gap-3 items-center">
             <button v-if="dataset.companies && dataset.companies.length > 0" class="bg-gray-500 text-white" @click="addEmptyCompany">
                 Add new company
@@ -147,14 +145,14 @@
             </template>
         </div>
 
-        <div class="mt-6">
-            <label class="text-sm block">Id</label>
-            <div class="flex gap-2">
-                <input v-if="company" v-model="company.id" type="text" placeholder="Id">
-                <button class="bg-gray-500 text-white" @click="generateId('companyId')">
-                    Generate
-                </button>
-            </div>
+        <hr class="mb-6">
+
+        <label class="text-sm block">Id</label>
+        <div class="flex gap-2">
+            <input v-if="company" v-model="company.id" type="text" placeholder="Id">
+            <button class="bg-gray-500 text-white" @click="generateId('companyId')">
+                Generate
+            </button>
         </div>
 
         <div class="mt-6">
