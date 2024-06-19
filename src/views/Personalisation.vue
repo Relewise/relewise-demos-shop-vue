@@ -6,8 +6,6 @@
             </h1>
         </div>
 
-        <hr class="mb-6">
-
         <label class="flex mb-2 items-center">
             <input v-model="tracking.enabled" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
             Tracking enabled</label>
