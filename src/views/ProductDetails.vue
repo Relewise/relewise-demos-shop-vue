@@ -38,7 +38,7 @@
                     Purchased with
                 </div>
                 <relewise-purchased-with-product 
-                    class="recommendations-grid"
+                    class="grid grid-cols-2 lg:grid-cols-5"
                     number-of-recommendations="5" 
                     :displayed-at-location="defaultSettings.displayedAtLocation" 
                     :product-id="productId"/>
@@ -48,7 +48,7 @@
                     Products viewed after viewing
                 </div>
                 <relewise-products-viewed-after-viewing-product 
-                    class="recommendations-grid"
+                    class="grid grid-cols-2 lg:grid-cols-5"
                     number-of-recommendations="5" 
                     :displayed-at-location="defaultSettings.displayedAtLocation" 
                     :product-id="productId"/>
@@ -111,9 +111,3 @@ function addToBasket() {
     trackingService.trackCart(basketService.model.value.lineItems);
 }
 </script>
-
-<style>
-.recommendations-grid {
-    grid-template-columns: repeat(5, 1fr); 
-}
-</style>
