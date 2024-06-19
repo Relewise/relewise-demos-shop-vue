@@ -17,16 +17,7 @@
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <select v-model="filters.sort" class="text-sm lg:text-base w-full lg:w-1/6" @change="search">
-                            <option>Recommended</option>
-                            <option>Popular</option>
-                            <option value="SalesPriceDesc">
-                                Sales Price desc
-                            </option>
-                            <option value="SalesPriceAsc">
-                                Sales Price asc
-                            </option>
-                        </select>
+                        <Sorting v-model="filters.sort"/>
                     </div>
                     <div class="grid gap-3 grid-cols-2 lg:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in result?.results" :key="pIndex" :product="product"/>
@@ -51,13 +42,14 @@ import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
 import router from '@/router';
+import Sorting from '../components/Sorting.vue';
 
 const route = useRoute();
 const category = ref<CategoryResult | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
 const page = ref<number>(1);
-const filters = ref<Record<string, string | string[]>>({ price: [], sort: 'Recommended' });
+const filters = ref<Record<string, string | string[]>>({ price: [], sort: 'Relevance' });
 
 async function init() {
     const id = route.params.id;
@@ -96,6 +88,8 @@ watch(route, () => {
     if (route.query.open !== '1')
         init();
 });
+
+watch(() => filters.value.sort, search, { deep: true });
 
 async function search() {
     scrollTo({ top: 0 });
