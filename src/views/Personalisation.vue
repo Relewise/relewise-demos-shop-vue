@@ -22,11 +22,11 @@
             </h1>
         </div>
 
-        <div class="flex gap-3 items-center">
-            <button class="bg-gray-500 text-white" @click="addEmptyUser">
-                Add new user
-            </button>
-            <template v-if="dataset.users && dataset.users?.length > 1">
+        <template v-if="dataset.users && dataset.users?.length > 1">
+            <div class="flex gap-3 items-center">
+                <button class="bg-gray-500 text-white" @click="addEmptyUser">
+                    Add new user
+                </button>
                 <div class="flex-grow">
                     <label class="text-sm block">Select user</label>
                     <select :value="JSON.stringify(user)"
@@ -43,10 +43,17 @@
                         Delete selected user
                     </button>
                 </div>
-            </template>
-        </div>
+            </div>
+            <hr class="mb-6">
+        </template>
+        <template v-else>
+            <div class="flex gap-3 items-center">
+                <button class="bg-gray-500 text-white" @click="addEmptyUser">
+                    Add new user
+                </button>
+            </div>
+        </template>
 
-        <hr class="mb-6">
 
         <label class="text-sm block">Temporary Id</label>
         <div class="flex gap-2">
