@@ -58,10 +58,10 @@ function showOrHide(show: boolean) {
     open.value = show;
     if (show) {
         window.document.body.classList.add('overflow-hidden');
-        window.document.body.classList.add('pr-[17px]');
+        window.document.body.classList.add('xl:pr-[17px]');
     } else {
         window.document.body.classList.remove('overflow-hidden');
-        window.document.body.classList.remove('pr-[17px]');
+        window.document.body.classList.remove('xl:pr-[17px]');
     }
 }
 
@@ -234,7 +234,7 @@ function searchFor(term: string) {
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 115px;
+$headerHeight: 107px;
 
 .modal {
     @apply bg-zinc-50 overflow-scroll;
