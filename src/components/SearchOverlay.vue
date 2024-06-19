@@ -14,7 +14,7 @@ const result = ref<ProductSearchResponse | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse|null|undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: 'RelevanceSorter' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: 'Relevance' });
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -52,7 +52,7 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '' };
+        filters.value = { price: [], term: '', sort: 'Relevance'  };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
     open.value = show;
@@ -66,6 +66,7 @@ function showOrHide(show: boolean) {
 }
 
 function typeAHeadSearch() {
+    console.log(filters.value);
     if (filters.value.term !== searchTerm.value) {
         filters.value['open'] = '1';
 
@@ -107,9 +108,7 @@ async function search() {
                 .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
             )
             .sorting(s => {
-                if (filters.value.sort === 'RelevanceSorter') {
-                    s.sortByProductRelevance();
-                } else if (filters.value.sort === 'PopularitySorter') {
+                if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
                 }
             })
@@ -210,8 +209,8 @@ function searchFor(term: string) {
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
                             <select v-model="filters.sort" class="text-sm lg:text-base w-full lg:w-1/6" @change="search">
-                                <option>RelevanceSorter</option>
-                                <option>PopularitySorter</option>
+                                <option>Relevance</option>
+                                <option>Popular</option>
                             </select>
                         </div>
                         <div v-if="result && result?.redirects && result.redirects.length > 0" class="mb-3 p-3 bg-white">

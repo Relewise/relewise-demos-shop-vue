@@ -18,7 +18,7 @@
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
                         <select v-model="filters.sort" class="text-sm lg:text-base w-full lg:w-1/6" @change="search">
-                            <option>Recommended</option>
+                            <option>Relevance</option>
                             <option>Popular</option>
                             <option value="SalesPriceDesc">
                                 Sales Price desc
@@ -57,7 +57,7 @@ const category = ref<CategoryResult | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
 const page = ref<number>(1);
-const filters = ref<Record<string, string | string[]>>({ price: [], sort: 'Recommended' });
+const filters = ref<Record<string, string | string[]>>({ price: [], sort: 'Relevance' });
 
 async function init() {
     const id = route.params.id;
