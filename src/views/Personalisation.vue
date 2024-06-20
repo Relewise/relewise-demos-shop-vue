@@ -94,6 +94,24 @@
             </div>
         </div>
 
+        <label class="text-sm block mt-6">Identifiers</label>
+        <div v-if="user" class="flex flex-col gap-4">
+            <div v-for="(value, key) in user.identifiers" :key="key" class="flex gap-4">
+                <input :value="key" type="text" placeholder="Key" disabled>
+                <input :value="value" type="text" placeholder="Value" disabled>
+                <button class="bg-gray-500 text-white" @click="removeIdentifier(key)">
+                    x
+                </button>
+            </div>
+            <div class="flex gap-4">
+                <input v-model="newIdentifierKey" type="text" placeholder="Key">
+                <input v-model="newIdentifierValue" type="text" placeholder="Value">
+                <button class="bg-gray-500 text-white" @click="addIdentifier">
+                    +
+                </button>
+            </div>
+        </div>
+
         <label class="text-sm block mt-6">Select company</label>
         <select
             :value="user.company?.id"
@@ -202,6 +220,9 @@ const savedUser = ref(false);
 const savedCompany = ref(false);
 const newClassificationKey = ref('');
 const newClassificationValue = ref('');
+const newIdentifierKey = ref('');
+const newIdentifierValue = ref('');
+
 const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
 
 function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
@@ -240,6 +261,23 @@ function removeClassification(key: string) {
         return;
 
     delete user.value.classifications[key];
+}
+
+function addIdentifier() {
+    if (!user.value.identifiers) 
+        user.value.identifiers = {};
+
+    user.value.identifiers[newIdentifierKey.value] = newIdentifierValue.value;
+
+    newIdentifierKey.value = '';
+    newIdentifierValue.value = '';
+}
+
+function removeIdentifier(key: string) {
+    if (!user.value.identifiers) 
+        return;
+
+    delete user.value.identifiers[key];
 }
 
 function saveUser() {
