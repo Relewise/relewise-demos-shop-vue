@@ -112,6 +112,24 @@
             </div>
         </div>
 
+        <label class="text-sm block mt-6">Data</label>
+        <div v-if="user" class="flex flex-col gap-4">
+            <div v-for="(value, key) in user.data" :key="key" class="flex gap-4">
+                <input :value="key" type="text" placeholder="Key" disabled>
+                <input :value="value.value" type="text" placeholder="Value" disabled>
+                <button class="bg-gray-500 text-white" @click="removeData(key)">
+                    x
+                </button>
+            </div>
+            <div class="flex gap-4">
+                <input v-model="newDataKey" type="text" placeholder="Key">
+                <input v-model="newDataValue" type="text" placeholder="Value">
+                <button class="bg-gray-500 text-white" @click="addData">
+                    +
+                </button>
+            </div>
+        </div>
+
         <label class="text-sm block mt-6">Select company</label>
         <select
             :value="user.company?.id"
@@ -208,7 +226,7 @@
 
 <script lang="ts" setup>
 import contextStore from '@/stores/context.store';
-import { UserFactory, type Company, type User } from '@relewise/client';
+import { DataValueFactory, UserFactory, type Company, type User } from '@relewise/client';
 import { ref } from 'vue';
 import basketService from '@/services/basket.service';
 
@@ -222,6 +240,8 @@ const newClassificationKey = ref('');
 const newClassificationValue = ref('');
 const newIdentifierKey = ref('');
 const newIdentifierValue = ref('');
+const newDataKey = ref('');
+const newDataValue = ref('');
 
 const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
 
@@ -278,6 +298,23 @@ function removeIdentifier(key: string) {
         return;
 
     delete user.value.identifiers[key];
+}
+
+function addData() {
+    if (!user.value.data) 
+        user.value.data = {};
+
+    user.value.data[newDataKey.value] = DataValueFactory.string(newDataValue.value);
+
+    newDataKey.value = '';
+    newDataValue.value = '';
+}
+
+function removeData(key: string) {
+    if (!user.value.data) 
+        return;
+
+    delete user.value.data[key];
 }
 
 function saveUser() {
