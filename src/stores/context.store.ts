@@ -44,6 +44,10 @@ class AppContext {
         }
     }
 
+    public get isConfigured() {
+        return computed(() => this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language);
+    }
+
     public get context() {
         return computed(() => this.state.datasets[this.state.selectedDatasetIndex]);
     }
@@ -123,13 +127,8 @@ class AppContext {
         localStorage.setItem(this.localStorageName, JSON.stringify(this.state));
     }
 
-
-    public isConfigured() {
-        return this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language;
-    }
-
     public addDataset(newDataset: IDataset) {
-        if (!localStorage.getItem(this.localStorageName) || (this.state.datasets.length === 1 && !this.isConfigured())) {
+        if (!localStorage.getItem(this.localStorageName) || (this.state.datasets.length === 1 && !this.isConfigured)) {
             // when first coming here via share link we want to remove the default created dataset
             this.state.datasets = [];
         }
