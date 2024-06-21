@@ -4,13 +4,17 @@ import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } 
 import { ref } from 'vue';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
-const recommender = contextStore.getRecommender();
 
 const defaultSettings = ref(contextStore.defaultSettings);
+const isConfigured = ref(contextStore.isConfigured);
 
 recommend();
 
 async function recommend() {
+    if (!isConfigured.value) return;
+
+    const recommender = contextStore.getRecommender();
+
     const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
@@ -35,10 +39,12 @@ async function recommend() {
             </div>
         </div>
 
-        <h2 class="text-3xl font-semibold mb-3">
-            Popular products
-        </h2>
-        <relewise-popular-products class="grid grid-cols-2 lg:grid-cols-5" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30"/>
+        <template v-if="isConfigured">
+            <h2 class="text-3xl font-semibold mb-3">
+                Popular products
+            </h2>
+            <relewise-popular-products class="grid grid-cols-2 lg:grid-cols-5" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30"/>
+        </template>
 
         <template v-if="brands?.recommendations">
             <h2 class="text-3xl font-semibold mb-3 mt-10">
