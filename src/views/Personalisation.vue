@@ -78,17 +78,17 @@
 
         <label class="text-sm block mt-6">Classifications</label>
         <div v-if="user" class="flex flex-col gap-4">
-            <div v-for="(value, key) in user.classifications" :key="key" class="flex gap-4">
-                <input :value="key" type="text" placeholder="Key" disabled>
-                <input :value="value" type="text" placeholder="Value" disabled>
-                <button class="bg-gray-500 text-white" @click="removeClassification(key)">
+            <div v-for="(value, index) in classifications" :key="index" class="flex gap-4">
+                <input v-model="value.key" type="text" placeholder="Key">
+                <input v-model="value.value" type="text" placeholder="Value">
+                <button class="bg-gray-500 text-white" @click="removeClassification(index)">
                     x
                 </button>
             </div>
             <div class="flex gap-4">
                 <input v-model="newClassificationKey" type="text" placeholder="Key">
                 <input v-model="newClassificationValue" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="addClassification">
+                <button class="bg-gray-500 text-white" @click="addClassification()">
                     +
                 </button>
             </div>
@@ -96,17 +96,17 @@
 
         <label class="text-sm block mt-6">Identifiers</label>
         <div v-if="user" class="flex flex-col gap-4">
-            <div v-for="(value, key) in user.identifiers" :key="key" class="flex gap-4">
-                <input :value="key" type="text" placeholder="Key" disabled>
-                <input :value="value" type="text" placeholder="Value" disabled>
-                <button class="bg-gray-500 text-white" @click="removeIdentifier(key)">
+            <div v-for="(value, index) in identifiers" :key="index" class="flex gap-4">
+                <input v-model="value.key" type="text" placeholder="Key">
+                <input v-model="value.value" type="text" placeholder="Value">
+                <button class="bg-gray-500 text-white" @click="removeIdentifier(index)">
                     x
                 </button>
             </div>
             <div class="flex gap-4">
                 <input v-model="newIdentifierKey" type="text" placeholder="Key">
                 <input v-model="newIdentifierValue" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="addIdentifier">
+                <button class="bg-gray-500 text-white" @click="addIdentifier()">
                     +
                 </button>
             </div>
@@ -114,17 +114,17 @@
 
         <label class="text-sm block mt-6">Data</label>
         <div v-if="user" class="flex flex-col gap-4">
-            <div v-for="(value, key) in user.data" :key="key" class="flex gap-4">
-                <input :value="key" type="text" placeholder="Key" disabled>
-                <input :value="value.value" type="text" placeholder="Value" disabled>
-                <button class="bg-gray-500 text-white" @click="removeData(key)">
+            <div v-for="(value, index) in data" :key="index" class="flex gap-4">
+                <input v-model="value.key" type="text" placeholder="Key">
+                <input v-model="value.value" type="text" placeholder="Value">
+                <button class="bg-gray-500 text-white" @click="removeData(index)">
                     x
                 </button>
             </div>
             <div class="flex gap-4">
                 <input v-model="newDataKey" type="text" placeholder="Key">
                 <input v-model="newDataValue" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="addData">
+                <button class="bg-gray-500 text-white" @click="addData()">
                     +
                 </button>
             </div>
@@ -226,7 +226,7 @@
 
 <script lang="ts" setup>
 import contextStore from '@/stores/context.store';
-import { DataValueFactory, UserFactory, type Company, type User } from '@relewise/client';
+import { DataValueFactory, UserFactory, type Company, type DataValue, type User } from '@relewise/client';
 import { ref } from 'vue';
 import basketService from '@/services/basket.service';
 
@@ -242,6 +242,10 @@ const newIdentifierKey = ref('');
 const newIdentifierValue = ref('');
 const newDataKey = ref('');
 const newDataValue = ref('');
+
+const classifications = ref(Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null })));
+const identifiers = ref(Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null })));
+const data = ref(Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null })));
 
 const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
 
@@ -267,57 +271,80 @@ function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
 }
 
 function addClassification() {
-    if (!user.value.classifications) 
-        user.value.classifications = {};
+    if (!newClassificationKey.value && !newClassificationValue.value) return;
 
-    user.value.classifications[newClassificationKey.value] = newClassificationValue.value;
+    if (!newClassificationKey.value) {
+        alert('A classification key is required!');
+        return;
+    }
+
+    classifications.value.push({key: newClassificationKey.value, value: newClassificationValue.value});
 
     newClassificationKey.value = '';
     newClassificationValue.value = '';
 }
 
-function removeClassification(key: string) {
-    if (!user.value.classifications) 
-        return;
-
-    delete user.value.classifications[key];
+function removeClassification(index: number) {
+    classifications.value.splice(index, 1);
 }
 
 function addIdentifier() {
-    if (!user.value.identifiers) 
-        user.value.identifiers = {};
+    if (!newIdentifierKey.value && !newIdentifierValue.value) return;
 
-    user.value.identifiers[newIdentifierKey.value] = newIdentifierValue.value;
+    if (!newIdentifierKey.value) {
+        alert('A indentifier key is required!');
+        return;
+    }
+
+    identifiers.value.push({key: newIdentifierKey.value, value: newIdentifierValue.value});
 
     newIdentifierKey.value = '';
     newIdentifierValue.value = '';
 }
 
-function removeIdentifier(key: string) {
-    if (!user.value.identifiers) 
-        return;
-
-    delete user.value.identifiers[key];
+function removeIdentifier(index: number) {
+    identifiers.value.splice(index, 1);
 }
 
 function addData() {
-    if (!user.value.data) 
-        user.value.data = {};
+    if (!newDataKey.value && !newDataValue.value) return;
 
-    user.value.data[newDataKey.value] = DataValueFactory.string(newDataValue.value);
+    if (!newDataKey.value) { 
+        alert('A data key is required!');        
+        return;
+    }
+
+    data.value.push({ key: newDataKey.value, value: newDataValue.value });
 
     newDataKey.value = '';
     newDataValue.value = '';
 }
 
-function removeData(key: string) {
-    if (!user.value.data) 
-        return;
-
-    delete user.value.data[key];
+function removeData(index: number) {
+    data.value.splice(index, 1);
 }
 
 function saveUser() {
+    addClassification();
+    addIdentifier();
+    addData();
+
+    user.value.classifications = classifications.value.reduce((a, b) => {
+        a[b.key] = b.value;
+        return a;
+    }, { } as Record<string, string | null>);
+
+    user.value.identifiers = identifiers.value.reduce((a, b) => {
+        a[b.key] = b.value;
+        return a;
+    }, { } as Record<string, string | null>);
+
+    console.log(data.value);
+    user.value.data = data.value.reduce((a, b) => {
+        a[b.key] = DataValueFactory.string(b.value ?? '');
+        return a;
+    }, { } as Record<string, DataValue>);
+
     contextStore.persistState();
 
     savedUser.value = true;
