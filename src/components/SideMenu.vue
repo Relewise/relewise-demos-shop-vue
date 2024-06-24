@@ -19,7 +19,7 @@ const { mainCategories } = toRefs(props);
 </script>
 
 <template>
-    <div class="lg:hidden mr-2" @click="toggleMenu">
+    <div class="xl:hidden mr-2" @click="toggleMenu">
         <Bars3Icon class="h-8 w-8"/>
     </div>
     <Teleport to="#modal">
@@ -35,7 +35,7 @@ const { mainCategories } = toRefs(props);
                             @click="toggleMenu">
                     <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
                 </RouterLink>
-                <div class="lg:hidden m-2 flex justify-end">
+                <div class="xl:hidden m-2 flex justify-end">
                     <XMarkIcon class="h-8 w-8" @click="toggleMenu"/>
                 </div>
             </div>
