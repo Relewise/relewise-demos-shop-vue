@@ -15,7 +15,7 @@ const result = ref<ProductSearchResponse | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse|null|undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: 'Relevance' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -48,18 +48,17 @@ watch(() => ({...route}), (value, oldValue) => {
         search();
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
+        console.log('test');
         close();
     }
 });
-
-watch(() => filters.value.sort, search, { deep: true });
 
 function showOrHide(show: boolean) {
     if (!show) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: 'Relevance'  };
+        filters.value = { price: [], term: '', sort: ''  };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
     open.value = show;
@@ -220,7 +219,7 @@ function searchFor(term: string) {
                             <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
-                            <Sorting v-model="filters.sort"/>
+                            <Sorting v-model="filters.sort" @change="search"/>
                         </div>
                         <div v-if="result && result?.redirects && result.redirects.length > 0" class="mb-3 p-3 bg-white">
                             <h2 class="text-xl font-semibold mb-2">

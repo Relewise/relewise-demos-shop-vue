@@ -1,6 +1,6 @@
 <template>
-    <select v-model="internalSelectedOption" class="text-sm lg:text-base w-full lg:w-1/6">
-        <option value="Relevance">
+    <select v-model="internalSelectedOption" class="text-sm lg:text-base w-full lg:w-1/6" @on="$attrs">
+        <option value="">
             Relevance
         </option>
         <option value="Popular">
