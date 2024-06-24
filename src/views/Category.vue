@@ -17,7 +17,7 @@
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <Sorting v-model="filters.sort"/>
+                        <Sorting v-model="filters.sort" @change="search"/>
                     </div>
                     <div class="grid gap-3 grid-cols-2 lg:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in result?.results" :key="pIndex" :product="product"/>
@@ -49,7 +49,7 @@ const category = ref<CategoryResult | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
 const page = ref<number>(1);
-const filters = ref<Record<string, string | string[]>>({ price: [], sort: 'Relevance' });
+const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
 
 async function init() {
     const id = route.params.id;
@@ -88,8 +88,6 @@ watch(route, () => {
     if (route.query.open !== '1')
         init();
 });
-
-watch(() => filters.value.sort, search, { deep: true });
 
 async function search() {
     scrollTo({ top: 0 });
