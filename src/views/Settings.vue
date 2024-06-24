@@ -67,29 +67,6 @@
 
         <hr class="my-10">
 
-        <h2 class="mb-8 text-4xl">
-            Behavioral tracking
-        </h2>
-
-        <label class="block mb-6 flex items-center">
-            <input v-model="tracking.enabled" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
-            Tracking enabled</label>
-
-        <p>When tracking is enabled, all your actions are tracked to Relewise to give you a personal experience</p>
-
-        <hr class="my-10">
-
-        <div class="flex gap-5">
-            <button class="bg-gray-500 text-white" @click="resetTracking">
-                Reset Personal Tracking
-            </button>
-            <div class="p-3 bg-zinc-300 rounded leading-tight font-mono flex-grow">
-                Temporary Id: <strong> {{ tracking.temporaryId }}</strong>
-            </div>
-        </div>
-
-        <hr class="my-10">
-
         <div>
             <button class="" @click="save">
                 Save
@@ -111,7 +88,6 @@ import { ref } from 'vue';
 const saved = ref(false);
 const copied = ref(false);
 const context = contextStore.context;
-const tracking = contextStore.tracking;
 const datasets = contextStore.datasets;
 
 async function init() {
@@ -161,6 +137,9 @@ function addEmptyDataset() {
         datasetId: '',
         currencyCode: '',
         language: '',
+        users: [],
+        companies: [],
+        selectedUserIndex: 0,
     });
 
     contextStore.setDataset('');
@@ -175,6 +154,9 @@ function shareLink() {
         currencyCode: context.value.currencyCode,
         language: context.value.language,
         serverUrl: context.value.serverUrl,
+        users: context.value.users,
+        companies: context.value.companies,
+        selectedUserIndex: context.value.selectedUserIndex,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + btoa(JSON.stringify(model)));
@@ -190,7 +172,4 @@ function deleteDataset() {
     }
 }
 
-function resetTracking() {
-    contextStore.generateNewTemporaryId();
-}
 </script>

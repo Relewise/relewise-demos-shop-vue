@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client8';
-import { ref, type Ref } from 'vue';
-import ProductTile from '../components/ProductTile.vue';
+import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
+import { ref } from 'vue';
 
-const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecommendationResponse | undefined>({} as ProductRecommendationResponse);
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
-const recommender = contextStore.getRecommender();
 
 const defaultSettings = ref(contextStore.defaultSettings);
+const isConfigured = ref(contextStore.isConfigured);
 
 recommend();
 
 async function recommend() {
+    if (!isConfigured.value) return;
+
+    const recommender = contextStore.getRecommender();
+
     const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
@@ -37,14 +39,12 @@ async function recommend() {
             </div>
         </div>
 
-        <h2 class="text-3xl font-semibold mb-3">
-            Popular products
-        </h2>
-
-        <relewise-popular-products :displayedatlocation="defaultSettings.displayedAtLocation" numberofrecommendations="30"/>
-        <div class="grid gap-3 grid-cols-5 mt-3">
-            <ProductTile v-for="(product, index) in result!.recommendations" :key="index" :product="product"/>
-        </div>
+        <template v-if="isConfigured">
+            <h2 class="text-3xl font-semibold mb-3">
+                Popular products
+            </h2>
+            <relewise-popular-products class="grid grid-cols-2 lg:grid-cols-5" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30"/>
+        </template>
 
         <template v-if="brands?.recommendations">
             <h2 class="text-3xl font-semibold mb-3 mt-10">
@@ -59,9 +59,3 @@ async function recommend() {
         </template>
     </main>
 </template>
-
-<style>
-:root {
-    --relewise-grid-template-columns: repeat(5, 1fr); 
-}
-</style>

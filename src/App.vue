@@ -29,7 +29,7 @@ async function init() {
         await router.push({ path: '/app-settings', query: query });
     }
 
-    if (contextStore.isConfigured()) {
+    if (contextStore.isConfigured) {
         const searcher = contextStore.getSearcher();
 
         getCategories(searcher);

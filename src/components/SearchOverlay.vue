@@ -7,6 +7,7 @@ import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
+import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 
@@ -17,7 +18,7 @@ const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -36,6 +37,10 @@ watch(() => ({ ...route }), (value, oldValue) => {
                 searchTerm.value = value;
                 return;
             }
+            if (key === 'sort') {
+                filters.value.sort = value;
+                return;
+            }
 
             const existing = filters.value[key];
             existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
@@ -46,6 +51,7 @@ watch(() => ({ ...route }), (value, oldValue) => {
         search();
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
+        console.log('test');
         close();
     }
 });
@@ -60,16 +66,16 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '' };
+        filters.value = { price: [], term: '', sort: ''  };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
     open.value = show;
     if (show) {
         window.document.body.classList.add('overflow-hidden');
-        window.document.body.classList.add('pr-[17px]');
+        window.document.body.classList.add('xl:pr-[17px]');
     } else {
         window.document.body.classList.remove('overflow-hidden');
-        window.document.body.classList.remove('pr-[17px]');
+        window.document.body.classList.remove('xl:pr-[17px]');
     }
 }
 
@@ -92,7 +98,16 @@ async function search() {
     let applySalesPriceFacet = false;
     if (result.value?.facets?.items?.length === 3) {
         const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
-        applySalesPriceFacet = salesPriceFacet && filters.value.price.length === 2 && Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive || Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive;
+        
+        const bothPriceFiltersSet = filters.value.price.length === 2;
+
+        const lowerBoundNotEqualOrZero = (Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
+                && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
+
+        const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
+                && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
+
+        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
@@ -106,6 +121,17 @@ async function search() {
                 .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
                 .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
             )
+            .sorting(s => {
+                if (filters.value.sort === 'Popular') {
+                    s.sortByProductPopularity();
+                }
+                else if(filters.value.sort === 'SalesPriceDesc'){
+                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                }
+                else if(filters.value.sort === 'SalesPriceAsc') {
+                    s.sortByProductAttribute('SalesPrice', 'Ascending');
+                }
+            })
             .pagination(p => p.setPageSize(30).setPage(page.value))
             .setRetailMedia({
                 location: {
@@ -219,9 +245,11 @@ function searchFor(term: string) {
                         <div class="lg:flex lg:gap-6 p-3 items-end bg-white rounded mb-3">
                             <h2 v-if="filters.term" class="text-xl lg:text-3xl">
                                 Showing results for <strong>{{ filters.term }}</strong>
-                            </h2>
-                            <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ?
-                                result?.hits : page * 30 }} of {{ result?.hits }}</span>
+                            </h2> 
+                            <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
+                            <div class="hidden lg:block lg:flex-grow">
+                            </div>
+                            <Sorting v-model="filters.sort" @change="search"/>
                         </div>
                         <div v-if="result && result?.redirects && result.redirects.length > 0"
                              class="mb-3 p-3 bg-white">
@@ -265,7 +293,7 @@ function searchFor(term: string) {
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 115px;
+$headerHeight: 107px;
 
 .modal {
     @apply bg-zinc-50 overflow-scroll;
@@ -275,9 +303,5 @@ $headerHeight: 115px;
     left: 0;
     width: 100%;
     height: calc(100% - $headerHeight);
-}
-
-:root {
-    --relewise-grid-template-columns: repeat(5, 1fr);
 }
 </style>
