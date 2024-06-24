@@ -37,7 +37,6 @@ const internalValue = computed({
         return modelValue.value;
     },
     set: (v) => {
-        console.log(v);
         emit('update:modelValue', v);
     },
 });
