@@ -32,7 +32,9 @@
                     <select :value="JSON.stringify(user)"
                             class="mb-6"
                             @change="setUser((JSON.parse(($event.target as HTMLInputElement).value) as User))">
-                        <option v-for="(userOption, index) in dataset.users" :key="index" :value="JSON.stringify(userOption)">
+                        <option v-for="(userOption, index) in dataset.users"
+                                :key="index"
+                                :value="JSON.stringify(userOption)">
                             {{ userOption.email || userOption.authenticatedId || userOption.temporaryId || "Unknown" }}
                         </option>
                     </select>
@@ -76,68 +78,21 @@
             <input v-if="user" v-model="user.email" type="text" placeholder="Email">
         </div>
 
-        <label class="text-sm block mt-6">Classifications</label>
-        <div v-if="user" class="flex flex-col gap-4">
-            <div v-for="(value, index) in classifications" :key="index" class="flex gap-4">
-                <input v-model="value.key" type="text" placeholder="Key">
-                <input v-model="value.value" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="removeClassification(index)">
-                    x
-                </button>
-            </div>
-            <div class="flex gap-4">
-                <input v-model="newClassificationKey" type="text" placeholder="Key">
-                <input v-model="newClassificationValue" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="addClassification()">
-                    +
-                </button>
-            </div>
-        </div>
+        <template v-if="user">
+            <KeyValues v-model="classifications" title="Classifications"/>
 
-        <label class="text-sm block mt-6">Identifiers</label>
-        <div v-if="user" class="flex flex-col gap-4">
-            <div v-for="(value, index) in identifiers" :key="index" class="flex gap-4">
-                <input v-model="value.key" type="text" placeholder="Key">
-                <input v-model="value.value" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="removeIdentifier(index)">
-                    x
-                </button>
-            </div>
-            <div class="flex gap-4">
-                <input v-model="newIdentifierKey" type="text" placeholder="Key">
-                <input v-model="newIdentifierValue" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="addIdentifier()">
-                    +
-                </button>
-            </div>
-        </div>
+            <KeyValues v-model="identifiers" title="Identifiers"/>
 
-        <label class="text-sm block mt-6">Data</label>
-        <div v-if="user" class="flex flex-col gap-4">
-            <div v-for="(value, index) in data" :key="index" class="flex gap-4">
-                <input v-model="value.key" type="text" placeholder="Key">
-                <input v-model="value.value" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="removeData(index)">
-                    x
-                </button>
-            </div>
-            <div class="flex gap-4">
-                <input v-model="newDataKey" type="text" placeholder="Key">
-                <input v-model="newDataValue" type="text" placeholder="Value">
-                <button class="bg-gray-500 text-white" @click="addData()">
-                    +
-                </button>
-            </div>
-        </div>
+            <KeyValues v-model="data" title="Data"/>
+        </template>
 
         <label class="text-sm block mt-6">Select company</label>
-        <select
-            :value="user.company?.id"
-            class="mb-6"
-            :disabled="!dataset.companies || dataset.companies.length < 1"
-            @change="setUserCompany(($event.target as HTMLInputElement).value)">
-            <option value="" disabled selected>
-                {{ dataset.companies && dataset.companies.length > 0 ? "Select a company" : "No companies" }}
+        <select :value="user.company?.id"
+                class="mb-6"
+                :disabled="!dataset.companies || dataset.companies.length < 1"
+                @change="setUserCompany(($event.target as HTMLInputElement).value)">
+            <option value="">
+                {{ dataset.companies && dataset.companies.length > 0 ? "No company assigned" : "No companies exist" }}
             </option>
             <option v-for="(userCompanyOption, index) in dataset.companies" :key="index" :value="userCompanyOption.id">
                 {{ userCompanyOption.id }}
@@ -146,7 +101,7 @@
 
         <div class="mt-6">
             <button @click="saveUser">
-                Save
+                Save user
             </button>
 
             <span v-if="savedUser" class="ml-4 text-green-600">
@@ -163,7 +118,9 @@
         </div>
 
         <div class="flex gap-3 items-center">
-            <button v-if="dataset.companies && dataset.companies.length > 0" class="bg-gray-500 text-white" @click="addEmptyCompany">
+            <button v-if="dataset.companies && dataset.companies.length > 0"
+                    class="bg-gray-500 text-white"
+                    @click="addEmptyCompany">
                 Add new company
             </button>
             <template v-if="dataset.companies && dataset.companies?.length > 0">
@@ -172,7 +129,9 @@
                     <select :value="company?.id"
                             class="mb-6"
                             @change="setCompany(($event.target as HTMLInputElement).value)">
-                        <option v-for="(companyOption, index) in dataset.companies" :key="index" :value="companyOption.id">
+                        <option v-for="(companyOption, index) in dataset.companies"
+                                :key="index"
+                                :value="companyOption.id">
                             {{ companyOption.id }}
                         </option>
                     </select>
@@ -198,15 +157,16 @@
 
         <div class="mt-6">
             <label class="text-sm block">Select parent company</label>
-            <select
-                :value="company?.parent?.id"
-                :disabled="!dataset.companies || dataset.companies.length < 2"
-                class="mb-6"
-                @change="setParentCompany(($event.target as HTMLInputElement).value)">
+            <select :value="company?.parent?.id"
+                    :disabled="!dataset.companies || dataset.companies.length < 2"
+                    class="mb-6"
+                    @change="setParentCompany(($event.target as HTMLInputElement).value)">
                 <option value="" disabled selected>
                     {{ dataset.companies && dataset.companies.length > 1 ? "Select a company" : "No other companies" }}
                 </option>
-                <option v-for="(parentCompanyOption, index) in dataset.companies?.filter(x => x.id !== company.id)" :key="index" :value="parentCompanyOption.id">
+                <option v-for="(parentCompanyOption, index) in dataset.companies?.filter(x => x.id !== company.id)"
+                        :key="index"
+                        :value="parentCompanyOption.id">
                     {{ parentCompanyOption.id }}
                 </option>
             </select>
@@ -214,7 +174,7 @@
 
         <div>
             <button @click="saveCompany">
-                Save
+                Save company
             </button>
 
             <span v-if="savedCompany" class="ml-4 text-green-600">
@@ -229,6 +189,7 @@ import contextStore from '@/stores/context.store';
 import { DataValueFactory, UserFactory, type Company, type DataValue, type User } from '@relewise/client';
 import { ref } from 'vue';
 import basketService from '@/services/basket.service';
+import KeyValues from '@/components/KeyValues.vue';
 
 const tracking = contextStore.tracking;
 const dataset = contextStore.context;
@@ -236,12 +197,6 @@ const user = contextStore.user;
 
 const savedUser = ref(false);
 const savedCompany = ref(false);
-const newClassificationKey = ref('');
-const newClassificationValue = ref('');
-const newIdentifierKey = ref('');
-const newIdentifierValue = ref('');
-const newDataKey = ref('');
-const newDataValue = ref('');
 
 const classifications = ref(Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null })));
 const identifiers = ref(Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null })));
@@ -270,89 +225,34 @@ function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
     }
 }
 
-function addClassification() {
-    if (!newClassificationKey.value && !newClassificationValue.value) return;
-
-    if (!newClassificationKey.value) {
-        alert('A classification key is required!');
-        return;
-    }
-
-    classifications.value.push({key: newClassificationKey.value, value: newClassificationValue.value});
-
-    newClassificationKey.value = '';
-    newClassificationValue.value = '';
-}
-
-function removeClassification(index: number) {
-    classifications.value.splice(index, 1);
-}
-
-function addIdentifier() {
-    if (!newIdentifierKey.value && !newIdentifierValue.value) return;
-
-    if (!newIdentifierKey.value) {
-        alert('A indentifier key is required!');
-        return;
-    }
-
-    identifiers.value.push({key: newIdentifierKey.value, value: newIdentifierValue.value});
-
-    newIdentifierKey.value = '';
-    newIdentifierValue.value = '';
-}
-
-function removeIdentifier(index: number) {
-    identifiers.value.splice(index, 1);
-}
-
-function addData() {
-    if (!newDataKey.value && !newDataValue.value) return;
-
-    if (!newDataKey.value) { 
-        alert('A data key is required!');        
-        return;
-    }
-
-    data.value.push({ key: newDataKey.value, value: newDataValue.value });
-
-    newDataKey.value = '';
-    newDataValue.value = '';
-}
-
-function removeData(index: number) {
-    data.value.splice(index, 1);
-}
-
 function saveUser() {
-    addClassification();
-    addIdentifier();
-    addData();
-
     user.value.classifications = classifications.value.reduce((a, b) => {
         a[b.key] = b.value;
         return a;
-    }, { } as Record<string, string | null>);
+    }, {} as Record<string, string | null>);
 
     user.value.identifiers = identifiers.value.reduce((a, b) => {
         a[b.key] = b.value;
         return a;
-    }, { } as Record<string, string | null>);
+    }, {} as Record<string, string | null>);
 
-    console.log(data.value);
     user.value.data = data.value.reduce((a, b) => {
         a[b.key] = DataValueFactory.string(b.value ?? '');
         return a;
-    }, { } as Record<string, DataValue>);
+    }, {} as Record<string, DataValue>);
 
     contextStore.persistState();
-
     savedUser.value = true;
     setTimeout(() => savedUser.value = false, 3000);
 }
 
 function setUser(userToSet: User) {
     contextStore.setUser(userToSet);
+
+    classifications.value = Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null }));
+    identifiers.value = Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null }));
+    data.value = Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null }));
+
     basketService.clear();
 }
 
@@ -377,9 +277,7 @@ function deleteUser() {
 
 function setUserCompany(companyToSet: string) {
     const selectedCompany = dataset.value.companies?.find(x => x.id === companyToSet);
-
-    if (selectedCompany)
-        user.value.company = selectedCompany;
+    user.value.company = selectedCompany;
 }
 
 function setCompany(companyToSet: string) {
@@ -397,18 +295,18 @@ function setParentCompany(companyToSet: string) {
 }
 
 function saveCompany() {
-    if (!dataset.value.companies) 
+    if (!dataset.value.companies)
         dataset.value.companies = [];
 
     if (!company.value || !company.value.id) {
-        alert('A company id is required!');
+        alert('A company id is required.');
         return;
     }
 
     dataset.value.companies = dataset.value.companies.filter(x => x.id !== company.value.id);
 
     dataset.value.companies.push(company.value);
-    
+
     contextStore.persistState();
 
     savedCompany.value = true;
