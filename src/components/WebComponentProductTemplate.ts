@@ -1,5 +1,5 @@
 import { findImage } from '@/helpers/imageHelper';
-import type { ProductResult } from '@relewise/client8';
+import type { ProductResult } from '@relewise/client';
 import type { TemplateExtensions } from '@relewise/web-components';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {

@@ -1,4 +1,4 @@
-import type { DataValue, ProductResult } from '@relewise/client8';
+import type { DataValue, ProductResult } from '@relewise/client';
 
 export const findImage = (product: ProductResult) => {
     return mapDataKey(product.data ?? {}) ??

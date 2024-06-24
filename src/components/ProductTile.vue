@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProductResult } from '@relewise/client8';
+import type { ProductResult } from '@relewise/client';
 import { toRefs, type PropType } from 'vue';
 import ProductImage from './ProductImage.vue';
 

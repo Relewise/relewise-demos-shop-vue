@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { PhotoIcon } from '@heroicons/vue/24/outline';
-import type { ProductResult } from '@relewise/client8';
+import type { ProductResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
 import { findImage } from '@/helpers/imageHelper';
 import { computed } from 'vue';

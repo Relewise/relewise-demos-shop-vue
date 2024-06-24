@@ -82,7 +82,7 @@
 <script lang="ts" setup>
 import ProductTile from '../components/ProductTile.vue';
 import { ref } from 'vue';
-import { type ProductRecommendationResponse, PurchasedWithCurrentCartBuilder } from '@relewise/client8';
+import { type ProductRecommendationResponse, PurchasedWithCurrentCartBuilder } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';

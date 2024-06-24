@@ -1,4 +1,4 @@
-import type { ProductResult } from '@relewise/client8';
+import type { ProductResult } from '@relewise/client';
 import { computed, reactive } from 'vue';
 
 export interface ILineItem {

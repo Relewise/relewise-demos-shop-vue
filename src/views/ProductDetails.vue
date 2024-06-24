@@ -61,7 +61,7 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductSearchBuilder, type ProductResult } from '@relewise/client8';
+import { ProductSearchBuilder, type ProductResult } from '@relewise/client';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
