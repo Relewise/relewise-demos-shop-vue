@@ -24,6 +24,14 @@ input[type="text"] {
 
 button {
     @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded shadow-sm;
+
+    &.outline {
+        @apply text-gray-500 border-[1px] border-solid border-gray-500 bg-white outline-none py-1.5;
+
+        &:hover {
+            @apply bg-gray-100;
+        }
+    }
 }
 
 a {
