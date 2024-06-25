@@ -99,6 +99,14 @@
             </option>
         </select>
 
+        <div v-if="errors.length > 0">
+            <ul class="bg-red-100 text-red-900 px-3 py-1.5 rounded">
+                <li v-for="msg in errors" :key="msg">
+                    {{ msg }}
+                </li>
+            </ul>
+        </div>
+
         <div class="mt-6">
             <button @click="saveUser">
                 Save user
@@ -201,7 +209,7 @@ const savedCompany = ref(false);
 const classifications = ref(Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null })));
 const identifiers = ref(Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null })));
 const data = ref(Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null })));
-
+const errors = ref<string[]>([]);
 const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
 
 function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
@@ -226,6 +234,20 @@ function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
 }
 
 function saveUser() {
+    errors.value = [];
+    if (classifications.value.some(x => !x.key || !x.value)) {
+        errors.value.push('You must provide a key and value for all classifications');
+    }
+    if (identifiers.value.some(x => !x.key || !x.value)) {
+        errors.value.push('You must provide a key and value for all identifiers');
+    }
+    if (data.value.some(x => !x.key || !x.value)) {
+        errors.value.push('You must provide a key and value for all data elements');
+    }
+    if (errors.value.length > 0) {
+        return;
+    }
+
     user.value.classifications = classifications.value.reduce((a, b) => {
         a[b.key] = b.value;
         return a;
