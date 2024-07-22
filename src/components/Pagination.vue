@@ -1,6 +1,6 @@
 <template>
     <div v-if="pageCount > 1" class="flex items-center gap-2">
-        <button :disabled="isFirstPage" class="item" @click="prev">
+        <button :disabled="isFirstPage" class="item" @click="selectPage(currentPage - 1)">
             <ChevronLeftIcon class="h-5 w-3"/>
         </button>
         <button
@@ -13,7 +13,7 @@
             {{ item }}
         </button>
         
-        <button :disabled="isLastPage" class="item" @click="next">
+        <button :disabled="isLastPage" class="item" @click="selectPage(currentPage + 1)">
             <ChevronRightIcon class="h-5 w-3"/>
         </button>
     </div>
@@ -43,8 +43,6 @@ const {
     pageCount,
     isFirstPage,
     isLastPage,
-    prev,
-    next,
 } = useOffsetPagination({
     total: total,
     page: modelValue,
