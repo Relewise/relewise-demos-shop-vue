@@ -92,6 +92,9 @@ function typeAHeadSearch() {
 
 async function search() {
     abortController.abort();
+    
+    window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
+
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
 
     if (!show) return; else showOrHide(show);
@@ -224,7 +227,7 @@ function searchFor(term: string) {
     </div>
 
     <Teleport to="#modal">
-        <div v-if="open" class="modal">
+        <div v-if="open" id="search-result-overlay" class="modal">
             <div v-if="result" class="container mx-auto pt-3 pb-10">
                 <div class="flex gap-3">
                     <div class="hidden lg:block lg:w-1/5">
@@ -277,7 +280,7 @@ function searchFor(term: string) {
                                              :is-promotion="product.isPromotion"/>
                             </div>
                             <div class="py-3 flex justify-center">
-                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" @change="search"/>
+                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize" @change="search"/>
                             </div>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
