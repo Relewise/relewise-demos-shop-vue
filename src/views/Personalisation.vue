@@ -35,7 +35,7 @@
                         <option v-for="(userOption, index) in dataset.users"
                                 :key="index"
                                 :value="JSON.stringify(userOption)">
-                            {{ userOption.email || userOption.authenticatedId || userOption.temporaryId || "Unknown" }}
+                            {{ displayUser(userOption) }}
                         </option>
                     </select>
                 </div>
@@ -198,6 +198,7 @@ import { DataValueFactory, UserFactory, type Company, type DataValue, type User 
 import { ref } from 'vue';
 import basketService from '@/services/basket.service';
 import KeyValues from '@/components/KeyValues.vue';
+import { displayUser } from '@/helpers/userHelper';
 
 const tracking = contextStore.tracking;
 const dataset = contextStore.context;

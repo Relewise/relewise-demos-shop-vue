@@ -5,6 +5,8 @@ import { ref, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
+import contextStore from '@/stores/context.store';
+import { displayUser } from '@/helpers/userHelper';
 
 defineProps({
     lineItemsCount: { type: Number, required: true},
@@ -109,7 +111,8 @@ const open = ref<string | null>(null);
                     <li class="flex-grow"></li>
                     <li class="inline-flex items-center gap-2">
                         <RouterLink to="/personalisation"
-                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
+                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black"
+                                    :title="displayUser(contextStore.user.value)">
                             <UserIcon class="w-5 h-5 mr-1"/> Personalisation
                         </RouterLink>
                         <RouterLink to="/app-settings"
