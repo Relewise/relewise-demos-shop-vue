@@ -10,6 +10,7 @@ import router from '@/router';
 import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
+import Pagination from '../components/Pagination.vue';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -21,6 +22,8 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
 let abortController = new AbortController();
+
+const pageSize = 40;
 
 function close() {
     showOrHide(false);
@@ -89,6 +92,9 @@ function typeAHeadSearch() {
 
 async function search() {
     abortController.abort();
+    
+    window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
+
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
 
     if (!show) return; else showOrHide(show);
@@ -132,7 +138,7 @@ async function search() {
                     s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
-            .pagination(p => p.setPageSize(30).setPage(page.value))
+            .pagination(p => p.setPageSize(pageSize).setPage(page.value))
             .setRetailMedia({
                 location: {
                     key: 'SEARCH_RESULTS_PAGE',
@@ -221,7 +227,7 @@ function searchFor(term: string) {
     </div>
 
     <Teleport to="#modal">
-        <div v-if="open" class="modal">
+        <div v-if="open" id="search-result-overlay" class="modal">
             <div v-if="result" class="container mx-auto pt-3 pb-10">
                 <div class="flex gap-3">
                     <div class="hidden lg:block lg:w-1/5">
@@ -246,7 +252,7 @@ function searchFor(term: string) {
                             <h2 v-if="filters.term" class="text-xl lg:text-3xl">
                                 Showing results for <strong>{{ filters.term }}</strong>
                             </h2> 
-                            <span v-if="result.hits > 0">Showing {{ page * 30 - 29 }} - {{ result?.hits < 30 ? result?.hits : page * 30 }} of {{ result?.hits }}</span>
+                            <span v-if="result.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{ result?.hits < pageSize ? result?.hits : page * pageSize }} of {{ result?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
                             <Sorting v-model="filters.sort" @change="search"/>
@@ -272,6 +278,9 @@ function searchFor(term: string) {
                                              :key="index"
                                              :product="product.product"
                                              :is-promotion="product.isPromotion"/>
+                            </div>
+                            <div class="py-3 flex justify-center">
+                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize" @change="search"/>
                             </div>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
