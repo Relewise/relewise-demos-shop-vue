@@ -1,6 +1,8 @@
 import type { User } from '@relewise/client';
 
-export const displayUser = (user: User) => {
+export const displayUser = (user: User | null | undefined) => {
+    if (!user) return '';
+
     if (user.email)
         return user.email;
 
