@@ -173,7 +173,7 @@ class AppContext {
     }
 
     private ensureUsers() {
-        if (!this.context.value.users) {
+        if (!this.context.value.users || this.context.value.users.length === 0) {
             this.context.value.users = [UserFactory.anonymous()];
         }
 
