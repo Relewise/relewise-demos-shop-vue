@@ -159,7 +159,7 @@ function shareLink() {
         selectedUserIndex: context.value.selectedUserIndex,
     };
 
-    navigator.clipboard.writeText(window.location.href + '?share=' + btoa(JSON.stringify(model)));
+    navigator.clipboard.writeText(window.location.href + '?share=' + encodeURIComponent(btoa(JSON.stringify(model))));
     copied.value = true;
     setTimeout(() => copied.value = false, 3000);
 }
