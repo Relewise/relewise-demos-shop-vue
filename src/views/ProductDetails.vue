@@ -37,7 +37,8 @@
                 <div class="text-2xl font-semibold">
                     Purchased with
                 </div>
-                <relewise-purchased-with-product 
+                <relewise-purchased-with-product
+                    :key="productId" 
                     class="grid grid-cols-2 lg:grid-cols-5"
                     number-of-recommendations="5" 
                     :displayed-at-location="defaultSettings.displayedAtLocation" 
@@ -47,7 +48,8 @@
                 <div class="text-2xl font-semibold">
                     Products viewed after viewing
                 </div>
-                <relewise-products-viewed-after-viewing-product 
+                <relewise-products-viewed-after-viewing-product
+                    :key="productId" 
                     class="grid grid-cols-2 lg:grid-cols-5"
                     number-of-recommendations="5" 
                     :displayed-at-location="defaultSettings.displayedAtLocation" 
@@ -73,9 +75,7 @@ const route = useRoute();
 const defaultSettings = ref(contextStore.defaultSettings);
 
 async function init() {
-    
     const id = route.params.id;
-
     if (id && !Array.isArray(id)) {
         productId.value = id;
 
