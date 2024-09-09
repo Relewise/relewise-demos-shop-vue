@@ -56,6 +56,7 @@ import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
+import { addAssortmentFilters } from '../stores/customFilters';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -132,6 +133,7 @@ async function search() {
         })
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
+            addAssortmentFilters(f);
         })
         .facets(f => f
             .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null)
@@ -151,6 +153,9 @@ async function search() {
             }
         })
         .build();
+
+    request.custom = {Debug_TraceMerchandising: "true"}
+
 
     const query = { ...filters.value };
     if (!applySalesPriceFacet) delete query.price;

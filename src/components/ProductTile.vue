@@ -26,6 +26,11 @@ const { product } = toRefs(props);
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
                     ON SALE
                 </span>
+                <span
+                    v-if="product.data!.soldOut"
+                    class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
+                    SOLD OUT
+                </span>
             </div>
         </div>
         <div class="mt-3 px-3">

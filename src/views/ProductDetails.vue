@@ -32,7 +32,21 @@
                 </div>
             </div>
         </div>
-        <relewise-product-recommendation-batcher>
+
+        <div v-if="product!.data!.soldOut">
+            <div class="my-3">
+            <div class="text-2xl font-semibold">
+                    Sold out....consider an alternative
+                </div>
+            <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <ProductTile v-for="(product, index) in similarProds?.recommendations"
+                    :key="index"
+                     :product="product" />
+                </div>
+            </div>
+        </div>
+        <div v-else>
+            <relewise-product-recommendation-batcher>
             <div class="my-3">
                 <div class="text-2xl font-semibold">
                     Purchased with
@@ -56,6 +70,8 @@
                     :product-id="productId"/>
             </div>
         </relewise-product-recommendation-batcher>
+        </div>
+
     </div>
 </template>
 
@@ -63,14 +79,17 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductSearchBuilder, type ProductResult } from '@relewise/client';
+import { ProductRecommendationResponse, ProductSearchBuilder, SimilarProductsProductBuilder, type ProductResult } from '@relewise/client';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
+import { context } from '@relewise/web-components';
+import ProductTile from '../components/ProductTile.vue';
 
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
 const route = useRoute();
+const similarProds = ref<ProductRecommendationResponse | null | undefined>(null);
 
 const defaultSettings = ref(contextStore.defaultSettings);
 
@@ -91,6 +110,16 @@ async function init() {
 
         const searcher = contextStore.getSearcher();
         product.value = (await searcher.searchProducts(request))?.results![0];
+
+        const similarproductsRequest = new SimilarProductsProductBuilder(contextStore.defaultSettings)
+        .product({productId: productId.value})
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .build();
+        similarproductsRequest.settings.numberOfRecommendations = 4;
+
+        const recommender = contextStore.getRecommender();
+        similarProds.value = await recommender.recommendSimilarProducts(similarproductsRequest);
+       
     }
 }
 

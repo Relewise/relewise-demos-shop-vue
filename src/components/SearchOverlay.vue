@@ -11,6 +11,7 @@ import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
+import { addAssortmentFilters } from '../stores/customFilters';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -118,6 +119,7 @@ async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
 
     const request = new SearchCollectionBuilder()
+        .filters(f => addAssortmentFilters(f))
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
@@ -154,6 +156,8 @@ async function search() {
             .build())
         .build();
 
+    request.custom = {Debug_TraceMerchandising: "true"}
+    
     abortController = new AbortController();
     const searcher = contextStore.getSearcher();
     const response = await searcher.batch(request, { abortSignal: abortController.signal });

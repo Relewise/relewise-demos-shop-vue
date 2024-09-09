@@ -1,7 +1,8 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
+import { addAssortmentFilters } from './customFilters';
 
 export interface IDataset {
     datasetId: string;
@@ -221,12 +222,20 @@ class AppContext {
                     product: this.selectedProductProperties,
                     variant: { allData: true },
                 },
+                filters: {
+                    product(builder) { addAssortmentFilters(builder); 
+                     builder.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(true)), true, false, true);
+                    }
+                    
+                },
                 templates: {
                     product: (product, extentions) => {
                         return WebComponentProductTemplate(product, extentions);
                     },
                 },
-            }).useRecommendations();
+            }).useRecommendations(
+
+            );
     }
 }
 
