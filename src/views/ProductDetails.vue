@@ -85,6 +85,7 @@ import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import { context } from '@relewise/web-components';
 import ProductTile from '../components/ProductTile.vue';
+import { addAssortmentFilters } from '@/stores/customFilters';
 
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
@@ -114,6 +115,9 @@ async function init() {
         const similarproductsRequest = new SimilarProductsProductBuilder(contextStore.defaultSettings)
         .product({productId: productId.value})
         .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .filters(
+            f=> addAssortmentFilters(f)
+        )
         .build();
         similarproductsRequest.settings.numberOfRecommendations = 4;
 
