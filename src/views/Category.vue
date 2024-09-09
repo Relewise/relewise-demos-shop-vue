@@ -154,9 +154,6 @@ async function search() {
         })
         .build();
 
-    request.custom = {Debug_TraceMerchandising: "true"}
-
-
     const query = { ...filters.value };
     if (!applySalesPriceFacet) delete query.price;
 

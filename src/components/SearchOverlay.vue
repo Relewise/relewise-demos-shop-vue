@@ -155,8 +155,6 @@ async function search() {
             .take(5)
             .build())
         .build();
-
-    request.custom = {Debug_TraceMerchandising: "true"}
     
     abortController = new AbortController();
     const searcher = contextStore.getSearcher();
