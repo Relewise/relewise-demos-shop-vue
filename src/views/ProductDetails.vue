@@ -117,7 +117,7 @@ async function init() {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .filters(
             f=> {addAssortmentFilters(f); 
-                f.addProductCategoryIdFilter("ImmediateParentOrItsParent", product.value?.categoryPaths[0].pathFromRoot[1].id);
+                f.addProductCategoryIdFilter("ImmediateParentOrItsParent", product.value?.categoryPaths[0].pathFromRoot[1].id as string);
             }
         )
         .build();
