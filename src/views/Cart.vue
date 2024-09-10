@@ -68,7 +68,6 @@
             </button>
         </div>
     </div>
-
     <div v-if="result" class="">
         <h2 class="text-2xl font-semibold mt-4">
             Recommendations
@@ -82,17 +81,21 @@
 <script lang="ts" setup>
 import ProductTile from '../components/ProductTile.vue';
 import { ref } from 'vue';
-import { type ProductRecommendationResponse, PurchasedWithCurrentCartBuilder } from '@relewise/client';
+import { ConditionBuilder, DataValueFactory, type ProductRecommendationResponse, PurchasedWithCurrentCartBuilder, PurchasedWithMultipleProductsBuilder } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
+import { addAssortmentFilters } from '@/stores/customFilters';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
+const mappedProducts = basketService.model.value.lineItems.map((item) => ({
+  productId: item.product.productId as string
+}));
 
 function init() {
     if (!isEmpty.value) {
@@ -104,13 +107,22 @@ init();
 
 async function recommend() {
     const take = 5;
-    const request = new PurchasedWithCurrentCartBuilder(contextStore.defaultSettings)
+    // const request = new PurchasedWithCurrentCartBuilder(contextStore.defaultSettings)
+    const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
+    
+        .addProducts(mappedProducts)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
         .setNumberOfRecommendations(take)
+        .filters(
+                 f=> {
+                    addAssortmentFilters(f); 
+                    f.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(true)), true, false, true);
+                 }
+         )
         .build();
 
-    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithCurrentCart(request);
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
     contextStore.assertApiCall(response);
 
     result.value = response;

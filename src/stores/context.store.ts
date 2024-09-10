@@ -223,8 +223,8 @@ class AppContext {
                     variant: { allData: true },
                 },
                 filters: {
-                    product(builder) { addAssortmentFilters(builder); 
-                     builder.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(true)), true, false, true);
+                     product(builder) { addAssortmentFilters(builder); 
+                     builder.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.string("true"), true), true, false, false);
                     }
                     
                 },

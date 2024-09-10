@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div v-if="product!.data!.soldOut">
+        <div v-if="product!.data && product!.data.soldOut && product!.data.soldOut.value as string == 'true'">
             <div class="my-3">
             <div class="text-2xl font-semibold">
                     Sold out....consider an alternative
@@ -116,7 +116,9 @@ async function init() {
         .product({productId: productId.value})
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .filters(
-            f=> addAssortmentFilters(f)
+            f=> {addAssortmentFilters(f); 
+                f.addProductCategoryIdFilter("ImmediateParentOrItsParent", product.value?.categoryPaths[0].pathFromRoot[1].id);
+            }
         )
         .build();
         similarproductsRequest.settings.numberOfRecommendations = 4;
