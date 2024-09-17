@@ -7,7 +7,6 @@ export function addAssortmentFilters(filterBuilder: FilterBuilder) {
     if(appContext.user.value.classifications['country'])
     {
         filterBuilder.addProductDataFilter('AvailableInMarkets', (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(appContext.user.value!.classifications!['country']!)));
-        console.log("test - " + appContext.user.value.classifications['country'])
     }
     if(appContext.user.value.classifications['channel'])
     {
