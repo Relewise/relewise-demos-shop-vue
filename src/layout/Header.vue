@@ -101,8 +101,7 @@ onBeforeUnmount(() => {
                     </ul>
                     <ul v-else-if="mainCategories.length > 0">
                         <div class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                             @mouseover="open = '1'"
-                             @mouseleave="handleMouseLeave">
+                             @mouseover="open = '1'">
                             Categories
                         </div>
                         <Teleport v-if="open === '1'" to="#navigationmodal">
