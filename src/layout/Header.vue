@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
-import { ref, type PropType } from 'vue';
+import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
@@ -14,17 +14,33 @@ defineProps({
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true},
 });
 
-const navigationmodal = ref(null);
+const navigationmodal = ref<HTMLElement | null>(null);
 onClickOutside(navigationmodal, () => open.value = null);
 
 const open = ref<string | null>(null);
+let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
+const handleMouseOver = (categoryId: string) => {
+    if (hoverTimeout) clearTimeout(hoverTimeout); 
+    hoverTimeout = setTimeout(() => {
+        open.value = categoryId;
+    }, 200);
+};
+
+const handleMouseLeave = () => {
+    if (hoverTimeout) clearTimeout(hoverTimeout); 
+    open.value = null;
+};
+
+onBeforeUnmount(() => {
+    if (hoverTimeout) clearTimeout(hoverTimeout); 
+});
 </script>
 
 <template>
     <header class="bg-white shadow-sm">
         <div class="container mx-auto px-2">
-            <div class="grid xl:flex gap-2 py-2">
+            <div class="grid xl:flex gap-2 py-2" @mouseover="handleMouseLeave">
                 <div class="flex items-center">
                     <div class="xl:hidden">
                         <SideMenu :main-categories="mainCategories"/>
@@ -54,14 +70,15 @@ const open = ref<string | null>(null);
                 <ul class="flex w-full gap-2">
                     <ul v-if="hasChildCategories" class="flex overflow-y-auto scrollable-element">
                         <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative pr-5">
-                            <RouterLink :to="{ name: 'category', params: { id: category.id } }"
-                                        class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                                        @mouseover="category.children.length > 0 ? open = category.id : open = null">
+                            <RouterLink 
+                                :to="{ name: 'category', params: { id: category.id } }"
+                                class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                                @mouseover="handleMouseOver(category.id)">
                                 {{ category.category.displayName ?? category.category.categoryId }}
                             </RouterLink>
-                            <Teleport v-if="open == category.id" to="#navigationmodal">
+                            <Teleport v-if="open === category.id" to="#navigationmodal">
                                 <div ref="navigationmodal" class="navigationmodal">
-                                    <div class="bg-white overflow-x-auto  modalcontent">
+                                    <div class="bg-red overflow-x-auto modalcontent">
                                         <div class="container mx-auto">
                                             <ul v-if="category.children.length > 0"
                                                 class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
@@ -84,10 +101,11 @@ const open = ref<string | null>(null);
                     </ul>
                     <ul v-else-if="mainCategories.length > 0">
                         <div class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                             @mouseover="open = '1'">
+                             @mouseover="open = '1'"
+                             @mouseleave="handleMouseLeave">
                             Categories
                         </div>
-                        <Teleport v-if="open == '1'" to="#navigationmodal">
+                        <Teleport v-if="open === '1'" to="#navigationmodal">
                             <div ref="navigationmodal" class="navigationmodal">
                                 <div class="bg-white overflow-x-auto mb-5 modalcontent">
                                     <div class="container mx-auto">
