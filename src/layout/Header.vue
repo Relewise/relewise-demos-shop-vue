@@ -24,7 +24,7 @@ const handleMouseOver = (categoryId: string) => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
     hoverTimeout = setTimeout(() => {
         open.value = categoryId;
-    }, 200);
+    }, 250);
 };
 
 const handleMouseLeave = () => {
@@ -38,7 +38,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <header class="bg-white shadow-sm">
+    <header class="bg-white shadow-sm" @mouseleave="handleMouseLeave">
         <div class="container mx-auto px-2">
             <div class="grid xl:flex gap-2 py-2" @mouseover="handleMouseLeave">
                 <div class="flex items-center">
@@ -76,9 +76,9 @@ onBeforeUnmount(() => {
                                 @mouseover="handleMouseOver(category.id)">
                                 {{ category.category.displayName ?? category.category.categoryId }}
                             </RouterLink>
-                            <Teleport v-if="open === category.id" to="#navigationmodal">
-                                <div ref="navigationmodal" class="navigationmodal">
-                                    <div class="bg-red overflow-x-auto modalcontent">
+                            <div v-if="open === category.id" to="#navigationmodal">
+                                <div ref="navigationmodal" class="navigationmodal" @mouseover="handleMouseOver(category.id)">
+                                    <div class="bg-white overflow-x-auto modalcontent">
                                         <div class="container mx-auto">
                                             <ul v-if="category.children.length > 0"
                                                 class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
@@ -94,17 +94,17 @@ onBeforeUnmount(() => {
                                             </ul>
                                         </div>
                                     </div>
-                                    <div class="backdrop" @click="open = null" @mouseenter="open = null"></div>
+                                    <div class="backdrop" @mouseenter="handleMouseLeave"></div>
                                 </div>
-                            </Teleport>
+                            </div>
                         </li>
                     </ul>
                     <ul v-else-if="mainCategories.length > 0">
                         <div class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                             @mouseover="open = '1'">
+                             @mouseover="handleMouseOver('1')">
                             Categories
                         </div>
-                        <Teleport v-if="open === '1'" to="#navigationmodal">
+                        <div v-if="open === '1'" to="#navigationmodal">
                             <div ref="navigationmodal" class="navigationmodal">
                                 <div class="bg-white overflow-x-auto mb-5 modalcontent">
                                     <div class="container mx-auto">
@@ -121,9 +121,9 @@ onBeforeUnmount(() => {
                                         </ul>
                                     </div>
                                 </div>
-                                <div class="backdrop" @click="open = null" @mouseenter="open = null"></div>
+                                <div class="backdrop" @mouseenter="handleMouseLeave"></div>
                             </div>
-                        </Teleport>
+                        </div>
                     </ul>
                     <li class="flex-grow"></li>
                     <li class="inline-flex items-center gap-2">
