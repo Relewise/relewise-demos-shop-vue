@@ -18,7 +18,9 @@ const { product } = toRefs(props);
         <div class="relative mx-3 flex h-max-[275px] overflow-hidden justify-center">
             <ProductImage :product="product"/>
             <div class="absolute top-0 left-0 flex gap-1">
-                <span v-if="isPromotion" class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white">
+                <span v-if="isPromotion"
+                      class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white"
+                      title="This product is highlighted by our supplier as it could be relevant or interesting for you.">
                     SPONSORED
                 </span>
                 <span
