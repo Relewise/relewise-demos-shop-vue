@@ -23,12 +23,15 @@ let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 const handleMouseOver = (categoryId: string) => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
     hoverTimeout = setTimeout(() => {
+        document.body.classList.add('overflow-hidden', 'mr-4');
         open.value = categoryId;
     }, 250);
 };
 
 const handleMouseLeave = () => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
+    document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('mr-4');
     open.value = null;
 };
 
