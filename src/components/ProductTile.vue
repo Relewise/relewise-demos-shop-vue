@@ -2,6 +2,8 @@
 import type { ProductResult } from '@relewise/client';
 import { toRefs, type PropType } from 'vue';
 import ProductImage from './ProductImage.vue';
+import Popover from '@/components/Popover.vue';
+import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
@@ -19,10 +21,26 @@ const { product } = toRefs(props);
             <ProductImage :product="product"/>
             <div class="absolute top-0 left-0 flex gap-1">
                 <span v-if="isPromotion"
-                      class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white"
-                      title="This product is highlighted by our supplier as it could be relevant or interesting for you.">
+                      class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white">
                     SPONSORED
                 </span>
+                <Popover v-if="isPromotion" placement="bottom-start">
+                    <ExclamationCircleIcon class="w-5 h-5 text-gray-500 hover:text-gray-500" @click="(e) => e.preventDefault()"/>
+                           
+                    <template #content>
+                        <div class="w-96">
+                            <div class="flex flex-col">
+                                <div class="font-semibold px-2 text-14 bg-gray-100 py-2">
+                                    Retail Media
+                                </div>
+                                <hr class="p-0 my-0">
+                                <div class="p-2 text-13">
+                                    This product is highlighted by our supplier as it could be relevant or interesting for you.
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </Popover>
                 <span
                     v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
