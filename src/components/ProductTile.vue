@@ -20,13 +20,10 @@ const { product } = toRefs(props);
         <div class="relative mx-3 flex h-max-[275px] overflow-hidden justify-center">
             <ProductImage :product="product"/>
             <div class="absolute top-0 left-0 flex gap-1">
-                <span v-if="isPromotion"
-                      class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white">
-                    SPONSORED
-                </span>
-                <Popover v-if="isPromotion" placement="bottom-start">
-                    <ExclamationCircleIcon class="w-5 h-5 text-gray-500 hover:text-gray-500" @click="(e) => e.preventDefault()"/>
-                           
+                <Popover v-if="isPromotion" placement="bottom-start" class="rounded bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1">
+                    <span @click="(e) => e.preventDefault()">SPONSORED</span>
+                    <ExclamationCircleIcon class="w-5 h-5" @click="(e) => e.preventDefault()"/>
+    
                     <template #content>
                         <div class="w-96">
                             <div class="flex flex-col">
@@ -41,6 +38,7 @@ const { product } = toRefs(props);
                         </div>
                     </template>
                 </Popover>
+
                 <span
                     v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
