@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { AdjustmentsHorizontalIcon, Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
@@ -7,6 +7,8 @@ import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import contextStore from '@/stores/context.store';
 import { displayUser } from '@/helpers/userHelper';
+import Popover from '@/components/Popover.vue';
+import ContextSwitcher from '@/components/ContextSwitcher.vue';
 
 defineProps({
     lineItemsCount: { type: Number, required: true},
@@ -58,7 +60,16 @@ onBeforeUnmount(() => {
                     <div class="xl:items-center flex-grow">
                         <SearchOverlay/>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center gap-2">
+                        <Popover placement="bottom-end" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200 cursor-pointer">
+                            <AdjustmentsHorizontalIcon class="h-8 w-8"/>
+    
+                            <template #content>
+                                <div class="w-96">
+                                    <ContextSwitcher/>
+                                </div>
+                            </template>
+                        </Popover>
                         <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
                             <ShoppingBagIcon class="h-8 w-8"/>
                             <span v-if="lineItemsCount > 0"

@@ -81,7 +81,6 @@
 
 <script lang="ts" setup>
 import router from '@/router';
-import basketService from '@/services/basket.service';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { ref } from 'vue';
 
@@ -118,7 +117,6 @@ init();
 
 function setDataset(datasetId: string) {
     contextStore.setDataset(datasetId);
-    basketService.clear();
 
     window.location.reload();
 }
