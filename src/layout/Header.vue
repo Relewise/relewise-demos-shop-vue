@@ -140,17 +140,6 @@ onBeforeUnmount(() => {
                         </div>
                     </ul>
                     <li class="flex-grow"></li>
-                    <li class="inline-flex items-center gap-2">
-                        <RouterLink to="/personalisation"
-                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black"
-                                    :title="displayUser(contextStore.user.value)">
-                            <UserIcon class="w-5 h-5 mr-1"/> Personalisation
-                        </RouterLink>
-                        <RouterLink to="/app-settings"
-                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
-                            <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
-                        </RouterLink>
-                    </li>
                 </ul>
             </nav>
         </div>
