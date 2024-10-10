@@ -196,7 +196,6 @@
 import contextStore from '@/stores/context.store';
 import { DataValueFactory, UserFactory, type Company, type DataValue, type User } from '@relewise/client';
 import { ref } from 'vue';
-import basketService from '@/services/basket.service';
 import KeyValues from '@/components/KeyValues.vue';
 import { displayUser } from '@/helpers/userHelper';
 
@@ -275,8 +274,6 @@ function setUser(userToSet: User) {
     classifications.value = Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null }));
     identifiers.value = Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null }));
     data.value = Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null }));
-
-    basketService.clear();
 }
 
 function addEmptyUser() {
