@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { AdjustmentsHorizontalIcon, Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { AdjustmentsHorizontalIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
-import contextStore from '@/stores/context.store';
-import { displayUser } from '@/helpers/userHelper';
 import Popover from '@/components/Popover.vue';
 import ContextSwitcher from '@/components/ContextSwitcher.vue';
 
@@ -55,7 +53,6 @@ onBeforeUnmount(() => {
                         Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
                     </RouterLink>
                 </div>
-
                 <div class="ml-0 flex gap-2 flex-grow">
                     <div class="xl:items-center flex-grow">
                         <SearchOverlay/>

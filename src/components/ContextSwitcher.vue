@@ -23,10 +23,9 @@ function setUser(userToSet: User) {
 }
 
 function saveLanguageAndCurrency(language: string, currency: string) {
-    console.log( context.value.language, language);
     context.value.language = language;
-    console.log( context.value.language, language);
     context.value.currencyCode = currency;
+
     contextStore.persistState();
     window.location.reload();
 }
@@ -35,7 +34,6 @@ function setUserCompany(companyToSet: string) {
     const selectedCompany = context.value.companies?.find(x => x.id === companyToSet);
     user.value.company = selectedCompany;
 }
-
 </script>
 
 <template>
@@ -54,7 +52,6 @@ function setUserCompany(companyToSet: string) {
                     </option>
                 </select>
             </div>
-            
             <div class="flex gap-2 items-end">
                 <div class="flex flex-col">
                     <label class="text-sm block">Language</label>
@@ -70,7 +67,6 @@ function setUserCompany(companyToSet: string) {
                     Save
                 </button>
             </div>
-
             <div class="flex-grow">
                 <label class="text-sm block">User</label>
                 <select :disabled="context.users?.length === 1"
