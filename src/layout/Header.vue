@@ -58,15 +58,6 @@ onBeforeUnmount(() => {
                         <SearchOverlay/>
                     </div>
                     <div class="flex items-center gap-2">
-                        <Popover placement="bottom-end" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200 cursor-pointer">
-                            <AdjustmentsHorizontalIcon class="h-8 w-8"/>
-    
-                            <template #content>
-                                <div class="w-96">
-                                    <ContextSwitcher/>
-                                </div>
-                            </template>
-                        </Popover>
                         <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
                             <ShoppingBagIcon class="h-8 w-8"/>
                             <span v-if="lineItemsCount > 0"
@@ -74,6 +65,16 @@ onBeforeUnmount(() => {
                                 {{ lineItemsCount }}
                             </span>
                         </RouterLink>
+                        <Popover placement="bottom-end">
+                            <div class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200 cursor-pointer">
+                                <AdjustmentsHorizontalIcon class="h-8 w-8"/>
+                            </div>
+                            <template #content>
+                                <div class="w-96">
+                                    <ContextSwitcher/>
+                                </div>
+                            </template>
+                        </Popover>
                     </div>
                 </div>
             </div>
