@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
                     <div class="xl:items-center flex-grow">
                         <SearchOverlay/>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-4">
                         <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
                             <ShoppingBagIcon class="h-8 w-8"/>
                             <span v-if="lineItemsCount > 0"

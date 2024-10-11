@@ -92,22 +92,13 @@ function setUserCompany(companyToSet: string) {
                     </option>
                 </select>
             </div>
-            <div class="flex gap-2 flex-grow">
-                <RouterLink to="/personalisation"
-                            class="text-zinc-600 inline-flex items-center justify-center whitespace-nowrap py-2 hover:text-black flex-grow"
-                            :title="displayUser(contextStore.user.value)">
-                    <div class="flex items-center justify-center">
-                        <UserIcon class="w-5 h-5 mr-1"/> Personalisation
-                    </div>
-                </RouterLink>
-
-                <RouterLink to="/app-settings"
-                            class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black flex-grow">
-                    <div class="flex items-center justify-center">
-                        <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
-                    </div>
-                </RouterLink>
-            </div>
+            <hr>
+            <RouterLink to="/app-settings"
+                        class="text-zinc-600 inline-flex items-center whitespace-nowrap hover:text-black right-0 w-fit ml-auto mb-2">
+                <div class="flex items-center justify-center">
+                    <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo 
+                </div>
+            </RouterLink>
         </div>
     </div>
 </template>

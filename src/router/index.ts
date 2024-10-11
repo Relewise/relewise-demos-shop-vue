@@ -41,11 +41,6 @@ const router = createRouter({
             name: 'sub-category',
             component: () => import('../views/Category.vue'),
         },
-        {
-            path: '/personalisation',
-            name: 'personalisation',
-            component: () => import('../views/Personalisation.vue'),
-        },
     ],
 });
 
