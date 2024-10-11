@@ -99,10 +99,9 @@ $headerHeight: 104px;
     top: $headerHeight; // height of header
     left: 0;
     width: 100%;
-    height: calc(100% - $headerHeight);
 
     .backdrop {
-        background: rgba(155, 155, 155, 0.5);
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.1));
         position: fixed;
         z-index: 1;
         left: 0;
