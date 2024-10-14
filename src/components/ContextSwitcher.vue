@@ -9,7 +9,6 @@ const user = contextStore.user;
 const context = contextStore.context;
 const datasets = contextStore.datasets;
 
-const language = ref(context.value.language);
 const currency = ref(context.value.currencyCode);
 
 function setDataset(datasetId: string) {
@@ -22,17 +21,17 @@ function setUser(userToSet: User) {
     window.location.reload();
 }
 
-function saveLanguageAndCurrency(language: string, currency: string) {
-    context.value.language = language;
-    context.value.currencyCode = currency;
-
-    contextStore.persistState();
-    window.location.reload();
-}
-
 function setUserCompany(companyToSet: string) {
     const selectedCompany = context.value.companies?.find(x => x.id === companyToSet);
     user.value.company = selectedCompany;
+}
+
+function changeLanguage(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    const newIndex = parseInt(selectElement.value);
+    context.value.selectedLanguageIndex = newIndex;
+    contextStore.persistState(); 
+    window.location.reload();
 }
 </script>
 
@@ -55,17 +54,23 @@ function setUserCompany(companyToSet: string) {
             <div class="flex gap-2 items-end">
                 <div class="flex flex-col">
                     <label class="text-sm block">Language</label>
-                    <input v-model="language" class="flex-grow h-10" type="text" placeholder="LanguageCode">
+                    <select name="Language" :value="context.selectedLanguageIndex ?? 0" @change="changeLanguage">
+                        <template v-if="Array.isArray(context.language)">
+                            <option v-for="(_, index) in context.language" :key="index" :value="index">
+                                {{ context.language[index] }}
+                            </option>
+                        </template>
+                        <template v-else>
+                            <option :value="0">
+                                {{ context.language }}
+                            </option>
+                        </template>
+                    </select>
                 </div>
                 <div class="flex flex-col">
                     <label class="text-sm block">Currency</label>
                     <input v-model="currency" class="flex-grow h-10" type="text" placeholder="CurrencyCode">
                 </div>
-                <button :disabled="context.currencyCode === currency && context.language === language"
-                        class="disabled:bg-gray-300 h-10 px-4"
-                        @click="saveLanguageAndCurrency(language, currency)">
-                    Save
-                </button>
             </div>
             <div class="flex-grow">
                 <label class="text-sm block">User</label>

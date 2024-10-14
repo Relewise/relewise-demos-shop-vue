@@ -46,8 +46,35 @@
         <label class="text-sm  block mt-6">API Key</label>
         <input v-model="context.apiKey" type="text" placeholder="Api key">
 
-        <label class="text-sm  block mt-6">Language</label>
-        <input v-model="context.language" type="text" placeholder="LanguageCode">
+        <label class="text-sm  block mt-6">Languages</label>
+        <template v-if="Array.isArray(context.language)">
+            <div v-for="(_, index) in context.language"
+                 :key="index"
+                 class="flex mt-2 gap-2">
+                <input v-model="context.language[index]"
+                       type="text"
+                       placeholder="LanguageCode">
+
+                <button class="bg-gray-500 text-white" @click="() => removeLanguage(index)">
+                    Remove
+                </button>
+            </div>
+        </template>
+        <template v-else>
+            <div class="flex gap-2">
+                <input v-model="context.language" type="text" placeholder="LanguageCode">
+                <button class="bg-gray-500 text-white" @click="() => removeLanguage(0)">
+                    Remove
+                </button>
+            </div>
+        </template>
+
+        <div class="flex mt-2 gap-2">
+            <input v-model="newLanguage" type="text" placeholder="New Language">
+            <button class="outline" @click="addLanguage">
+                Add
+            </button>
+        </div>
 
         <label class="text-sm block mt-6">Currency</label>
         <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
@@ -88,6 +115,7 @@ const saved = ref(false);
 const copied = ref(false);
 const context = contextStore.context;
 const datasets = contextStore.datasets;
+const newLanguage = ref('');
 
 async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -135,6 +163,7 @@ function addEmptyDataset() {
         datasetId: '',
         currencyCode: '',
         language: '',
+        selectedLanguageIndex: 0,
         users: [],
         companies: [],
         selectedUserIndex: 0,
@@ -151,6 +180,7 @@ function shareLink() {
         datasetId: context.value.datasetId,
         currencyCode: context.value.currencyCode,
         language: context.value.language,
+        selectedLanguageIndex: context.value.selectedLanguageIndex,
         serverUrl: context.value.serverUrl,
         users: context.value.users,
         companies: context.value.companies,
@@ -167,6 +197,29 @@ function deleteDataset() {
 
     if (confirmed) {
         contextStore.deleteSelected();
+    }
+}
+
+function addLanguage() {
+    if (!newLanguage.value) return;
+
+    if (Array.isArray(context.value.language)) {
+        context.value.language.push(newLanguage.value);
+    } else {
+        const newLanguagesArray = [];
+        newLanguagesArray.push(context.value.language);
+        newLanguagesArray.push(newLanguage.value);
+        context.value.language = newLanguagesArray;
+    }
+
+    newLanguage.value = '';
+}
+
+function removeLanguage(index: number) {
+    if(Array.isArray(context.value.language)) {
+        context.value.language.splice(index, 1);
+    } else {
+        context.value.language = [];
     }
 }
 

@@ -8,7 +8,8 @@ export interface IDataset {
     datasetId: string;
     apiKey: string;
     displayName?: string | null;
-    language: string;
+    language: string | string[];
+    selectedLanguageIndex: number;
     currencyCode: string;
     serverUrl?: string;
     users?: User[];
@@ -33,7 +34,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', selectedLanguageIndex: 0, currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {
@@ -83,7 +84,7 @@ class AppContext {
         }
 
         return {
-            language: this.context.value.language,
+            language: this.getSelectedLanguage(),
             currency: this.context.value.currencyCode,
             displayedAtLocation: 'Relewise Demo Store',
             user: this.user.value,
@@ -205,6 +206,12 @@ class AppContext {
         }
     }
 
+    private getSelectedLanguage(): string {
+        return Array.isArray(this.context.value.language) 
+            ? this.context.value.language[this.context.value.selectedLanguageIndex] 
+            : this.context.value.language;
+    }
+
     public initializeWebComponents() {
         initializeRelewiseUI(
             {
@@ -212,7 +219,7 @@ class AppContext {
                     getUser: () => {
                         return this.user.value;
                     },
-                    language: this.context.value.language,
+                    language: this.getSelectedLanguage(),
                     currency: this.context.value.currencyCode,
                 },
                 datasetId: this.context.value.datasetId,
