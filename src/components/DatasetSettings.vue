@@ -76,8 +76,35 @@
             </button>
         </div>
 
-        <label class="text-sm block mt-6">Currency</label>
-        <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
+        <label class="text-sm block mt-6">Currencies</label>
+        <template v-if="Array.isArray(context.currencyCode)">
+            <div v-for="(_, index) in context.currencyCode"
+                 :key="index"
+                 class="flex mt-2 gap-2">
+                <input v-model="context.currencyCode[index]"
+                       type="text"
+                       placeholder="CurrencyCode">
+
+                <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(index)">
+                    Remove
+                </button>
+            </div>
+        </template>
+        <template v-else>
+            <div class="flex gap-2">
+                <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
+                <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(0)">
+                    Remove
+                </button>
+            </div>
+        </template>
+
+        <div class="flex mt-2 gap-2">
+            <input v-model="newCurrencyCode" type="text" placeholder="New Currency">
+            <button class="outline" @click="addCurrencyCode">
+                Add
+            </button>
+        </div>
 
         <label class="text-sm block mt-6">Server url</label>
         <input v-model="context.serverUrl" type="text" placeholder="Server Url">
@@ -116,6 +143,7 @@ const copied = ref(false);
 const context = contextStore.context;
 const datasets = contextStore.datasets;
 const newLanguage = ref('');
+const newCurrencyCode = ref('');
 
 async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -162,6 +190,7 @@ function addEmptyDataset() {
         apiKey: '',
         datasetId: '',
         currencyCode: '',
+        selectedCurrencyIndex: 0,
         language: '',
         selectedLanguageIndex: 0,
         users: [],
@@ -181,6 +210,7 @@ function shareLink() {
         currencyCode: context.value.currencyCode,
         language: context.value.language,
         selectedLanguageIndex: context.value.selectedLanguageIndex,
+        selectedCurrencyIndex: context.value.selectedCurrencyIndex,
         serverUrl: context.value.serverUrl,
         users: context.value.users,
         companies: context.value.companies,
@@ -215,11 +245,35 @@ function addLanguage() {
     newLanguage.value = '';
 }
 
+function addCurrencyCode() {
+    if (!newCurrencyCode.value) return;
+
+    if (Array.isArray(context.value.currencyCode)) {
+        context.value.currencyCode.push(newCurrencyCode.value);
+    } else {
+        const newCurrenciesArray = [];
+        newCurrenciesArray.push(context.value.currencyCode);
+        newCurrenciesArray.push(newCurrencyCode.value);
+        context.value.currencyCode = newCurrenciesArray;
+    }
+
+    newCurrencyCode.value = '';
+}
+
+
 function removeLanguage(index: number) {
     if(Array.isArray(context.value.language)) {
         context.value.language.splice(index, 1);
     } else {
         context.value.language = [];
+    }
+}
+
+function removeCurrencyCode(index: number) {
+    if(Array.isArray(context.value.currencyCode)) {
+        context.value.currencyCode.splice(index, 1);
+    } else {
+        context.value.currencyCode = [];
     }
 }
 

@@ -2,14 +2,11 @@
 import contextStore from '@/stores/context.store';
 import { displayUser } from '@/helpers/userHelper';
 import type { User } from '@relewise/client';
-import { ref } from 'vue';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 
 const user = contextStore.user;
 const context = contextStore.context;
 const datasets = contextStore.datasets;
-
-const currency = ref(context.value.currencyCode);
 
 function setDataset(datasetId: string) {
     contextStore.setDataset(datasetId);
@@ -33,6 +30,14 @@ function changeLanguage(event: Event) {
     contextStore.persistState(); 
     window.location.reload();
 }
+
+function changeCurrency(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    const newIndex = parseInt(selectElement.value);
+    context.value.selectedCurrencyIndex = newIndex;
+    contextStore.persistState(); 
+    window.location.reload();
+}
 </script>
 
 <template>
@@ -52,7 +57,7 @@ function changeLanguage(event: Event) {
                 </select>
             </div>
             <div class="flex gap-2 items-end">
-                <div class="flex flex-col">
+                <div class="flex flex-col flex-grow">
                     <label class="text-sm block">Language</label>
                     <select name="Language" :value="context.selectedLanguageIndex ?? 0" @change="changeLanguage">
                         <template v-if="Array.isArray(context.language)">
@@ -67,9 +72,20 @@ function changeLanguage(event: Event) {
                         </template>
                     </select>
                 </div>
-                <div class="flex flex-col">
+                <div class="flex flex-col flex-grow">
                     <label class="text-sm block">Currency</label>
-                    <input v-model="currency" class="flex-grow h-10" type="text" placeholder="CurrencyCode">
+                    <select name="Currency" :value="context.selectedCurrencyIndex ?? 0" @change="changeCurrency">
+                        <template v-if="Array.isArray(context.currencyCode)">
+                            <option v-for="(_, index) in context.currencyCode" :key="index" :value="index">
+                                {{ context.currencyCode[index] }}
+                            </option>
+                        </template>
+                        <template v-else>
+                            <option :value="0">
+                                {{ context.currencyCode }}
+                            </option>
+                        </template>
+                    </select>
                 </div>
             </div>
             <div class="flex-grow">

@@ -10,7 +10,8 @@ export interface IDataset {
     displayName?: string | null;
     language: string | string[];
     selectedLanguageIndex: number;
-    currencyCode: string;
+    currencyCode: string | string[];
+    selectedCurrencyIndex: number;
     serverUrl?: string;
     users?: User[];
     selectedUserIndex?: number;
@@ -34,7 +35,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', selectedLanguageIndex: 0, currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', selectedLanguageIndex: 0, currencyCode: '', selectedCurrencyIndex: 0, users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {
@@ -85,7 +86,7 @@ class AppContext {
 
         return {
             language: this.getSelectedLanguage(),
-            currency: this.context.value.currencyCode,
+            currency: this.getSelectedCurrency(),
             displayedAtLocation: 'Relewise Demo Store',
             user: this.user.value,
         };
@@ -212,6 +213,12 @@ class AppContext {
             : this.context.value.language;
     }
 
+    private getSelectedCurrency(): string {
+        return Array.isArray(this.context.value.currencyCode) 
+            ? this.context.value.currencyCode[this.context.value.selectedCurrencyIndex] 
+            : this.context.value.currencyCode;
+    }
+
     public initializeWebComponents() {
         initializeRelewiseUI(
             {
@@ -220,7 +227,7 @@ class AppContext {
                         return this.user.value;
                     },
                     language: this.getSelectedLanguage(),
-                    currency: this.context.value.currencyCode,
+                    currency: this.getSelectedCurrency(),
                 },
                 datasetId: this.context.value.datasetId,
                 apiKey: this.context.value.apiKey,
