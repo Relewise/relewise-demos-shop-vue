@@ -3,7 +3,7 @@ import contextStore from '@/stores/context.store';
 import { displayUser } from '@/helpers/userHelper';
 import type { User } from '@relewise/client';
 import { ref } from 'vue';
-import { Cog6ToothIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 
 const user = contextStore.user;
 const context = contextStore.context;
