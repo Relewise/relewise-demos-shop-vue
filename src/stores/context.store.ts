@@ -213,7 +213,7 @@ class AppContext {
             : this.context.value.language;
     }
 
-    private getSelectedCurrency(): string {
+    public getSelectedCurrency(): string {
         return Array.isArray(this.context.value.currencyCode) 
             ? this.context.value.currencyCode[this.context.value.selectedCurrencyIndex] 
             : this.context.value.currencyCode;

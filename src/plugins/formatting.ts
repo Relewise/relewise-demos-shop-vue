@@ -12,12 +12,12 @@ export default {
                     contextStore.context.value.language,
                     {
                         style: 'currency',
-                        currency: contextStore.context.value.currencyCode,
+                        currency: contextStore.getSelectedCurrency(),
                     })
                     .format(Number(value));
             }
             catch {
-                console.warn(`Could not format price using the currency: '${contextStore.context.value.currencyCode}'`);
+                console.warn(`Could not format price using the currency: '${contextStore.getSelectedCurrency()}'`);
                 return value;
             }
         };
