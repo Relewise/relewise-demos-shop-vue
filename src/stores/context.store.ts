@@ -8,10 +8,10 @@ export interface IDataset {
     datasetId: string;
     apiKey: string;
     displayName?: string | null;
-    language: string | string[];
-    selectedLanguageIndex: number;
-    currencyCode: string | string[];
-    selectedCurrencyIndex: number;
+    language: string;
+    allLanguages: string[];
+    currencyCode: string;
+    allCurrencies: string[];
     serverUrl?: string;
     users?: User[];
     selectedUserIndex?: number;
@@ -35,7 +35,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', selectedLanguageIndex: 0, currencyCode: '', selectedCurrencyIndex: 0, users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', allLanguages: [], currencyCode: '', allCurrencies: [], users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {
@@ -85,8 +85,8 @@ class AppContext {
         }
 
         return {
-            language: this.getSelectedLanguage(),
-            currency: this.getSelectedCurrency(),
+            language: this.context.value.language,
+            currency: this.context.value.currencyCode,
             displayedAtLocation: 'Relewise Demo Store',
             user: this.user.value,
         };
@@ -207,18 +207,6 @@ class AppContext {
         }
     }
 
-    private getSelectedLanguage(): string {
-        return Array.isArray(this.context.value.language) 
-            ? this.context.value.language[this.context.value.selectedLanguageIndex] 
-            : this.context.value.language;
-    }
-
-    public getSelectedCurrency(): string {
-        return Array.isArray(this.context.value.currencyCode) 
-            ? this.context.value.currencyCode[this.context.value.selectedCurrencyIndex] 
-            : this.context.value.currencyCode;
-    }
-
     public initializeWebComponents() {
         initializeRelewiseUI(
             {
@@ -226,8 +214,8 @@ class AppContext {
                     getUser: () => {
                         return this.user.value;
                     },
-                    language: this.getSelectedLanguage(),
-                    currency: this.getSelectedCurrency(),
+                    language: this.context.value.language,
+                    currency: this.context.value.currencyCode,
                 },
                 datasetId: this.context.value.datasetId,
                 apiKey: this.context.value.apiKey,

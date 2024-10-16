@@ -46,29 +46,27 @@
         <label class="text-sm  block mt-6">API Key</label>
         <input v-model="context.apiKey" type="text" placeholder="Api key">
 
-        <label class="text-sm  block mt-6">Languages</label>
-        <template v-if="Array.isArray(context.language)">
-            <div v-for="(_, index) in context.language"
-                 :key="index"
-                 class="flex mt-2 gap-2">
-                <input v-model="context.language[index]"
-                       type="text"
-                       placeholder="LanguageCode">
-
-                <button class="bg-gray-500 text-white" @click="() => removeLanguage(index)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <template v-else>
-            <div class="flex gap-2">
+        <label class="text-sm block mt-6">Languages</label>
+        <template v-if="!context.allLanguages && context.language">
+            <div class="flex mt-2 gap-2">
                 <input v-model="context.language" type="text" placeholder="LanguageCode">
                 <button class="bg-gray-500 text-white" @click="() => removeLanguage(0)">
                     Remove
                 </button>
             </div>
         </template>
-
+        <template v-else>
+            <div v-for="(_, index) in context.allLanguages"
+                 :key="index"
+                 class="flex mt-2 gap-2">
+                <input v-model="context.allLanguages[index]"
+                       type="text"
+                       placeholder="LanguageCode">
+                <button class="bg-gray-500 text-white" @click="() => removeLanguage(index)">
+                    Remove
+                </button>
+            </div>
+        </template>
         <div class="flex mt-2 gap-2">
             <input v-model="newLanguage" type="text" placeholder="New Language">
             <button class="outline" @click="addLanguage">
@@ -77,28 +75,26 @@
         </div>
 
         <label class="text-sm block mt-6">Currencies</label>
-        <template v-if="Array.isArray(context.currencyCode)">
-            <div v-for="(_, index) in context.currencyCode"
-                 :key="index"
-                 class="flex mt-2 gap-2">
-                <input v-model="context.currencyCode[index]"
-                       type="text"
-                       placeholder="CurrencyCode">
-
-                <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(index)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <template v-else>
-            <div class="flex gap-2">
+        <template v-if="!context.allCurrencies && context.currencyCode">
+            <div class="flex mt-2 gap-2">
                 <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
                 <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(0)">
                     Remove
                 </button>
             </div>
         </template>
-
+        <template v-else>
+            <div v-for="(_, index) in context.allCurrencies"
+                 :key="index"
+                 class="flex mt-2 gap-2">
+                <input v-model="context.allCurrencies[index]"
+                       type="text"
+                       placeholder="CurrencyCode">
+                <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(index)">
+                    Remove
+                </button>
+            </div>
+        </template>
         <div class="flex mt-2 gap-2">
             <input v-model="newCurrencyCode" type="text" placeholder="New Currency">
             <button class="outline" @click="addCurrencyCode">
@@ -190,9 +186,9 @@ function addEmptyDataset() {
         apiKey: '',
         datasetId: '',
         currencyCode: '',
-        selectedCurrencyIndex: 0,
+        allCurrencies: [],
         language: '',
-        selectedLanguageIndex: 0,
+        allLanguages: [],
         users: [],
         companies: [],
         selectedUserIndex: 0,
@@ -209,8 +205,8 @@ function shareLink() {
         datasetId: context.value.datasetId,
         currencyCode: context.value.currencyCode,
         language: context.value.language,
-        selectedLanguageIndex: context.value.selectedLanguageIndex,
-        selectedCurrencyIndex: context.value.selectedCurrencyIndex,
+        allLanguages: context.value.allLanguages,
+        allCurrencies: context.value.allCurrencies,
         serverUrl: context.value.serverUrl,
         users: context.value.users,
         companies: context.value.companies,
@@ -232,49 +228,57 @@ function deleteDataset() {
 
 function addLanguage() {
     if (!newLanguage.value) return;
-
-    if (Array.isArray(context.value.language)) {
-        context.value.language.push(newLanguage.value);
-    } else {
-        const newLanguagesArray = [];
-        newLanguagesArray.push(context.value.language);
-        newLanguagesArray.push(newLanguage.value);
-        context.value.language = newLanguagesArray;
+   
+    if (!context.value.allLanguages) {
+        context.value.allLanguages = context.value.language ? [context.value.language] : [];
     }
 
+    if (!context.value.language) {
+        context.value.language = newLanguage.value;
+    }
+
+    context.value.allLanguages.push(newLanguage.value);
     newLanguage.value = '';
+    contextStore.persistState();
 }
 
 function addCurrencyCode() {
     if (!newCurrencyCode.value) return;
-
-    if (Array.isArray(context.value.currencyCode)) {
-        context.value.currencyCode.push(newCurrencyCode.value);
-    } else {
-        const newCurrenciesArray = [];
-        newCurrenciesArray.push(context.value.currencyCode);
-        newCurrenciesArray.push(newCurrencyCode.value);
-        context.value.currencyCode = newCurrenciesArray;
+   
+    if (!context.value.allCurrencies) {
+        context.value.allCurrencies = context.value.currencyCode ? [context.value.currencyCode] : [];
     }
 
+    if (!context.value.currencyCode) {
+        context.value.currencyCode = newCurrencyCode.value;
+    }
+
+    context.value.allCurrencies.push(newCurrencyCode.value);
     newCurrencyCode.value = '';
+    contextStore.persistState();
 }
 
-
 function removeLanguage(index: number) {
-    if(Array.isArray(context.value.language)) {
-        context.value.language.splice(index, 1);
-    } else {
-        context.value.language = [];
+    if (!context.value.allLanguages) {
+        context.value.allLanguages = [];
+        context.value.language = '';
+        contextStore.persistState();
+        return;
     }
+
+    context.value.allLanguages.splice(index, 1);
+    contextStore.persistState();
 }
 
 function removeCurrencyCode(index: number) {
-    if(Array.isArray(context.value.currencyCode)) {
-        context.value.currencyCode.splice(index, 1);
-    } else {
-        context.value.currencyCode = [];
+    if (!context.value.allCurrencies) {
+        context.value.allCurrencies = [];
+        context.value.currencyCode = '';
+        return;
     }
+    
+    context.value.allCurrencies.splice(index, 1);
+    contextStore.persistState();
 }
 
 </script>

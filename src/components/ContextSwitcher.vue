@@ -23,18 +23,14 @@ function setUserCompany(companyToSet: string) {
     user.value.company = selectedCompany;
 }
 
-function changeLanguage(event: Event) {
-    const selectElement = event.target as HTMLSelectElement;
-    const newIndex = parseInt(selectElement.value);
-    context.value.selectedLanguageIndex = newIndex;
+function changeLanguage(language: string) {
+    context.value.language = language;
     contextStore.persistState(); 
     window.location.reload();
 }
 
-function changeCurrency(event: Event) {
-    const selectElement = event.target as HTMLSelectElement;
-    const newIndex = parseInt(selectElement.value);
-    context.value.selectedCurrencyIndex = newIndex;
+function changeCurrency(currency: string) {
+    context.value.currencyCode = currency;
     contextStore.persistState(); 
     window.location.reload();
 }
@@ -57,31 +53,31 @@ function changeCurrency(event: Event) {
                 </select>
             </div>
             <div class="flex gap-2 items-end">
-                <div class="flex flex-col flex-grow">
+                <div class="flex flex-col flex-grow w-1/2">
                     <label class="text-sm block">Language</label>
-                    <select name="Language" :value="context.selectedLanguageIndex ?? 0" @change="changeLanguage">
-                        <template v-if="Array.isArray(context.language)">
-                            <option v-for="(_, index) in context.language" :key="index" :value="index">
-                                {{ context.language[index] }}
+                    <select name="Language" :value="context.language" class="w-full" @change="changeLanguage(($event.target as HTMLInputElement).value)">
+                        <template v-if="Array.isArray(context.allLanguages)">
+                            <option v-for="(language, index) in context.allLanguages" :key="index" :value="language" :selected="context.language == language">
+                                {{ language }} 
                             </option>
                         </template>
                         <template v-else>
-                            <option :value="0">
+                            <option :value="context.language">
                                 {{ context.language }}
                             </option>
                         </template>
                     </select>
                 </div>
-                <div class="flex flex-col flex-grow">
+                <div class="flex flex-col flex-grow w-1/2">
                     <label class="text-sm block">Currency</label>
-                    <select name="Currency" :value="context.selectedCurrencyIndex ?? 0" @change="changeCurrency">
-                        <template v-if="Array.isArray(context.currencyCode)">
-                            <option v-for="(_, index) in context.currencyCode" :key="index" :value="index">
-                                {{ context.currencyCode[index] }}
+                    <select name="Currency" :value="context.currencyCode" class="w-full" @change="changeCurrency(($event.target as HTMLInputElement).value)">
+                        <template v-if="Array.isArray(context.allCurrencies)">
+                            <option v-for="(currencyCode, index) in context.allCurrencies" :key="index" :value="currencyCode" :selected="context.currencyCode == currencyCode">
+                                {{ currencyCode }} 
                             </option>
                         </template>
                         <template v-else>
-                            <option :value="0">
+                            <option :value="context.currencyCode">
                                 {{ context.currencyCode }}
                             </option>
                         </template>
