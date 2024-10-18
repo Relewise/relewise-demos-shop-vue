@@ -16,6 +16,7 @@ export interface IDataset {
     users?: User[];
     selectedUserIndex?: number;
     companies?: Company[];
+    allowThirdLevelCategories?: boolean;
 }
 
 export interface ITracking {

@@ -25,13 +25,16 @@ function setUserCompany(companyToSet: string) {
 
 function changeLanguage(language: string) {
     context.value.language = language;
-    contextStore.persistState(); 
-    window.location.reload();
+    persistStateAndReload();
 }
 
 function changeCurrency(currency: string) {
     context.value.currencyCode = currency;
-    contextStore.persistState(); 
+    persistStateAndReload();
+}
+
+function persistStateAndReload() {
+    contextStore.persistState();
     window.location.reload();
 }
 </script>
@@ -109,6 +112,11 @@ function changeCurrency(currency: string) {
                     </option>
                 </select>
             </div>
+ 
+            <label class="flex mt-2 items-center">
+                <input v-model="context.allowThirdLevelCategories" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox" @change="persistStateAndReload">
+                Third level categories</label>
+
             <hr>
             <RouterLink to="/app-settings"
                         class="text-zinc-600 inline-flex items-center whitespace-nowrap hover:text-brand-500 right-0 w-fit ml-auto mb-2">
