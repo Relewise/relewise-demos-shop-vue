@@ -245,6 +245,7 @@ function searchFor(term: string) {
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
+                                :render-category-facet="true"
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
