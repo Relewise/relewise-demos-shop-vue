@@ -102,7 +102,7 @@ async function init() {
 
     // We never want to go any deeper than a third level category
     renderCatoryLinks.value = !grandParentCategoryId.value && (!parentCategoryId.value || contextStore.context.value.allowThirdLevelCategories); 
-    console.log();
+
     if (id && !Array.isArray(id) && id !== categoryId.value) {
         trackingService.trackProductCategoryView(id);
 
