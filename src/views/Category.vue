@@ -1,8 +1,28 @@
 <template>
     <div class="category-page">
         <div class="flex gap-3">
-            <div v-if="result?.facets" class="hidden lg:block w-1/5">
-                <Facets v-model:page="page" :filters="filters" :facets="result.facets" @search="search"/>
+            <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
+                <div v-if="(childCategories?.length ?? 0) > 0" class="px-3 py-3 bg-white rounded mb-3">
+                    <div class="font-semibold text-lg mb-2">
+                        Categories
+                    </div>
+                    <ul>
+                        <li v-for="(childCategory, index) in childCategories" :key="index">
+                            <RouterLink 
+                                :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.category.categoryId } }"
+                                class="text-zinc-700 hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
+                                {{ childCategory.category.displayName ?? childCategory.category.categoryId }} 
+                            </RouterLink>
+                        </li>    
+                    </ul>
+                </div>
+                
+                <Facets v-if="result?.facets"
+                        v-model:page="page"
+                        :filters="filters"
+                        :facets="result.facets"
+                        :render-category-facet="!renderCatoryLinks"
+                        @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
@@ -48,7 +68,7 @@ import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult } from '@relewise/client';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -56,18 +76,33 @@ import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
+import { RouterLink } from 'vue-router';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
 const route = useRoute();
 const category = ref<CategoryResult | undefined>(undefined);
+const childCategories = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
+const parentCategoryId = ref<string | undefined>();
+const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
+const renderCatoryLinks = ref<boolean | undefined>(false);
 
 async function init() {
     const id = route.params.id;
+    parentCategoryId.value = Array.isArray(route.params.parent) 
+        ? route.params.parent[0] 
+        : route.params.parent;
+
+    grandParentCategoryId.value = Array.isArray(route.params.grand) ? 
+        route.params.grand[0]
+        : route.params.grand;
+
+    // We never want to go any deeper than a third level category
+    renderCatoryLinks.value = !grandParentCategoryId.value && (!parentCategoryId.value || contextStore.context.value.allowThirdLevelCategories); 
 
     if (id && !Array.isArray(id) && id !== categoryId.value) {
         trackingService.trackProductCategoryView(id);
@@ -133,11 +168,15 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
         })
-        .facets(f => f
-            .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null)
-            .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null)
-            .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
-        )
+        .facets(f => {
+            if (renderCatoryLinks.value) {
+                f.addProductCategoryHierarchyFacet('Descendants', [{ breadcrumbPathStartingFromRoot: [{ id: categoryId.value }]}], { displayName: true });
+            } else {
+                f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
+            }
+            f.addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
+            f.addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+        })
         .pagination(p => p.setPageSize(40).setPage(page.value))
         .sorting(s => {
             if (filters.value.sort === 'Popular') {
@@ -161,10 +200,30 @@ async function search() {
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);
     contextStore.assertApiCall(response);
 
-    if (response && response.facets && response.facets.items && response.facets.items[2] !== null) {
-        const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
-        if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-            filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
+    if (response && response.facets && response.facets.items) {
+        if (renderCatoryLinks.value && response.facets.items[0] !== null) {
+            const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
+            var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
+            while (root.category.categoryId !== categoryId.value) {
+                if (!root.children) {
+                    root = null;
+                    break;
+                } 
+
+                root = root.children[0];
+            }
+            if (root != null) {
+                childCategories.value = root.children ?? undefined;
+            }
+        } else {
+            childCategories.value = undefined;
+        }
+
+        if (response.facets.items[2] !== null) {
+            const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
+            if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
+                filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
+            }
         }
     }
 
