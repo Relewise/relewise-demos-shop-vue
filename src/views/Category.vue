@@ -120,11 +120,16 @@ async function init() {
             .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
             .build());
 
-        renderCatoryLinks.value ? request.addRequest(new ProductCategorySearchBuilder(contextStore.defaultSettings)
-            .setSelectedCategoryProperties({ displayName: true })
-            .filters(f => f.addProductCategoryHasParentFilter(id))
-            .build()) : childCategories.value = undefined;
 
+        if (renderCatoryLinks.value) {
+            request.addRequest(new ProductCategorySearchBuilder(contextStore.defaultSettings)
+                .setSelectedCategoryProperties({ displayName: true })
+                .filters(f => f.addProductCategoryHasParentFilter(id))
+                .build()); 
+        } else {
+            childCategories.value = undefined;
+        }
+        
         const searcher = contextStore.getSearcher();
         const response = await searcher.batch(request.build());
         
