@@ -12,12 +12,8 @@
         </div>
     </div>
     
-    <div v-if="openTab === Tabs.Settings" class="bg-white rounded-tr rounded-b">
-        <Settings/>
-    </div>
-    <div v-if="openTab === Tabs.Personalization" class="bg-white rounded-tr rounded-b">
-        <Personalisation/>
-    </div>
+    <Settings v-if="openTab === Tabs.Settings" class="bg-white rounded-tr rounded-b"/>
+    <Personalisation v-if="openTab === Tabs.Personalization" class="bg-white rounded-tr rounded-b"/>
 </template>
 
 <script lang="ts" setup>
