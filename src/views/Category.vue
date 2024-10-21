@@ -9,13 +9,14 @@
                     <ul>
                         <li v-for="(childCategory, index) in childCategories" :key="index">
                             <RouterLink 
-                                :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.categoryId } }"
+                                :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.category.categoryId } }"
                                 class="text-zinc-700 hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
-                                {{ childCategory.displayName ?? childCategory.categoryId }} 
+                                {{ childCategory.category.displayName ?? childCategory.category.categoryId }} 
                             </RouterLink>
                         </li>    
                     </ul>
                 </div>
+                
                 <Facets v-if="result?.facets"
                         v-model:page="page"
                         :filters="filters"
@@ -67,7 +68,7 @@ import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, SearchCollectionBuilder } from '@relewise/client';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -81,7 +82,7 @@ const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
 const route = useRoute();
 const category = ref<CategoryResult | undefined>(undefined);
-const childCategories = ref<CategoryResult[] | undefined>(undefined);
+const childCategories = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
 const result: Ref<ProductSearchResponse | undefined> = ref<ProductSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
 const parentCategoryId = ref<string | undefined>();
@@ -113,40 +114,17 @@ async function init() {
             existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
         });
 
-        const request = new SearchCollectionBuilder();
-
-        request.addRequest(new ProductCategorySearchBuilder(contextStore.defaultSettings)
+        const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
             .setSelectedCategoryProperties({ displayName: true })
             .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
-            .build());
+            .build();
 
-
-        if (renderCatoryLinks.value) {
-            request.addRequest(new ProductCategorySearchBuilder(contextStore.defaultSettings)
-                .setSelectedCategoryProperties({ displayName: true })
-                .filters(f => f.addProductCategoryHasParentFilter(id))
-                .build()); 
-        } else {
-            childCategories.value = undefined;
-        }
-        
         const searcher = contextStore.getSearcher();
-        const response = await searcher.batch(request.build());
-        
-        if (response && response.responses) {
-            const findCategoryToDisplayResult = response.responses[0] as ProductCategorySearchResponse;
-            contextStore.assertApiCall(findCategoryToDisplayResult);
-            if (findCategoryToDisplayResult.results) {
-                category.value = findCategoryToDisplayResult.results[0];
-            }
+        const response: ProductCategorySearchResponse | undefined = await searcher.searchProductCategories(request);
+        contextStore.assertApiCall(response);
 
-            if (response.responses[1]) {
-                const findCategoriesForLinksResult = response.responses[1] as ProductCategorySearchResponse;
-                contextStore.assertApiCall(findCategoriesForLinksResult);
-                if (findCategoriesForLinksResult.results) {
-                    childCategories.value = findCategoriesForLinksResult.results;
-                }
-            }
+        if (response?.results) {
+            category.value = response.results[0];
         }
 
         categoryId.value = id;
@@ -190,11 +168,15 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
         })
-        .facets(f => f
-            .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null)
-            .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null)
-            .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
-        )
+        .facets(f => {
+            if (renderCatoryLinks.value) {
+                f.addProductCategoryHierarchyFacet('Descendants', [{ breadcrumbPathStartingFromRoot: [{ id: categoryId.value }]}], { displayName: true });
+            } else {
+                f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
+            }
+            f.addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
+            f.addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+        })
         .pagination(p => p.setPageSize(40).setPage(page.value))
         .sorting(s => {
             if (filters.value.sort === 'Popular') {
@@ -218,10 +200,30 @@ async function search() {
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);
     contextStore.assertApiCall(response);
 
-    if (response && response.facets && response.facets.items && response.facets.items[2] !== null) {
-        const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
-        if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-            filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
+    if (response && response.facets && response.facets.items) {
+        if (renderCatoryLinks.value && response.facets.items[0] !== null) {
+            const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
+            var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
+            while (root.category.categoryId !== categoryId.value) {
+                if (!root.children) {
+                    root = null;
+                    break;
+                } 
+
+                root = root.children[0];
+            }
+            if (root != null) {
+                childCategories.value = root.children ?? undefined;
+            }
+        } else {
+            childCategories.value = undefined;
+        }
+
+        if (response.facets.items[2] !== null) {
+            const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
+            if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
+                filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
+            }
         }
     }
 
