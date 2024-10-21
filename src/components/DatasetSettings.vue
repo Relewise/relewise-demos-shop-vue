@@ -46,62 +46,20 @@
         <label class="text-sm  block mt-6">API Key</label>
         <input v-model="context.apiKey" type="text" placeholder="Api key">
 
-        <label class="text-sm block mt-6">Languages</label>
-        <template v-if="!context.allLanguages && context.language">
-            <div class="flex mt-2 gap-2">
-                <input v-model="context.language" type="text" placeholder="LanguageCode">
-                <button class="bg-gray-500 text-white" @click="() => removeLanguage(0)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <template v-else>
-            <div v-for="(_, index) in context.allLanguages"
-                 :key="index"
-                 class="flex mt-2 gap-2">
-                <input v-model="context.allLanguages[index]"
-                       type="text"
-                       placeholder="LanguageCode">
-                <button class="bg-gray-500 text-white" @click="() => removeLanguage(index)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <div class="flex mt-2 gap-2">
-            <input v-model="newLanguage" type="text" placeholder="New Language">
-            <button class="outline" @click="addLanguage">
-                Add
-            </button>
-        </div>
+        <ListValues
+            label="Languages"
+            :items="context.allLanguages"
+            :single-item="context.language"
+            input-placeholder="LanguageCode"
+            new-item-placeholder="New Language"/>
 
-        <label class="text-sm block mt-6">Currencies</label>
-        <template v-if="!context.allCurrencies && context.currencyCode">
-            <div class="flex mt-2 gap-2">
-                <input v-model="context.currencyCode" type="text" placeholder="CurrencyCode">
-                <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(0)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <template v-else>
-            <div v-for="(_, index) in context.allCurrencies"
-                 :key="index"
-                 class="flex mt-2 gap-2">
-                <input v-model="context.allCurrencies[index]"
-                       type="text"
-                       placeholder="CurrencyCode">
-                <button class="bg-gray-500 text-white" @click="() => removeCurrencyCode(index)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <div class="flex mt-2 gap-2">
-            <input v-model="newCurrencyCode" type="text" placeholder="New Currency">
-            <button class="outline" @click="addCurrencyCode">
-                Add
-            </button>
-        </div>
-
+        <ListValues
+            label="Currencies"
+            :items="context.allCurrencies"
+            :single-item="context.currencyCode"
+            input-placeholder="CurrencyCode"
+            new-item-placeholder="New Currency"/>
+        
         <label class="text-sm block mt-6">Server url</label>
         <input v-model="context.serverUrl" type="text" placeholder="Server Url">
 
@@ -146,13 +104,12 @@
 import router from '@/router';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { ref } from 'vue';
+import ListValues from './ListValues.vue';
 
 const saved = ref(false);
 const copied = ref(false);
 const context = contextStore.context;
 const datasets = contextStore.datasets;
-const newLanguage = ref('');
-const newCurrencyCode = ref('');
 
 async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -237,61 +194,6 @@ function deleteDataset() {
     if (confirmed) {
         contextStore.deleteSelected();
     }
-}
-
-function addLanguage() {
-    if (!newLanguage.value) return;
-   
-    if (!context.value.allLanguages) {
-        context.value.allLanguages = context.value.language ? [context.value.language] : [];
-    }
-
-    if (!context.value.language) {
-        context.value.language = newLanguage.value;
-    }
-
-    context.value.allLanguages.push(newLanguage.value);
-    newLanguage.value = '';
-    contextStore.persistState();
-}
-
-function addCurrencyCode() {
-    if (!newCurrencyCode.value) return;
-   
-    if (!context.value.allCurrencies) {
-        context.value.allCurrencies = context.value.currencyCode ? [context.value.currencyCode] : [];
-    }
-
-    if (!context.value.currencyCode) {
-        context.value.currencyCode = newCurrencyCode.value;
-    }
-
-    context.value.allCurrencies.push(newCurrencyCode.value);
-    newCurrencyCode.value = '';
-    contextStore.persistState();
-}
-
-function removeLanguage(index: number) {
-    if (!context.value.allLanguages) {
-        context.value.allLanguages = [];
-        context.value.language = '';
-        contextStore.persistState();
-        return;
-    }
-
-    context.value.allLanguages.splice(index, 1);
-    contextStore.persistState();
-}
-
-function removeCurrencyCode(index: number) {
-    if (!context.value.allCurrencies) {
-        context.value.allCurrencies = [];
-        context.value.currencyCode = '';
-        return;
-    }
-    
-    context.value.allCurrencies.splice(index, 1);
-    contextStore.persistState();
 }
 
 </script>
