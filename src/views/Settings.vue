@@ -11,9 +11,10 @@
             </span>
         </div>
     </div>
-    
-    <Settings v-if="openTab === Tabs.Settings" class="bg-white rounded-tr rounded-b"/>
-    <Personalisation v-if="openTab === Tabs.Personalization" class="bg-white rounded-tr rounded-b"/>
+    <div class="bg-white rounded-tr rounded-b">
+        <Settings v-if="openTab === Tabs.Settings"/>
+        <Personalisation v-if="openTab === Tabs.Personalization"/>
+    </div> 
 </template>
 
 <script lang="ts" setup>
