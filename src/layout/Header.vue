@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { Cog6ToothIcon, ShoppingBagIcon, UserIcon } from '@heroicons/vue/24/outline';
+import { AdjustmentsHorizontalIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
-import contextStore from '@/stores/context.store';
-import { displayUser } from '@/helpers/userHelper';
+import Popover from '@/components/Popover.vue';
+import ContextSwitcher from '@/components/ContextSwitcher.vue';
 
 defineProps({
     lineItemsCount: { type: Number, required: true},
@@ -53,12 +53,11 @@ onBeforeUnmount(() => {
                         Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
                     </RouterLink>
                 </div>
-
                 <div class="ml-0 flex gap-2 flex-grow">
                     <div class="xl:items-center flex-grow">
                         <SearchOverlay/>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center gap-4">
                         <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
                             <ShoppingBagIcon class="h-8 w-8"/>
                             <span v-if="lineItemsCount > 0"
@@ -66,6 +65,16 @@ onBeforeUnmount(() => {
                                 {{ lineItemsCount }}
                             </span>
                         </RouterLink>
+                        <Popover placement="bottom-end">
+                            <div class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200 cursor-pointer">
+                                <AdjustmentsHorizontalIcon class="h-8 w-8"/>
+                            </div>
+                            <template #content>
+                                <div class="w-96">
+                                    <ContextSwitcher/>
+                                </div>
+                            </template>
+                        </Popover>
                     </div>
                 </div>
             </div>
@@ -129,17 +138,6 @@ onBeforeUnmount(() => {
                         </div>
                     </ul>
                     <li class="flex-grow"></li>
-                    <li class="inline-flex items-center gap-2">
-                        <RouterLink to="/personalisation"
-                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black"
-                                    :title="displayUser(contextStore.user.value)">
-                            <UserIcon class="w-5 h-5 mr-1"/> Personalisation
-                        </RouterLink>
-                        <RouterLink to="/app-settings"
-                                    class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 hover:text-black">
-                            <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
-                        </RouterLink>
-                    </li>
                 </ul>
             </nav>
         </div>

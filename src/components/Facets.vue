@@ -1,12 +1,12 @@
 <template>
     <template v-for="(facet, index) in facets.items">
-        <div v-if="(facet.field === 'Category' && showCategoryFacet) || facet.field !== 'Category'" :key="index" class="px-3 py-3 bg-white rounded mb-3">
+        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" :key="index" class="px-3 py-3 bg-white rounded mb-3">
             <div class="font-semibold text-lg mb-2">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
 
             <CheckListFacet
-                v-if="((facet.field == 'Category' && showCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
+                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
                 @search="applyFacet"/>
             <div v-else-if="facet.field === 'SalesPrice'">
@@ -35,18 +35,15 @@ import type { ProductFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
+    renderCategoryFacet: { type: Boolean, required: true },
 });
 
 const emit = defineEmits(['search']);
-const route = useRoute();
-const showCategoryFacet = computed(() => route.name !== 'category');
 const { filters, page, facets } = toRefs(props);
 
 function applyFacet(name: string, value: string | null | undefined) {

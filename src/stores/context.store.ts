@@ -3,17 +3,21 @@ import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSet
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import { addAssortmentFilters } from './customFilters';
+import basketService from '@/services/basket.service';
 
 export interface IDataset {
     datasetId: string;
     apiKey: string;
     displayName?: string | null;
     language: string;
+    allLanguages: string[];
     currencyCode: string;
+    allCurrencies: string[];
     serverUrl?: string;
     users?: User[];
     selectedUserIndex?: number;
     companies?: Company[];
+    allowThirdLevelCategories?: boolean;
 }
 
 export interface ITracking {
@@ -33,7 +37,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', currencyCode: '', users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', allLanguages: [], currencyCode: '', allCurrencies: [], users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     constructor() {
@@ -140,6 +144,7 @@ class AppContext {
 
     public setDataset(datasetId: string) {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
+        basketService.clear();
         this.persistState();
         this.initializeWebComponents();
     }
@@ -157,6 +162,7 @@ class AppContext {
         this.ensureUsers();
 
         this.context.value.selectedUserIndex = this.context.value.users!.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
+        basketService.clear();
         this.persistState();
     }
 
