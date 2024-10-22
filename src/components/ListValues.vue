@@ -52,7 +52,7 @@ const internalSingleItem = computed({
 
 const internalItems = computed({
     get: () => {
-        return items.value;
+        return items.value ?? [];
     },
     set: (v) => {
         emit('update:items', v);
