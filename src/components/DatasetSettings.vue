@@ -130,7 +130,7 @@ async function init() {
         history.replaceState(null, '', url);
 
         // reload to get navigation
-        await router.push('/');
+        // await router.push('/');
         window.location.reload();
     }
 }
