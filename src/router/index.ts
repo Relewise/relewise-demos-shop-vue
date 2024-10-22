@@ -42,9 +42,9 @@ const router = createRouter({
             component: () => import('../views/Category.vue'),
         },
         {
-            path: '/personalisation',
-            name: 'personalisation',
-            component: () => import('../views/Personalisation.vue'),
+            path: '/category/:grand/:parent/:id',
+            name: 'sub-sub-category',
+            component: () => import('../views/Category.vue'),
         },
     ],
 });

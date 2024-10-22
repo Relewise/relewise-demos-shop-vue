@@ -13,9 +13,9 @@
         <p class="text-gray-400">
             When tracking is enabled, all your actions are tracked to Relewise to give you a personal experience
         </p>
-    </div>
-
-    <div class="bg-white rounded p-6 mt-6">
+        
+        <hr class="my-8">
+        
         <div class="flex items-center mb-8">
             <h1 class="text-4xl">
                 User
@@ -55,7 +55,6 @@
                 </button>
             </div>
         </template>
-
 
         <label class="text-sm block">Temporary Id</label>
         <div class="flex gap-2">
@@ -116,9 +115,9 @@
                 User has been saved.
             </span>
         </div>
-    </div>
 
-    <div class="bg-white rounded p-6 mt-4">
+        <hr class="my-8">
+
         <div class="flex items-center mb-8">
             <h1 class="text-4xl">
                 Company
@@ -152,8 +151,6 @@
                 </div>
             </template>
         </div>
-
-        <hr class="mb-6">
 
         <label class="text-sm block">Id</label>
         <div class="flex gap-2">
@@ -196,7 +193,6 @@
 import contextStore from '@/stores/context.store';
 import { DataValueFactory, UserFactory, type Company, type DataValue, type User } from '@relewise/client';
 import { ref } from 'vue';
-import basketService from '@/services/basket.service';
 import KeyValues from '@/components/KeyValues.vue';
 import { displayUser } from '@/helpers/userHelper';
 
@@ -275,8 +271,6 @@ function setUser(userToSet: User) {
     classifications.value = Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null }));
     identifiers.value = Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null }));
     data.value = Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null }));
-
-    basketService.clear();
 }
 
 function addEmptyUser() {
