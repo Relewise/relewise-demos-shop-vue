@@ -323,36 +323,6 @@ function searchFor(term: string) {
                             </a>
                         </div>
 
-                        <!-- TODO: Maybe this should be its own component -->
-                        <!-- <div v-if="renderCategoryFilterOptions || categoriesForFilters.length > 0" class="p-3 bg-white mb-3">
-                            <span class="font-semibold">Categories</span>
-                            <div v-for="(category, index) in categoriesForFilters" :key="index" class="bg-gray-100 flex m-1">
-                                <span class="m-1">
-                                    {{ category.displayName }}
-                                </span>
-                                <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
-                                           @click="() => {
-                                               categoriesForFilters.splice(index);
-                                               search();
-                                           }"/>
-                            </div>
-                            <template v-if="categoriesForFilterOptions">
-                                <a v-for="(categoryLink, index) in categoriesForFilterOptions"
-                                   :key="index"
-                                   class="mb-1 block cursor-pointer"
-                                   @click.prevent="() => {
-                                       if (!categoryLink.category.categoryId) return;
-                                       categoriesForFilters.push(categoryLink.category);
-                                       search();
-                                   }">
-                                    {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
-                                </a>
-                            </template>
-                            <template v-else>
-                            </template>
-                        </div> -->
-                        <!-- TODO: Maybe this should be its own component -->
-
                         <Facets v-if="result.facets && result.hits > 0"
                                 v-model:page="page"
                                 :filters="filters"
