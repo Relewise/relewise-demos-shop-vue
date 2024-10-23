@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type SearchRequestCollection, type CategoryPath } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type SearchRequestCollection, type CategoryPath, type CategoryNameAndId } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -130,14 +130,14 @@ async function search() {
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
                 if (categoriesForFilters.value.length > 0) {
-                    f.addProductCategoryIdFilter('Ancestor', categoriesForFilters.value.map(x => x.categoryId ?? ''));
+                    f.addProductCategoryIdFilter('Ancestor', categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId ?? '');
                 }
             })
             .facets(f => {
                 if (renderCategoryFilterOptions.value) {
-                    const part: CategoryPath[] = [{ breadcrumbPathStartingFromRoot: categoriesForFilters.value.map(x => {
-                        return { } as CategoryNameAndId;
-                    } ) }];
+                    // const path: CategoryPath = { breadcrumbPathStartingFromRoot: categoriesForFilters.value.map(x => {
+                    //     return { id: x.categoryId } as CategoryNameAndId;
+                    // } ) };
                     f.addProductCategoryHierarchyFacet('Descendants', undefined, { displayName: true });
                 } else {
                     f.addCategoryFacet('ImmediateParent', 
@@ -223,7 +223,7 @@ async function search() {
             if (renderCategoryFilterOptions.value && result.value.facets.items[0] !== null) {
 
                 const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
-                console.log(categoryHeirarchyFacetResult);
+                
                 var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
 
                 if (categoriesForFilters.value[categoriesForFilters.value.length - 1]?.categoryId !== undefined) {
