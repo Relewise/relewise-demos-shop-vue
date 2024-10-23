@@ -8,7 +8,7 @@
             <template v-if="facet.field === 'Category'">
                 <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex m-1">
                     <span class="m-1">
-                        {{ category.displayName }}
+                        {{ category.displayName ?? category.categoryId }}
                     </span>
                     <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
                                @click="() => {
@@ -20,10 +20,7 @@
                     <span v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
                           :key="filterOptionIndex"
                           class="mb-1 block cursor-pointer"
-                          @click.prevent="() => {
-                              if (!categoryLink.category.categoryId) return;
-                              applyFacet('categoryFilter', categoryLink.category.categoryId);
-                          }">
+                          @click.prevent="applyFacet('categoryFilter', categoryLink.category.categoryId)">
                         {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
                     </span>
                 </template>

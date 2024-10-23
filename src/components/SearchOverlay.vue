@@ -226,9 +226,10 @@ async function search() {
             if (Array.isArray(selectedCategoryFilterIds)) {
                 selectedCategoryFilterIds.forEach(selectedId => {
                     const toAdd = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
-                    if (toAdd != null) {
-                        categoriesForFilters.value.push(toAdd.category);
-                    }
+                    
+                    if (toAdd === null) return;  
+
+                    categoriesForFilters.value.push(toAdd.category);
                 });
             }
             
