@@ -30,7 +30,7 @@
             </template>
 
             <CheckListFacet
-                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && ('available' in facet && Array.isArray(facet.available) || 'nodes' in facet && Array.isArray(facet.nodes))"
+                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
                 @search="applyFacet"/>
             <div v-else-if="facet.field === 'SalesPrice'">
