@@ -135,10 +135,7 @@ async function search() {
             })
             .facets(f => {
                 if (renderCategoryFilterOptions.value) {
-                    // const path: CategoryPath = { breadcrumbPathStartingFromRoot: categoriesForFilters.value.map(x => {
-                    //     return { id: x.categoryId } as CategoryNameAndId;
-                    // } ) };
-                    f.addProductCategoryHierarchyFacet('Descendants', undefined, { displayName: true });
+                    f.addProductCategoryHierarchyFacet('Ancestors', undefined, { displayName: true });
                 } else {
                     f.addCategoryFacet('ImmediateParent', 
                         Array.isArray(filters.value['category']) 
@@ -223,22 +220,17 @@ async function search() {
             if (renderCategoryFilterOptions.value && result.value.facets.items[0] !== null) {
 
                 const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
-                
-                var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
 
-                if (categoriesForFilters.value[categoriesForFilters.value.length - 1]?.categoryId !== undefined) {
-                    while (root.category.categoryId !== categoriesForFilters.value[categoriesForFilters.value.length - 1].categoryId) {
-                        if (!root.children) {
-                            root = null;
-                            break;
-                        } 
-
-                        root = root.children[0];
+                if (categoriesForFilters.value.length === 0) {
+                    categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
+                } else {
+                    const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
+                    if (idToSearchfor) {
+                        var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
+                        categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
                     }
                 }
-                if (root != null) {
-                    categoriesForFilterOptions.value = root.children ?? undefined;
-                }
+
             } else {
                 categoriesForFilterOptions.value = undefined;
             }
@@ -263,6 +255,29 @@ async function search() {
             }
         }
     }
+}
+
+function findCategoryById(
+    nodes: CategoryHierarchyFacetResultCategoryNode[],
+    id: string,
+): CategoryHierarchyFacetResultCategoryNode | null {
+    for (const node of nodes) {
+        // Check if the current node has the desired category id
+        if (node.category.categoryId === id) {
+            return node;
+        }
+
+        // If the node has children, search recursively
+        if (node.children) {
+            const result = findCategoryById(node.children, id);
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    // Return null if not found in any node
+    return null;
 }
 
 function searchFor(term: string) {
@@ -322,7 +337,6 @@ function searchFor(term: string) {
                                    @click.prevent="() => {
                                        if (!categoryLink.category.categoryId) return;
                                        categoriesForFilters.push(categoryLink.category);
-                                       console.log(categoriesForFilters);
                                        search();
                                    }">
                                     {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
