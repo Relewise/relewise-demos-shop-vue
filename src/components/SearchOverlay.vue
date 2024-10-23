@@ -128,15 +128,14 @@ async function search() {
         renderCategoryFilterOptions.value = true;
     }
     
-    console.log('simon, ', categoriesForFilters.value.length);
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
-                if (categoriesForFilters.value.length > 0) {
-                    f.addProductCategoryIdFilter('Ancestor', categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId ?? '');
+                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
+                    f.addProductCategoryIdFilter('Ancestor', selectedCategoryFilterIds[selectedCategoryFilterIds.length-1]);
                 }
             })
             .facets(f => {
