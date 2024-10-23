@@ -1,12 +1,35 @@
 <template>
     <template v-for="(facet, index) in facets.items">
-        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" :key="index" class="px-3 py-3 bg-white rounded mb-3">
+        <div v-if="!facet.$type.includes('CategoryHierarchyFacetResult') && (facet.field === 'Category') || facet.field !== 'Category'" :key="index" class="px-3 py-3 bg-white rounded mb-3">
             <div class="font-semibold text-lg mb-2">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
 
+            <template v-if="facet.field === 'Category'">
+                <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex m-1">
+                    <span class="m-1">
+                        {{ category.displayName }}
+                    </span>
+                    <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
+                               @click="() => {
+                                   applyFacet('categoryFilter', category.categoryId, true);
+                               }"/>
+                </div>
+                <template v-if="categoriesForFilterOptions && !renderCategoryFacet">
+                    <a v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
+                       :key="filterOptionIndex"
+                       class="mb-1 block cursor-pointer"
+                       @click.prevent="() => {
+                           if (!categoryLink.category.categoryId) return;
+                           applyFacet('categoryFilter', categoryLink.category.categoryId);
+                       }">
+                        {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
+                    </a>
+                </template>
+            </template>
+
             <CheckListFacet
-                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
+                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && ('available' in facet && Array.isArray(facet.available) || 'nodes' in facet && Array.isArray(facet.nodes))"
                 :facet="facet" 
                 @search="applyFacet"/>
             <div v-else-if="facet.field === 'SalesPrice'">
@@ -31,22 +54,25 @@
 </template>
 
 <script setup lang="ts">
-import type { ProductFacetResult } from '@relewise/client';
+import type { CategoryHierarchyFacetResultCategoryNode, ProductCategoryResult, ProductFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
+    categoriesForFilterOptions: { type: Object as PropType<CategoryHierarchyFacetResultCategoryNode[] | undefined>, required: true },
+    selectedCategoryFilterOptions: { type: Object as PropType<ProductCategoryResult[]>, required: true },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
     renderCategoryFacet: { type: Boolean, required: true },
 });
 
 const emit = defineEmits(['search']);
-const { filters, page, facets } = toRefs(props);
+const { filters, page, facets, categoriesForFilterOptions } = toRefs(props);
 
-function applyFacet(name: string, value: string | null | undefined) {
+function applyFacet(name: string, value: string | null | undefined, clearRemainging: boolean = false) {
     if (!value) return;
 
     const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
@@ -56,7 +82,7 @@ function applyFacet(name: string, value: string | null | undefined) {
         const index = existing.indexOf(value);
         index === -1
             ? existing.push(value)
-            : existing.splice(index, 1);
+            : (clearRemainging ? existing.splice(index) : existing.splice(index, 1));
     } else if (value !== null) {
         filters.value[nameAsProp] = [];
         const t = filters.value[nameAsProp];

@@ -19,7 +19,7 @@ const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', categoryFilter: [] });
 const route = useRoute();
 
 const categoriesForFilters = ref<ProductCategoryResult[]>([]);
@@ -121,8 +121,14 @@ async function search() {
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
-    renderCategoryFilterOptions.value = categoriesForFilters.value.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
-
+    const selectedCategoryFilterIds = filters.value['categoryFilter'];
+    if (Array.isArray(selectedCategoryFilterIds)) {
+        renderCategoryFilterOptions.value = selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
+    } else {
+        renderCategoryFilterOptions.value = true;
+    }
+    
+    console.log('simon, ', categoriesForFilters.value.length);
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -134,15 +140,12 @@ async function search() {
                 }
             })
             .facets(f => {
-                if (renderCategoryFilterOptions.value) {
-                    f.addProductCategoryHierarchyFacet('Ancestors', undefined, { displayName: true });
-                } else {
-                    f.addCategoryFacet('ImmediateParent', 
-                        Array.isArray(filters.value['category']) 
+                f.addProductCategoryHierarchyFacet('Ancestors', undefined, { displayName: true });
+                f.addCategoryFacet('ImmediateParent', 
+                    Array.isArray(filters.value['category']) 
                         && filters.value['category']?.length > 0 
-                            ? filters.value['category'] 
-                            : null);
-                }
+                        ? filters.value['category'] 
+                        : null);
 
                 f.addBrandFacet(
                     Array.isArray(filters.value['brand'])
@@ -216,27 +219,31 @@ async function search() {
         }
 
         if (result.value?.facets && result.value.facets.items ) {
-
-            if (renderCategoryFilterOptions.value && result.value.facets.items[0] !== null) {
-
-                const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
-
-                if (categoriesForFilters.value.length === 0) {
-                    categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
-                } else {
-                    const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
-                    if (idToSearchfor) {
-                        var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
-                        categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
+            const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
+            
+            // find the categories so we can render dem pretty
+            categoriesForFilters.value = [];
+            if (Array.isArray(selectedCategoryFilterIds)) {
+                selectedCategoryFilterIds.forEach(selectedId => {
+                    const toAdd = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
+                    if (toAdd != null) {
+                        categoriesForFilters.value.push(toAdd.category);
                     }
-                }
+                });
+            }
 
+            if (categoriesForFilters.value.length === 0) {
+                categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
             } else {
-                categoriesForFilterOptions.value = undefined;
+                const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
+                if (idToSearchfor) {
+                    var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
+                    categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
+                }
             }
 
             if (result.value.facets.items[2] !== null) {
-                const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
+                const salesPriceFacet = result.value.facets!.items[3] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
                 }
@@ -318,7 +325,7 @@ function searchFor(term: string) {
                         </div>
 
                         <!-- TODO: Maybe this should be its own component -->
-                        <div v-if="renderCategoryFilterOptions || categoriesForFilters.length > 0" class="p-3 bg-white mb-3">
+                        <!-- <div v-if="renderCategoryFilterOptions || categoriesForFilters.length > 0" class="p-3 bg-white mb-3">
                             <span class="font-semibold">Categories</span>
                             <div v-for="(category, index) in categoriesForFilters" :key="index" class="bg-gray-100 flex m-1">
                                 <span class="m-1">
@@ -330,7 +337,7 @@ function searchFor(term: string) {
                                                search();
                                            }"/>
                             </div>
-                            <template v-if="result.facets?.items">
+                            <template v-if="categoriesForFilterOptions">
                                 <a v-for="(categoryLink, index) in categoriesForFilterOptions"
                                    :key="index"
                                    class="mb-1 block cursor-pointer"
@@ -342,7 +349,9 @@ function searchFor(term: string) {
                                     {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
                                 </a>
                             </template>
-                        </div>
+                            <template v-else>
+                            </template>
+                        </div> -->
                         <!-- TODO: Maybe this should be its own component -->
 
                         <Facets v-if="result.facets && result.hits > 0"
@@ -350,6 +359,8 @@ function searchFor(term: string) {
                                 :filters="filters"
                                 :facets="result.facets"
                                 :render-category-facet="!renderCategoryFilterOptions"
+                                :categories-for-filter-options="categoriesForFilterOptions"
+                                :selected-category-filter-options="categoriesForFilters"                                
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
