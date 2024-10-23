@@ -63,8 +63,8 @@ import { XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
-    categoriesForFilterOptions: { type: Object as PropType<CategoryHierarchyFacetResultCategoryNode[] | undefined>, required: true },
-    selectedCategoryFilterOptions: { type: Object as PropType<ProductCategoryResult[]>, required: true },
+    categoriesForFilterOptions: { type: Object as PropType<CategoryHierarchyFacetResultCategoryNode[] | undefined>, required: false },
+    selectedCategoryFilterOptions: { type: Object as PropType<ProductCategoryResult[]>, required: false },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
     renderCategoryFacet: { type: Boolean, required: true },
