@@ -121,6 +121,7 @@ async function search() {
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
+    // We do not want to render more category filter options if more than two options are already selected. (3 when allowThirdLevelCategories is enabled)
     const selectedCategoryFilterIds = filters.value['categoryFilter'];
     if (Array.isArray(selectedCategoryFilterIds)) {
         renderCategoryFilterOptions.value = selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
@@ -220,7 +221,7 @@ async function search() {
         if (result.value?.facets && result.value.facets.items ) {
             const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
             
-            // find the categories so we can render dem pretty
+            // find the categories so we can render them with a display name
             categoriesForFilters.value = [];
             if (Array.isArray(selectedCategoryFilterIds)) {
                 selectedCategoryFilterIds.forEach(selectedId => {
@@ -230,10 +231,10 @@ async function search() {
                     }
                 });
             }
-
-            if (categoriesForFilters.value.length === 0) {
+            
+            if (categoriesForFilters.value.length === 0) { // Not having selected any options means we are at the root.
                 categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
-            } else {
+            } else { // Find the outer most category selected in filter to use as a root for options
                 const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
                 if (idToSearchfor) {
                     var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
