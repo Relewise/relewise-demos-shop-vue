@@ -12,19 +12,20 @@
                     </span>
                     <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
                                @click="() => {
+                                   filters['category'] = [];
                                    applyFacet('categoryFilter', category.categoryId, true);
                                }"/>
                 </div>
                 <template v-if="categoriesForFilterOptions && !renderCategoryFacet">
-                    <a v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
-                       :key="filterOptionIndex"
-                       class="mb-1 block cursor-pointer"
-                       @click.prevent="() => {
-                           if (!categoryLink.category.categoryId) return;
-                           applyFacet('categoryFilter', categoryLink.category.categoryId);
-                       }">
+                    <span v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
+                          :key="filterOptionIndex"
+                          class="mb-1 block cursor-pointer"
+                          @click.prevent="() => {
+                              if (!categoryLink.category.categoryId) return;
+                              applyFacet('categoryFilter', categoryLink.category.categoryId);
+                          }">
                         {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
-                    </a>
+                    </span>
                 </template>
             </template>
 
