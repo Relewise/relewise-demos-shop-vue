@@ -12,7 +12,7 @@
                     </span>
                     <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
                                @click="() => {
-                                   filters['category'] = [];
+                                   filters['category'] = []; // Ensure a facet is not selected that should not be available after removing filter
                                    applyFacet('categoryFilter', category.categoryId, true);
                                }"/>
                 </div>
