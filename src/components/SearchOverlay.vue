@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type SearchRequestCollection, type CategoryPath } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -21,6 +21,11 @@ const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
+
+const categoriesForFilters = ref<ProductCategoryResult[]>([]);
+const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
+const renderCategoryFilterOptions = ref(false);
+
 let abortController = new AbortController();
 
 const pageSize = 40;
@@ -54,7 +59,6 @@ watch(() => ({ ...route }), (value, oldValue) => {
         search();
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
-        console.log('test');
         close();
     }
 });
@@ -117,16 +121,46 @@ async function search() {
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
+    renderCategoryFilterOptions.value = categoriesForFilters.value.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
+
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .facets(f => f
-                .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category']?.length > 0 ? filters.value['category'] : null)
-                .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
-                .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
-            )
+            .filters(f => {
+                if (categoriesForFilters.value.length > 0) {
+                    f.addProductCategoryIdFilter('Ancestor', categoriesForFilters.value.map(x => x.categoryId ?? ''));
+                }
+            })
+            .facets(f => {
+                if (renderCategoryFilterOptions.value) {
+                    const part: CategoryPath[] = [{ breadcrumbPathStartingFromRoot: categoriesForFilters.value.map(x => {
+                        return { } as CategoryNameAndId;
+                    } ) }];
+                    f.addProductCategoryHierarchyFacet('Descendants', undefined, { displayName: true });
+                } else {
+                    f.addCategoryFacet('ImmediateParent', 
+                        Array.isArray(filters.value['category']) 
+                        && filters.value['category']?.length > 0 
+                            ? filters.value['category'] 
+                            : null);
+                }
+
+                f.addBrandFacet(
+                    Array.isArray(filters.value['brand'])
+                    && filters.value['brand']?.length > 0
+                        ? filters.value['brand'] 
+                        : null);
+
+                f.addSalesPriceRangeFacet('Product', 
+                    applySalesPriceFacet 
+                        ? Number(filters.value.price[0]) 
+                        : undefined,
+                    applySalesPriceFacet 
+                        ? Number(filters.value.price[1]) 
+                        : undefined);
+            })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
@@ -181,25 +215,51 @@ async function search() {
             const recommender = contextStore.getRecommender();
 
             fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
+            return;
         }
-        else {
-            if (result.value?.facets && result.value.facets.items && result.value.facets.items[2] !== null) {
+
+        if (result.value?.facets && result.value.facets.items ) {
+
+            if (renderCategoryFilterOptions.value && result.value.facets.items[0] !== null) {
+
+                const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
+                console.log(categoryHeirarchyFacetResult);
+                var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
+
+                if (categoriesForFilters.value[categoriesForFilters.value.length - 1]?.categoryId !== undefined) {
+                    while (root.category.categoryId !== categoriesForFilters.value[categoriesForFilters.value.length - 1].categoryId) {
+                        if (!root.children) {
+                            root = null;
+                            break;
+                        } 
+
+                        root = root.children[0];
+                    }
+                }
+                if (root != null) {
+                    categoriesForFilterOptions.value = root.children ?? undefined;
+                }
+            } else {
+                categoriesForFilterOptions.value = undefined;
+            }
+
+            if (result.value.facets.items[2] !== null) {
                 const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
                 }
             }
+        }
 
-            fallbackRecommendations.value = null;
+        fallbackRecommendations.value = null;
 
-            const placement = result.value.retailMedia?.placements?.TOP;
-            if (placement) {
+        const placement = result.value.retailMedia?.placements?.TOP;
+        if (placement) {
 
-                if (placement?.results) {
-                    products.value = placement.results
-                        .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
-                        .concat(products.value ?? []);
-                }
+            if (placement?.results) {
+                products.value = placement.results
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
+                    .concat(products.value ?? []);
             }
         }
     }
@@ -241,11 +301,41 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
+
+                        <!-- TODO: Maybe this should be its own component -->
+                        <div v-if="renderCategoryFilterOptions || categoriesForFilters.length > 0" class="p-3 bg-white mb-3">
+                            <span class="font-semibold">Categories</span>
+                            <div v-for="(category, index) in categoriesForFilters" :key="index" class="bg-gray-100 flex m-1">
+                                <span class="m-1">
+                                    {{ category.displayName }}
+                                </span>
+                                <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
+                                           @click="() => {
+                                               categoriesForFilters.splice(index);
+                                               search();
+                                           }"/>
+                            </div>
+                            <template v-if="result.facets?.items">
+                                <a v-for="(categoryLink, index) in categoriesForFilterOptions"
+                                   :key="index"
+                                   class="mb-1 block cursor-pointer"
+                                   @click.prevent="() => {
+                                       if (!categoryLink.category.categoryId) return;
+                                       categoriesForFilters.push(categoryLink.category);
+                                       console.log(categoriesForFilters);
+                                       search();
+                                   }">
+                                    {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
+                                </a>
+                            </template>
+                        </div>
+                        <!-- TODO: Maybe this should be its own component -->
+
                         <Facets v-if="result.facets && result.hits > 0"
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
-                                :render-category-facet="true"
+                                :render-category-facet="!renderCategoryFilterOptions"
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
