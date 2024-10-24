@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type SearchRequestCollection, type CategoryPath, type CategoryNameAndId } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -19,8 +19,13 @@ const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', categoryFilter: [] });
 const route = useRoute();
+
+const categoriesForFilters = ref<ProductCategoryResult[]>([]);
+const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
+const renderCategoryFilterOptions = ref(false);
+
 let abortController = new AbortController();
 
 const pageSize = 40;
@@ -54,7 +59,6 @@ watch(() => ({ ...route }), (value, oldValue) => {
         search();
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
-        console.log('test');
         close();
     }
 });
@@ -117,16 +121,44 @@ async function search() {
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
+    // We do not want to render more category filter options if more than two options are already selected. (3 when allowThirdLevelCategories is enabled)
+    const selectedCategoryFilterIds = filters.value['categoryFilter'];
+    if (Array.isArray(selectedCategoryFilterIds)) {
+        renderCategoryFilterOptions.value = selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
+    } else {
+        renderCategoryFilterOptions.value = true;
+    }
+    
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .facets(f => f
-                .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category']?.length > 0 ? filters.value['category'] : null)
-                .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
-                .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
-            )
+            .filters(f => {
+                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
+                    selectedCategoryFilterIds.forEach(id => {
+                        f.addProductCategoryIdFilter('Ancestor', id);
+                    });
+                }
+            })
+            .facets(f => {
+                f.addProductCategoryHierarchyFacet('Ancestors', undefined, { displayName: true });
+                f.addCategoryFacet('ImmediateParent', 
+                    Array.isArray(filters.value['category']) 
+                        && filters.value['category']?.length > 0 
+                        ? filters.value['category'] 
+                        : null);
+
+                f.addBrandFacet(
+                    Array.isArray(filters.value['brand'])
+                    && filters.value['brand']?.length > 0
+                        ? filters.value['brand'] 
+                        : null);
+
+                f.addSalesPriceRangeFacet('Product', 
+                    applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
+                    applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+            })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
@@ -181,28 +213,77 @@ async function search() {
             const recommender = contextStore.getRecommender();
 
             fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
+            return;
         }
-        else {
-            if (result.value?.facets && result.value.facets.items && result.value.facets.items[2] !== null) {
-                const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
+
+        if (result.value?.facets && result.value.facets.items) {
+            const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
+            
+            // find the categories so we can render them with a display name
+            categoriesForFilters.value = [];
+            if (Array.isArray(selectedCategoryFilterIds)) {
+                selectedCategoryFilterIds.forEach(selectedId => {
+                    const toAdd = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
+                    
+                    if (toAdd === null) return;  
+
+                    categoriesForFilters.value.push(toAdd.category);
+                });
+            }
+            
+            if (categoriesForFilters.value.length === 0) { // Not having selected any options means we are at the root.
+                categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
+            } else { // Find the outer most category selected in filter to use as a root for options
+                const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
+                if (idToSearchfor) {
+                    var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
+                    categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
+                }
+            }
+
+            if (result.value.facets.items[3] !== null) {
+                const salesPriceFacet = result.value.facets!.items[3] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
                 }
             }
+        }
 
-            fallbackRecommendations.value = null;
+        fallbackRecommendations.value = null;
 
-            const placement = result.value.retailMedia?.placements?.TOP;
-            if (placement) {
+        const placement = result.value.retailMedia?.placements?.TOP;
+        if (placement) {
 
-                if (placement?.results) {
-                    products.value = placement.results
-                        .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
-                        .concat(products.value ?? []);
-                }
+            if (placement?.results) {
+                products.value = placement.results
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
+                    .concat(products.value ?? []);
             }
         }
     }
+}
+
+function findCategoryById(
+    nodes: CategoryHierarchyFacetResultCategoryNode[],
+    id: string,
+): CategoryHierarchyFacetResultCategoryNode | null {
+    for (const node of nodes) {
+        // Check if the current node has the desired category id
+        if (node.category.categoryId === id) {
+            return node;
+        }
+
+        // If the node has children, search recursively
+        if (node.children) {
+            const result = findCategoryById(node.children, id);
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    // Return null if not found in any node
+    return null;
 }
 
 function searchFor(term: string) {
@@ -241,11 +322,14 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
+
                         <Facets v-if="result.facets && result.hits > 0"
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
-                                :render-category-facet="true"
+                                :render-category-facet="!renderCategoryFilterOptions"
+                                :categories-for-filter-options="categoriesForFilterOptions"
+                                :selected-category-filter-options="categoriesForFilters"                                
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
