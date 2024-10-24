@@ -6,7 +6,7 @@
             </div>
 
             <template v-if="facet.field === 'Category'">
-                <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex m-1">
+                <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex my-1">
                     <span class="m-1">
                         {{ category.displayName ?? category.categoryId }}
                     </span>
