@@ -154,12 +154,8 @@ async function search() {
                         : null);
 
                 f.addSalesPriceRangeFacet('Product', 
-                    applySalesPriceFacet 
-                        ? Number(filters.value.price[0]) 
-                        : undefined,
-                    applySalesPriceFacet 
-                        ? Number(filters.value.price[1]) 
-                        : undefined);
+                    applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
+                    applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
             })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -218,7 +214,7 @@ async function search() {
             return;
         }
 
-        if (result.value?.facets && result.value.facets.items ) {
+        if (result.value?.facets && result.value.facets.items) {
             const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
             
             // find the categories so we can render them with a display name
@@ -243,7 +239,7 @@ async function search() {
                 }
             }
 
-            if (result.value.facets.items[2] !== null) {
+            if (result.value.facets.items[3] !== null) {
                 const salesPriceFacet = result.value.facets!.items[3] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];

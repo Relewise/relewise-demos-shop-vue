@@ -70,7 +70,7 @@ const props = defineProps({
 const emit = defineEmits(['search']);
 const { filters, page, facets, categoriesForFilterOptions } = toRefs(props);
 
-function applyFacet(name: string, value: string | null | undefined, clearRemainging: boolean = false) {
+function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
     if (!value) return;
 
     const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
@@ -80,7 +80,7 @@ function applyFacet(name: string, value: string | null | undefined, clearRemaing
         const index = existing.indexOf(value);
         index === -1
             ? existing.push(value)
-            : (clearRemainging ? existing.splice(index) : existing.splice(index, 1));
+            : (clearSubsequentEntries ? existing.splice(index) : existing.splice(index, 1));
     } else if (value !== null) {
         filters.value[nameAsProp] = [];
         const t = filters.value[nameAsProp];
