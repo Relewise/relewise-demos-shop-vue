@@ -136,7 +136,9 @@ async function search() {
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
-                    f.addProductCategoryIdFilter('Ancestor', selectedCategoryFilterIds[selectedCategoryFilterIds.length-1]);
+                    selectedCategoryFilterIds.forEach(id => {
+                        f.addProductCategoryIdFilter('Ancestor', id);
+                    });
                 }
             })
             .facets(f => {
