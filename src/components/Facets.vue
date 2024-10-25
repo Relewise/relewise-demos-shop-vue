@@ -7,34 +7,39 @@
 
             <template v-if="facet.field === 'Category'">
                 <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex my-1">
-                    <span class="m-1">
-                        {{ category.displayName ?? category.categoryId }}
-                    </span>
-                    <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
-                               @click="() => {
-                                   applyFacet('category', category.categoryId, true);
-                               }"/>
+                    <template v-if="selectedCategoryFilterOptionIndex < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)">
+                        <span class="m-1">
+                            {{ category.displayName ?? category.categoryId }}
+                        </span>
+                        <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
+                                   @click="() => {
+                                       applyFacet('category', category.categoryId, true);
+                                   }"/>
+                    </template>
                 </div>
-                <template v-if="categoriesForFilterOptions && (selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2))">
-                    <span v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
-                          :key="filterOptionIndex"
-                          class="mb-1 block cursor-pointer"
-                          @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
-                        {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
-                    </span>
+                {{ categoriesForFilterOptions?.length }}
+                <template v-if="categoriesForFilterOptions">
+                    <template v-if="(selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2))">
+                        <span v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
+                              :key="filterOptionIndex"
+                              class="mb-1 block cursor-pointer"
+                              @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
+                            {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
+                        </span>
+                    </template>
+                    <ul v-else>
+                        <li v-for="(option, oIndex) in categoriesForFilterOptions" :key="oIndex" class="flex pb-1.5">
+                            <label class="flex items-center cursor-pointer">
+                                <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
+                                       type="checkbox"
+                                       :value="option.category.categoryId"
+                                       :checked="option.selected"
+                                       @click="applyFacet(facet.field, option.category.categoryId)">
+                                {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                            </label>
+                        </li>
+                    </ul>
                 </template>
-                <ul v-else>
-                    <li v-for="(option, oIndex) in categoriesForFilterOptions" :key="oIndex" class="flex pb-1.5">
-                        <label class="flex items-center cursor-pointer">
-                            <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
-                                   type="checkbox"
-                                   :value="option.category.categoryId"
-                                   :checked="option.selected"
-                                   @click="applyFacet(facet.field, option.category.categoryId)">
-                            {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
-                        </label>
-                    </li>
-                </ul>
             </template>
 
             <CheckListFacet

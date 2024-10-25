@@ -138,24 +138,38 @@ async function search() {
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
-                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0 &&  selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)) {
-                    selectedCategoryFilterIds.forEach(id => {
+                if (Array.isArray(selectedCategoryFilterIds)) {
+                    selectedCategoryFilterIds.slice(0, (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)).forEach(id => {
                         f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
             })
             .facets(f => {
 
-                var forFacet = undefined;
-                if (selectedCategoryFilterIds && selectedCategoryFilterIds.length > 0) {
-                    if (Array.isArray(selectedCategoryFilterIds)) {
-                        forFacet = [{ breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(x => {
-                            return {id: x } as CategoryNameAndId;
-                        })}];
+                let forFacet = undefined;
+
+                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
+                    const threshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
+
+                    if (selectedCategoryFilterIds.length < threshold) {
+                        forFacet = [{
+                            breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id } as CategoryNameAndId)),
+                        }];
+                    } else {
+                        const basePath = selectedCategoryFilterIds.slice(0, threshold).map(id => ({ id } as CategoryNameAndId));
+        
+                        console.log('options for checklist:', selectedCategoryFilterIds.slice(threshold));
+                        forFacet = selectedCategoryFilterIds.slice(threshold).map(id => {
+                            const thisPath = [...basePath, { id }];
+                            return { breadcrumbPathStartingFromRoot: thisPath } as CategoryPath;
+                        });
+
+                        console.log(forFacet);
                     }
                 }
 
-                f.addProductCategoryHierarchyFacet('Ancestors', forFacet, { displayName: true });
+
+                f.addProductCategoryHierarchyFacet('Descendants', forFacet, { displayName: true });
 
                 f.addBrandFacet(
                     Array.isArray(filters.value['brand'])
@@ -242,9 +256,14 @@ async function search() {
             if (categoriesForFilters.value.length === 0) { // Not having selected any options means we are at the root.
                 categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
             } else { // Find the outer most category selected in filter to use as a root for options
-                const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
+
+                var idToSearchfor = undefined;
+                if (selectedCategoryFilterIds.length > (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)) {
+                    idToSearchfor = categoriesForFilters.value[(contextStore.context.value.allowThirdLevelCategories ? 3 : 2) -1].categoryId;              
+                } else {
+                    idToSearchfor =  categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
+                }
                 if (idToSearchfor) {
-                    console.log(categoryHeirarchyFacetResult.nodes);
                     var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
                     categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
                 }
