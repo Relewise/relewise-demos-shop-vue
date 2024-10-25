@@ -4,10 +4,9 @@
             <div class="font-semibold text-lg mb-2">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
-
-            <template v-if="facet.field === 'Category'">
+            <template v-if="facet.$type.includes('CategoryHierarchyFacetResult')">
                 <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex my-1">
-                    <template v-if="selectedCategoryFilterOptionIndex < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)">
+                    <template v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold">
                         <span class="m-1">
                             {{ category.displayName ?? category.categoryId }}
                         </span>
@@ -17,10 +16,9 @@
                                    }"/>
                     </template>
                 </div>
-                {{ categoriesForFilterOptions?.length }}
-                <template v-if="categoriesForFilterOptions">
-                    <template v-if="(selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2))">
-                        <span v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
+                <template v-if="categoryOptions">
+                    <template v-if="selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < categoryFilterThreshold">
+                        <span v-for="(categoryLink, filterOptionIndex) in categoryOptions"
                               :key="filterOptionIndex"
                               class="mb-1 block cursor-pointer"
                               @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
@@ -28,7 +26,7 @@
                         </span>
                     </template>
                     <ul v-else>
-                        <li v-for="(option, oIndex) in categoriesForFilterOptions" :key="oIndex" class="flex pb-1.5">
+                        <li v-for="(option, oIndex) in categoryOptions" :key="oIndex" class="flex pb-1.5">
                             <label class="flex items-center cursor-pointer">
                                 <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
                                        type="checkbox"
@@ -43,7 +41,7 @@
             </template>
 
             <CheckListFacet
-                v-if=" ((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && ('available' in facet && Array.isArray(facet.available) ||'nodes' in facet && Array.isArray(facet.nodes))"
+                v-if=" ((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && ('available' in facet && Array.isArray(facet.available))"
                 :facet="facet" 
                 @search="applyFacet"/>
 
@@ -86,7 +84,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['search']);
-const { filters, page, facets, categoriesForFilterOptions } = toRefs(props);
+const { filters, page, facets, categoriesForFilterOptions: categoryOptions } = toRefs(props);
+const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
 function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
     if (!value) return;

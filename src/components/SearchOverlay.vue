@@ -22,9 +22,8 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
 
-const categoriesForFilters = ref<ProductCategoryResult[]>([]);
+const selectedCategoriesForFilters = ref<ProductCategoryResult[]>([]);
 const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
-const renderCategoryFilterOptions = ref(false);
 
 let abortController = new AbortController();
 
@@ -121,17 +120,9 @@ async function search() {
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
-    // We do not want to render more category filter options if more than two options are already selected. (3 when allowThirdLevelCategories is enabled)
     const selectedCategoryFilterIds = filters.value['category'];
-    console.log(filters.value['category']);
-    if (Array.isArray(selectedCategoryFilterIds)) {
-        renderCategoryFilterOptions.value = selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
-    } else {
-        renderCategoryFilterOptions.value = true;
-    }
+    const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
-    // TODO: 
-    renderCategoryFilterOptions.value = true;
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -147,27 +138,19 @@ async function search() {
             .facets(f => {
 
                 let forFacet = undefined;
-
                 if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
-                    const threshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
-
-                    if (selectedCategoryFilterIds.length < threshold) {
+                    if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
                         forFacet = [{
                             breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id } as CategoryNameAndId)),
                         }];
                     } else {
-                        const basePath = selectedCategoryFilterIds.slice(0, threshold).map(id => ({ id } as CategoryNameAndId));
-        
-                        console.log('options for checklist:', selectedCategoryFilterIds.slice(threshold));
-                        forFacet = selectedCategoryFilterIds.slice(threshold).map(id => {
+                        const basePath = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id } as CategoryNameAndId));
+                        forFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
                             const thisPath = [...basePath, { id }];
-                            return { breadcrumbPathStartingFromRoot: thisPath } as CategoryPath;
+                            return { breadcrumbPathStartingFromRoot: thisPath };
                         });
-
-                        console.log(forFacet);
                     }
                 }
-
 
                 f.addProductCategoryHierarchyFacet('Descendants', forFacet, { displayName: true });
 
@@ -241,31 +224,27 @@ async function search() {
         if (result.value?.facets && result.value.facets.items) {
             const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
             
-            // find the categories so we can render them with a display name
-            categoriesForFilters.value = [];
+            // Populate categories for rendering with display names
+            selectedCategoriesForFilters.value = [];
             if (Array.isArray(selectedCategoryFilterIds)) {
                 selectedCategoryFilterIds.forEach(selectedId => {
-                    const toAdd = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
-                    
-                    if (toAdd === null) return;  
-
-                    categoriesForFilters.value.push(toAdd.category);
+                    const categoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
+                    if (categoryNode) selectedCategoriesForFilters.value.push(categoryNode.category);
                 });
             }
-            
-            if (categoriesForFilters.value.length === 0) { // Not having selected any options means we are at the root.
-                categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
-            } else { // Find the outer most category selected in filter to use as a root for options
 
-                var idToSearchfor = undefined;
-                if (selectedCategoryFilterIds.length > (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)) {
-                    idToSearchfor = categoriesForFilters.value[(contextStore.context.value.allowThirdLevelCategories ? 3 : 2) -1].categoryId;              
-                } else {
-                    idToSearchfor =  categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
-                }
-                if (idToSearchfor) {
-                    var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
-                    categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
+            // If no categories are selected, show root categories as options
+            if (selectedCategoriesForFilters.value.length === 0) {
+                categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
+            } else {
+                // Determine the category to use as the root for filter options
+                const rootCategoryId = selectedCategoriesForFilters.value[
+                    Math.min(selectedCategoriesForFilters.value.length, categoryFilterThreshold) - 1
+                ]?.categoryId;
+
+                if (rootCategoryId) {
+                    const rootCategoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, rootCategoryId);
+                    categoriesForFilterOptions.value = rootCategoryNode?.children ?? undefined;
                 }
             }
 
@@ -354,9 +333,9 @@ function searchFor(term: string) {
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
-                                :render-category-facet="!renderCategoryFilterOptions"
+                                :render-category-facet="true"
                                 :categories-for-filter-options="categoriesForFilterOptions"
-                                :selected-category-filter-options="categoriesForFilters"                                
+                                :selected-category-filter-options="selectedCategoriesForFilters"                                
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
