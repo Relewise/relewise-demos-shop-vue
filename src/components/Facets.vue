@@ -41,10 +41,9 @@
             </template>
 
             <CheckListFacet
-                v-if=" ((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
+                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
                 @search="applyFacet"/>
-
             <div v-else-if="facet.field === 'SalesPrice'">
                 <div class="w-full flex items-center justify-between mb-5 gap-2">
                     <input v-model="filters.price[0]" type="text" class="small" @keypress.enter="priceChange"> - <input
