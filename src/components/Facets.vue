@@ -11,9 +11,7 @@
                             {{ category.displayName ?? category.categoryId }}
                         </span>
                         <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
-                                   @click="() => {
-                                       applyFacet('category', category.categoryId, true);
-                                   }"/>
+                                   @click="applyFacet(facet.field, category.categoryId, true)"/>
                     </template>
                 </div>
                 <template v-if="categoryOptions">
@@ -21,7 +19,7 @@
                         <span v-for="(categoryLink, filterOptionIndex) in categoryOptions"
                               :key="filterOptionIndex"
                               class="mb-1 block cursor-pointer"
-                              @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
+                              @click.prevent="applyFacet(facet.field, categoryLink.category.categoryId)">
                             {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
                         </span>
                     </template>
