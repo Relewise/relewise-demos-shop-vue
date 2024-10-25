@@ -41,7 +41,7 @@
             </template>
 
             <CheckListFacet
-                v-if=" ((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && ('available' in facet && Array.isArray(facet.available))"
+                v-if=" ((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
                 @search="applyFacet"/>
 
