@@ -14,9 +14,11 @@
                                    @click="applyFacet(facet.field, category.categoryId, true)"/>
                     </template>
                 </div>
-                <template v-if="categoryOptions">
+
+                <!-- Render category hierarchy options as filters or checklist -->
+                <template v-if="categoryHierarchyOptions">
                     <template v-if="selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < categoryFilterThreshold">
-                        <span v-for="(categoryLink, filterOptionIndex) in categoryOptions"
+                        <span v-for="(categoryLink, filterOptionIndex) in categoryHierarchyOptions"
                               :key="filterOptionIndex"
                               class="mb-1 block cursor-pointer"
                               @click.prevent="applyFacet(facet.field, categoryLink.category.categoryId)">
@@ -24,7 +26,7 @@
                         </span>
                     </template>
                     <ul v-else>
-                        <li v-for="(option, oIndex) in categoryOptions" :key="oIndex" class="flex pb-1.5">
+                        <li v-for="(option, oIndex) in categoryHierarchyOptions" :key="oIndex" class="flex pb-1.5">
                             <label class="flex items-center cursor-pointer">
                                 <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
                                        type="checkbox"
@@ -82,7 +84,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['search']);
-const { filters, page, facets, categoriesForFilterOptions: categoryOptions } = toRefs(props);
+const { filters, page, facets, categoriesForFilterOptions: categoryHierarchyOptions } = toRefs(props);
 const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
 function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
