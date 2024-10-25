@@ -1,6 +1,6 @@
 <template>
-    <template v-for="(facet, index) in facets.items">
-        <div v-if="!facet.$type.includes('CategoryHierarchyFacetResult') && (facet.field === 'Category') || facet.field !== 'Category'" :key="index" class="px-3 py-3 bg-white rounded mb-3">
+    <template v-for="(facet, index) in facets.items" :key="index">
+        <div class="px-3 py-3 bg-white rounded mb-3">
             <div class="font-semibold text-lg mb-2">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
@@ -12,24 +12,36 @@
                     </span>
                     <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
                                @click="() => {
-                                   filters['category'] = []; // Ensure a facet is not selected that should not be available after removing filter
-                                   applyFacet('categoryFilter', category.categoryId, true);
+                                   applyFacet('category', category.categoryId, true);
                                }"/>
                 </div>
-                <template v-if="categoriesForFilterOptions && !renderCategoryFacet">
+                <template v-if="categoriesForFilterOptions && (selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2))">
                     <span v-for="(categoryLink, filterOptionIndex) in categoriesForFilterOptions"
                           :key="filterOptionIndex"
                           class="mb-1 block cursor-pointer"
-                          @click.prevent="applyFacet('categoryFilter', categoryLink.category.categoryId)">
+                          @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
                         {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
                     </span>
                 </template>
+                <ul v-else>
+                    <li v-for="(option, oIndex) in categoriesForFilterOptions" :key="oIndex" class="flex pb-1.5">
+                        <label class="flex items-center cursor-pointer">
+                            <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
+                                   type="checkbox"
+                                   :value="option.category.categoryId"
+                                   :checked="option.selected"
+                                   @click="applyFacet(facet.field, option.category.categoryId)">
+                            {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                        </label>
+                    </li>
+                </ul>
             </template>
 
             <CheckListFacet
-                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
+                v-if=" ((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && ('available' in facet && Array.isArray(facet.available) ||'nodes' in facet && Array.isArray(facet.nodes))"
                 :facet="facet" 
                 @search="applyFacet"/>
+
             <div v-else-if="facet.field === 'SalesPrice'">
                 <div class="w-full flex items-center justify-between mb-5 gap-2">
                     <input v-model="filters.price[0]" type="text" class="small" @keypress.enter="priceChange"> - <input
@@ -57,6 +69,7 @@ import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
+import contextStore from '@/stores/context.store';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },

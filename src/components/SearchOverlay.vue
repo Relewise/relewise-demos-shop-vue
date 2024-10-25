@@ -122,32 +122,40 @@ async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
 
     // We do not want to render more category filter options if more than two options are already selected. (3 when allowThirdLevelCategories is enabled)
-    const selectedCategoryFilterIds = filters.value['categoryFilter'];
+    const selectedCategoryFilterIds = filters.value['category'];
+    console.log(filters.value['category']);
     if (Array.isArray(selectedCategoryFilterIds)) {
         renderCategoryFilterOptions.value = selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2);
     } else {
         renderCategoryFilterOptions.value = true;
     }
-    
+
+    // TODO: 
+    renderCategoryFilterOptions.value = true;
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
-                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
+                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0 &&  selectedCategoryFilterIds.length < (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)) {
                     selectedCategoryFilterIds.forEach(id => {
                         f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
             })
             .facets(f => {
-                f.addProductCategoryHierarchyFacet('Ancestors', undefined, { displayName: true });
-                f.addCategoryFacet('ImmediateParent', 
-                    Array.isArray(filters.value['category']) 
-                        && filters.value['category']?.length > 0 
-                        ? filters.value['category'] 
-                        : null);
+
+                var forFacet = undefined;
+                if (selectedCategoryFilterIds && selectedCategoryFilterIds.length > 0) {
+                    if (Array.isArray(selectedCategoryFilterIds)) {
+                        forFacet = [{ breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(x => {
+                            return {id: x } as CategoryNameAndId;
+                        })}];
+                    }
+                }
+
+                f.addProductCategoryHierarchyFacet('Ancestors', forFacet, { displayName: true });
 
                 f.addBrandFacet(
                     Array.isArray(filters.value['brand'])
@@ -236,13 +244,14 @@ async function search() {
             } else { // Find the outer most category selected in filter to use as a root for options
                 const idToSearchfor = categoriesForFilters.value[categoriesForFilters.value.length-1].categoryId;
                 if (idToSearchfor) {
+                    console.log(categoryHeirarchyFacetResult.nodes);
                     var currentCategoryInHeirarchy = findCategoryById(categoryHeirarchyFacetResult.nodes, idToSearchfor);
                     categoriesForFilterOptions.value = currentCategoryInHeirarchy?.children ?? undefined;
                 }
             }
 
-            if (result.value.facets.items[3] !== null) {
-                const salesPriceFacet = result.value.facets!.items[3] as PriceRangeFacetResult;
+            if (result.value.facets.items[2] !== null) {
+                const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
                 }
@@ -322,7 +331,6 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
-
                         <Facets v-if="result.facets && result.hits > 0"
                                 v-model:page="page"
                                 :filters="filters"
