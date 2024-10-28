@@ -191,7 +191,7 @@ async function search() {
         })
         .build();
 
-    const query = { ...filters.value };
+    const query = { ...router.currentRoute.value.query, ...filters.value };
     if (!applySalesPriceFacet) delete query.price;
 
     await router.push({ path: route.path, query: query });
