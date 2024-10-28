@@ -37,6 +37,7 @@ const handleMouseLeave = () => {
 
 onBeforeUnmount(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
+    handleMouseLeave();
 });
 </script>
 
@@ -99,7 +100,8 @@ onBeforeUnmount(() => {
                                                     class="text-sm block">
                                                     <RouterLink
                                                         :to="{ name: 'sub-category', params: { parent: category.id, id: child.category.categoryId } }"
-                                                        class="block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
+                                                        class="block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
+                                                        @click="handleMouseLeave">
                                                         {{ child.category.displayName }}
                                                     </RouterLink>
                                                 </li>
@@ -126,7 +128,10 @@ onBeforeUnmount(() => {
                                                 class="text-sm block">
                                                 <RouterLink :to="{ name: 'category', params: { id: category.id } }"
                                                             class="block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
-                                                            @click="open = null">
+                                                            @click="() => {
+                                                                open = null;
+                                                                handleMouseLeave();
+                                                            }">
                                                     {{ category.category.displayName }}
                                                 </RouterLink>
                                             </li>
