@@ -29,15 +29,21 @@ const handleMouseOver = (categoryId: string) => {
 };
 
 const handleMouseLeave = () => {
-    if (hoverTimeout) clearTimeout(hoverTimeout); 
-    document.body.classList.remove('overflow-hidden');
-    document.body.classList.remove('mr-4');
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const isSearchOverlayOpen = searchParams.get('open') === '1' ? true : false;
+    
+    if (!isSearchOverlayOpen) {
+        document.body.classList.remove('overflow-hidden');
+        document.body.classList.remove('mr-4');    
+    }
+    
     open.value = null;
 };
 
 onBeforeUnmount(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
-    handleMouseLeave();
 });
 </script>
 
