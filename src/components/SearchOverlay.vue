@@ -130,29 +130,29 @@ async function search() {
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds)) {
-                    selectedCategoryFilterIds.slice(0, (contextStore.context.value.allowThirdLevelCategories ? 3 : 2)).forEach(id => {
+                    selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
                         f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
             })
             .facets(f => {
 
-                let forFacet = undefined;
+                let selectedCategoriesForFacet: CategoryPath[] | undefined = undefined;
                 if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
                     if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
-                        forFacet = [{
-                            breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id } as CategoryNameAndId)),
+                        selectedCategoriesForFacet = [{
+                            breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id })),
                         }];
                     } else {
-                        const basePath = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id } as CategoryNameAndId));
-                        forFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
+                        const basePath: CategoryNameAndId[] = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id }));
+                        selectedCategoriesForFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
                             const thisPath = [...basePath, { id }];
                             return { breadcrumbPathStartingFromRoot: thisPath };
                         });
                     }
                 }
 
-                f.addProductCategoryHierarchyFacet('Descendants', forFacet, { displayName: true });
+                f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
 
                 f.addBrandFacet(
                     Array.isArray(filters.value['brand'])

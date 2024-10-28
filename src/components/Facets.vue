@@ -5,14 +5,14 @@
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
             <template v-if="facet.$type.includes('CategoryHierarchyFacetResult')">
-                <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex" class="bg-gray-100 flex my-1">
-                    <template v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold">
+                <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex">
+                    <div v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold" class="bg-gray-100 flex my-1">
                         <span class="m-1">
                             {{ category.displayName ?? category.categoryId }}
                         </span>
                         <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
                                    @click="applyFacet(facet.field, category.categoryId, true)"/>
-                    </template>
+                    </div>
                 </div>
 
                 <!-- Render category hierarchy options as filters or checklist -->
