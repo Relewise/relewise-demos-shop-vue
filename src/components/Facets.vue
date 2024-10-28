@@ -1,6 +1,6 @@
 <template>
     <template v-for="(facet, index) in facets.items" :key="index">
-        <div class="px-3 py-3 bg-white rounded mb-3">
+        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" class="px-3 py-3 bg-white rounded mb-3">
             <div class="font-semibold text-lg mb-2">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
