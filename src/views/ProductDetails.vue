@@ -4,9 +4,6 @@
             <h1 class="text-4xl font-semibold">
                 {{ product.displayName }}
             </h1>
-            <div class="text-zinc-500">
-                Product ID: {{ product.productId }}
-            </div>
 
             <div class="flex gap-6 mt-3">
                 <div class="relative flex h-[275px] overflow-hidden">
@@ -15,6 +12,14 @@
                 </div>
 
                 <div>
+                    <div class="mt-2 flex items-center justify-between">
+                        <p>                            
+                            <span class="text-zinc-900 ">
+                                {{ product.data.description.value }}
+                            </span>
+                        </p>
+                    </div>
+
                     <div class="mt-2 flex items-center justify-between">
                         <p>
                             <span class="text-lg font-semibold text-zinc-900 mr-1 leading-none">{{ $format(product.salesPrice) }}</span>
@@ -29,6 +34,21 @@
                             Add to cart
                         </button>
                     </div>
+                    <br />
+                    <br />
+
+                    <div class="text-zinc-500">
+                        Brand: {{ product.brand.displayName }}
+                    </div>
+
+                    <div class="text-zinc-500">
+                        No in stock: {{ product.data['stock_da-DK'].value }}
+                    </div>
+
+                    <div class="text-zinc-500">
+                        Product ID: {{ product.productId }}
+                    </div>
+
                 </div>
             </div>
         </div>

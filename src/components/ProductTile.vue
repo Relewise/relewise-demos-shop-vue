@@ -60,6 +60,10 @@ const { product } = toRefs(props);
                 <h5 class="tracking-tight font-semibold leading-tight overflow-hidden text-ellipsis h-10">
                     {{ product.displayName }}
                 </h5>
+                <div v-if="product.variant" class="text-sm text-zinc-500">
+                    <div>Color: {{ product.variant.data?.color.value }}</div>
+                    <div>Material: {{ product.variant.data?.material.value }}</div>
+                </div>
             </div>
             <div class="mt-2 flex items-center justify-between">
                 <p>
