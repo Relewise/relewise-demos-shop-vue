@@ -23,11 +23,11 @@ let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 const handleMouseOver = (categoryId: string) => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
     hoverTimeout = setTimeout(() => {
-        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
+        
         document.body.classList.add('overflow-hidden');
-
+        
         if (!document.body.style.marginRight) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
             document.body.style.marginRight = `${scrollbarWidth}px`;
         }
 
