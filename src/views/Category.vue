@@ -1,5 +1,6 @@
 <template>
     <div class="category-page">
+        <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
         <div class="flex gap-3">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
                 <div v-if="(childCategories?.length ?? 0) > 0" class="px-3 py-3 bg-white rounded mb-3">
@@ -66,9 +67,10 @@
 <script lang="ts" setup>
 import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
+import Breadcrumb from '../components/Breadcrumb.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -90,6 +92,7 @@ const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
+const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
 async function init() {
     const id = route.params.id;
@@ -115,8 +118,9 @@ async function init() {
         });
 
         const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-            .setSelectedCategoryProperties({ displayName: true })
+            .setSelectedCategoryProperties({ displayName: true, paths: true })
             .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
+            .facets(f => f.addProductCategoryHierarchyFacet('Descendants', [], { displayName: true }))
             .build();
 
         const searcher = contextStore.getSearcher();
@@ -125,6 +129,19 @@ async function init() {
 
         if (response?.results) {
             category.value = response.results[0];
+            breadcrumb.value = [];
+            if (response.facets && response.facets.items) {
+                if (grandParentCategoryId.value) {
+                    const numse = findCategoryById((response.facets.items[0] as CategoryHierarchyFacetResult).nodes, grandParentCategoryId.value);
+                    breadcrumb.value.push({id: numse?.category.categoryId, displayName: numse?.category.displayName});
+                }
+                if (parentCategoryId.value) {
+                    const numse = findCategoryById((response.facets.items[0] as CategoryHierarchyFacetResult).nodes, parentCategoryId.value);
+                    breadcrumb.value.push({id: numse?.category.categoryId, displayName: numse?.category.displayName});
+                }
+                breadcrumb.value.push({ id: category.value.categoryId, displayName: category.value.displayName});
+
+            }
         }
 
         categoryId.value = id;
@@ -251,5 +268,29 @@ async function search() {
     }
 
     result.value = response;
+}
+
+// TODO: this is duplicated
+function findCategoryById(
+    nodes: CategoryHierarchyFacetResultCategoryNode[],
+    id: string,
+): CategoryHierarchyFacetResultCategoryNode | null {
+    for (const node of nodes) {
+        // Check if the current node has the desired category id
+        if (node.category.categoryId === id) {
+            return node;
+        }
+
+        // If the node has children, search recursively
+        if (node.children) {
+            const result = findCategoryById(node.children, id);
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    // Return null if not found in any node
+    return null;
 }
 </script>
