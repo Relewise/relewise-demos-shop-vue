@@ -1,0 +1,145 @@
+{
+    "datasets": [
+        {
+            "displayName": "CBE - TEST",
+            "apiKey": "jngULGp#5vFGs4T",
+            "datasetId": "593dda40-c434-484b-a846-dd02b74d3a05",
+            "currencyCode": "DKK",
+            "language": "da-dk",
+            "allLanguages": [
+                "en-gb",
+                "da-dk",
+                "nl",
+                "en-fi",
+                "en-no",
+                "en-se"
+            ],
+            "allCurrencies": [
+                "GBP",
+                "DKK",
+                "EUR"
+            ],
+            "users": [
+                {
+                    "temporaryId": "af4b1f0f-52be-406e-9cb8-2e86f23a6f04",
+                    "classifications": {
+                        "country": "dk",
+                        "channel": "B2C"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "email": "danish@user.com"
+                },
+                {
+                    "temporaryId": "bee763e8-ba35-4559-97b8-5de2e2502b05",
+                    "classifications": {
+                        "country": "se",
+                        "channel": "B2C"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "email": "swedish@user.com"
+                },
+                {
+                    "temporaryId": "795c8c20-b3fe-4362-a770-5fca842be838",
+                    "classifications": {
+                        "country": "no",
+                        "channel": "B2C"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "authenticatedId": "norwegian@user.com"
+                },
+                {
+                    "temporaryId": "e7a6144b-d235-41af-9b5b-e76ef9783811",
+                    "classifications": {
+                        "country": "fi",
+                        "channel": "B2C"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "email": "finnish@user.com"
+                },
+                {
+                    "authenticatedId": "8697cde5-7982-4030-a93e-b6b9a1ab44f2",
+                    "classifications": {
+                        "channel": "Blueberry"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "email": "user@internalsystem.com"
+                },
+                {
+                    "authenticatedId": "34d302f6-470b-4c49-aeed-7aebe4eb2b1f",
+                    "email": "someone@b2bcompany1.com",
+                    "classifications": {
+                        "channel": "B2B"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "company": {
+                        "id": "b2bcompany1"
+                    }
+                },
+                {
+                    "company": {
+                        "id": "b2bcompany1"
+                    },
+                    "temporaryId": "",
+                    "email": "anotheruser@b2bcompany1.com",
+                    "classifications": {
+                        "channel": "B2B"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "authenticatedId": "9897ab78-6394-4a1f-96c4-da0ceecb02e5"
+                },
+                {
+                    "temporaryId": "21795edf-7a0a-45d3-a9b4-a7fb101b12e1",
+                    "classifications": {
+                        "Persona": "BargainHunter"
+                    },
+                    "identifiers": {},
+                    "data": {},
+                    "email": "bargainhunter@something.com"
+                },
+                {
+                    "authenticatedId": "de00d15d-23c4-45f5-b231-9e73a20d72fe",
+                    "email": "someone@b2bcompany2.com",
+                    "company": {
+                        "id": "b2bcompany2"
+                    },
+                    "classifications": {
+                        "channel": "B2B"
+                    },
+                    "identifiers": {},
+                    "data": {}
+                },
+                {
+                    "temporaryId": "63ece4d1-dbc3-48ac-9815-7516f51ce55b",
+                    "email": "unitedkingdom@user.com",
+                    "classifications": {
+                        "country": "gb",
+                        "channel": "B2C"
+                    },
+                    "identifiers": {},
+                    "data": {}
+                }
+            ],
+            "companies": [
+                {
+                    "id": "b2bcompany1"
+                },
+                {
+                    "id": "b2bcompany2"
+                }
+            ],
+            "selectedUserIndex": 0,
+            "serverUrl": "https://sandbox-api.relewise.com/"
+        }
+    ],
+    "selectedDatasetIndex": 0,
+    "tracking": {
+        "enabled": false
+    }
+}
