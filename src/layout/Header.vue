@@ -23,7 +23,7 @@ let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 const handleMouseOver = (categoryId: string) => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
     hoverTimeout = setTimeout(() => {
-        document.body.classList.add('overflow-hidden', 'mr-4');
+        document.body.classList.add('overflow-hidden', 'mr-[17px]');
         open.value = categoryId;
     }, 250);
 };
@@ -36,7 +36,7 @@ const handleMouseLeave = () => {
     
     if (!isSearchOverlayOpen) {
         document.body.classList.remove('overflow-hidden');
-        document.body.classList.remove('mr-4');    
+        document.body.classList.remove('mr-[17px]');    
     }
     
     open.value = null;
