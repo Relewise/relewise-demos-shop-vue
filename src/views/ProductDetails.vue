@@ -2,7 +2,6 @@
     <div>
         <div v-if="product" class="mb-6">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
-
             <h1 class="text-4xl font-semibold">
                 {{ product.displayName }}
             </h1>
