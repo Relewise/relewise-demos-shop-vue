@@ -16,11 +16,19 @@
                 {{ category.displayName ?? category.id }}
             </RouterLink>
         </div>
+        <div v-if="product">
+            <span class="mx-2">/</span>
+            <RouterLink
+                :to="{ name: 'product', params: { id: product.productId } }"
+                class="text-zinc-700 whitespace-nowrap hover:text-brand-500 cursor-pointer">
+                {{ product.displayName ?? product.productId }}
+            </RouterLink>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import type { CategoryNameAndIdResult } from '@relewise/client';
+import type { CategoryNameAndIdResult, ProductResult } from '@relewise/client';
 import { toRefs, type PropType } from 'vue';
 import { HomeIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
@@ -28,6 +36,7 @@ import type { RouteLocationAsRelativeGeneric } from 'vue-router';
 
 const props = defineProps({
     breadcrumb: { type: Object as PropType<CategoryNameAndIdResult[]>, required: true },
+    product: { type: Object as PropType<ProductResult | undefined>, required: false },
 });
 
 const { breadcrumb } = toRefs(props);
