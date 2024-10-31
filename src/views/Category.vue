@@ -119,7 +119,7 @@ async function init() {
         });
 
         const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-            .setSelectedCategoryProperties({ displayName: true, paths: true })
+            .setSelectedCategoryProperties({ displayName: true })
             .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
             .facets(f => f.addProductCategoryHierarchyFacet('Descendants', [], { displayName: true }))
             .build();
@@ -130,17 +130,34 @@ async function init() {
 
         if (response?.results) {
             category.value = response.results[0];
-            breadcrumb.value = [];
+
             if (response.facets && response.facets.items) {
+
+                // Resetting the breadcrumb
+                breadcrumb.value = [];
+
+                const categoryHeirachy = (response.facets.items[0] as CategoryHierarchyFacetResult).nodes;
+
                 if (grandParentCategoryId.value) {
-                    const numse = findCategoryById((response.facets.items[0] as CategoryHierarchyFacetResult).nodes, grandParentCategoryId.value);
-                    breadcrumb.value.push({id: numse?.category.categoryId, displayName: numse?.category.displayName});
+                    const categoryFound = findCategoryById(categoryHeirachy, grandParentCategoryId.value);
+                    breadcrumb.value.push({
+                        id: categoryFound?.category.categoryId,
+                        displayName: categoryFound?.category.displayName,
+                    });
                 }
+                
                 if (parentCategoryId.value) {
-                    const numse = findCategoryById((response.facets.items[0] as CategoryHierarchyFacetResult).nodes, parentCategoryId.value);
-                    breadcrumb.value.push({id: numse?.category.categoryId, displayName: numse?.category.displayName});
+                    const categoryFound = findCategoryById(categoryHeirachy, parentCategoryId.value);
+                    breadcrumb.value.push({
+                        id: categoryFound?.category.categoryId,
+                        displayName: categoryFound?.category.displayName,
+                    });
                 }
-                breadcrumb.value.push({ id: category.value.categoryId, displayName: category.value.displayName});
+
+                breadcrumb.value.push({
+                    id: category.value.categoryId,
+                    displayName: category.value.displayName,
+                });
 
             }
         }
