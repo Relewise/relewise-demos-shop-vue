@@ -79,6 +79,7 @@ import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
+import { findCategoryById } from '@/helpers/categoryHelper';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -268,29 +269,5 @@ async function search() {
     }
 
     result.value = response;
-}
-
-// TODO: this is duplicated
-function findCategoryById(
-    nodes: CategoryHierarchyFacetResultCategoryNode[],
-    id: string,
-): CategoryHierarchyFacetResultCategoryNode | null {
-    for (const node of nodes) {
-        // Check if the current node has the desired category id
-        if (node.category.categoryId === id) {
-            return node;
-        }
-
-        // If the node has children, search recursively
-        if (node.children) {
-            const result = findCategoryById(node.children, id);
-            if (result) {
-                return result;
-            }
-        }
-    }
-
-    // Return null if not found in any node
-    return null;
 }
 </script>
