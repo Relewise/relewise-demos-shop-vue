@@ -96,7 +96,7 @@ async function init() {
         const searcher = contextStore.getSearcher();
         product.value = (await searcher.searchProducts(request))?.results![0];
         if (product.value?.categoryPaths) {
-            // Taking the first path on the product to render the path
+            // Taking the first path on the product to render the breadcrumb
             breadcrumb.value = product.value?.categoryPaths[0].pathFromRoot ?? [];
         }
     }
