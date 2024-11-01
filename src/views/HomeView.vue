@@ -22,7 +22,7 @@ async function recommend() {
 
 </script>
 <template>
-    <main class="">
+    <main class="pt-3">
         <div class="flex justify-center">
             <div class="mb-10 bg-white p-6 rounded">
                 <h1 class="text-3xl font-semibold mb-5">

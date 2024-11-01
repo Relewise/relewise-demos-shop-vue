@@ -11,6 +11,7 @@ import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
+import { findCategoryById } from '@/helpers/categoryHelper';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -268,29 +269,6 @@ async function search() {
             }
         }
     }
-}
-
-function findCategoryById(
-    nodes: CategoryHierarchyFacetResultCategoryNode[],
-    id: string,
-): CategoryHierarchyFacetResultCategoryNode | null {
-    for (const node of nodes) {
-        // Check if the current node has the desired category id
-        if (node.category.categoryId === id) {
-            return node;
-        }
-
-        // If the node has children, search recursively
-        if (node.children) {
-            const result = findCategoryById(node.children, id);
-            if (result) {
-                return result;
-            }
-        }
-    }
-
-    // Return null if not found in any node
-    return null;
 }
 
 function searchFor(term: string) {

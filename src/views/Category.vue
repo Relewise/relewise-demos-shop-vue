@@ -1,5 +1,6 @@
 <template>
     <div class="category-page">
+        <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
         <div class="flex gap-3">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
                 <div v-if="(childCategories?.length ?? 0) > 0" class="px-3 py-3 bg-white rounded mb-3">
@@ -66,9 +67,10 @@
 <script lang="ts" setup>
 import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
+import Breadcrumb from '../components/Breadcrumb.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
+import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -77,6 +79,7 @@ import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
+import { findCategoryById } from '@/helpers/categoryHelper';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -90,6 +93,7 @@ const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
+const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
 async function init() {
     const id = route.params.id;
@@ -117,6 +121,7 @@ async function init() {
         const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
             .setSelectedCategoryProperties({ displayName: true })
             .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
+            .facets(f => f.addProductCategoryHierarchyFacet('Descendants', [], { displayName: true }))
             .build();
 
         const searcher = contextStore.getSearcher();
@@ -125,6 +130,36 @@ async function init() {
 
         if (response?.results) {
             category.value = response.results[0];
+
+            if (response.facets && response.facets.items) {
+
+                // Resetting the breadcrumb
+                breadcrumb.value = [];
+
+                const categoryHeirachy = (response.facets.items[0] as CategoryHierarchyFacetResult).nodes;
+
+                if (grandParentCategoryId.value) {
+                    const categoryFound = findCategoryById(categoryHeirachy, grandParentCategoryId.value);
+                    breadcrumb.value.push({
+                        id: categoryFound?.category.categoryId,
+                        displayName: categoryFound?.category.displayName,
+                    });
+                }
+                
+                if (parentCategoryId.value) {
+                    const categoryFound = findCategoryById(categoryHeirachy, parentCategoryId.value);
+                    breadcrumb.value.push({
+                        id: categoryFound?.category.categoryId,
+                        displayName: categoryFound?.category.displayName,
+                    });
+                }
+
+                breadcrumb.value.push({
+                    id: category.value.categoryId,
+                    displayName: category.value.displayName,
+                });
+
+            }
         }
 
         categoryId.value = id;
