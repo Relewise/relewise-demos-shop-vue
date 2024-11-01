@@ -1,16 +1,16 @@
 <template>
     <div class="flex py-2 gap-2">
         <template v-for="(el, index) in nav" :key="el.name">
-            <RouterLink 
-                :to="el.route"
-                class="text-zinc-700 whitespace-nowrap hover:text-brand-500 cursor-pointer flex items-center">
+            <component :is="index === nav.length - 1 ? 'span' : 'RouterLink'" 
+                       :to="el.route"
+                       :class="index === nav.length - 1 ? '' : 'text-zinc-700 whitespace-nowrap hover:text-brand-500 cursor-pointer flex items-center'">
                 <template v-if="el.name === 'Home'">
                     <HomeIcon class="h-5 w-5"/>
                 </template> 
                 <template v-else>
                     {{ el.name }}
                 </template>
-            </RouterLink>
+            </component>
             <span v-if="index !== nav.length - 1">/</span>
         </template>
     </div>
