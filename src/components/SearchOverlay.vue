@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type SearchRequestCollection, type CategoryPath, type CategoryNameAndId } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -11,6 +11,7 @@ import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
+import { findCategoryById } from '@/helpers/categoryHelper';
 import { addAssortmentFilters } from '../stores/customFilters';
 
 const open = ref(false);
@@ -22,6 +23,10 @@ const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
+
+const selectedCategoriesForFilters = ref<ProductCategoryResult[]>([]);
+const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
+
 let abortController = new AbortController();
 
 const pageSize = 40;
@@ -55,7 +60,6 @@ watch(() => ({ ...route }), (value, oldValue) => {
         search();
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
-        console.log('test');
         close();
     }
 });
@@ -118,17 +122,51 @@ async function search() {
     }
     const variationName = breakpointService.active.value.toUpperCase();
 
+    const selectedCategoryFilterIds = filters.value['category'];
+    const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
+
     const request = new SearchCollectionBuilder()
         .filters(f => addAssortmentFilters(f))
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .facets(f => f
-                .addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category']?.length > 0 ? filters.value['category'] : null)
-                .addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand']?.length > 0 ? filters.value['brand'] : null)
-                .addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined),
-            )
+            .filters(f => {
+                if (Array.isArray(selectedCategoryFilterIds)) {
+                    selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
+                        f.addProductCategoryIdFilter('Ancestor', id);
+                    });
+                }
+            })
+            .facets(f => {
+
+                let selectedCategoriesForFacet: CategoryPath[] | undefined = undefined;
+                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
+                    if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
+                        selectedCategoriesForFacet = [{
+                            breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id })),
+                        }];
+                    } else {
+                        const basePath: CategoryNameAndId[] = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id }));
+                        selectedCategoriesForFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
+                            const thisPath = [...basePath, { id }];
+                            return { breadcrumbPathStartingFromRoot: thisPath };
+                        });
+                    }
+                }
+
+                f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
+
+                f.addBrandFacet(
+                    Array.isArray(filters.value['brand'])
+                    && filters.value['brand']?.length > 0
+                        ? filters.value['brand'] 
+                        : null);
+
+                f.addSalesPriceRangeFacet('Product', 
+                    applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
+                    applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+            })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
@@ -183,25 +221,53 @@ async function search() {
             const recommender = contextStore.getRecommender();
 
             fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
+            return;
         }
-        else {
-            if (result.value?.facets && result.value.facets.items && result.value.facets.items[2] !== null) {
+
+        if (result.value?.facets && result.value.facets.items) {
+            const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
+            
+            // Populate categories for rendering with display names
+            selectedCategoriesForFilters.value = [];
+            if (Array.isArray(selectedCategoryFilterIds)) {
+                selectedCategoryFilterIds.forEach(selectedId => {
+                    const categoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
+                    if (categoryNode) selectedCategoriesForFilters.value.push(categoryNode.category);
+                });
+            }
+
+            // If no categories are selected, show root categories as options
+            if (selectedCategoriesForFilters.value.length === 0) {
+                categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
+            } else {
+                // Determine the category to use as the root for filter options
+                const rootCategoryId = selectedCategoriesForFilters.value[
+                    Math.min(selectedCategoriesForFilters.value.length, categoryFilterThreshold) - 1
+                ]?.categoryId;
+
+                if (rootCategoryId) {
+                    const rootCategoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, rootCategoryId);
+                    categoriesForFilterOptions.value = rootCategoryNode?.children ?? undefined;
+                }
+            }
+
+            if (result.value.facets.items[2] !== null) {
                 const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
                 }
             }
+        }
 
-            fallbackRecommendations.value = null;
+        fallbackRecommendations.value = null;
 
-            const placement = result.value.retailMedia?.placements?.TOP;
-            if (placement) {
+        const placement = result.value.retailMedia?.placements?.TOP;
+        if (placement) {
 
-                if (placement?.results) {
-                    products.value = placement.results
-                        .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
-                        .concat(products.value ?? []);
-                }
+            if (placement?.results) {
+                products.value = placement.results
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
+                    .concat(products.value ?? []);
             }
         }
     }
@@ -248,6 +314,8 @@ function searchFor(term: string) {
                                 :filters="filters"
                                 :facets="result.facets"
                                 :render-category-facet="true"
+                                :categories-for-filter-options="categoriesForFilterOptions"
+                                :selected-category-filter-options="selectedCategoriesForFilters"                                
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">

@@ -1,9 +1,44 @@
 <template>
-    <template v-for="(facet, index) in facets.items">
-        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" :key="index" class="px-3 py-3 bg-white rounded mb-3">
+    <template v-for="(facet, index) in facets.items" :key="index">
+        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" class="px-3 py-3 bg-white rounded mb-3">
             <div class="font-semibold text-lg mb-2">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </div>
+            <template v-if="facet.$type.includes('CategoryHierarchyFacetResult')">
+                <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex">
+                    <div v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold" class="bg-gray-100 flex my-1">
+                        <span class="m-1">
+                            {{ category.displayName ?? category.categoryId }}
+                        </span>
+                        <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
+                                   @click="applyFacet(facet.field, category.categoryId, true)"/>
+                    </div>
+                </div>
+
+                <!-- Render category hierarchy options as filters or checklist -->
+                <template v-if="categoryHierarchyOptions">
+                    <template v-if="selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < categoryFilterThreshold">
+                        <span v-for="(categoryLink, filterOptionIndex) in categoryHierarchyOptions"
+                              :key="filterOptionIndex"
+                              class="mb-1 block cursor-pointer"
+                              @click.prevent="applyFacet(facet.field, categoryLink.category.categoryId)">
+                            {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
+                        </span>
+                    </template>
+                    <ul v-else>
+                        <li v-for="(option, oIndex) in categoryHierarchyOptions" :key="oIndex" class="flex pb-1.5">
+                            <label class="flex items-center cursor-pointer">
+                                <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
+                                       type="checkbox"
+                                       :value="option.category.categoryId"
+                                       :checked="option.selected"
+                                       @click="applyFacet(facet.field, option.category.categoryId)">
+                                {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                            </label>
+                        </li>
+                    </ul>
+                </template>
+            </template>
 
             <CheckListFacet
                 v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
@@ -31,22 +66,27 @@
 </template>
 
 <script setup lang="ts">
-import type { ProductFacetResult } from '@relewise/client';
+import type { CategoryHierarchyFacetResultCategoryNode, ProductCategoryResult, ProductFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
+import { XMarkIcon } from '@heroicons/vue/24/outline';
+import contextStore from '@/stores/context.store';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
+    categoriesForFilterOptions: { type: Object as PropType<CategoryHierarchyFacetResultCategoryNode[] | undefined>, required: false },
+    selectedCategoryFilterOptions: { type: Object as PropType<ProductCategoryResult[]>, required: false },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
     renderCategoryFacet: { type: Boolean, required: true },
 });
 
 const emit = defineEmits(['search']);
-const { filters, page, facets } = toRefs(props);
+const { filters, page, facets, categoriesForFilterOptions: categoryHierarchyOptions } = toRefs(props);
+const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
-function applyFacet(name: string, value: string | null | undefined) {
+function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
     if (!value) return;
 
     const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
@@ -56,7 +96,7 @@ function applyFacet(name: string, value: string | null | undefined) {
         const index = existing.indexOf(value);
         index === -1
             ? existing.push(value)
-            : existing.splice(index, 1);
+            : (clearSubsequentEntries ? existing.splice(index) : existing.splice(index, 1));
     } else if (value !== null) {
         filters.value[nameAsProp] = [];
         const t = filters.value[nameAsProp];

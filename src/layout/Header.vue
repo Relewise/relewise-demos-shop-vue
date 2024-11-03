@@ -23,15 +23,29 @@ let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 const handleMouseOver = (categoryId: string) => {
     if (hoverTimeout) clearTimeout(hoverTimeout); 
     hoverTimeout = setTimeout(() => {
-        document.body.classList.add('overflow-hidden', 'mr-4');
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        
+        document.body.classList.add('overflow-hidden');
+        
+        if (!document.body.style.marginRight) {
+            document.body.style.marginRight = `${scrollbarWidth}px`;
+        }
+
         open.value = categoryId;
     }, 250);
 };
 
 const handleMouseLeave = () => {
-    if (hoverTimeout) clearTimeout(hoverTimeout); 
-    document.body.classList.remove('overflow-hidden');
-    document.body.classList.remove('mr-4');
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const isSearchOverlayOpen = searchParams.get('open') === '1' ? true : false;
+    
+    if (!isSearchOverlayOpen) {
+        document.body.classList.remove('overflow-hidden');
+        document.body.style.marginRight = ''; // Reset margin
+    }
+    
     open.value = null;
 };
 
@@ -99,7 +113,8 @@ onBeforeUnmount(() => {
                                                     class="text-sm block">
                                                     <RouterLink
                                                         :to="{ name: 'sub-category', params: { parent: category.id, id: child.category.categoryId } }"
-                                                        class="block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700">
+                                                        class="block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
+                                                        @click="handleMouseLeave">
                                                         {{ child.category.displayName }}
                                                     </RouterLink>
                                                 </li>
@@ -126,7 +141,10 @@ onBeforeUnmount(() => {
                                                 class="text-sm block">
                                                 <RouterLink :to="{ name: 'category', params: { id: category.id } }"
                                                             class="block px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
-                                                            @click="open = null">
+                                                            @click="() => {
+                                                                open = null;
+                                                                handleMouseLeave();
+                                                            }">
                                                     {{ category.category.displayName }}
                                                 </RouterLink>
                                             </li>

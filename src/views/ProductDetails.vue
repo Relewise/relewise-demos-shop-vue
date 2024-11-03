@@ -1,6 +1,7 @@
 <template>
     <div>
         <div v-if="product" class="mb-6">
+            <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
             <h1 class="text-4xl font-semibold">
                 {{ product.displayName }}
             </h1>
@@ -99,13 +100,14 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductRecommendationResponse, ProductSearchBuilder, SimilarProductsProductBuilder, type ProductResult } from '@relewise/client';
+import { ProductRecommendationResponse, ProductSearchBuilder, SimilarProductsProductBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import { context } from '@relewise/web-components';
 import ProductTile from '../components/ProductTile.vue';
 import { addAssortmentFilters } from '@/stores/customFilters';
+import Breadcrumb from '../components/Breadcrumb.vue';
 
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
@@ -113,6 +115,7 @@ const route = useRoute();
 const similarProds = ref<ProductRecommendationResponse | null | undefined>(null);
 
 const defaultSettings = ref(contextStore.defaultSettings);
+const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
 async function init() {
     const id = route.params.id;
@@ -146,6 +149,10 @@ async function init() {
         const recommender = contextStore.getRecommender();
         similarProds.value = await recommender.recommendSimilarProducts(similarproductsRequest);
        
+        if (product.value?.categoryPaths) {
+            // Taking the first path on the product to render the breadcrumb
+            breadcrumb.value = product.value?.categoryPaths[0].pathFromRoot ?? [];
+        }
     }
 }
 

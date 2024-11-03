@@ -45,6 +45,15 @@ class AppContext {
 
         if (storedContext) {
             Object.assign(this.state, JSON.parse(storedContext));
+            this.state.datasets.forEach(dataset => {
+                if (!dataset.allCurrencies) {
+                    dataset.allCurrencies = [dataset.currencyCode];
+                }
+
+                if (!dataset.allLanguages) {
+                    dataset.allLanguages = [dataset.language];
+                }
+            });
             this.initializeWebComponents();
         }
     }
