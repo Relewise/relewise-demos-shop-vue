@@ -32,7 +32,7 @@ const handleMouseOver = (categoryId: string) => {
         }
 
         open.value = categoryId;
-    }, 250);
+    }, 500);
 };
 
 const handleMouseLeave = () => {
