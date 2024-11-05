@@ -34,6 +34,7 @@ jobs:
             path: dist/
       
     deploy:
+      runs-on: ubuntu-latest  # Specifies the operating system for the job.
       name: Deploy Application  # Defines the name of the deployment job.
 
       # Add a dependency to the build job
