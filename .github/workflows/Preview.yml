@@ -52,6 +52,6 @@ jobs:
       steps:
         - name: Deploy to GitHub Pages  # Deploys the application to GitHub Pages.
           id: deployment
-          uses: actions/deploy-pages@v2  # Specifies the version of the deployment action.
+          uses: actions/deploy-pages@v4  # Specifies the version of the deployment action.
           with:
             preview: true
