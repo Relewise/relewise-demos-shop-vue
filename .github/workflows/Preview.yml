@@ -26,7 +26,7 @@ jobs:
 
         - name: Setup Pages  # Configures pages for deployment.
           id: pages
-          uses: actions/configure-pages@v3
+          uses: actions/configure-pages@v4
 
         - name: Upload artifact  # Uploads the build artifact.
           uses: actions/upload-pages-artifact@v2
