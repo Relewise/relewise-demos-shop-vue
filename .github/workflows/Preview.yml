@@ -48,10 +48,12 @@ jobs:
         name: github-pages  # Specifies the environment for deployment.
         url: ${{ steps.deployment.outputs.page_url }}  # Retrieves the deployment URL from the previous deployment step.
 
-      runs-on: ubuntu-latest  # Specifies the operating system for the deployment job.
-      steps:
-        - name: Deploy to GitHub Pages  # Deploys the application to GitHub Pages.
-          id: deployment
-          uses: actions/deploy-pages@v4  # Specifies the version of the deployment action.
-          with:
-            preview: true
+      - name: Deploy to Preview Branch
+            run: |
+              git config user.name "github-actions"
+              git config user.email "github-actions@github.com"
+              git checkout -b preview
+              # Move or copy build output to preview
+              git add .
+              git commit -m "Deploy Preview"
+              git push -f origin preview
