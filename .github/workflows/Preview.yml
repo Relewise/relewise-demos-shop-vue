@@ -51,8 +51,6 @@ jobs:
       steps:
         - name: Deploy to Preview Branch
           run: |
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
             git checkout -b preview
             # Move or copy build output to preview
             git add .
