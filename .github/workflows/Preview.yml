@@ -47,13 +47,13 @@ jobs:
       environment:
         name: github-pages  # Specifies the environment for deployment.
         url: ${{ steps.deployment.outputs.page_url }}  # Retrieves the deployment URL from the previous deployment step.
-
-      - name: Deploy to Preview Branch
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git checkout -b preview
-          # Move or copy build output to preview
-          git add .
-          git commit -m "Deploy Preview"
-          git push -f origin preview
+      steps:
+        - name: Deploy to Preview Branch
+          run: |
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git checkout -b preview
+            # Move or copy build output to preview
+            git add .
+            git commit -m "Deploy Preview"
+            git push -f origin preview
