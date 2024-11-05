@@ -49,6 +49,9 @@ jobs:
         name: github-pages  # Specifies the environment for deployment.
         url: ${{ steps.deployment.outputs.page_url }}  # Retrieves the deployment URL from the previous deployment step.
       steps:
+        - name: Checkout Repo  # Checks out the repository.
+          uses: actions/checkout@v4
+
         - name: Deploy to Preview Branch
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for authentication
