@@ -50,9 +50,22 @@ jobs:
         url: ${{ steps.deployment.outputs.page_url }}  # Retrieves the deployment URL from the previous deployment step.
       steps:
         - name: Deploy to Preview Branch
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for authentication
           run: |
-            git checkout -b preview
-            # Move or copy build output to preview
+            # Configure git with GITHUB_TOKEN for authentication
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            # Switch to the preview branch, creating it if it doesn't exist
+            git fetch origin
+            git switch -C preview
+
+            # Remove existing files except for .git, and copy the build output
+            find . -mindepth 1 -not -name '.git' -exec rm -rf {} +
+            cp -R path/to/build/output/* .  # Replace with the actual path to your build output
+
+            # Commit and push changes
             git add .
             git commit -m "Deploy Preview"
             git push -f origin preview
