@@ -46,36 +46,68 @@
         <label class="text-sm  block mt-6">API Key</label>
         <input v-model="context.apiKey" type="text" placeholder="Api key">
 
-        <ListValues
-            label="Languages"
-            :items="context.allLanguages"
-            :single-item="context.language"
-            input-placeholder="LanguageCode"
-            new-item-placeholder="New Language"/>
+        <ListValues label="Languages"
+                    :items="context.allLanguages"
+                    :single-item="context.language"
+                    input-placeholder="LanguageCode"
+                    new-item-placeholder="New Language"/>
 
-        <ListValues
-            label="Currencies"
-            :items="context.allCurrencies"
-            :single-item="context.currencyCode"
-            input-placeholder="CurrencyCode"
-            new-item-placeholder="New Currency"/>
-        
+        <ListValues label="Currencies"
+                    :items="context.allCurrencies"
+                    :single-item="context.currencyCode"
+                    input-placeholder="CurrencyCode"
+                    new-item-placeholder="New Currency"/>
+
         <label class="text-sm block mt-6">Server url</label>
         <input v-model="context.serverUrl" type="text" placeholder="Server Url">
 
         <hr class="my-8">
-        
-        <label class="flex mt-2 items-center">
-            <input v-model="context.allowThirdLevelCategories" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
-            Third level categories</label>
 
-        <p class="text-gray-400">
-            When third level categories are enabled, category links will also be rendered on the PLP's of categories with parents.<br>
-            This will allow users to navigate to a PLP of third level category.
-        </p>
-        
+        <h2 class="text-2xl mb-6">
+            Features
+        </h2>
+
+        <div class="pl-8 flex flex-col gap-4">
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.allowThirdLevelCategories"
+                           class="accent-brand-500 mr-3 h-5 w-5"
+                           type="checkbox">
+                    Third level categories</label>
+
+                <p class="text-gray-400">
+                    When third level categories are enabled, category links will also be rendered on the PLP's of
+                    categories
+                    with parents.<br>
+                    This will allow users to navigate to a PLP of third level category.
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.showSoldOutProducts"
+                           class="accent-brand-500 mr-3 h-5 w-5"
+                           type="checkbox">
+                    Show <span class="font-medium px-1">Sold out</span> in search and recommendations</label>
+
+                <p class="text-gray-400">
+                    Products with a SoldOut datakey are by default hidden in search and recommendations.
+                </p>
+            </div>
+
+            <div>
+                <label class="text-sm block mt-6">Set 'Minutes ago' used for recommendations</label>
+                <input v-model="context.recommendationsMinutesAgo"
+                       
+                       type="text">
+                <p class="text-gray-400">
+                    Default is 14 days.
+                </p>
+            </div>
+        </div>
+
         <hr class="my-8">
-        
+
         <div class="flex mt-4 gap-3">
             <button class="bg-gray-500 text-white" @click="shareLink">
                 Get share link

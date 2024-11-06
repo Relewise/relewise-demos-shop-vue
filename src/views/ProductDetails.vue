@@ -1,22 +1,43 @@
 <template>
     <div>
-        <div v-if="product" class="mb-6">
+        <div v-if="product" class="mb-10">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
-            <h1 class="text-4xl font-semibold">
-                {{ product.displayName }}
-            </h1>
-            <div class="text-zinc-500">
-                Product ID: {{ product.productId }}
-            </div>
+          
 
-            <div class="flex gap-6 mt-3">
-                <div class="relative flex h-[275px] overflow-hidden">
+            <div class="flex gap-3 ">
+                <div class="relative flex h-[275px] overflow-hidden bg-white p-3 rounded">
                     <ProductImage :product="product"/>
-                    <span v-if="product.salesPrice !== product.listPrice" class="absolute top-0 left-0 m-2 rounded-full bg-black px-2 text-center text-sm font-medium text-white">ON SALE</span>
                 </div>
 
-                <div>
-                    <div class="mt-2 flex items-center justify-between">
+                <div class="bg-white py-4 px-6 rounded flex-grow">
+                    <div>
+                        <h1 class="text-4xl mb-4 font-semibold">
+                            {{ product.displayName }}
+                        </h1>
+                        <div>
+                            <span class="text-zinc-500">Product ID:</span> {{ product.productId }}
+                        </div>
+
+                        <div v-if="product.brand">
+                            <span class="text-zinc-500">Brand:</span>  {{ product.brand.displayName }}
+                        </div>
+
+                        <div v-if="product.data && product.data.Description && product.data.Description.value">
+                            <span class="text-zinc-600">{{ product.data.Description.value }}</span> 
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="mb-2 flex gap-2">
+                            <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">ON SALE</span>
+
+                            <span
+                                v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
+                                class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">
+                                SOLD OUT
+                            </span>
+                        </div>
+
                         <p>
                             <span class="text-lg font-semibold text-zinc-900 mr-1 leading-none">{{ $format(product.salesPrice) }}</span>
                             <span v-if="product.salesPrice !== product.listPrice" class="text-zinc-900 line-through">
@@ -34,9 +55,9 @@
             </div>
         </div>
         <relewise-product-recommendation-batcher>
-            <div class="my-3">
-                <div class="text-2xl font-semibold">
-                    Purchased with
+            <div class="mb-10">
+                <div class="text-2xl mb-2 font-semibold">
+                    Purchased with the product
                 </div>
                 <relewise-purchased-with-product
                     :key="productId" 
@@ -45,9 +66,9 @@
                     :displayed-at-location="defaultSettings.displayedAtLocation" 
                     :product-id="productId"/>
             </div>
-            <div class="my-3">
-                <div class="text-2xl font-semibold">
-                    Products viewed after viewing
+            <div class="">
+                <div class="text-2xl mb-2 font-semibold">
+                    Products viewed after viewing the product
                 </div>
                 <relewise-products-viewed-after-viewing-product
                     :key="productId" 
