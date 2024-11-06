@@ -118,7 +118,7 @@ async function recommend() {
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
-    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithCurrentCart(request);
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
     contextStore.assertApiCall(response);
 
     result.value = response;
