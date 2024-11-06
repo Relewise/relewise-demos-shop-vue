@@ -91,7 +91,7 @@
                     Hide <span class="font-medium px-1">Sold out</span> in recommendations</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    Products with a SoldOut datakey are by default hidden in search and recommendations.
+                    Hide Products with a 'SoldOut' datakey in recommendations.
                 </p>
             </div>
 
