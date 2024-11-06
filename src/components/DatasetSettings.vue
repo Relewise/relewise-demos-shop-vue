@@ -75,7 +75,7 @@
                            type="checkbox">
                     Third level categories</label>
 
-                <p class="text-gray-400">
+                <p class="text-gray-500 text-sm mt-1">
                     When third level categories are enabled, category links will also be rendered on the PLP's of
                     categories
                     with parents.<br>
@@ -85,12 +85,12 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.showSoldOutProducts"
+                    <input v-model="context.hideSoldOutProducts"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
-                    Show <span class="font-medium px-1">Sold out</span> in search and recommendations</label>
+                    Hide <span class="font-medium px-1">Sold out</span> in recommendations</label>
 
-                <p class="text-gray-400">
+                <p class="text-gray-500 text-sm mt-1">
                     Products with a SoldOut datakey are by default hidden in search and recommendations.
                 </p>
             </div>
@@ -100,7 +100,7 @@
                 <input v-model="context.recommendationsMinutesAgo"
                        
                        type="text">
-                <p class="text-gray-400">
+                <p class="text-gray-500 text-sm mt-1">
                     Default is 14 days.
                 </p>
             </div>

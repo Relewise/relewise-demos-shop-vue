@@ -2,7 +2,7 @@ import { FilterBuilder, ConditionBuilder, DataValueFactory } from '@relewise/cli
 import contextStore from './context.store';
 
 export function globalProductRecommendationFilters(filterBuilder: FilterBuilder) {
-    if (!contextStore.context.value.showSoldOutProducts) return;
+    if (!contextStore.context.value.hideSoldOutProducts) return;
     
-    filterBuilder.addProductDataFilter('SoldOut', (c: ConditionBuilder) => c.addEqualsCondition(DataValueFactory.string('true'), true), true, false, false);
+    filterBuilder.addProductDataFilter('SoldOut', (c: ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(false)), true, false);
 }

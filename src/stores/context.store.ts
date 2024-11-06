@@ -18,7 +18,7 @@ export interface IDataset {
     selectedUserIndex?: number;
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
-    showSoldOutProducts?: boolean;
+    hideSoldOutProducts?: boolean;
     recommendationsMinutesAgo?: number;
 }
 
