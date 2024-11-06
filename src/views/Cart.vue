@@ -82,12 +82,13 @@
 <script lang="ts" setup>
 import ProductTile from '../components/ProductTile.vue';
 import { ref } from 'vue';
-import { type ProductRecommendationResponse, PurchasedWithCurrentCartBuilder } from '@relewise/client';
+import { type ProductRecommendationResponse, PurchasedWithMultipleProductsBuilder } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
+import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -104,13 +105,20 @@ init();
 
 async function recommend() {
     const take = 5;
-    const request = new PurchasedWithCurrentCartBuilder(contextStore.defaultSettings)
+    const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
         .setNumberOfRecommendations(take)
+        .addProducts(basketService.model.value.lineItems
+            .filter(item => item.product.productId)
+            .map(item => ({
+                productId: item.product.productId as string,
+            })),
+        )
+        .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
-    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithCurrentCart(request);
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
     contextStore.assertApiCall(response);
 
     result.value = response;

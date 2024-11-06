@@ -3,6 +3,7 @@ import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSet
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
+import { globalProductRecommendationFilters } from './globalProductFilters';
 
 export interface IDataset {
     datasetId: string;
@@ -17,6 +18,8 @@ export interface IDataset {
     selectedUserIndex?: number;
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
+    hideSoldOutProducts?: boolean;
+    recommendationsMinutesAgo?: number;
 }
 
 export interface ITracking {
@@ -133,6 +136,10 @@ class AppContext {
         return new Tracker(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
     }
 
+    public getRecommendationsSinceMinutesAgo(): number {
+        return this.context.value.recommendationsMinutesAgo ?? 20160;
+    }
+
     public persistState() {
         this.errorState.apiKeyError = false;
         this.errorState.datasetIdError = false;
@@ -239,6 +246,11 @@ class AppContext {
                 templates: {
                     product: (product, extentions) => {
                         return WebComponentProductTemplate(product, extentions);
+                    },
+                },
+                filters: {
+                    product(builder) {
+                        globalProductRecommendationFilters(builder);
                     },
                 },
             }).useRecommendations();

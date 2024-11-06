@@ -120,7 +120,9 @@ async function init() {
 
         const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
             .setSelectedCategoryProperties({ displayName: true })
-            .filters(f => f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]))
+            .filters(f => {
+                f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]);
+            })
             .facets(f => f.addProductCategoryHierarchyFacet('Descendants', [], { displayName: true }))
             .build();
 
