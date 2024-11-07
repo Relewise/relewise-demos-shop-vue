@@ -1,9 +1,8 @@
 name: Deploy to Github Pages  # Defines the name of the GitHub Actions workflow.
 
 on:
-    push:
-        branches:
-            - main  # Triggers the workflow on each push to the 'develop' branch.
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
     build:
@@ -47,4 +46,5 @@ jobs:
         - name: Deploy to GitHub Pages
           id: deployment
           uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
-          preview: true
+          with:
+            preview: true
