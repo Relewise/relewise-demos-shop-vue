@@ -26,7 +26,7 @@ async function recommend() {
         <div class="flex justify-center">
             <div class="mb-10 bg-white p-6 rounded">
                 <h1 class="text-3xl font-semibold mb-5">
-                    Welcome to the Relewise Demo Shop
+                    Welcome to the Relewise Demo Shop!
                 </h1>
 
                 <p class="pb-2">
