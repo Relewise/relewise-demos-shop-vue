@@ -10,7 +10,7 @@ Link to the demo shop is here: https://relewise-demo-shop.netlify.app/
 
 The newest and unstable release of the demo shop can be found here: https://latest--relewise-demo-shop.netlify.app/
 
-In order to run the demo shop you access to a dataset in Relewise.
+In order to run the demo shop you need access to a dataset in Relewise.
 
 ## Development setup
 
