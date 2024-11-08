@@ -1,8 +1,14 @@
 # Relewise Demo Shop Vue
 
-This is the Relewise demo shop featuring Search & Recommendations built on top of the JavaScript SDK. The Demo is built using Vue/Vue.js.
+This is the Relewise demo shop featuring Search & Recommendations built on top of the JavaScript SDK. The Demo is built using Vue/Vue.js 3.
 
-Link to the demo shop is here: https://relewise.github.io/relewise-demos-shop-vue/
+## Live demo
+
+Link to the demo shop is here: https://relewise-demo-shop.netlify.app/
+
+## Bleeding-edge preview
+
+The newest and unstable release of the demo shop can be found here: https://latest--relewise-demo-shop.netlify.app/
 
 In order to run the demo shop you access to a dataset in Relewise.
 
