@@ -17,7 +17,9 @@
             "allCurrencies": [
                 "GBP",
                 "DKK",
-                "EUR"
+                "EUR",
+                "SEK",
+                "NOK"
             ],
             "users": [
                 {
