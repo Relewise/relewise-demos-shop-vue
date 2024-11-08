@@ -41,7 +41,7 @@ async function recommend() {
 
         <template v-if="isConfigured">
             <h2 class="text-3xl font-semibold mb-3">
-                Popular products!
+                Popular products
             </h2>
             <relewise-popular-products class="grid grid-cols-2 lg:grid-cols-5" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
         </template>
