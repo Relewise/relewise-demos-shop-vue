@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
                     </div>
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
-                        Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
+                        Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop1
                     </RouterLink>
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
