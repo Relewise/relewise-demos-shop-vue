@@ -15,15 +15,15 @@
                             {{ product.displayName }}
                         </h1>
                         <div>
-                            <span class="text-zinc-500">Product ID:</span> {{ product.productId }}
+                            <span class="text-slate-500">Product ID:</span> {{ product.productId }}
                         </div>
 
                         <div v-if="product.brand">
-                            <span class="text-zinc-500">Brand:</span>  {{ product.brand.displayName }}
+                            <span class="text-slate-500">Brand:</span>  {{ product.brand.displayName }}
                         </div>
 
                         <div v-if="product.data && product.data.Description && product.data.Description.value">
-                            <span class="text-zinc-600">{{ product.data.Description.value }}</span> 
+                            <span class="text-slate-600">{{ product.data.Description.value }}</span> 
                         </div>
                     </div>
 
@@ -39,8 +39,8 @@
                         </div>
 
                         <p>
-                            <span class="text-lg font-semibold text-zinc-900 mr-1 leading-none">{{ $format(product.salesPrice) }}</span>
-                            <span v-if="product.salesPrice !== product.listPrice" class="text-zinc-900 line-through">
+                            <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice) }}</span>
+                            <span v-if="product.salesPrice !== product.listPrice" class="text-slate-900 line-through">
                                 {{ $format(product.listPrice) }}
                             </span>
                         </p>
@@ -56,9 +56,9 @@
         </div>
         <relewise-product-recommendation-batcher>
             <div class="mb-10">
-                <div class="text-2xl mb-2 font-semibold">
+                <h2 class="text-2xl mb-2 font-semibold">
                     Purchased with the product
-                </div>
+                </h2>
                 <relewise-purchased-with-product
                     :key="productId" 
                     class="grid grid-cols-2 lg:grid-cols-5"
@@ -67,9 +67,9 @@
                     :product-id="productId"/>
             </div>
             <div class="">
-                <div class="text-2xl mb-2 font-semibold">
+                <h2 class="text-2xl mb-2 font-semibold">
                     Products viewed after viewing the product
-                </div>
+                </h2>
                 <relewise-products-viewed-after-viewing-product
                     :key="productId" 
                     class="grid grid-cols-2 lg:grid-cols-5"

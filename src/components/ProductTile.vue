@@ -16,7 +16,7 @@ const { product } = toRefs(props);
 
 <template>
     <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
-                class="relative rounded flex flex-col overflow-hidden py-3 bg-white text-zinc-900 hover:!text-brand-500 transition duration-200">
+                class="relative rounded flex flex-col overflow-hidden py-3 bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
         <div class="relative mx-3 flex h-max-[275px] overflow-hidden justify-center">
             <ProductImage :product="product"/>
             <div class="absolute top-0 left-0 flex gap-1">
@@ -53,18 +53,18 @@ const { product } = toRefs(props);
         </div>
         <div class="mt-3 px-3">
             <div class="text-left">
-                <span v-if="product.brand" class="text-sm text-zinc-500">{{ product.brand.displayName }}</span>
+                <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
                 <h5 class="tracking-tight font-semibold leading-tight overflow-hidden text-ellipsis h-10">
                     {{ product.displayName }}
                 </h5>
             </div>
             <div class="mt-2 flex items-center justify-between">
                 <p>
-                    <span class="text-lg font-semibold text-zinc-900 mr-1 leading-none">{{ $format(product.salesPrice)
+                    <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice)
                     }}</span>
                     <span
                         v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
-                        class="text-zinc-900 line-through">
+                        class="text-slate-900 line-through">
                         {{ $format(product.listPrice) }}
                     </span>
                 </p>

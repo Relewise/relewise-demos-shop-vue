@@ -7,8 +7,15 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
     return html`
         <style>
             a {
+                width: 250px;
+                padding: 8px;
+                //background-color: #f3f4f6 !important;
                 text-decoration: none;
                 color: inherit;
+            }
+
+             a:hover {
+                color: #1A44BD;
             }
 
             img {
@@ -22,10 +29,10 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 display: flex; 
                 overflow: hidden; 
                 position: relative; 
-                padding-top: 0.75rem;
-                padding-bottom: 0.75rem; 
+                // padding-top: 0.75rem;
+                // padding-bottom: 0.75rem; 
                 flex-direction: column; 
-                border-radius: 0.25rem; 
+                //border-radius: 0.25rem; 
                 background-color: #ffffff; 
             }
 
@@ -33,11 +40,19 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 display: flex; 
                 overflow: hidden; 
                 position: relative; 
-                margin-left: 0.75rem;
-                margin-right: 0.75rem; 
+                // margin-left: 0.75rem;
+                // margin-right: 0.75rem; 
                 justify-content: center; 
                 height: 275px;
             }
+            .image-container:after {
+                background-image: radial-gradient(ellipse, #bcb6b300, hsla(20, 6%, 72%, .125) 70%);
+    bottom: 0;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;}
 
             .image {
                 object-fit: cover;
@@ -60,9 +75,9 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             }
 
             .padding {
-                padding-left: 0.75rem;
-                padding-right: 0.75rem; 
-                margin-top: 0.75rem; 
+                // padding-left: 0.75rem;
+                // padding-right: 0.75rem; 
+                margin-top: 0.25rem; 
             }
 
             .text-left {
@@ -81,7 +96,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 letter-spacing: -0.025em; 
                 line-height: 1.25rem; 
                 font-size: 1rem;
-                margin-top: 0.5rem;
+                margin-top: 0.0rem;
                 margin-bottom: 0;
                 text-overflow: ellipsis;
                 overflow: hidden;
@@ -89,12 +104,13 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
 
             .price-container {
                 display: flex; 
-                margin-top: 0.5rem; 
+                margin-top: 0; 
                 justify-content: space-between; 
                 align-items: center; 
             }
 
             .sales-price {
+                color: #000;
                 margin-right: 0.25rem; 
                 font-size: 1.125rem;
                 line-height: 1.75rem; 

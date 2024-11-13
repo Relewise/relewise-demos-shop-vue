@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AdjustmentsHorizontalIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { AdjustmentsHorizontalIcon, ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
@@ -55,16 +55,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <header class="bg-white shadow-sm" @mouseleave="handleMouseLeave">
+    <header class="border-b border-solid border-slate-100" @mouseleave="handleMouseLeave">
         <div class="container mx-auto px-2">
-            <div class="grid xl:flex gap-2 py-2" @mouseover="handleMouseLeave">
+            <div class="grid xl:flex gap-8 py-2" @mouseover="handleMouseLeave">
                 <div class="flex items-center">
                     <div class="xl:hidden">
                         <SideMenu :main-categories="mainCategories"/>
                     </div>
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
-                        Relewise <span class="text-white bg-zinc-900 rounded-sm px-1">demo</span> shop
+                        <!-- <h1>Relewise <span class="text-white bg-slate-900 rounded-sm px-1">shop</span></h1>               -->
+                        <img src="/shopwise-v1.png" style="height: 40px;">          
                     </RouterLink>
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
@@ -72,16 +73,18 @@ onBeforeUnmount(() => {
                         <SearchOverlay/>
                     </div>
                     <div class="flex items-center gap-4">
-                        <RouterLink to="/cart" class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200">
+                        <RouterLink to="/cart" class="relative flex flex-col items-center  text-slate-600 ">
                             <ShoppingBagIcon class="h-8 w-8"/>
+                            <span class="text-[9px] mt-1 font-bold">CART</span>
                             <span v-if="lineItemsCount > 0"
-                                  class="absolute top-0 right-0 leading-none inline-flex items-center justify-center -mr-1 h-4 w-4 pb-0.5 bg-brand-500 rounded-full text-white text-[11px]">
+                                  class="absolute top-0 right-0 leading-none inline-flex items-center justify-center h-5 w-5 pb-0.5 bg-brand-700 rounded-full text-white font-bold text-[11px]">
                                 {{ lineItemsCount }}
                             </span>
                         </RouterLink>
                         <Popover placement="bottom-end">
-                            <div class="relative rounded-full bg-zinc-100 p-2 text-zinc-600 hover:bg-zinc-200 cursor-pointer">
+                            <div class="relative flex flex-col items-center rounded-full  text-slate-600 cursor-pointer">
                                 <AdjustmentsHorizontalIcon class="h-8 w-8"/>
+                                <span class="text-[9px] mt-1 font-bold">SETTINGS</span>
                             </div>
                             <template #content>
                                 <div class="w-96">
@@ -98,14 +101,18 @@ onBeforeUnmount(() => {
                         <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative pr-5">
                             <RouterLink 
                                 :to="{ name: 'category', params: { id: category.id } }"
-                                class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                                class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
                                 @mouseover="handleMouseOver(category.id)">
                                 {{ category.category.displayName ?? category.category.categoryId }}
+                                <ChevronDownIcon class="ml-2 mt-1 inline-block h-3 text-slade-500"/>
                             </RouterLink>
                             <div v-if="open === category.id" to="#navigationmodal">
                                 <div ref="navigationmodal" class="navigationmodal" @mouseover="handleMouseOver(category.id)">
-                                    <div class="bg-white overflow-x-auto modalcontent">
+                                    <div class="bg-white overflow-x-auto modalcontent pb-10">
                                         <div class="container mx-auto">
+                                            <h4 class="my-4 text-xl">
+                                                {{ category.category.displayName ?? category.category.categoryId }}
+                                            </h4>
                                             <ul v-if="category.children.length > 0"
                                                 class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
                                                 <li v-for="child in category.children"
@@ -113,7 +120,7 @@ onBeforeUnmount(() => {
                                                     class="text-sm block">
                                                     <RouterLink
                                                         :to="{ name: 'sub-category', params: { parent: category.id, id: child.category.categoryId } }"
-                                                        class="block px-2 py-2 rounded cursor-pointer hover:bg-gray-100 text-gray-700"
+                                                        class="block px-2 py-2 rounded cursor-pointer hover:underline text-gray-700"
                                                         @click="handleMouseLeave">
                                                         {{ child.category.displayName }}
                                                     </RouterLink>
@@ -127,7 +134,7 @@ onBeforeUnmount(() => {
                         </li>
                     </ul>
                     <ul v-else-if="mainCategories.length > 0">
-                        <div class="font-semibold uppercase py-3 leading-none text-lg text-zinc-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                        <div class="font-semibold uppercase py-3 leading-none text-lg text-slate-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
                              @mouseover="handleMouseOver('1')">
                             Categories
                         </div>

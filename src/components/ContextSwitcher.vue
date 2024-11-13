@@ -116,7 +116,7 @@ function persistStateAndReload() {
             <RouterLink 
                 v-close-popper
                 to="/app-settings"
-                class="text-zinc-600 inline-flex items-center whitespace-nowrap hover:text-brand-500 right-0 w-fit ml-auto mb-2">
+                class="text-slate-600 inline-flex items-center whitespace-nowrap hover:text-brand-500 right-0 w-fit ml-auto mb-2">
                 <div class="flex items-center justify-center">
                     <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo 
                 </div>

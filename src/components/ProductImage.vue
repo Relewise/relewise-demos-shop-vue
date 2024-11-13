@@ -4,7 +4,7 @@
          :src="image"
          alt="product image"
          @error="error=true">
-    <PhotoIcon v-else class="h-full w-full text-zinc-300"/>
+    <PhotoIcon v-else class="h-full w-full text-slate-300"/>
 </template>
 
 <script setup lang="ts">

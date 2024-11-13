@@ -3,7 +3,7 @@
         <template v-for="(el, index) in nav" :key="el.name">
             <component :is="index === nav.length - 1 ? 'span' : 'RouterLink'" 
                        :to="el.route"
-                       :class="index === nav.length - 1 ? '' : 'text-zinc-700 whitespace-nowrap hover:text-brand-500 cursor-pointer flex items-center'">
+                       :class="index === nav.length - 1 ? '' : 'text-slate-700 whitespace-nowrap hover:text-brand-500 cursor-pointer flex items-center'">
                 <template v-if="el.name === 'Home'">
                     <HomeIcon class="h-5 w-5"/>
                 </template> 

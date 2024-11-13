@@ -7,11 +7,11 @@
                        :value="option.value.id"
                        :checked="option.selected"
                        @click="applyFacet(facet.field, option.value.id)">
-                {{ option.value?.displayName ?? option.value.id }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                {{ option.value?.displayName ?? option.value.id }} <span class="ml-1 text-slate-400">({{ option.hits }})</span>
             </label>
         </li>
         <li v-if="elementsToShow < allOptions.length">
-            <button class="bg-zinc-500 py-1 px-2" @click="elementsToShow = allOptions.length">
+            <button class="bg-slate-500 py-1 px-2" @click="elementsToShow = allOptions.length">
                 Show all
             </button>
         </li>

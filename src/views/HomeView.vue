@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
+import PopularCategories from '@/components/PopularCategories.vue';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
 import { ref } from 'vue';
+import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 
@@ -15,47 +17,109 @@ async function recommend() {
 
     const recommender = contextStore.getRecommender();
 
-    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo()).build();
+    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(4).sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo()).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
 }
-
 </script>
 <template>
-    <main class="pt-3">
+    <main class="pt-0 flex flex-col gap-16">
         <div class="flex justify-center">
-            <div class="mb-10 bg-white p-6 rounded">
-                <h1 class="text-3xl font-semibold mb-5">
-                    Welcome to the Relewise Demo Shop
+            <div class="bg-white p-6 w-full bg-cover bg-center cover flex flex-col items-center justify-center">
+                <h1 class="text-6xl text-slate-800 text-center font-bold mb-5">
+                    Relewise Demo Shop
                 </h1>
-
-                <p class="pb-2">
-                    Discover a wide range of offerings with our search and discovery tools, and take advantage of personalized product recommendations. Our platform provides a powerful search experience and intelligent recommendations to help you find exactly what you're looking for. With our advanced technology, exploring and discovering new products has never been easier.
-                </p>
-
-                <p>
-                    Relewise is an intelligent personalization platform that provides customized and relevant online experiences, designed to empower both developers and marketers. Our advanced search and recommendation algorithms ensure that you always find what you're looking for, and discover products you'll love.
+                <p class="text-slate-600">
+                    Explore our offerings.
                 </p>
             </div>
         </div>
 
         <template v-if="isConfigured">
-            <h2 class="text-3xl font-semibold mb-3">
-                Popular products
-            </h2>
-            <relewise-popular-products class="grid grid-cols-2 lg:grid-cols-5" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="30" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+            <PopularCategories/>
         </template>
 
-        <template v-if="brands?.recommendations">
-            <h2 class="text-3xl font-semibold mb-3 mt-10">
-                Popular brands
+        <div v-if="isConfigured" class="scrollbar bg-blue-100 py-20">
+            <div class="container mx-auto">
+                <h2 class="text-3xl font-semibold mb-3 text-center">
+                    Most popular products right now
+                </h2>
+                <div class="w-full overflow-x-scroll pb-2">
+                    <relewise-popular-products class=" flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="brands?.recommendations" class="container mx-auto">
+            <h2 class="text-3xl font-semibold mb-3 text-center">
+                Shop our popular brands
             </h2>
 
-            <div class="grid gap-3 grid-cols-2 lg:grid-cols-5 mt-3">
-                <RouterLink v-for="(brand, index) in brands.recommendations" :key="index" :to="{ query: { brand: brand.id, open: '1' } }" class="rounded bg-white hover:bg-zinc-200 px-3 py-3">
-                    {{ brand.displayName ?? brand.id }}
+            <div v-if="isConfigured" class="grid gap-3 grid-cols-2 lg:grid-cols-4 mt-3">
+                <RouterLink 
+                    v-for="(brand, index) in brands.recommendations" 
+                    :key="index" 
+                    :to="{ query: { brand: brand.id, open: '1' } }" 
+                    class="rounded text-slate-800 p-6"
+                    :class="[
+                        index === 0 ? 'bg-violet-100 hover:bg-violet-200' : '',
+                        index === 1 ? 'bg-rose-100 hover:bg-rose-200' : '',
+                        index === 2 ? 'bg-green-100 hover:bg-green-200' : '',
+                        index === 3 ? 'bg-sky-100 hover:bg-sky-200' : '',
+                    ]">
+                    <h3 class="text-3xl">
+                        {{ brand.displayName ?? brand.id }}
+                    </h3>
+
+                    <button class="mt-4 bg-transparent border border-solid border-gray-800 rounded-lg text-gray-800 flex items-center gap-2">
+                        Shop now <ChevronRightIcon class="h-4"/>
+                    </button>
                 </RouterLink>
             </div>
-        </template>
+        </div>
+
+        <div v-if="isConfigured" class="scrollbar container mx-auto">
+            <h2 class="text-3xl font-semibold mb-3">
+                New products
+            </h2>
+            <div class="w-full overflow-x-scroll">
+                <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+            </div>
+        </div>
     </main>
 </template>
+
+<style lang="scss">
+.cover {
+    background-image: url('/17580.jpg');
+    height: 500px;
+}
+
+.scrollbar {
+    scrollbar-width: 3px !important;
+    *::-webkit-scrollbar {
+    width: 5px;
+  }
+    *::-webkit-scrollbar-thumb:hover {
+       
+    background: #000000 !important;
+  }
+  *::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px transparent;
+    background-color: transparent;
+  }
+  *::-webkit-scrollbar {
+    scrollbar-width: thin;
+    width: 5px;
+    //background-color: #222222;
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: #222222;
+    border-radius: 8px;
+    height: 5px;
+    width: 5px;
+    scrollbar-width: thin;
+  }
+}
+</style>

@@ -29,8 +29,8 @@
                         </div>
                         <div class="flex items-center space-x-4">
                             <p class="">
-                                <span class="text-lg text-zinc-900 mr-1 leading-none">{{ $format(item.product.salesPrice) }}</span>
-                                <span v-if="item.product.salesPrice !== item.product.listPrice" class="text-zinc-900 line-through">
+                                <span class="text-lg text-slate-900 mr-1 leading-none">{{ $format(item.product.salesPrice) }}</span>
+                                <span v-if="item.product.salesPrice !== item.product.listPrice" class="text-slate-900 line-through">
                                     {{ $format(item.product.listPrice) }}
                                 </span>
                             </p>

@@ -10,7 +10,7 @@
                         <span class="m-1">
                             {{ category.displayName ?? category.categoryId }}
                         </span>
-                        <XMarkIcon class="ml-auto h-6 w-6 text-zinc-600 cursor-pointer my-auto mr-2"
+                        <XMarkIcon class="ml-auto h-6 w-6 text-slate-600 cursor-pointer my-auto mr-2"
                                    @click="applyFacet(facet.field, category.categoryId, true)"/>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
                                        :value="option.category.categoryId"
                                        :checked="option.selected"
                                        @click="applyFacet(facet.field, option.category.categoryId)">
-                                {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                                {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-slate-400">({{ option.hits }})</span>
                             </label>
                         </li>
                     </ul>

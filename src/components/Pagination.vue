@@ -94,7 +94,7 @@ function selectPage(page: number) {
 
 <style scoped lang="scss">
 .item {
-    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-zinc-800 font-semibold bg-white hover:bg-zinc-200;
+    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-slate-800 font-semibold bg-white hover:bg-slate-200;
 
     &:disabled {
         @apply opacity-50 pointer-events-none;

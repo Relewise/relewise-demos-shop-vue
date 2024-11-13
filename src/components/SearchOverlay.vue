@@ -282,16 +282,19 @@ function searchFor(term: string) {
 
 <template>
     <div
-        class="inline-flex overflow-hidden rounded-full w-full xl:max-w-2xl border-1 border-white focus:border-zinc-100 relative">
-        <XMarkIcon v-if="open" class="h-6 w-6 text-zinc-600 absolute right-14 top-2.5 cursor-pointer" @click="close"/>
+        class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+        <span class="flex items-center bg-slate-100 rounded-none px-3">
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
+        </span>
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
         <input v-model="searchTerm"
                type="text"
                placeholder="Search..."
-               class="!rounded-none focus:!border-zinc-100 focus:!ring-0"
+               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
                @keyup="typeAHeadSearch()">
-        <button class="bg-zinc-300 rounded-none px-3" @click="search()">
-            <MagnifyingGlassIcon class="h-6 w-6 text-zinc-600"/>
-        </button>
+        <!-- <button class="bg-slate-300 rounded-none px-3" @click="search()">
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
+        </button> -->
     </div>
 
     <Teleport to="#modal">
@@ -373,10 +376,10 @@ function searchFor(term: string) {
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 107px;
+$headerHeight: 109px;
 
 .modal {
-    @apply bg-zinc-50 overflow-scroll;
+    @apply bg-white overflow-scroll;
     position: fixed;
     z-index: 999;
     top: $headerHeight; // height of header

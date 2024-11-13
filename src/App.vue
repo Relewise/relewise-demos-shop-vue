@@ -63,7 +63,7 @@ async function getCategories(searcher: Searcher) {
             :has-child-categories="hasChildCategories"
             :main-categories="mainCategories"/>
 
-    <div id="main-container" class="container px-2 mx-auto pb-10 flex-grow relative">
+    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
         <RouterView/>
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
@@ -90,10 +90,10 @@ async function getCategories(searcher: Searcher) {
     }
 }
 
-$headerHeight: 104px;
+$headerHeight: 106px;
 
 .navigationmodal {
-    @apply bg-white overflow-hidden;
+    @apply bg-white overflow-hidden border-t border-solid border-slate-100;
     position: fixed;
     z-index: 1000;
     top: $headerHeight; // height of header
