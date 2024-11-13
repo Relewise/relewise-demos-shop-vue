@@ -1,2 +1,7 @@
 [context.production]
   ignore = "echo 'Ignoring production builds'" # this skips production builds
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
