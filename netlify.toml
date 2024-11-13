@@ -1,2 +1,2 @@
 [context.production]
-  ignore = "1"
+  ignore = "echo 'Ignoring production builds'" # this skips production builds
