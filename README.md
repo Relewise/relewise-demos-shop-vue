@@ -26,4 +26,4 @@ Whenever a pull request is made, there will automaticly be created a preview lin
 
 - Production deployments are triggered when a new release in Github is created.
 - Bleeding-edge / latests is automaticly deployed with every push to master
-- Netlify automaticly creates and manages pull request previews
+- Netlify automatically creates and manages pull request previews
