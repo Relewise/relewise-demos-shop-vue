@@ -65,3 +65,29 @@ h4 {
         "MONO" 0;
 
 }
+
+.brand1 {
+    background-color: #3764E4;
+ }
+ .brand2 {
+    background-color: #FFC1D7;
+ }
+ .brand3 {
+    background-color: #53CF78;
+ }
+ .brand4 {
+    background-color: #FFD93B;
+ }
+ .brand5 {
+    background-color: #e9effb;
+ }
+ .brand6 {
+    background-color: #e0d5d5;
+ }
+ /* Hover effect */
+ .brand1:hover,
+ .brand2:hover,
+ .brand3:hover,
+ .brand4:hover {
+     filter: brightness(1.1); /* Increase brightness to lighten the color */
+ }

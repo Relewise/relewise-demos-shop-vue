@@ -5,14 +5,12 @@
         </h2>
 
         <div class="flex flex-row gap-8 justify-center">
-            <RouterLink
-                v-for="category in categories?.recommendations" 
-                :key="category.categoryId ?? ''" 
-                :to="`/category/${category.categoryId}`" 
-                class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800">
-                <div class="overflow-hidden rounded-full h-[150px] w-[150px]"
-                     :style="{'background-color': getColor()}">
-                     <!-- <img 
+            <RouterLink v-for="(category, index) in categories?.recommendations"
+                        :key="category.categoryId ?? ''"
+                        :to="`/category/${category.categoryId}`"
+                        class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800">
+                <div class="overflow-hidden rounded-full h-[150px] w-[150px]" :class="`brand${index+1}`">
+                    <!-- <img 
                          :alt="category.displayName ?? category.categoryId ?? ''"
                          class="h-[150px] w-[150px]"> -->
                 </div>
@@ -34,7 +32,7 @@ const categories: Ref<ProductCategoryRecommendationResponse | undefined> = ref<P
 async function setup() {
     categories.value = await contextStore.getRecommender().recommendPopularProductCategories(new PopularProductCategoriesRecommendationBuilder(contextStore.defaultSettings)
         .setProductCategoryProperties({ displayName: true })
-        .setNumberOfRecommendations(8)
+        .setNumberOfRecommendations(6)
         .sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo())
         .build());
 
@@ -42,9 +40,5 @@ async function setup() {
 }
 
 setup();
-
-function getColor() {
-    return `#${Math.floor(Math.random()*16777215).toString(16)}`;
-}
 
 </script>

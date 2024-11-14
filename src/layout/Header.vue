@@ -65,7 +65,7 @@ onBeforeUnmount(() => {
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
                         <!-- <h1>Relewise <span class="text-white bg-slate-900 rounded-sm px-1">shop</span></h1>               -->
-                        <img src="/shopwise-v1.png" style="height: 40px;">          
+                        <img src="/demoshopwise.png" style="height: 40px;">          
                     </RouterLink>
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">

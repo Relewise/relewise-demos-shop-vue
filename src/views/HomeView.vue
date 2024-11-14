@@ -25,11 +25,11 @@ async function recommend() {
 <template>
     <main class="pt-0 flex flex-col gap-16">
         <div class="flex justify-center">
-            <div class="bg-white p-6 w-full bg-cover bg-center cover flex flex-col items-center justify-center">
-                <h1 class="text-6xl text-slate-800 text-center font-bold mb-5">
+            <div class="bg-white p-6 w-full bg-gradient h-[500px] flex flex-col items-center justify-center">
+                <h1 class="text-6xl text-gray-100 text-center font-bold mb-5 drop-shadow-lg">
                     Relewise Demo Shop
                 </h1>
-                <p class="text-slate-600">
+                <p class="text-gray-100  drop-shadow-lg">
                     Explore our offerings.
                 </p>
             </div>
@@ -39,7 +39,7 @@ async function recommend() {
             <PopularCategories/>
         </template>
 
-        <div v-if="isConfigured" class="scrollbar bg-blue-100 py-20">
+        <div v-if="isConfigured" class="scrollbar py-20" style="background-color: #53CF78;">
             <div class="container mx-auto">
                 <h2 class="text-3xl font-semibold mb-3 text-center">
                     Most popular products right now
@@ -61,12 +61,7 @@ async function recommend() {
                     :key="index" 
                     :to="{ query: { brand: brand.id, open: '1' } }" 
                     class="rounded text-slate-800 p-6"
-                    :class="[
-                        index === 0 ? 'bg-violet-100 hover:bg-violet-200' : '',
-                        index === 1 ? 'bg-rose-100 hover:bg-rose-200' : '',
-                        index === 2 ? 'bg-green-100 hover:bg-green-200' : '',
-                        index === 3 ? 'bg-sky-100 hover:bg-sky-200' : '',
-                    ]">
+                    :class="`brand${index+1}`">
                     <h3 class="text-3xl">
                         {{ brand.displayName ?? brand.id }}
                     </h3>
@@ -79,7 +74,7 @@ async function recommend() {
         </div>
 
         <div v-if="isConfigured" class="scrollbar container mx-auto">
-            <h2 class="text-3xl font-semibold mb-3">
+            <h2 class="text-3xl font-semibold mb-3 text-center">
                 New products
             </h2>
             <div class="w-full overflow-x-scroll">
@@ -96,12 +91,11 @@ async function recommend() {
 }
 
 .scrollbar {
-    scrollbar-width: 3px !important;
+    scrollbar-width: thin !important;
     *::-webkit-scrollbar {
     width: 5px;
   }
-    *::-webkit-scrollbar-thumb:hover {
-       
+  *::-webkit-scrollbar-thumb:hover {
     background: #000000 !important;
   }
   *::-webkit-scrollbar-track {
@@ -119,7 +113,11 @@ async function recommend() {
     border-radius: 8px;
     height: 5px;
     width: 5px;
-    scrollbar-width: thin;
   }
+}
+
+.bg-gradient {
+    background: rgb(55, 100, 228);
+    background: radial-gradient(circle, rgb(55, 100, 228) 0%, rgb(15, 41, 115) 81%);
 }
 </style>

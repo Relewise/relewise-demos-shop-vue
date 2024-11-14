@@ -10,7 +10,7 @@ defineProps({
 </script>
 
 <template>
-    <footer class="bg-gray-200 !text-gray-900">
+    <footer class="!text-brand-500" style="background-color: #FFC1D7;">
         <div class="container px-6 py-12 mx-auto">
             <template v-if="hasChildCategories">
                 <div v-if="footer"
@@ -24,7 +24,7 @@ defineProps({
                              :key="child.category.categoryId ?? ''"
                              class="flex flex-col items-start mt-2 space-y-4">
                             <RouterLink :to="{ name: 'category', params: { id: child.category.categoryId } }"
-                                        class="text-gray-900 transition-colors duration-200 hover:underline hover:text-brand-500">
+                                        class="text-brand-500 transition-colors duration-200 hover:underline hover:text-brand-500">
                                 {{ child.category.displayName }}
                             </RouterLink>
                         </div>
@@ -40,7 +40,7 @@ defineProps({
                          :key="cat.id ?? ''"
                          class="flex flex-col items-start mt-2 space-y-4">
                         <RouterLink :to="{ name: 'category', params: { id: cat.id } }"
-                                    class="text-slate-700 transition-colors duration-200 hover:underline hover:text-brand-500">
+                                    class="text-brand-500 transition-colors duration-200 hover:underline hover:text-brand-500">
                             {{ cat.category.displayName }}
                         </RouterLink>
                     </div>
@@ -48,14 +48,14 @@ defineProps({
             </template>
 
 
-            <hr v-if="hasChildCategories || mainCategories.length > 0" class="my-6 border-gray-300 md:my-5">
+            <hr v-if="hasChildCategories || mainCategories.length > 0" class="my-6 border-brand-500 md:my-5">
 
             <div class="flex flex-col items-center justify-between sm:flex-row">
                 <a href="https://relewise.com/contact-us/">
                     <img src="/logo.svg" class="h-14">
                 </a>
 
-                <p class="mt-4 text-sm text-slate-500 sm:mt-0 text-slate-300">
+                <p class="mt-4 text-sm text-slate-500 sm:mt-0 text-brand-500">
                     © Copyright {{ new Date().getFullYear() }}
                 </p>
             </div>
