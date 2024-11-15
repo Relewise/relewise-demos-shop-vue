@@ -39,8 +39,9 @@ async function recommend() {
             <PopularCategories/>
         </template>
 
-        <div v-if="isConfigured" class="scrollbar py-20" style="background-color: #53CF78;">
-            <div class="container mx-auto">
+        <div v-if="isConfigured" class="scrollbar" style="background-color: #e0d5d5;">
+            <div class="waves"></div>
+            <div class="container mx-auto py-10">
                 <h2 class="text-3xl font-semibold mb-3 text-center">
                     Most popular products right now
                 </h2>
@@ -48,6 +49,7 @@ async function recommend() {
                     <relewise-popular-products class=" flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
                 </div>
             </div>
+            <div class="reverse-waves"></div>
         </div>
 
         <div v-if="brands?.recommendations" class="container mx-auto">
@@ -61,7 +63,7 @@ async function recommend() {
                     :key="index" 
                     :to="{ query: { brand: brand.id, open: '1' } }" 
                     class="rounded text-slate-800 p-6"
-                    :class="`brand${index+1}`">
+                    :class="`brand${6-index}`">
                     <h3 class="text-3xl">
                         {{ brand.displayName ?? brand.id }}
                     </h3>

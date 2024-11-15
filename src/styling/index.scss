@@ -88,6 +88,19 @@ h4 {
  .brand1:hover,
  .brand2:hover,
  .brand3:hover,
- .brand4:hover {
+ .brand4:hover, 
+ .brand5:hover, 
+ .brand6:hover {
      filter: brightness(1.1); /* Increase brightness to lighten the color */
  }
+
+ .waves {
+    height: 88px;
+    background-image: url("/waves.svg");
+  }
+
+.reverse-waves {
+    height: 88px;
+    background-image: url("/waves.svg");
+    transform: rotate(180deg);
+  }

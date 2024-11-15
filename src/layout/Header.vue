@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AdjustmentsHorizontalIcon, ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
@@ -7,11 +7,13 @@ import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
 import ContextSwitcher from '@/components/ContextSwitcher.vue';
+import contextStore from '@/stores/context.store';
+import { displayUser } from '@/helpers/userHelper';
 
 defineProps({
-    lineItemsCount: { type: Number, required: true},
-    hasChildCategories: { type: Boolean, required: true},
-    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true},
+    lineItemsCount: { type: Number, required: true },
+    hasChildCategories: { type: Boolean, required: true },
+    mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
 });
 
 const navigationmodal = ref<HTMLElement | null>(null);
@@ -21,12 +23,12 @@ const open = ref<string | null>(null);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const handleMouseOver = (categoryId: string) => {
-    if (hoverTimeout) clearTimeout(hoverTimeout); 
+    if (hoverTimeout) clearTimeout(hoverTimeout);
     hoverTimeout = setTimeout(() => {
         const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-        
+
         document.body.classList.add('overflow-hidden');
-        
+
         if (!document.body.style.marginRight) {
             document.body.style.marginRight = `${scrollbarWidth}px`;
         }
@@ -40,23 +42,23 @@ const handleMouseLeave = () => {
 
     const searchParams = new URLSearchParams(window.location.search);
     const isSearchOverlayOpen = searchParams.get('open') === '1' ? true : false;
-    
+
     if (!isSearchOverlayOpen) {
         document.body.classList.remove('overflow-hidden');
         document.body.style.marginRight = ''; // Reset margin
     }
-    
+
     open.value = null;
 };
 
 onBeforeUnmount(() => {
-    if (hoverTimeout) clearTimeout(hoverTimeout); 
+    if (hoverTimeout) clearTimeout(hoverTimeout);
 });
 </script>
 
 <template>
     <header class="border-b border-solid border-slate-100" @mouseleave="handleMouseLeave">
-        <div class="container mx-auto px-2">
+        <div class="container mx-auto">
             <div class="grid xl:flex gap-8 py-2" @mouseover="handleMouseLeave">
                 <div class="flex items-center">
                     <div class="xl:hidden">
@@ -65,7 +67,7 @@ onBeforeUnmount(() => {
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
                         <!-- <h1>Relewise <span class="text-white bg-slate-900 rounded-sm px-1">shop</span></h1>               -->
-                        <img src="/demoshopwise.png" style="height: 40px;">          
+                        <img src="/demoshopwise.png" style="height: 40px;">
                     </RouterLink>
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
@@ -73,6 +75,29 @@ onBeforeUnmount(() => {
                         <SearchOverlay/>
                     </div>
                     <div class="flex items-center gap-4">
+                        <Popover placement="bottom-end">
+                            <div class="mr-4 flex items-center gap-4 leading-none rounded-lg bg-slate-100 px-4 py-2 cursor-pointer hover:bg-slate-200 text-slate-800">
+                                <div>
+                                    <div class="font-medium text-sm">
+                                        {{ contextStore.context.value.displayName }}
+                                    </div>
+                                    <div v-if="contextStore.context.value.users && contextStore.context.value.selectedUserIndex" class="text-xs">
+                                        User: {{
+                                            displayUser(contextStore.context.value.users[contextStore.context.value.selectedUserIndex])
+                                        }}
+                                    </div>
+                                    <div v-else class="text-xs">
+                                        User: Unknown
+                                    </div>
+                                </div>
+                                <ChevronDownIcon class="h-4"/>
+                            </div>
+                            <template #content>
+                                <div class="w-96">
+                                    <ContextSwitcher/>
+                                </div>
+                            </template>
+                        </Popover>
                         <RouterLink to="/cart" class="relative flex flex-col items-center  text-slate-600 ">
                             <ShoppingBagIcon class="h-8 w-8"/>
                             <span class="text-[9px] mt-1 font-bold">CART</span>
@@ -81,8 +106,9 @@ onBeforeUnmount(() => {
                                 {{ lineItemsCount }}
                             </span>
                         </RouterLink>
-                        <Popover placement="bottom-end">
-                            <div class="relative flex flex-col items-center rounded-full  text-slate-600 cursor-pointer">
+                        <!-- <Popover placement="bottom-end">
+                            <div
+                                class="relative flex flex-col items-center rounded-full  text-slate-600 cursor-pointer">
                                 <AdjustmentsHorizontalIcon class="h-8 w-8"/>
                                 <span class="text-[9px] mt-1 font-bold">SETTINGS</span>
                             </div>
@@ -91,23 +117,26 @@ onBeforeUnmount(() => {
                                     <ContextSwitcher/>
                                 </div>
                             </template>
-                        </Popover>
+                        </Popover> -->
                     </div>
                 </div>
             </div>
             <nav class="hidden xl:block">
                 <ul class="flex w-full gap-2">
                     <ul v-if="hasChildCategories" class="flex overflow-y-auto scrollable-element">
-                        <li v-for="category in mainCategories" :key="category.id ?? ''" class="inline-flex relative pr-5">
-                            <RouterLink 
-                                :to="{ name: 'category', params: { id: category.id } }"
-                                class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
-                                @mouseover="handleMouseOver(category.id)">
+                        <li v-for="category in mainCategories"
+                            :key="category.id ?? ''"
+                            class="inline-flex relative pr-5">
+                            <RouterLink :to="{ name: 'category', params: { id: category.id } }"
+                                        class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                                        @mouseover="handleMouseOver(category.id)">
                                 {{ category.category.displayName ?? category.category.categoryId }}
                                 <ChevronDownIcon class="ml-2 mt-1 inline-block h-3 text-slade-500"/>
                             </RouterLink>
                             <div v-if="open === category.id" to="#navigationmodal">
-                                <div ref="navigationmodal" class="navigationmodal" @mouseover="handleMouseOver(category.id)">
+                                <div ref="navigationmodal"
+                                     class="navigationmodal"
+                                     @mouseover="handleMouseOver(category.id)">
                                     <div class="bg-white overflow-x-auto modalcontent pb-10">
                                         <div class="container mx-auto">
                                             <h4 class="my-4 text-xl">

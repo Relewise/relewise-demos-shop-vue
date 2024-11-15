@@ -1,5 +1,5 @@
 <template>
-    <div class="category-page">
+    <div class="category-page container mx-auto">
         <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
         <div class="flex gap-3">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">

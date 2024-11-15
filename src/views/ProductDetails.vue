@@ -1,11 +1,11 @@
 <template>
-    <div>
+    <div class="container mx-auto">
         <div v-if="product" class="mb-10">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
           
 
             <div class="flex gap-3 ">
-                <div class="relative flex h-[275px] overflow-hidden bg-white p-3 rounded">
+                <div class="relative flex overflow-hidden bg-white p-3 rounded w-1/2 items-center">
                     <ProductImage :product="product"/>
                 </div>
 
@@ -47,7 +47,7 @@
                     </div>
 
                     <div class="text-left mt-3">
-                        <button @click="addToBasket">
+                        <button class="w-full text-lg bg-slate-900 hover:bg-slate-800" @click="addToBasket">
                             Add to cart
                         </button>
                     </div>
