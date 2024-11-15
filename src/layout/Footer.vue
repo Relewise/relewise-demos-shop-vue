@@ -60,14 +60,14 @@ defineProps({
             </template>
 
 
-            <hr v-if="hasChildCategories || mainCategories.length > 0" class="my-6 border-brand-500 md:my-5">
+            <hr v-if="hasChildCategories || mainCategories.length > 0" class="my-6 border-[#e4a8bd] md:my-5">
 
             <div class="flex flex-col items-center justify-between sm:flex-row">
                 <a href="https://relewise.com/contact-us/">
                     <img src="/logo.svg" class="h-14">
                 </a>
 
-                <p class="mt-4 text-sm text-slate-500 sm:mt-0 text-brand-500">
+                <p class="mt-4 text-sm text-slate-500 sm:mt-0 text-[#af778c]">
                     © Copyright {{ new Date().getFullYear() }}
                 </p>
             </div>

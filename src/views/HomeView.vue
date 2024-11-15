@@ -23,7 +23,7 @@ async function recommend() {
 }
 </script>
 <template>
-    <main class="pt-0 flex flex-col gap-16">
+    <main class="pt-0 flex flex-col gap-20">
         <div class="flex justify-center">
             <div class="bg-white p-6 w-full bg-gradient h-[500px] flex flex-col items-center justify-center">
                 <h1 class="text-6xl text-gray-100 text-center font-bold mb-5 drop-shadow-lg">
