@@ -78,7 +78,7 @@ import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
-import { addAssortmentFilters } from '../stores/customFilters';
+import { addAssortmentFilters, addCartFilter } from '../stores/customFilters';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 
@@ -204,6 +204,7 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             addAssortmentFilters(f);
+            addCartFilter(f);
         })
         .facets(f => {
             if (renderCatoryLinks.value) {

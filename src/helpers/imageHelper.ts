@@ -11,7 +11,7 @@ function mapDataKey(data: Record<string, DataValue>) {
 
         if (dataKey.toLowerCase().includes('image')) {
             const value = data[dataKey];
-console.log("BILLEDE: " + JSON.stringify(value, null, 2));
+//console.log("BILLEDE: " + JSON.stringify(value, null, 2));
             if (value.type === 'String') {
                 return value.value.replace("upload/", "upload/c_scale,h_0.25,w_0.25/q_auto:low/");
             } else if (value.type === 'StringList') {

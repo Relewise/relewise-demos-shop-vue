@@ -2,7 +2,7 @@ import { WebComponentProductTemplate } from '@/components/WebComponentProductTem
 import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
-import { addAssortmentFilters } from './customFilters';
+import { addAssortmentFilters, addCartFilter } from './customFilters';
 import basketService from '@/services/basket.service';
 
 export interface IDataset {
@@ -238,7 +238,9 @@ class AppContext {
                     variant: { allData: true },
                 },
                 filters: {
-                     product(builder) { addAssortmentFilters(builder); 
+                     product(builder) { 
+                    addAssortmentFilters(builder); 
+                    addCartFilter(builder);
                      builder.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.string("true"), true), true, false, false);
                     }
                     

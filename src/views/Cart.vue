@@ -87,7 +87,7 @@ import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
-import { addAssortmentFilters } from '@/stores/customFilters';
+import { addAssortmentFilters, addCartFilter } from '@/stores/customFilters';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -118,6 +118,7 @@ async function recommend() {
                  f=> {
                     addAssortmentFilters(f); 
                     f.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(true)), true, false, true);
+                    addCartFilter(f);
                  }
          )
         .build();

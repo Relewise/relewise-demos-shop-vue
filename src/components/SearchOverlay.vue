@@ -12,7 +12,7 @@ import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
-import { addAssortmentFilters } from '../stores/customFilters';
+import { addAssortmentFilters, addCartFilter } from '../stores/customFilters';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -126,7 +126,11 @@ async function search() {
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
     const request = new SearchCollectionBuilder()
-        .filters(f => addAssortmentFilters(f))
+        .filters(f =>
+            { 
+                addAssortmentFilters(f);
+                addCartFilter(f);
+            })
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
