@@ -2,10 +2,6 @@
     <div>
         <div v-if="product" class="mb-10">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
-            <h1 class="text-4xl font-semibold">
-                {{ product.displayName }}
-            </h1>
-
             <div class="flex gap3">
                 <div class="relative flex h-[275px] overflow-hidden">
                     <ProductImage :product="product" />
@@ -25,6 +21,10 @@
 
                         <div v-if="product.brand">
                             <span class="text-zinc-500">Brand:</span>  {{ product.brand.displayName }}
+                        </div>
+
+                        <div v-if="stockLevelExists">
+                            <span class="text-zinc-500">No in stock:</span> {{ stockLevelValue }}
                         </div>
 
                         <div v-if="product.data && product.data.Description && product.data.Description.value">
@@ -65,21 +65,6 @@
                             Add to cart
                         </button>
                     </div>
-                    <br />
-                    <br />
-
-                    <div class="text-zinc-500">
-                        Brand: {{ product.brand?.displayName }}
-                    </div>
-
-                            <div v-if="stockLevelExists" class="text-zinc-500">
-                                No in stock: {{ stockLevelValue }}
-                            </div>
-
-                    <div class="text-zinc-500">
-                        Product ID: {{ product.productId }}
-                    </div>
-
                 </div>
             </div>
         </div>
