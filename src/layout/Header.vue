@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <header class="border-b border-solid border-slate-100" @mouseleave="handleMouseLeave">
+    <header class="border-b border-solid border-slate-100 bg-white" @mouseleave="handleMouseLeave">
         <div class="container mx-auto">
             <div class="grid xl:flex gap-8 py-2" @mouseover="handleMouseLeave">
                 <div class="flex items-center">
