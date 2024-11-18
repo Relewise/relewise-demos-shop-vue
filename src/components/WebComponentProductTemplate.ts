@@ -3,7 +3,7 @@ import type { ProductResult } from '@relewise/client';
 import type { TemplateExtensions } from '@relewise/web-components';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {
-    const path = (process.env.NODE_ENV === 'production' ? '/relewise-demos-shop-vue' : '') + `/product/${product.productId}`;
+    const path = (process.env.NODE_ENV === 'production' ? undefined : '') + `/product/${product.productId}`;
     return html`
         <style>
             a {
