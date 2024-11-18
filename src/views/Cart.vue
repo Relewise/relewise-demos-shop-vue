@@ -88,6 +88,7 @@ import trackingService from '@/services/tracking.service';
 import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
 import { addAssortmentFilters, addCartFilter } from '@/stores/customFilters';
+import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -107,20 +108,20 @@ init();
 
 async function recommend() {
     const take = 5;
-    // const request = new PurchasedWithCurrentCartBuilder(contextStore.defaultSettings)
     const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
-    
-        .addProducts(mappedProducts)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
         .setNumberOfRecommendations(take)
-        .filters(
-                 f=> {
-                    addAssortmentFilters(f); 
-                    f.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(true)), true, false, true);
-                    addCartFilter(f);
-                 }
-         )
+        .addProducts(basketService.model.value.lineItems
+            .filter(item => item.product.productId)
+            .map(item => ({
+                productId: item.product.productId as string,
+            })),
+        )
+        .filters(builder => {
+            addAssortmentFilters(builder); 
+            addCartFilter(builder);
+            globalProductRecommendationFilters(builder)})
         .build();
 
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);

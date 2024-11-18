@@ -4,6 +4,7 @@ import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import { addAssortmentFilters, addCartFilter } from './customFilters';
 import basketService from '@/services/basket.service';
+import { globalProductRecommendationFilters } from './globalProductFilters';
 
 export interface IDataset {
     datasetId: string;
@@ -18,6 +19,8 @@ export interface IDataset {
     selectedUserIndex?: number;
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
+    hideSoldOutProducts?: boolean;
+    recommendationsMinutesAgo?: number;
 }
 
 export interface ITracking {
@@ -134,6 +137,10 @@ class AppContext {
         return new Tracker(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
     }
 
+    public getRecommendationsSinceMinutesAgo(): number {
+        return this.context.value.recommendationsMinutesAgo ?? 20160;
+    }
+
     public persistState() {
         this.errorState.apiKeyError = false;
         this.errorState.datasetIdError = false;
@@ -241,7 +248,7 @@ class AppContext {
                      product(builder) { 
                     addAssortmentFilters(builder); 
                     addCartFilter(builder);
-                     builder.addProductDataFilter("soldOut", (c:ConditionBuilder) => c.addEqualsCondition(DataValueFactory.string("true"), true), true, false, false);
+                    globalProductRecommendationFilters(builder);
                     }
                     
                 },
@@ -253,6 +260,12 @@ class AppContext {
             }).useRecommendations(
 
             );
+                filters: {
+                    product(builder) {
+                        globalProductRecommendationFilters(builder);
+                    },
+                },
+            }).useRecommendations();
     }
 }
 

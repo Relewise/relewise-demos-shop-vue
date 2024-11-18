@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type SearchRequestCollection, type CategoryPath, type CategoryNameAndId } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -13,6 +13,7 @@ import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addAssortmentFilters, addCartFilter } from '../stores/customFilters';
+import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -220,6 +221,7 @@ async function search() {
                 .setSelectedVariantProperties({ allData: true })
                 .setTerm(searchTerm.value)
                 .setNumberOfRecommendations(40)
+                .filters(builder => globalProductRecommendationFilters(builder))
                 .build();
 
             const recommender = contextStore.getRecommender();
