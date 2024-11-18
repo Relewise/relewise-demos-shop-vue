@@ -15,5 +15,6 @@ export default defineConfig({
     
         },  
     },
-    base: isProd ? '/relewise-demos-shop-vue/' : undefined,  
+    //base: isProd ? '/relewise-demos-shop-vue/' : undefined,  
+    base: isProd ? '' : undefined,  
 });
