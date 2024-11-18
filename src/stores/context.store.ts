@@ -19,7 +19,7 @@ export interface IDataset {
     selectedUserIndex?: number;
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
-    hideSoldOutProducts?: boolean;
+    hidesoldOutProducts?: boolean;
     recommendationsMinutesAgo?: number;
 }
 

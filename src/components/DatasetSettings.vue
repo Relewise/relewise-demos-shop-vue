@@ -85,13 +85,13 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.hideSoldOutProducts"
+                    <input v-model="context.hidesoldOutProducts"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
                     Hide <span class="font-medium px-1">Sold out</span> in recommendations</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    Hide Products with a 'SoldOut' datakey in recommendations.
+                    Hide Products with a 'soldOut' datakey in recommendations.
                 </p>
             </div>
 

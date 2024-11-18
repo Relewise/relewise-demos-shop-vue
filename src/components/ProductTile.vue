@@ -45,16 +45,17 @@ const { product } = toRefs(props);
                     ON SALE
                 </span>
                 <span
-                    v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
+                    v-if="product.data && product.data.soldOut && product.data.soldOut.value === 'true'"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
                     SOLD OUT
                 </span>
             </div>
         </div>
-        <!-- <pre> {{ JSON.stringify(product.data && product.data.soldOut && product.data.soldOut.value as string == "true", null, 2) }}</pre>
-        <pre> {{ JSON.stringify(product.data && product.data.soldOut , null, 2) }}</pre> -->
+        <!-- <pre> {{ JSON.stringify(product.data && product.data.soldOut && product.data.soldOut.value as string == "true", null, 2) }}</pre> -->
+
         <div class="mt-3 px-3">
             <div class="text-left">
+                
                 <span v-if="product.brand" class="text-sm text-zinc-500">{{ product.brand.displayName }}</span>
                 <h5 class="tracking-tight font-semibold leading-tight overflow-hidden text-ellipsis h-10">
                     {{ product.displayName }}
