@@ -18,7 +18,7 @@
                     <div class="mt-2 flex items-center justify-between">
                         <p>
                             <span class="text-zinc-900 ">
-                                {{ product.data.description.value }}
+                                {{ product.data?.description.value }}
                             </span>
                         </p>
                     </div>
@@ -42,12 +42,12 @@
                     <br />
 
                     <div class="text-zinc-500">
-                        Brand: {{ product.brand.displayName }}
+                        Brand: {{ product.brand?.displayName }}
                     </div>
 
-                    <div v-if="product.data['stockLevel']" class="text-zinc-500">
-                        No in stock: {{ product.data['stockLevel'].value }}
-                    </div>
+                            <div v-if="stockLevelExists" class="text-zinc-500">
+                                No in stock: {{ stockLevelValue }}
+                            </div>
 
                     <div class="text-zinc-500">
                         Product ID: {{ product.productId }}
@@ -96,8 +96,8 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductRecommendationResponse, ProductSearchBuilder, SimilarProductsProductBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { type ProductRecommendationResponse, ProductSearchBuilder, SimilarProductsProductBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import { context } from '@relewise/web-components';
@@ -113,8 +113,15 @@ const similarProds = ref<ProductRecommendationResponse | null | undefined>(null)
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
+var stockLevelExists: boolean = false;
+var stockLevelValue: number = 0;
+
+
 async function init() {
     const id = route.params.id;
+    // Computed properties for stock level
+
+
     if (id && !Array.isArray(id)) {
         productId.value = id;
 
@@ -131,17 +138,40 @@ async function init() {
         const searcher = contextStore.getSearcher();
         product.value = (await searcher.searchProducts(request))?.results![0];
 
+        stockLevelExists = product.value?.data?.stockLevel?.value !== undefined;
+        stockLevelValue = product.value?.data?.stockLevel?.value ?? 0;
+
+        console.log(`stockLevelValue: ${stockLevelExists}`)
+
         const similarproductsRequest = new SimilarProductsProductBuilder(contextStore.defaultSettings)
             .product({ productId: productId.value })
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .filters(
-                f => {
-                    addAssortmentFilters(f);
-                    addCartFilter(f);
-                    f.addProductCategoryIdFilter("ImmediateParentOrItsParent", product.value?.categoryPaths[0].pathFromRoot[1].id as string);
+            .filters(f => {
+                // Safely add assortment and cart filters
+                addAssortmentFilters(f);
+                addCartFilter(f);
+
+                // Safely access the category ID
+                const categoryId = product.value?.categoryPaths?.[0]?.pathFromRoot?.[1]?.id;
+                if (!categoryId || typeof categoryId !== 'string') {
+                    throw new Error("Category ID is missing or not a valid string");
                 }
-            )
+
+                // Add the product category filter
+                f.addProductCategoryIdFilter("ImmediateParentOrItsParent", categoryId);
+            })
             .build();
+        // const similarproductsRequest = new SimilarProductsProductBuilder(contextStore.defaultSettings)
+        //     .product({ productId: productId.value })
+        //     .setSelectedProductProperties(contextStore.selectedProductProperties)
+        //     .filters(
+        //         f => {
+        //             addAssortmentFilters(f);
+        //             addCartFilter(f);
+        //             f.addProductCategoryIdFilter("ImmediateParentOrItsParent", product.value?.categoryPaths[0].pathFromRoot[1].id as string);
+        //         }
+        //     )
+        //     .build();
         similarproductsRequest.settings.numberOfRecommendations = 4;
 
         const recommender = contextStore.getRecommender();
@@ -152,6 +182,10 @@ async function init() {
             breadcrumb.value = product.value?.categoryPaths[0].pathFromRoot ?? [];
         }
     }
+
+
+
+
 }
 
 init();
@@ -170,4 +204,6 @@ function addToBasket() {
 
     trackingService.trackCart(basketService.model.value.lineItems);
 }
+
+
 </script>
