@@ -257,14 +257,6 @@ class AppContext {
                         return WebComponentProductTemplate(product, extentions);
                     },
                 },
-            }).useRecommendations(
-
-            );
-                filters: {
-                    product(builder) {
-                        globalProductRecommendationFilters(builder);
-                    },
-                },
             }).useRecommendations();
     }
 }
