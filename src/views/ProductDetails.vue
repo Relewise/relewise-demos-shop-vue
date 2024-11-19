@@ -1,8 +1,7 @@
 <template>
     <div class="container mx-auto">
-        <div v-if="product" class="mb-10">
+        <div v-if="product" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
-          
 
             <div class="flex gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-1/2">
@@ -17,13 +16,9 @@
                         <h1 class="text-4xl mb-4 font-semibold">
                             {{ product.displayName }}
                         </h1>
-                       
-                        <div>
-                            <span class="text-slate-600">AWESOME PRODUCT ON SALE</span> 
-                        </div>
 
-                        <div v-if="product.data && product.data.Description && product.data.Description.value">
-                            <span class="text-slate-600">{{ product.data.Description.value }}</span> 
+                        <div v-if="product.data && product.data.description && product.data.description.value">
+                            <span class="text-slate-600">{{ product.data.description.value }}</span> 
                         </div>
                     </div>
 
@@ -61,27 +56,31 @@
             </div>
         </div>
         <relewise-product-recommendation-batcher>
-            <div class="mb-10">
+            <div class="mb-16 scrollbar">
                 <h2 class="text-2xl mb-2 font-semibold">
                     Purchased with the product
                 </h2>
-                <relewise-purchased-with-product
-                    :key="productId" 
-                    class="grid grid-cols-2 lg:grid-cols-5"
-                    number-of-recommendations="5" 
-                    :displayed-at-location="defaultSettings.displayedAtLocation" 
-                    :product-id="productId"/>
+                <div class="w-full overflow-x-scroll">
+                    <relewise-purchased-with-product
+                        :key="productId" 
+                        class="flex flex-row gap-3"
+                        number-of-recommendations="15" 
+                        :displayed-at-location="defaultSettings.displayedAtLocation" 
+                        :product-id="productId"/>
+                </div>
             </div>
-            <div class="">
+            <div class="scrollbar">
                 <h2 class="text-2xl mb-2 font-semibold">
                     Products viewed after viewing the product
                 </h2>
-                <relewise-products-viewed-after-viewing-product
-                    :key="productId" 
-                    class="grid grid-cols-2 lg:grid-cols-5"
-                    number-of-recommendations="5" 
-                    :displayed-at-location="defaultSettings.displayedAtLocation" 
-                    :product-id="productId"/>
+                <div class="w-full overflow-x-scroll">
+                    <relewise-products-viewed-after-viewing-product
+                        :key="productId" 
+                        class="flex flex-row gap-3"
+                        number-of-recommendations="15" 
+                        :displayed-at-location="defaultSettings.displayedAtLocation" 
+                        :product-id="productId"/>
+                </div>
             </div>
         </relewise-product-recommendation-batcher>
     </div>

@@ -1,17 +1,17 @@
 <template>
-    <div class="flex py-2 gap-2">
+    <div class="flex py-2 gap-2 mt-2 items-center">
         <template v-for="(el, index) in nav" :key="el.name">
             <component :is="index === nav.length - 1 ? 'span' : 'RouterLink'" 
                        :to="el.route"
-                       :class="index === nav.length - 1 ? '' : 'text-slate-700 whitespace-nowrap hover:text-brand-500 cursor-pointer flex items-center'">
+                       :class="index === nav.length - 1 ? 'text-slate-500' : 'text-slate-700 whitespace-nowrap hover:underline cursor-pointer flex items-center'">
                 <template v-if="el.name === 'Home'">
-                    <HomeIcon class="h-5 w-5"/>
+                    <HomeIcon class="h-[18px] w-[18px]"/>
                 </template> 
                 <template v-else>
                     {{ el.name }}
                 </template>
             </component>
-            <span v-if="index !== nav.length - 1">/</span>
+            <span v-if="index !== nav.length - 1"><ChevronRightIcon class="h-[10px] w-[10px] mt-0.5"/></span>
         </template>
     </div>
 </template>
@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import type { CategoryNameAndIdResult, ProductResult } from '@relewise/client';
 import { computed, toRefs, type PropType } from 'vue';
-import { HomeIcon } from '@heroicons/vue/24/outline';
+import { ChevronRightIcon, HomeIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
 import type { RouteLocationAsRelativeGeneric } from 'vue-router';
 

@@ -268,32 +268,6 @@ async function recommend() {
     height: 500px;
 }
 
-.scrollbar {
-    scrollbar-width: thin !important;
-    *::-webkit-scrollbar {
-    width: 5px;
-  }
-  *::-webkit-scrollbar-thumb:hover {
-    background: #000000 !important;
-  }
-  *::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px transparent;
-    background-color: transparent;
-  }
-  *::-webkit-scrollbar {
-    scrollbar-width: thin;
-    width: 5px;
-    //background-color: #222222;
-    border-radius: 8px;
-  }
-  *::-webkit-scrollbar-thumb {
-    background-color: #222222;
-    border-radius: 8px;
-    height: 5px;
-    width: 5px;
-  }
-}
-
 .bg-gradient {
     background: rgb(55, 100, 228);
     background: radial-gradient(circle, rgb(55, 100, 228) 0%, rgb(15, 41, 115) 81%);
