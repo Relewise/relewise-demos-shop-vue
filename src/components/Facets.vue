@@ -1,9 +1,9 @@
 <template>
     <template v-for="(facet, index) in facets.items" :key="index">
-        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" class="px-3 py-3 bg-white rounded mb-3">
-            <div class="font-semibold text-lg mb-2">
+        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
+            <h4 class="font-semibold text-lg mb-1">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
-            </div>
+            </h4>
             <template v-if="facet.$type.includes('CategoryHierarchyFacetResult')">
                 <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex">
                     <div v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold" class="bg-gray-100 flex my-1">
@@ -33,7 +33,7 @@
                                        :value="option.category.categoryId"
                                        :checked="option.selected"
                                        @click="applyFacet(facet.field, option.category.categoryId)">
-                                {{ option.category.displayName ?? option.category.categoryId }} <span class="ml-1 text-slate-400">({{ option.hits }})</span>
+                                {{ option.category.displayName ?? option.category.categoryId }} <span class="">{{ option.hits }}</span>
                             </label>
                         </li>
                     </ul>
@@ -43,6 +43,7 @@
             <CheckListFacet
                 v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
+                class=""
                 @search="applyFacet"/>
             <div v-else-if="facet.field === 'SalesPrice'">
                 <div class="w-full flex items-center justify-between mb-5 gap-2">

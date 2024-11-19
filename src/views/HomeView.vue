@@ -202,12 +202,12 @@ async function recommend() {
                 </svg>
             </div>
             <div class="p-6 w-full flex flex-col items-start justify-center text-slate-800">
-                <h1 class="text-6xl text-center font-bold mb-3">
-                    Relewise Demo Shop
-                </h1>
-                <h2 class="intro__title text-3xl">
+                <h1 class="intro__title text-5xl">
                     <span class="underline--yellow inline-block">Personalize</span><span class="text-brand1">.</span> Connect<span class="text-brand2">.</span> Relewise
-                </h2>
+                </h1>
+                <h3 class="text-2xl text-center font-medium mt-4">
+                    Welcome to our Demo Shop
+                </h3>
             </div>
         </div>
 

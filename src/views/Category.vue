@@ -1,10 +1,15 @@
 <template>
     <div class="category-page container mx-auto">
         <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
-        <div class="flex gap-3">
+
+        <h1 class="text-xl lg:text-4xl font-semibold my-6">
+            {{ category?.displayName }}
+        </h1>
+
+        <div class="flex gap-10">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
-                <div v-if="(childCategories?.length ?? 0) > 0" class="px-3 py-3 bg-white rounded mb-3">
-                    <div class="font-semibold text-lg mb-2">
+                <div v-if="(childCategories?.length ?? 0) > 0" class="mb-6 border-b border-solid border-slate-300 pb-6">
+                    <div class="font-semibold text-lg mb-1">
                         Categories
                     </div>
                     <ul>
@@ -27,21 +32,18 @@
             </div>
             <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
-                    <div class="grid grid-cols-2 bg-white rounded p-3 gap-1 items-end lg:flex lg:gap-4">
+                    <div class="grid grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start">
                         <div>
-                            <h1 class="text-xl lg:text-3xl font-semibold">
-                                {{ category?.displayName }}
-                            </h1>
                             <span v-if="result.hits > 0" class="text-sm lg:text-base whitespace-nowrap">
                                 Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of
-                                {{ result?.hits }} </span>
+                                {{ result?.hits }} products </span>
                         </div>
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
                         <Sorting v-model="filters.sort" @change="search"/>
                     </div>
-                    <div v-if="products" class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
+                    <div v-if="products" class="grid gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 mt-3">
                         <ProductTile v-for="(product, pIndex) in products"
                                      :key="pIndex"
                                      :product="product.product"

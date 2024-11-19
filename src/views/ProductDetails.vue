@@ -4,22 +4,22 @@
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
           
 
-            <div class="flex gap-3 ">
-                <div class="relative flex overflow-hidden bg-white p-3 rounded w-1/2 items-center">
+            <div class="flex gap-20 mt-3">
+                <div class="relative flex overflow-hidden w-1/2">
                     <ProductImage :product="product"/>
                 </div>
 
-                <div class="bg-white py-4 px-6 rounded flex-grow">
+                <div class="bg-white flex-grow">
                     <div>
+                        <div v-if="product.brand">
+                            <span class="text-slate-600 mb-4 text-lg">{{ product.brand.displayName }}</span>
+                        </div>
                         <h1 class="text-4xl mb-4 font-semibold">
                             {{ product.displayName }}
                         </h1>
+                       
                         <div>
-                            <span class="text-slate-500">Product ID:</span> {{ product.productId }}
-                        </div>
-
-                        <div v-if="product.brand">
-                            <span class="text-slate-500">Brand:</span>  {{ product.brand.displayName }}
+                            <span class="text-slate-600">AWESOME PRODUCT ON SALE</span> 
                         </div>
 
                         <div v-if="product.data && product.data.Description && product.data.Description.value">
@@ -29,7 +29,7 @@
 
                     <div class="mt-6">
                         <div class="mb-2 flex gap-2">
-                            <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">ON SALE</span>
+                            <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900">ON SALE</span>
 
                             <span
                                 v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
@@ -38,18 +38,24 @@
                             </span>
                         </div>
 
-                        <p>
-                            <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice) }}</span>
-                            <span v-if="product.salesPrice !== product.listPrice" class="text-slate-900 line-through">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
+                                {{ $format(product.salesPrice) }}
+                            </h3>
+                            <span v-if="product.salesPrice !== product.listPrice" class="text-slate-900 line-through ml-4">
                                 {{ $format(product.listPrice) }}
                             </span>
-                        </p>
+                        </div>
                     </div>
 
-                    <div class="text-left mt-3">
+                    <div class="text-left mt-5">
                         <button class="w-full text-lg bg-slate-900 hover:bg-slate-800" @click="addToBasket">
                             Add to cart
                         </button>
+                    </div>
+
+                    <div class=" mt-5">
+                        <span class="text-slate-600">Product Id:</span> {{ product.productId }}
                     </div>
                 </div>
             </div>

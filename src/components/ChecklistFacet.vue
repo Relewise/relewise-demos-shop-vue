@@ -1,13 +1,15 @@
 <template>
     <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && allOptions.length > 0">
         <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
-            <label v-if="option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer">
+            <label v-if="option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer w-full">
                 <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
                        type="checkbox"
                        :value="option.value.id"
                        :checked="option.selected"
                        @click="applyFacet(facet.field, option.value.id)">
-                {{ option.value?.displayName ?? option.value.id }} <span class="ml-1 text-slate-400">({{ option.hits }})</span>
+                {{ option.value?.displayName ?? option.value.id }}
+                <span class="flex-grow"></span>
+                <span class="">{{ option.hits }}</span>
             </label>
         </li>
         <li v-if="elementsToShow < allOptions.length">

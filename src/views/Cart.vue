@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto">
+    <div class="container mx-auto mt-3">
         <h1 class="mb-3 text-4xl font-semibold">
             Cart
         </h1>
