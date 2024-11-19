@@ -139,17 +139,19 @@ onBeforeUnmount(() => {
                                      @mouseover="handleMouseOver(category.id)">
                                     <div class="bg-white overflow-x-auto modalcontent pb-10">
                                         <div class="container mx-auto">
-                                            <h4 class="my-4 text-xl">
-                                                {{ category.category.displayName ?? category.category.categoryId }}
+                                            <h4 class="my-4 text-xl -mx-1">
+                                                <RouterLink :to="{ name: 'category', params: { id: category.id } }" class="text-slate-900 hover:underline">
+                                                    {{ category.category.displayName ?? category.category.categoryId }}
+                                                </RouterLink>
                                             </h4>
                                             <ul v-if="category.children.length > 0"
-                                                class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-2">
+                                                class="text-base z-10 list-none grid grid-cols-2 mb-3 -mx-1">
                                                 <li v-for="child in category.children"
                                                     :key="child.category.categoryId ?? ''"
                                                     class="text-sm block">
                                                     <RouterLink
                                                         :to="{ name: 'sub-category', params: { parent: category.id, id: child.category.categoryId } }"
-                                                        class="block px-2 py-2 rounded cursor-pointer hover:underline text-gray-700"
+                                                        class="block py-2 rounded cursor-pointer hover:underline text-gray-700"
                                                         @click="handleMouseLeave">
                                                         {{ child.category.displayName }}
                                                     </RouterLink>
