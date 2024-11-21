@@ -55,9 +55,22 @@
                         <h3 class="text-2xl inline-block">
                             Details
                         </h3>
-                        <dl class="mt-2 border border-solid border-slate-100">
+                        <dl class="mt-2 border border-solid border-slate-100 border-b-0">
                             <dt>Product Id</dt>
                             <dd>{{ product.productId }}</dd>
+                            <template v-for="[ key, value ] in Object.entries(product.data ?? {}).filter((x) => x[1].type.indexOf('Object') === -1 && !['description', 'Image', 'ImageUrl', 'image'].includes(x[0]))" :key="key">
+                                <dt>
+                                    {{ key }}
+                                </dt>
+                                <dd class="break-all">
+                                    <template v-if="value && value.value.$values">
+                                        {{ value.value.$values.join(', ') }}
+                                    </template>
+                                    <template v-else>
+                                        {{ value.value }}
+                                    </template>
+                                </dd>
+                            </template>
                         </dl>
                     </div>
                 </div>
@@ -161,10 +174,10 @@ dl {
 
 dt {
   grid-column-start: 1;
-  @apply bg-slate-100 px-4 py-2 border-b border-solid border-slate-100;
+  @apply bg-gray-100 px-4 py-2 border-b border-solid border-gray-100 font-medium capitalize;
 }
 
 dd {
   grid-column-start: 2;
-  @apply p-2 border-b border-solid border-slate-100 pl-10;
+  @apply p-2 border-b border-solid border-gray-100 pl-2;
 }</style>

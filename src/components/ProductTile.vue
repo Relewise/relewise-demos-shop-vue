@@ -54,7 +54,7 @@ const { product } = toRefs(props);
         <div class="mt-2">
             <div class="text-left">
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
-                <h5 class="tracking-tight text-lg font-semibold leading-tight overflow-hidden text-ellipsis h-10">
+                <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
                     {{ product.displayName }}
                 </h5>
             </div>

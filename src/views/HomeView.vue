@@ -222,7 +222,7 @@ async function recommend() {
                     Most popular products right now
                 </h2>
                 <div class="w-full overflow-x-scroll pb-2">
-                    <relewise-popular-products class=" flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+                    <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
                 </div>
             </div>
             <div class="reverse-waves"></div>
