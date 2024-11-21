@@ -18,7 +18,9 @@
                         </h1>
 
                         <div v-if="product.data && product.data.description && product.data.description.value">
-                            <span class="text-slate-600">{{ product.data.description.value }}</span> 
+                            <p class="text-slate-600 line-clamp-3">
+                                {{ product.data.description.value }}
+                            </p> 
                         </div>
                     </div>
 
@@ -49,8 +51,14 @@
                         </button>
                     </div>
 
-                    <div class=" mt-5">
-                        <span class="text-slate-600">Product Id:</span> {{ product.productId }}
+                    <div class="mt-5">
+                        <h3 class="text-2xl inline-block">
+                            Details
+                        </h3>
+                        <dl class="mt-2 border border-solid border-slate-100">
+                            <dt>Product Id</dt>
+                            <dd>{{ product.productId }}</dd>
+                        </dl>
                     </div>
                 </div>
             </div>
@@ -144,3 +152,19 @@ function addToBasket() {
     trackingService.trackCart(basketService.model.value.lineItems);
 }
 </script>
+
+<style lang="scss" scoped>
+dl {
+  display: grid;
+  grid-template-columns: max-content auto;
+}
+
+dt {
+  grid-column-start: 1;
+  @apply bg-slate-100 px-4 py-2 border-b border-solid border-slate-100;
+}
+
+dd {
+  grid-column-start: 2;
+  @apply p-2 border-b border-solid border-slate-100 pl-10;
+}</style>

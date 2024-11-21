@@ -2,7 +2,7 @@
     <div class="category-page container mx-auto">
         <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
 
-        <h1 class="text-xl lg:text-4xl font-semibold my-6">
+        <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
             {{ category?.displayName }}
         </h1>
 
@@ -43,14 +43,14 @@
                         </div>
                         <Sorting v-model="filters.sort" @change="search"/>
                     </div>
-                    <div v-if="products" class="grid gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 mt-3">
+                    <div v-if="products" class="grid gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in products"
                                      :key="pIndex"
                                      :product="product.product"
                                      :is-promotion="product.isPromotion"/>
                     </div>
 
-                    <div class="py-3 flex justify-center">
+                    <div class="py-3 flex justify-center mt-10">
                         <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" @change="search"/>
                     </div>
                 </div>

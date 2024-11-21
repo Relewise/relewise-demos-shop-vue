@@ -1,9 +1,9 @@
 <template>
     <div v-if="pageCount > 1" class="flex items-center gap-2">
-        <button :disabled="isFirstPage" class="item" @click="selectPage(currentPage - 1)">
-            <ChevronLeftIcon class="h-5 w-3"/>
+        <button v-if="!isFirstPage" class="item" @click="selectPage(currentPage - 1)">
+            <ChevronLeftIcon class="h-4 w-4 mr-2"/> Previous
         </button>
-        <button
+        <!-- <button
             v-for="item in range"
             :key="item"
             :disabled="currentPage === item || typeof item !== 'number'"
@@ -11,16 +11,16 @@
             :class="{'active': modelValue == item}"
             @click="selectPage(Number(item))">
             {{ item }}
-        </button>
+        </button> -->
         
-        <button :disabled="isLastPage" class="item" @click="selectPage(currentPage + 1)">
-            <ChevronRightIcon class="h-5 w-3"/>
+        <button v-if="!isLastPage" class="item" @click="selectPage(currentPage + 1)">
+            Next <ChevronRightIcon class="h-4 w-4 ml-2"/>
         </button>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/solid';
 import { useOffsetPagination } from '@vueuse/core';
 import { toRefs, computed } from 'vue';
 const props = defineProps({ 
@@ -93,14 +93,25 @@ function selectPage(page: number) {
 </script>
 
 <style scoped lang="scss">
+//.item {
+//    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-slate-800 font-semibold bg-white hover:bg-slate-200;
+//
+//    &:disabled {
+//        @apply opacity-50 pointer-events-none;
+//        &.active {
+//            @apply bg-brand-200 text-brand-800 pointer-events-none opacity-100;
+//        }        
+//    }
+//}
+
 .item {
-    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-slate-800 font-semibold bg-white hover:bg-slate-200;
+    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-white font-semibold bg-slate-900 hover:bg-slate-800 w-48 justify-center;
 
     &:disabled {
-        @apply opacity-50 pointer-events-none;
-        &.active {
-            @apply bg-brand-200 text-brand-800 pointer-events-none opacity-100;
-        }        
-    }
+       @apply opacity-50 pointer-events-none;
+       &.active {
+           @apply bg-brand-200 text-brand-800 pointer-events-none opacity-100;
+       }        
+   }
 }
 </style>
