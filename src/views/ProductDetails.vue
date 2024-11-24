@@ -37,7 +37,7 @@
                             <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">ON SALE</span>
 
                             <span
-                                v-if="product.data && product.data.soldOut && product.data.soldOut.value === true"
+                                v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
                                 class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">
                                 SOLD OUT
                             </span>
@@ -45,7 +45,7 @@
 
                         <p>
                             <span class="text-zinc-900 ">
-                                {{ product.data?.description.value }}
+                                {{ product.data?.Description.value }}
                             </span>
                         </p>
                     </div>

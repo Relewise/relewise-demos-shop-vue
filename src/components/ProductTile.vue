@@ -45,7 +45,7 @@ const { product } = toRefs(props);
                     ON SALE
                 </span>
                 <span
-                    v-if="product.data && product.data.soldOut && product.data.soldOut.value === 'true'"
+                    v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white">
                     SOLD OUT
                 </span>
@@ -61,8 +61,8 @@ const { product } = toRefs(props);
                     {{ product.displayName }}
                 </h5>
                 <div v-if="product.variant" class="text-sm text-zinc-500">
-                    <div>Color: {{ product.variant.data?.color.value }}</div>
-                    <div>Material: {{ product.variant.data?.material.value }}</div>
+                    <div>Color: {{ product.variant.data?.Color.value }}</div>
+                    <div>Material: {{ product.variant.data?.Material.value }}</div>
                 </div>
             </div>
             <div class="mt-2 flex items-center justify-between">

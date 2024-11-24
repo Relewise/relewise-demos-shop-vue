@@ -111,7 +111,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
                 ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
-                ${product.data && product.data.soldOut && product.data.soldOut.value === 'true' ? html`<span class="on-sale">SOLD OUT</span>` : html``}
+                ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="on-sale">SOLD OUT</span>` : html``}
             </div>
             <div class="padding">
             <div class="text-left">
