@@ -46,7 +46,7 @@
                     </div>
 
                     <div class="text-left mt-5">
-                        <button class="w-full text-lg bg-slate-900 hover:bg-slate-800" @click="addToBasket">
+                        <button class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700" :class="buttonClass" @click="addToBasket">
                             Add to cart
                         </button>
                     </div>
@@ -120,7 +120,7 @@ import Breadcrumb from '../components/Breadcrumb.vue';
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
 const route = useRoute();
-
+const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
@@ -172,6 +172,11 @@ function addToBasket() {
     });
 
     trackingService.trackCart(basketService.model.value.lineItems);
+
+    buttonClass.value = 'animate-bounce'; // Add Tailwind's bounce class
+    setTimeout(() => {
+        buttonClass.value = ''; // Remove the animation class
+    }, 2000); // Match the animation duration (500ms for `animate-bounce`)
 }
 </script>
 
