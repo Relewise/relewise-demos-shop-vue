@@ -58,7 +58,7 @@ const { product } = toRefs(props);
                     {{ product.displayName }}
                 </h5>
             </div>
-            <div class="mt-2 flex items-center justify-between">
+            <div class="my-2 flex items-center justify-between">
                 <p>
                     <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice)
                     }}</span>

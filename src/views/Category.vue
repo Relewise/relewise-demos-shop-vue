@@ -1,5 +1,5 @@
 <template>
-    <div class="category-page container mx-auto">
+    <div class="category-page container mx-auto p-2 xl:p-0">
         <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
 
         <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
@@ -32,7 +32,7 @@
             </div>
             <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
-                    <div class="grid grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start">
                         <div>
                             <span v-if="result.hits > 0" class="text-sm lg:text-base whitespace-nowrap">
                                 Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of
@@ -43,7 +43,7 @@
                         </div>
                         <Sorting v-model="filters.sort" @change="search"/>
                     </div>
-                    <div v-if="products" class="grid gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
+                    <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in products"
                                      :key="pIndex"
                                      :product="product.product"

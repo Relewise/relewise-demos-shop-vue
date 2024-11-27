@@ -228,7 +228,7 @@ async function recommend() {
             <div class="reverse-waves"></div>
         </div>
 
-        <div v-if="brands?.recommendations" class="container mx-auto">
+        <div v-if="brands?.recommendations" class="container mx-auto p-2 xl:p-0">
             <h2 class="text-3xl font-semibold mb-3 text-center">
                 Shop our popular brands
             </h2>

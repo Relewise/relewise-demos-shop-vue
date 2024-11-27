@@ -1,11 +1,11 @@
 <template>
-    <div class="container mx-auto">
+    <div class="container mx-auto px-2 lg:p-0">
         <div v-if="product" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
 
-            <div class="flex gap-20 mt-3">
-                <div class="relative flex overflow-hidden w-1/2">
-                    <ProductImage :product="product"/>
+            <div class="flex flex-wrap gap-8 xl:gap-20 mt-3">
+                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
+                    <ProductImage :product="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>
 
                 <div class="bg-white flex-grow">
@@ -58,7 +58,7 @@
                         <dl class="mt-2 border border-solid border-slate-100 border-b-0">
                             <dt>Product Id</dt>
                             <dd>{{ product.productId }}</dd>
-                            <template v-for="[ key, value ] in Object.entries(product.data ?? {}).filter((x) => x[1].type.indexOf('Object') === -1 && !['description', 'Image', 'ImageUrl', 'image'].includes(x[0]))" :key="key">
+                            <template v-for="[ key, value ] in details" :key="key">
                                 <dt>
                                     {{ key }}
                                 </dt>
@@ -112,7 +112,7 @@ import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
@@ -123,6 +123,15 @@ const route = useRoute();
 
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+
+const details = computed(() => {
+    if (!product.value) return [];
+
+    return Object.entries(product.value.data ?? {})
+        .filter((x) => 
+            x[1].type.indexOf('Object') === -1 && 
+            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets'].includes(x[0]));
+});
 
 async function init() {
     const id = route.params.id;

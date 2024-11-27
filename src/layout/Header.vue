@@ -58,15 +58,14 @@ onBeforeUnmount(() => {
 
 <template>
     <header class="border-b border-solid border-slate-100 bg-white" @mouseleave="handleMouseLeave">
-        <div class="container mx-auto">
-            <div class="grid xl:flex gap-8 py-2" @mouseover="handleMouseLeave">
+        <div class="container mx-auto px-2 xl:p-0">
+            <div class="grid xl:flex gap-2 xl:gap-8 py-2" @mouseover="handleMouseLeave">
                 <div class="flex items-center">
                     <div class="xl:hidden">
                         <SideMenu :main-categories="mainCategories"/>
                     </div>
                     <RouterLink to="/"
                                 class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150">
-                        <!-- <h1>Relewise <span class="text-white bg-slate-900 rounded-sm px-1">shop</span></h1>               -->
                         <img src="/demoshopwise.png" style="height: 40px;">
                     </RouterLink>
                 </div>
@@ -74,9 +73,9 @@ onBeforeUnmount(() => {
                     <div class="xl:items-center flex-grow">
                         <SearchOverlay/>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-6">
                         <Popover placement="bottom-end">
-                            <div class="mr-4 flex items-center gap-4 leading-none rounded-lg bg-slate-100 px-4 py-2 cursor-pointer hover:bg-slate-200 text-slate-800">
+                            <div class="flex items-center gap-4 leading-none rounded-lg bg-slate-100 px-4 py-2 cursor-pointer hover:bg-slate-200 text-slate-800 hidden xl:flex">
                                 <div>
                                     <div class="font-medium text-sm">
                                         {{ contextStore.context.value.displayName }}
@@ -98,7 +97,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </template>
                         </Popover>
-                        <RouterLink to="/cart" class="relative flex flex-col items-center  text-slate-600 ">
+                        <RouterLink to="/cart" class="relative flex flex-col items-center text-slate-600">
                             <ShoppingBagIcon class="h-8 w-8"/>
                             <span class="text-[9px] mt-1 font-bold">CART</span>
                             <span v-if="lineItemsCount > 0"
@@ -106,18 +105,6 @@ onBeforeUnmount(() => {
                                 {{ lineItemsCount }}
                             </span>
                         </RouterLink>
-                        <!-- <Popover placement="bottom-end">
-                            <div
-                                class="relative flex flex-col items-center rounded-full  text-slate-600 cursor-pointer">
-                                <AdjustmentsHorizontalIcon class="h-8 w-8"/>
-                                <span class="text-[9px] mt-1 font-bold">SETTINGS</span>
-                            </div>
-                            <template #content>
-                                <div class="w-96">
-                                    <ContextSwitcher/>
-                                </div>
-                            </template>
-                        </Popover> -->
                     </div>
                 </div>
             </div>
@@ -140,7 +127,7 @@ onBeforeUnmount(() => {
                                     <div class="bg-white overflow-x-auto modalcontent pb-10">
                                         <div class="container mx-auto">
                                             <h4 class="my-4 text-xl -mx-1">
-                                                <RouterLink :to="{ name: 'category', params: { id: category.id } }" class="text-slate-900 hover:underline">
+                                                <RouterLink :to="{ name: 'category', params: { id: category.id } }" class="text-slate-900 hover:underline" @click="handleMouseLeave">
                                                     {{ category.category.displayName ?? category.category.categoryId }}
                                                 </RouterLink>
                                             </h4>

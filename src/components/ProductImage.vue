@@ -33,6 +33,8 @@ const error = ref(false);
     overflow: hidden;
     position: relative;
     justify-content: center;
+    height: 275px;
+    width: 100%;
 }
 
 .image-container:after {

@@ -46,6 +46,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 height: 275px;
             }
             .image-container:after {
+                height: 275px;
                 background-image: radial-gradient(ellipse, #bcb6b300, hsla(20, 6%, 72%, .125) 70%);
     bottom: 0;
     content: "";

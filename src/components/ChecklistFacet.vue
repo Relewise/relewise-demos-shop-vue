@@ -13,7 +13,7 @@
             </label>
         </li>
         <li v-if="elementsToShow < allOptions.length">
-            <button class="bg-slate-500 py-1 px-2" @click="elementsToShow = allOptions.length">
+            <button class="bg-slate-900 hover:bg-slate-700 py-1 px-2" @click="elementsToShow = allOptions.length">
                 Show all
             </button>
         </li>

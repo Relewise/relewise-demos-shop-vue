@@ -1,15 +1,20 @@
 <template>
-    <div class="container mx-auto mt-3">
+    <div class="container mx-auto mt-3 p-2 xl:p-0">
         <h1 class="mb-8 text-4xl font-semibold">
             <span class="underline--yellow inline-block">Cart</span><span class="text-brand1">.</span>
         </h1>
-        <div v-if="isEmpty">
-            Cart is empty
+        <div v-if="isEmpty" class="bg-neutral-200 p-6 flex justify-between items-center w-full">
+            <div class="flex-grow">
+                Cart is empty
+            </div>
+            <RouterLink to="/" class="bg-slate-900 px-6 py-2.5 font-semibold text-sm text-white rounded shadow-sm">
+                Continue shopping
+            </RouterLink>
         </div>
         <div class="justify-center md:flex md:space-x-6 xl:px-0">
             <div class="md:w-3/5">
                 <div v-for="item in model.lineItems" :key="item.product.productId ?? ''" class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start">
-                    <ProductImage :product="item.product" class="w-full rounded sm:w-20 xl:w-48"/>
+                    <ProductImage :product="item.product" class="w-full rounded sm:!w-20 xl:!w-60"/>
                     <div class="sm:ml-4 flex-grow">
                         <div class="mt-5 sm:mt-0">
                             <p v-if="item.product.brand" class="mt-1 text-gray-500">
@@ -73,13 +78,13 @@
             </div>
         </div>
 
-        <div v-if="result" class="scrollbar mt-8">
+        <div v-if="result && !isEmpty" class="scrollbar mt-8">
             <h2 class="text-2xl font-semibold mb-3">
                 People also buy
             </h2>
             <div class="w-full overflow-x-scroll">
-                <div class="flex flex-row gap-3">
-                    <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex" class="w-[250px]">
+                <div class="flex flex-row gap-6">
+                    <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex" class="min-w-[250px] pb-3">
                         <ProductTile :product="product"/>
                     </div>
                 </div>
