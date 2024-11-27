@@ -43,11 +43,11 @@
                             </span>
                         </div>
 
-                        <p>
+                        <!-- <p>
                             <span class="text-zinc-900 ">
                                 {{ product.data?.Description.value }}
                             </span>
-                        </p>
+                        </p> -->
                     </div>
 
                     <div class="mt-2 flex items-center justify-between">
@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <div v-if="product!.data && product!.data.soldOut && product!.data.soldOut.value == 'true'">
+        <div v-if="product!.data && product!.data.SoldOut && product!.data.SoldOut.value == 'true'">
             <div class="my-3">
                 <div class="text-2xl font-semibold">
                     Sold out....consider an alternative
