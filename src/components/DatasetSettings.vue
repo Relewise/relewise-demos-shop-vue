@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white rounded p-6">
+    <div class="bg-white rounded py-6">
         <div class="flex items-center mb-8">
             <h1 class="text-4xl">
                 Settings

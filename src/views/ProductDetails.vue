@@ -1,35 +1,32 @@
 <template>
-    <div>
-        <div v-if="product" class="mb-10">
+    <div class="container mx-auto px-2 lg:p-0">
+        <div v-if="product" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
-          
 
-            <div class="flex gap-3 ">
-                <div class="relative flex h-[275px] overflow-hidden bg-white p-3 rounded">
-                    <ProductImage :product="product"/>
+            <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
+                    <ProductImage :product="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>
 
-                <div class="bg-white py-4 px-6 rounded flex-grow">
+                <div class="bg-white flex-grow">
                     <div>
+                        <div v-if="product.brand">
+                            <span class="text-slate-600 mb-4 text-lg">{{ product.brand.displayName }}</span>
+                        </div>
                         <h1 class="text-4xl mb-4 font-semibold">
                             {{ product.displayName }}
                         </h1>
-                        <div>
-                            <span class="text-zinc-500">Product ID:</span> {{ product.productId }}
-                        </div>
 
-                        <div v-if="product.brand">
-                            <span class="text-zinc-500">Brand:</span>  {{ product.brand.displayName }}
-                        </div>
-
-                        <div v-if="product.data && product.data.Description && product.data.Description.value">
-                            <span class="text-zinc-600">{{ product.data.Description.value }}</span> 
+                        <div v-if="product.data && product.data.description && product.data.description.value">
+                            <p class="text-slate-600 line-clamp-3">
+                                {{ product.data.description.value }}
+                            </p> 
                         </div>
                     </div>
 
                     <div class="mt-6">
                         <div class="mb-2 flex gap-2">
-                            <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">ON SALE</span>
+                            <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900">ON SALE</span>
 
                             <span
                                 v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
@@ -38,44 +35,73 @@
                             </span>
                         </div>
 
-                        <p>
-                            <span class="text-lg font-semibold text-zinc-900 mr-1 leading-none">{{ $format(product.salesPrice) }}</span>
-                            <span v-if="product.salesPrice !== product.listPrice" class="text-zinc-900 line-through">
+                        <div>
+                            <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
+                                {{ $format(product.salesPrice) }}
+                            </h3>
+                            <span v-if="product.salesPrice !== product.listPrice" class="text-slate-900 line-through ml-4">
                                 {{ $format(product.listPrice) }}
                             </span>
-                        </p>
+                        </div>
                     </div>
 
-                    <div class="text-left mt-3">
-                        <button @click="addToBasket">
+                    <div class="text-left mt-5">
+                        <button class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700" :class="buttonClass" @click="addToBasket">
                             Add to cart
                         </button>
+                    </div>
+
+                    <div class="mt-5">
+                        <h3 class="text-2xl inline-block">
+                            Details
+                        </h3>
+                        <dl class="mt-2 border border-solid border-slate-100 border-b-0">
+                            <dt>Product Id</dt>
+                            <dd>{{ product.productId }}</dd>
+                            <template v-for="[ key, value ] in details" :key="key">
+                                <dt>
+                                    {{ key }}
+                                </dt>
+                                <dd class="break-all">
+                                    <template v-if="value && value.value.$values">
+                                        {{ value.value.$values.join(', ') }}
+                                    </template>
+                                    <template v-else>
+                                        {{ value.value }}
+                                    </template>
+                                </dd>
+                            </template>
+                        </dl>
                     </div>
                 </div>
             </div>
         </div>
         <relewise-product-recommendation-batcher>
-            <div class="mb-10">
-                <div class="text-2xl mb-2 font-semibold">
+            <div class="mb-16 scrollbar">
+                <h2 class="text-2xl mb-2 font-semibold">
                     Purchased with the product
+                </h2>
+                <div class="w-full overflow-x-scroll">
+                    <relewise-purchased-with-product
+                        :key="productId" 
+                        class="flex flex-row gap-3"
+                        number-of-recommendations="15" 
+                        :displayed-at-location="defaultSettings.displayedAtLocation" 
+                        :product-id="productId"/>
                 </div>
-                <relewise-purchased-with-product
-                    :key="productId" 
-                    class="grid grid-cols-2 lg:grid-cols-5"
-                    number-of-recommendations="5" 
-                    :displayed-at-location="defaultSettings.displayedAtLocation" 
-                    :product-id="productId"/>
             </div>
-            <div class="">
-                <div class="text-2xl mb-2 font-semibold">
+            <div class="scrollbar">
+                <h2 class="text-2xl mb-2 font-semibold">
                     Products viewed after viewing the product
+                </h2>
+                <div class="w-full overflow-x-scroll">
+                    <relewise-products-viewed-after-viewing-product
+                        :key="productId" 
+                        class="flex flex-row gap-3"
+                        number-of-recommendations="15" 
+                        :displayed-at-location="defaultSettings.displayedAtLocation" 
+                        :product-id="productId"/>
                 </div>
-                <relewise-products-viewed-after-viewing-product
-                    :key="productId" 
-                    class="grid grid-cols-2 lg:grid-cols-5"
-                    number-of-recommendations="5" 
-                    :displayed-at-location="defaultSettings.displayedAtLocation" 
-                    :product-id="productId"/>
             </div>
         </relewise-product-recommendation-batcher>
     </div>
@@ -86,7 +112,7 @@ import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
@@ -94,9 +120,18 @@ import Breadcrumb from '../components/Breadcrumb.vue';
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
 const route = useRoute();
-
+const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+
+const details = computed(() => {
+    if (!product.value) return [];
+
+    return Object.entries(product.value.data ?? {})
+        .filter((x) => 
+            x[1].type.indexOf('Object') === -1 && 
+            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets'].includes(x[0]));
+});
 
 async function init() {
     const id = route.params.id;
@@ -137,5 +172,26 @@ function addToBasket() {
     });
 
     trackingService.trackCart(basketService.model.value.lineItems);
+
+    buttonClass.value = 'animate-bounce'; // Add Tailwind's bounce class
+    setTimeout(() => {
+        buttonClass.value = ''; // Remove the animation class
+    }, 2000); // Match the animation duration (500ms for `animate-bounce`)
 }
 </script>
+
+<style lang="scss" scoped>
+dl {
+  display: grid;
+  grid-template-columns: max-content auto;
+}
+
+dt {
+  grid-column-start: 1;
+  @apply bg-gray-100 px-4 py-2 border-b border-solid border-gray-100 font-medium capitalize;
+}
+
+dd {
+  grid-column-start: 2;
+  @apply p-2 border-b border-solid border-gray-100 pl-2;
+}</style>

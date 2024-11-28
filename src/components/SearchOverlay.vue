@@ -282,29 +282,34 @@ function searchFor(term: string) {
 
 <template>
     <div
-        class="inline-flex overflow-hidden rounded-full w-full xl:max-w-2xl border-1 border-white focus:border-zinc-100 relative">
-        <XMarkIcon v-if="open" class="h-6 w-6 text-zinc-600 absolute right-14 top-2.5 cursor-pointer" @click="close"/>
+        class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+        <span class="flex items-center bg-slate-100 rounded-none px-3">
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
+        </span>
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
         <input v-model="searchTerm"
                type="text"
                placeholder="Search..."
-               class="!rounded-none focus:!border-zinc-100 focus:!ring-0"
+               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
                @keyup="typeAHeadSearch()">
-        <button class="bg-zinc-300 rounded-none px-3" @click="search()">
-            <MagnifyingGlassIcon class="h-6 w-6 text-zinc-600"/>
-        </button>
     </div>
 
     <Teleport to="#modal">
         <div v-if="open" id="search-result-overlay" class="modal">
-            <div v-if="result" class="container mx-auto pt-3 pb-10">
-                <div class="flex gap-3">
+            <div v-if="result" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
+                <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
+                    Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
+                </h2> 
+                <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
-                             class="p-3 bg-white mb-3">
-                            <span class="font-semibold">Suggestions</span>
+                             class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">
+                            <h3 class="font-semibold text-lg">
+                                Suggestions
+                            </h3>
                             <a v-for="(prediction) in predictionsList"
                                :key="prediction.term ?? ''"
-                               class="mb-1 block cursor-pointer"
+                               class="mb-1 block cursor-pointer text-slate-900"
                                @click.prevent="searchFor(prediction.term ?? '')">
                                 {{ prediction.term }}
                             </a>
@@ -319,10 +324,7 @@ function searchFor(term: string) {
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
-                        <div class="lg:flex lg:gap-6 p-3 items-end bg-white rounded mb-3">
-                            <h2 v-if="filters.term" class="text-xl lg:text-3xl">
-                                Showing results for <strong>{{ filters.term }}</strong>
-                            </h2> 
+                        <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
                             <span v-if="result.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{ result?.hits < pageSize ? result?.hits : page * pageSize }} of {{ result?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
@@ -344,7 +346,7 @@ function searchFor(term: string) {
                             No products found
                         </div>
                         <div v-else>
-                            <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 <ProductTile v-for="(product, index) in products"
                                              :key="index"
                                              :product="product.product"
@@ -373,10 +375,10 @@ function searchFor(term: string) {
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 107px;
+$headerHeight: 109px;
 
 .modal {
-    @apply bg-zinc-50 overflow-scroll;
+    @apply bg-white overflow-y-scroll;
     position: fixed;
     z-index: 999;
     top: $headerHeight; // height of header

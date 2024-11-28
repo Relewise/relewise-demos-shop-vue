@@ -63,8 +63,15 @@ async function getCategories(searcher: Searcher) {
             :has-child-categories="hasChildCategories"
             :main-categories="mainCategories"/>
 
-    <div id="main-container" class="container px-2 mx-auto pb-10 flex-grow relative">
-        <RouterView/>
+    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
+        <RouterView v-slot="{ Component }">
+            <Transition enter-active-class="transition-opacity duration-500"
+                        enter-from-class="opacity-0"
+                        leave-active-class="transition-opacity duration-500"
+                        leave-to-class="opacity-0">
+                <component :is="Component"/>
+            </Transition>
+        </RouterView>
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
 
@@ -74,26 +81,17 @@ async function getCategories(searcher: Searcher) {
 </template>
 
 <style lang="scss">
-.scrollable-element {
-    &::-webkit-scrollbar {
-        height: 4px !important;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: rgba(155, 155, 155, 0.5);
-        border-radius: 20px;
-        border: transparent;
-    }
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
-$headerHeight: 104px;
+$headerHeight: 106px;
 
 .navigationmodal {
-    @apply bg-white overflow-hidden;
+    @apply bg-white overflow-hidden border-t border-solid border-slate-100;
     position: fixed;
     z-index: 1000;
     top: $headerHeight; // height of header

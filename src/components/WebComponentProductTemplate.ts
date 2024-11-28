@@ -7,8 +7,14 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
     return html`
         <style>
             a {
+                width: 250px;
+                padding: 8px;
                 text-decoration: none;
                 color: inherit;
+            }
+
+             a:hover {
+                color: #1A44BD;
             }
 
             img {
@@ -22,10 +28,8 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 display: flex; 
                 overflow: hidden; 
                 position: relative; 
-                padding-top: 0.75rem;
-                padding-bottom: 0.75rem; 
+
                 flex-direction: column; 
-                border-radius: 0.25rem; 
                 background-color: #ffffff; 
             }
 
@@ -33,11 +37,18 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 display: flex; 
                 overflow: hidden; 
                 position: relative; 
-                margin-left: 0.75rem;
-                margin-right: 0.75rem; 
                 justify-content: center; 
                 height: 275px;
             }
+            .image-container:after {
+                height: 275px;
+                background-image: radial-gradient(ellipse, #bcb6b300, hsla(20, 6%, 72%, .125) 70%);
+                bottom: 0;
+                content: "";
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;}
 
             .image {
                 object-fit: cover;
@@ -55,14 +66,28 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 line-height: 1.25rem; 
                 font-weight: 500; 
                 text-align: center; 
-                color: #ffffff; 
-                background-color: #000000; 
+                color: #7f1d1d; 
+                background-color: #fecaca; 
+            }
+
+             .sold-out {
+                position: absolute; 
+                top: 0; 
+                left: 0; 
+                padding-left: 0.5rem;
+                padding-right: 0.5rem; 
+                margin: 0.5rem; 
+                border-radius: 9999px; 
+                font-size: 0.875rem;
+                line-height: 1.25rem; 
+                font-weight: 500; 
+                text-align: center; 
+                color: #fff; 
+                background-color: #000; 
             }
 
             .padding {
-                padding-left: 0.75rem;
-                padding-right: 0.75rem; 
-                margin-top: 0.75rem; 
+                margin-top: 0.25rem; 
             }
 
             .text-left {
@@ -76,12 +101,12 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             }
 
             .display-name {
-                height: 2.5rem; 
+                height: 43px; 
                 font-weight: 600; 
                 letter-spacing: -0.025em; 
                 line-height: 1.25rem; 
-                font-size: 1rem;
-                margin-top: 0.5rem;
+                font-size: 18px;
+                margin-top: 0.0rem;
                 margin-bottom: 0;
                 text-overflow: ellipsis;
                 overflow: hidden;
@@ -89,12 +114,13 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
 
             .price-container {
                 display: flex; 
-                margin-top: 0.5rem; 
+                margin-top: 0; 
                 justify-content: space-between; 
                 align-items: center; 
             }
 
             .sales-price {
+                color: #000;
                 margin-right: 0.25rem; 
                 font-size: 1.125rem;
                 line-height: 1.75rem; 
@@ -111,7 +137,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
                 ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
-                ${product.data && product.data.SoldOut && product.data.SoldOut.value === true ? html`<span class="on-sale">SOLD OUT</span>` : html``}
+                ${product.data && product.data.SoldOut && product.data.SoldOut.value === true ? html`<span class="sold-out">SOLD OUT</span>` : html``}
             </div>
             <div class="padding">
             <div class="text-left">

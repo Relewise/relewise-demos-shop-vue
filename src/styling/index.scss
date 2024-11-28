@@ -4,18 +4,22 @@
 @tailwind utilities;
 
 :root {
-    --slider-tooltip-bg: #3764E4;
-    --slider-connect-bg: #3764E4;
-    --slider-handle-ring-color: rgba(55,100,228,.188);
+    --slider-tooltip-bg: #334155;
+    --slider-connect-bg: #334155;
+    --slider-handle-ring-color: rgba(55, 100, 228, .188);
 }
 
-html, body { @apply h-full; }
+html,
+body {
+    @apply h-full;
+}
+
 #app {
-    @apply flex flex-col min-h-full bg-zinc-100;
+    @apply flex flex-col min-h-full;
 }
 
 input[type="text"] {
-    @apply block w-full rounded-md border border-zinc-100 py-2.5 px-4 bg-zinc-100 shadow-sm focus:border-zinc-300 focus:ring-1 focus:ring-zinc-200 focus:outline-none;
+    @apply block w-full rounded-md border border-slate-100 py-2.5 px-4 bg-slate-100 shadow-sm focus:border-slate-300 focus:ring-1 focus:ring-slate-200 focus:outline-none;
 
     &.small {
         @apply py-1.5 px-2;
@@ -43,5 +47,135 @@ a {
 }
 
 select {
-    @apply mt-1 block w-full rounded-md border-zinc-100 py-2.5 px-4 bg-zinc-100 shadow-sm focus:border-zinc-300 focus:ring focus:ring-zinc-200 focus:ring-opacity-50 focus:outline-none;
+    @apply mt-1 block w-full rounded-md border-slate-100 py-2.5 px-4 bg-slate-100 shadow-sm focus:border-slate-300 focus:ring focus:ring-slate-200 focus:ring-opacity-50 focus:outline-none;
+}
+
+@font-face {
+    font-family: 'ItalianPlate';
+    src: url('/fonts/ItalianPlateNo2Expanded-Bold.woff2') format('woff2');
+    font-weight: bold;
+    /* optional but recommended */
+    font-style: normal;
+    /* adjust if italic style */
+}
+
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: 'ItalianPlate', sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.text-brand1 {
+    color: #3764E4;
+}
+
+.text-brand2 {
+    color: #FFC1D7;
+}
+
+.underline--yellow {
+    position: relative;
+    z-index: 1;
+    &::after {
+        background: #FFD93B;
+        border-radius: 2px;
+        bottom: 3px;
+        content: "";
+        display: block;
+        height: 2px;
+        left: 0;
+        position: absolute;
+        transition: width .3s ease-in-out;
+        width: 100%;
+        z-index: -1;
+    }
+}
+
+
+.brand1 {
+    background-color: #3764E4;
+}
+
+.brand2 {
+    background-color: #FFC1D7;
+}
+
+.brand3 {
+    background-color: #53CF78;
+}
+
+.brand4 {
+    background-color: #FFD93B;
+}
+
+.brand5 {
+    background-color: #e9effb;
+}
+
+.brand6 {
+    background-color: #e0d5d5;
+}
+
+/* Hover effect */
+.brand1:hover,
+.brand2:hover,
+.brand3:hover,
+.brand4:hover,
+.brand5:hover,
+.brand6:hover {
+    filter: brightness(1.1);
+    /* Increase brightness to lighten the color */
+}
+
+.waves {
+    height: 88px;
+    background-image: url("/waves.svg");
+}
+
+.reverse-waves {
+    height: 88px;
+    background-image: url("/waves.svg");
+    transform: rotate(180deg);
+}
+
+.scrollbar {
+    scrollbar-width: thin !important;
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #000000 !important;
+  }
+  *::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px transparent;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar {
+    height: 8px;
+    //background-color: #222222;
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: #222222;
+    border-radius: 8px;
+  }
+}
+
+.scrollable-element {
+    &::-webkit-scrollbar {
+        height: 4px !important;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(155, 155, 155, 0.5);
+        border-radius: 20px;
+        border: transparent;
+    }
 }

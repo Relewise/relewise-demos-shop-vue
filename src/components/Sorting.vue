@@ -1,18 +1,21 @@
 <template>
-    <select v-model="internalSelectedOption" class="text-sm lg:text-base w-full lg:w-1/6" @on="$attrs">
-        <option value="">
-            Relevance
-        </option>
-        <option value="Popular">
-            Popular
-        </option>
-        <option value="SalesPriceDesc">
-            Sales Price desc
-        </option>
-        <option value="SalesPriceAsc">
-            Sales Price asc
-        </option>
-    </select>
+    <label class="flex">
+        <span class="text-slate-600 mr-2">Sorting by</span>
+        <select v-model="internalSelectedOption" class="!outline-0 m-0 shadow-none !border-0 bg-white font-medium !p-0 w-[175px]" @on="$attrs">
+            <option value="">
+                Relevance
+            </option>
+            <option value="Popular">
+                Popular
+            </option>
+            <option value="SalesPriceDesc">
+                Sales Price desc
+            </option>
+            <option value="SalesPriceAsc">
+                Sales Price asc
+            </option>
+        </select>
+    </label>
 </template>
 
 <script lang="ts" setup>
