@@ -10,9 +10,6 @@
                         :to="`/category/${category.categoryId}`"
                         class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800">
                 <div class="overflow-hidden rounded-full h-[150px] w-[150px]" :class="`brand${index+1}`">
-                    <!-- <img 
-                         :alt="category.displayName ?? category.categoryId ?? ''"
-                         class="h-[150px] w-[150px]"> -->
                 </div>
                 <h4 class="font-bold mt-2">
                     {{ category.displayName }}

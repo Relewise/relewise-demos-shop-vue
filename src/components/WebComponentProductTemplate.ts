@@ -9,7 +9,6 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             a {
                 width: 250px;
                 padding: 8px;
-                //background-color: #f3f4f6 !important;
                 text-decoration: none;
                 color: inherit;
             }
@@ -31,7 +30,6 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 position: relative; 
 
                 flex-direction: column; 
-                //border-radius: 0.25rem; 
                 background-color: #ffffff; 
             }
 

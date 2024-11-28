@@ -1,7 +1,7 @@
 <template>
     <div v-if="result" class="container mx-auto scrollbar mt-8">
         <h2 class="text-2xl font-semibold mb-3 text-center">
-            On sale products
+            On sale right now
         </h2>
         <div class="w-full overflow-x-scroll">
             <div class="flex flex-row gap-6">

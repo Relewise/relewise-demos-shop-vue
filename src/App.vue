@@ -64,12 +64,14 @@ async function getCategories(searcher: Searcher) {
             :main-categories="mainCategories"/>
 
     <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <Transition enter-active-class="transition-opacity duration-500"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition-opacity duration-500"
-                    leave-to-class="opacity-0">
-            <RouterView/>
-        </Transition>
+        <RouterView v-slot="{ Component }">
+            <Transition enter-active-class="transition-opacity duration-500"
+                        enter-from-class="opacity-0"
+                        leave-active-class="transition-opacity duration-500"
+                        leave-to-class="opacity-0">
+                <component :is="Component"/>
+            </Transition>
+        </RouterView>
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
 
