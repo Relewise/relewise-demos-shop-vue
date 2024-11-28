@@ -72,6 +72,22 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 background-color: #fecaca; 
             }
 
+             .sold-out {
+                position: absolute; 
+                top: 0; 
+                left: 0; 
+                padding-left: 0.5rem;
+                padding-right: 0.5rem; 
+                margin: 0.5rem; 
+                border-radius: 9999px; 
+                font-size: 0.875rem;
+                line-height: 1.25rem; 
+                font-weight: 500; 
+                text-align: center; 
+                color: #fff; 
+                background-color: #000; 
+            }
+
             .padding {
                 margin-top: 0.25rem; 
             }
@@ -87,7 +103,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             }
 
             .display-name {
-                height: 48px; 
+                height: 43px; 
                 font-weight: 600; 
                 letter-spacing: -0.025em; 
                 line-height: 1.25rem; 
@@ -123,7 +139,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
                 ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
-                ${product.data && product.data.SoldOut && product.data.SoldOut.value === true ? html`<span class="on-sale">SOLD OUT</span>` : html``}
+                ${product.data && product.data.SoldOut && product.data.SoldOut.value === true ? html`<span class="sold-out">SOLD OUT</span>` : html``}
             </div>
             <div class="padding">
             <div class="text-left">

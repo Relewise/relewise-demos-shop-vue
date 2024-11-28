@@ -4,6 +4,7 @@ import PopularCategories from '@/components/PopularCategories.vue';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
 import { ref } from 'vue';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
+import OnSaleSlider from '@/components/OnSaleSlider.vue';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 
@@ -251,14 +252,9 @@ async function recommend() {
             </div>
         </div>
 
-        <div v-if="isConfigured" class="scrollbar container mx-auto">
-            <h2 class="text-3xl font-semibold mb-3 text-center">
-                On sale products
-            </h2>
-            <div class="w-full overflow-x-scroll">
-                <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
-            </div>
-        </div>
+        <template v-if="isConfigured">
+            <OnSaleSlider/>
+        </template>
     </main>
 </template>
 
