@@ -29,8 +29,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 display: flex; 
                 overflow: hidden; 
                 position: relative; 
-                // padding-top: 0.75rem;
-                // padding-bottom: 0.75rem; 
+
                 flex-direction: column; 
                 //border-radius: 0.25rem; 
                 background-color: #ffffff; 
@@ -40,20 +39,18 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 display: flex; 
                 overflow: hidden; 
                 position: relative; 
-                // margin-left: 0.75rem;
-                // margin-right: 0.75rem; 
                 justify-content: center; 
                 height: 275px;
             }
             .image-container:after {
                 height: 275px;
                 background-image: radial-gradient(ellipse, #bcb6b300, hsla(20, 6%, 72%, .125) 70%);
-    bottom: 0;
-    content: "";
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;}
+                bottom: 0;
+                content: "";
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;}
 
             .image {
                 object-fit: cover;
@@ -71,13 +68,11 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 line-height: 1.25rem; 
                 font-weight: 500; 
                 text-align: center; 
-                color: #ffffff; 
-                background-color: #000000; 
+                color: #7f1d1d; 
+                background-color: #fecaca; 
             }
 
             .padding {
-                // padding-left: 0.75rem;
-                // padding-right: 0.75rem; 
                 margin-top: 0.25rem; 
             }
 
@@ -92,11 +87,11 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             }
 
             .display-name {
-                height: 2.5rem; 
+                height: 48px; 
                 font-weight: 600; 
                 letter-spacing: -0.025em; 
                 line-height: 1.25rem; 
-                font-size: 1rem;
+                font-size: 18px;
                 margin-top: 0.0rem;
                 margin-bottom: 0;
                 text-overflow: ellipsis;

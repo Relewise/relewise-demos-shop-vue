@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto mt-3 p-2 xl:p-0">
+    <div class="container mx-auto mt-6 p-2 xl:p-0">
         <h1 class="mb-8 text-4xl font-semibold">
             <span class="underline--yellow inline-block">Cart</span><span class="text-brand1">.</span>
         </h1>
@@ -103,6 +103,7 @@ import trackingService from '@/services/tracking.service';
 import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
+import router from '@/router';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -151,5 +152,8 @@ function remove(item: ILineItem) {
 function checkout() {
     trackingService.trackOrder(basketService.model.value.lineItems);
     basketService.clear();
+    router.push({
+        name: 'receipt',
+    });
 }
 </script>

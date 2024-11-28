@@ -3,7 +3,7 @@
         <div v-if="product" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
 
-            <div class="flex flex-wrap gap-8 xl:gap-20 mt-3">
+            <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
                     <ProductImage :product="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>

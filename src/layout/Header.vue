@@ -80,7 +80,7 @@ onBeforeUnmount(() => {
                                     <div class="font-medium text-sm">
                                         {{ contextStore.context.value.displayName }}
                                     </div>
-                                    <div v-if="contextStore.context.value.users && contextStore.context.value.selectedUserIndex" class="text-xs">
+                                    <div v-if="contextStore.context.value.users && contextStore.context.value.selectedUserIndex !== undefined" class="text-xs">
                                         User: {{
                                             displayUser(contextStore.context.value.users[contextStore.context.value.selectedUserIndex])
                                         }}

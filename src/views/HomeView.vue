@@ -24,8 +24,8 @@ async function recommend() {
 </script>
 <template>
     <main class="pt-0 flex flex-col gap-20">
-        <div class="flex justify-center relative mx-auto h-[500px] container">
-            <div class="sliding-logos-illustration  is-animated absolute top-[-50px] right-[0px] z-[-1]" style="transform: scale(1);">
+        <div class="flex justify-center relative mx-auto h-[600px] container overflow-hidden">
+            <div class="sliding-logos-illustration is-animated absolute top-[-50px] right-[0px] z-[-1]" style="transform: scale(1);">
                 <svg width="664"
                      height="643"
                      viewBox="0 0 664 643"
@@ -233,14 +233,14 @@ async function recommend() {
                 Shop our popular brands
             </h2>
 
-            <div v-if="isConfigured" class="grid gap-3 grid-cols-2 lg:grid-cols-4 mt-3">
+            <div v-if="isConfigured" class="grid gap-3 grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 mt-3">
                 <RouterLink 
                     v-for="(brand, index) in brands.recommendations" 
                     :key="index" 
                     :to="{ query: { brand: brand.id, open: '1' } }" 
                     class="rounded text-slate-800 p-6"
                     :class="`brand${6-index}`">
-                    <h3 class="text-3xl">
+                    <h3 class="text-3xl break-all">
                         {{ brand.displayName ?? brand.id }}
                     </h3>
 
@@ -253,7 +253,7 @@ async function recommend() {
 
         <div v-if="isConfigured" class="scrollbar container mx-auto">
             <h2 class="text-3xl font-semibold mb-3 text-center">
-                New products
+                On sale products
             </h2>
             <div class="w-full overflow-x-scroll">
                 <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
