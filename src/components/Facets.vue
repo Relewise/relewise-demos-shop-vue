@@ -81,7 +81,7 @@ const props = defineProps({
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
     renderCategoryFacet: { type: Boolean, required: true },
-    hideBrandFacet: { type: Boolean, required: true },
+    hideBrandFacet: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['search']);
