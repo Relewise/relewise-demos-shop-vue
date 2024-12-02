@@ -1,6 +1,6 @@
 <template>
     <div v-if="result" class="container mx-auto scrollbar mt-8">
-        <h2 class="text-2xl font-semibold mb-3 text-center">
+        <h2 class="text-3xl font-semibold mb-3 text-center">
             On sale right now
         </h2>
         <div class="w-full overflow-x-scroll">

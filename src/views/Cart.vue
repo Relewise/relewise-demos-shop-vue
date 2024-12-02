@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto mt-6 p-2 xl:p-0">
+    <div id="cart-page" class="container mx-auto mt-6 p-2 xl:p-0 min-h-[60vh]">
         <h1 class="mb-8 text-4xl font-semibold">
             <span class="underline--yellow inline-block">Cart</span><span class="text-brand1">.</span>
         </h1>
