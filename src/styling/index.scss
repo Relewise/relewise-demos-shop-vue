@@ -179,3 +179,12 @@ h4 {
         border: transparent;
     }
 }
+
+// Setting these to avoid UI shifts
+#main-container:not(:has(#cart-page)) {
+    min-height: 95vh;
+}
+
+#product-page {
+    min-height: 1500px;
+}
