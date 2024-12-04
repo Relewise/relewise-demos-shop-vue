@@ -54,7 +54,7 @@ async function recommend() {
                 <RouterLink 
                     v-for="(brand, index) in brands.recommendations" 
                     :key="index" 
-                    :to="{ query: { brand: brand.id, open: '1' } }" 
+                    :to="{ query: { brand: brand.id, open: '1', brandName: brand.displayName } }" 
                     class="rounded text-slate-800 p-6"
                     :class="`brand${6-index}`">
                     <h3 class="text-3xl break-all">

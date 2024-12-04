@@ -1,6 +1,6 @@
 <template>
     <template v-for="(facet, index) in facets.items" :key="index">
-        <div v-if="(facet.field === 'Category' && renderCategoryFacet) || facet.field !== 'Category'" class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
+        <div v-if="(facet.field === 'Brand' && !hideBrandFacet) || (facet.field == 'Category' && !hideCategoryFacet) || facet.field === 'SalesPrice' || (facet.$type.includes('CategoryHierarchyFacetResult') && categoriesForFilterOptions)" class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
             <h4 class="font-semibold text-lg mb-1">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </h4>
@@ -41,7 +41,7 @@
             </template>
 
             <CheckListFacet
-                v-if="((facet.field == 'Category' && renderCategoryFacet) || facet.field == 'Brand') && 'available' in facet && Array.isArray(facet.available)"
+                v-if="((facet.field == 'Category' && !hideCategoryFacet) || (facet.field === 'Brand' && !hideBrandFacet)) && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
                 class=""
                 @search="applyFacet"/>
@@ -80,7 +80,8 @@ const props = defineProps({
     selectedCategoryFilterOptions: { type: Object as PropType<ProductCategoryResult[]>, required: false },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
     page: { type: Number, required: true },
-    renderCategoryFacet: { type: Boolean, required: true },
+    hideCategoryFacet: { type: Boolean, default: true },
+    hideBrandFacet: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['search']);

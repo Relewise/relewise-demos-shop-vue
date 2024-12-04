@@ -300,6 +300,9 @@ function searchFor(term: string) {
                 <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
                     Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
                 </h2> 
+                <h2 v-if="route.query.brandName" class="text-xl lg:text-3xl mb-6">
+                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ? route.query.brandName.join('') : route.query.brandName }}</span>
+                </h2> 
                 <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
@@ -318,9 +321,9 @@ function searchFor(term: string) {
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
-                                :render-category-facet="true"
                                 :categories-for-filter-options="categoriesForFilterOptions"
-                                :selected-category-filter-options="selectedCategoriesForFilters"                                
+                                :selected-category-filter-options="selectedCategoriesForFilters"
+                                :hide-brand-facet="!!route.query.brandName"                                
                                 @search="search"/>
                     </div>
                     <div class="w-full lg:w-4/5">
