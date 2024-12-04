@@ -27,7 +27,7 @@
                         v-model:page="page"
                         :filters="filters"
                         :facets="result.facets"
-                        :render-category-facet="!renderCatoryLinks"
+                        :hide-category-facet="renderCatoryLinks"
                         @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">

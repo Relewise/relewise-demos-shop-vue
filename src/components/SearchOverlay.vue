@@ -321,7 +321,6 @@ function searchFor(term: string) {
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="result.facets"
-                                :render-category-facet="true"
                                 :categories-for-filter-options="categoriesForFilterOptions"
                                 :selected-category-filter-options="selectedCategoriesForFilters"
                                 :hide-brand-facet="!!route.query.brandName"                                
