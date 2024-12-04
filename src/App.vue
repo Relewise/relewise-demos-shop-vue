@@ -81,14 +81,15 @@ watch(
             :main-categories="mainCategories"/>
 
     <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <RouterView v-slot="{ Component }">
+        <RouterView/>
+        <!-- <RouterView v-slot="{ Component }">
             <Transition :enter-active-class="disableAnimations ? '' : 'transition-opacity duration-500'"
                         :enter-from-class="disableAnimations ? '' : 'opacity-0'"
                         :leave-active-class="disableAnimations ? '' : 'transition-opacity duration-500'"
                         :leave-to-class="disableAnimations ? '' : 'opacity-0'">
                 <component :is="Component"/>
             </Transition>
-        </RouterView>
+        </RouterView> -->
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
 
