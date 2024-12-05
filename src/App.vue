@@ -2,16 +2,14 @@
 import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { computed } from 'vue';
 import basketService from './services/basket.service';
 import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
 import breakpointService from './services/breakpoint.service';
-import { useRoute } from 'vue-router';
 
-const route = useRoute();
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
 const mainCategories = ref<NavigationItem[]>([]);
@@ -56,22 +54,6 @@ async function getCategories(searcher: Searcher) {
     mainCategories.value = navigation;
     footer.value = navigation.slice(0, 4);
 }
-
-const disableAnimations = ref(false);
-watch(
-    () => route.query.open,
-    (newValue, oldValue) => {
-        if (newValue === '1') {
-            disableAnimations.value = true; // Disable animations
-        } else if (oldValue === '1') {
-            // Add a delay before re-enabling animations
-            setTimeout(() => {
-                disableAnimations.value = false;
-            }, 100); 
-        }
-    },
-);
-
 </script>
 
 <template>
@@ -81,14 +63,7 @@ watch(
             :main-categories="mainCategories"/>
 
     <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <RouterView v-slot="{ Component }">
-            <Transition :enter-active-class="disableAnimations ? '' : 'transition-opacity duration-500'"
-                        :enter-from-class="disableAnimations ? '' : 'opacity-0'"
-                        :leave-active-class="disableAnimations ? '' : 'transition-opacity duration-500'"
-                        :leave-to-class="disableAnimations ? '' : 'opacity-0'">
-                <component :is="Component"/>
-            </Transition>
-        </RouterView>
+        <RouterView/>
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
 
