@@ -1,8 +1,8 @@
 <template>
-    <div class="flex justify-center relative mx-auto h-[600px] container overflow-hidden">
-        <div class="sliding-logos-illustration is-animated absolute top-[-50px] right-[0px] z-[-1]" style="transform: scale(1);">
-            <svg width="664"
-                 height="643"
+    <div class="flex justify-center relative mx-auto h-[510px] container overflow-hidden">
+        <div class="sliding-logos-illustration is-animated absolute bottom-0 right-[0px] z-[-1]" style="transform: scale(1);">
+            <svg width="500"
+                 height="500"
                  viewBox="0 0 664 643"
                  fill="none"
                  xmlns="http://www.w3.org/2000/svg">
@@ -176,8 +176,8 @@
                       style="stroke-dashoffset: 0px;"/>
             </svg>
         </div>
-        <div class="p-6 w-full flex flex-col items-start justify-center text-slate-800">
-            <h1 class="intro__title text-5xl">
+        <div class="px-6 w-full flex flex-col items-start justify-center text-slate-800">
+            <h1 class="intro__title text-4xl">
                 <span class="underline--yellow inline-block">Personalize</span><span class="text-brand1">.</span> Connect<span class="text-brand2">.</span> Relewise
             </h1>
             <h3 class="text-2xl text-center font-medium mt-4">
