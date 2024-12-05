@@ -176,7 +176,7 @@
                       style="stroke-dashoffset: 0px;"/>
             </svg>
         </div>
-        <div class="px-6 w-full flex flex-col items-start justify-center text-slate-800">
+        <div class="pl-20 w-full flex flex-col items-start justify-center text-slate-800">
             <h1 class="intro__title text-[3.2rem]">
                 <span class="underline--yellow inline-block">Personalize</span><span class="text-brand1">.</span> Connect<span class="text-brand2">.</span> Relewise
             </h1>
