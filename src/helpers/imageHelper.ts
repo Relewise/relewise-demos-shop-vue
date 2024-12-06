@@ -1,12 +1,13 @@
 import type { DataValue, ProductResult } from '@relewise/client';
 
 export const findImage = (product: ProductResult) => {
-    return mapDataKey(product.data ?? {}) ??
-        mapDataKey(product.variant?.data ?? {}) ??
+    return mapDataKey(product.variant?.data ?? {}) ??
+        mapDataKey(product.data ?? {}) ??
         '';
 };
 
 function mapDataKey(data: Record<string, DataValue>) {
+
     for (const dataKey of Object.keys(data ?? {})) {
 
         if (dataKey.toLowerCase().includes('image')) {
