@@ -45,7 +45,7 @@ const { product } = toRefs(props);
                     ON SALE
                 </span>
                 <span
-                    v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
+                    v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
                     SOLD OUT
                 </span>

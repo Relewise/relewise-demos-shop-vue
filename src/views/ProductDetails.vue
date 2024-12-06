@@ -29,7 +29,7 @@
                             <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900">ON SALE</span>
 
                             <span
-                                v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === true"
+                                v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                                 class="rounded-full bg-black px-2 text-center text-sm font-medium text-white">
                                 SOLD OUT
                             </span>
@@ -76,6 +76,18 @@
                 </div>
             </div>
         </div>
+
+        <div v-if="product!.data && product!.data.SoldOut && product!.data.SoldOut.value == 'true'">
+            <div class="my-3">
+                <div class="text-2xl font-semibold">
+                    Sold out....consider an alternative
+                </div>
+                <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <ProductTile v-for="(product, index) in similarProds?.recommendations" :key="index" :product="product" />
+                </div>
+            </div>
+        </div>
+        <div v-else>        
         <relewise-product-recommendation-batcher>
             <div class="mb-16 scrollbar">
                 <h2 class="text-2xl mb-2 font-semibold">
@@ -105,17 +117,20 @@
             </div>
         </relewise-product-recommendation-batcher>
     </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
+import { ProductSearchBuilder, SimilarProductsProductBuilder, type CategoryNameAndIdResult, type ProductRecommendationResponse, type ProductResult } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
+import { addAssortmentFilters, addCartFilter } from '@/stores/customFilters';
+import ProductTile from '../components/ProductTile.vue';
 
 const productId = ref<string>('');
 const product = ref<ProductResult|null|undefined>(null);
@@ -123,6 +138,7 @@ const route = useRoute();
 const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const similarProds = ref<ProductRecommendationResponse | null | undefined>(null);
 
 const details = computed(() => {
     if (!product.value) return [];
@@ -150,6 +166,31 @@ async function init() {
 
         const searcher = contextStore.getSearcher();
         product.value = (await searcher.searchProducts(request))?.results![0];
+
+        const similarproductsRequest = new SimilarProductsProductBuilder(contextStore.defaultSettings)
+            .product({ productId: productId.value })
+            .setSelectedProductProperties(contextStore.selectedProductProperties)
+            .filters(f => {
+                // Safely add assortment and cart filters
+                addAssortmentFilters(f);
+                addCartFilter(f);
+
+                // Safely access the category ID
+                const categoryId = product.value?.categoryPaths?.[0]?.pathFromRoot?.[1]?.id;
+                if (!categoryId || typeof categoryId !== 'string') {
+                    throw new Error("Category ID is missing or not a valid string");
+                }
+
+                // Add the product category filter
+                f.addProductCategoryIdFilter("ImmediateParentOrItsParent", categoryId);
+            })
+            .build();
+
+        similarproductsRequest.settings.numberOfRecommendations = 4;
+
+        const recommender = contextStore.getRecommender();
+        similarProds.value = await recommender.recommendSimilarProducts(similarproductsRequest);
+
         if (product.value?.categoryPaths) {
             // Taking the first path on the product to render the breadcrumb
             breadcrumb.value = product.value?.categoryPaths[0].pathFromRoot ?? [];
