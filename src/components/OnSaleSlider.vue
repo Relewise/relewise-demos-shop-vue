@@ -26,7 +26,7 @@ const recommender = contextStore.getRecommender();
 recommend();
 
 async function recommend() {
-    const take = 15;
+    const take = 8;
     const request = new PopularProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
