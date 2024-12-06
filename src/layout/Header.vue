@@ -2,7 +2,9 @@
 import { ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
+import { useRoute } from 'vue-router';
 import SearchOverlay from '../components/SearchOverlay.vue';
+import ContentSearchOverlay from '../components/ContentSearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
@@ -54,6 +56,8 @@ const handleMouseLeave = () => {
 onBeforeUnmount(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
 });
+
+const route = useRoute();
 </script>
 
 <template>
@@ -71,7 +75,7 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
                     <div class="xl:items-center flex-grow">
-                        <SearchOverlay/>
+                        <component :is="route.path.startsWith('/content') || route.path.startsWith('/blog') ? ContentSearchOverlay : SearchOverlay" />
                     </div>
                     <div class="flex items-center gap-6">
                         <Popover placement="bottom-end">
@@ -180,6 +184,7 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
                     </ul>
+                    <li class="inline-flex relative pr-5"><RouterLink :to="{ name: 'Inspiration'}" class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">INSPIRATION</RouterLink></li>
                     <li class="flex-grow"></li>
                 </ul>
             </nav>

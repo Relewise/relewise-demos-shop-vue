@@ -1,5 +1,5 @@
 <template>
-    <div class="category-page container mx-auto p-2 xl:p-0">
+    <div class="category-page container mx-auto p-2 xl:p-0 relative">
         <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
 
         <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
@@ -56,15 +56,17 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div v-if="rightProducts" class="absolute flex flex-col gap-3" style="top:110px; right: -220px">
-        <ProductTile v-for="(product, pIndex) in rightProducts.slice(0, 4)"
-                     :key="pIndex"
-                     :product="product.product"
-                     :is-promotion="product.isPromotion"
-                     class="w-[200px]"/>
+        <div v-if="rightProducts" class="absolute h-[95%] top-[110px] -right-56 flex flex-col gap-2">
+            <ProductTile
+                v-for="(product, pIndex) in rightProducts.slice(0, 4)"
+                :key="pIndex"
+                :product="product.product"
+                :is-promotion="product.isPromotion"
+                class="w-[200px]"/>
+        </div>
     </div>
 </template>
+
 
 <script lang="ts" setup>
 import Pagination from '../components/Pagination.vue';
@@ -82,6 +84,8 @@ import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
+import { addAssortmentFilters } from '@/stores/customFilters';
+import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -206,6 +210,10 @@ async function search() {
         })
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
+            addAssortmentFilters(f);
+        })
+        .relevanceModifiers(rm=>{
+            addCampaignRelevanceModifier(rm);
         })
         .facets(f => {
             if (renderCatoryLinks.value) {
@@ -233,7 +241,7 @@ async function search() {
     const query = { ...router.currentRoute.value.query, ...filters.value };
     if (!applySalesPriceFacet) delete query.price;
 
-    await router.push({ path: route.path, query: query });
+    await router.push({ path: route.path, query: query, replace: true });
 
     const searcher = contextStore.getSearcher();
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);

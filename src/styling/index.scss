@@ -40,10 +40,6 @@ button {
 
 a {
     @apply text-brand-500;
-
-    // &:hover {
-    //     @apply text-brand-700 no-underline;
-    // }
 }
 
 select {
@@ -155,7 +151,6 @@ h4 {
   }
   *::-webkit-scrollbar {
     height: 8px;
-    //background-color: #222222;
     border-radius: 8px;
   }
   *::-webkit-scrollbar-thumb {
@@ -180,7 +175,7 @@ h4 {
     }
 }
 
-// Setting these to avoid UI shifts
+/* Setting these to avoid UI shifts */
 #main-container:not(:has(#cart-page)) {
     min-height: 95vh;
 }
@@ -188,3 +183,9 @@ h4 {
 #product-page {
     min-height: 1500px;
 }
+
+@layer utilities {
+    p > strong:first-child {
+      @apply block mt-6;
+    }
+  }

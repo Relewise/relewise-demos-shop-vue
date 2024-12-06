@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import PopularCategories from '@/components/PopularCategories.vue';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
 import { ref } from 'vue';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import OnSaleSlider from '@/components/OnSaleSlider.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
+import PopularCategories from '@/components/PopularCategories.vue';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 
@@ -26,22 +26,21 @@ async function recommend() {
 </script>
 <template>
     <main class="pt-0 flex flex-col gap-20">
-        <div class="flex flex-col gap-10">
+        <div class="flex flex-col">
             <HeroBanner/>
-
             <template v-if="isConfigured">
-                <PopularCategories/>
+                <PopularCategories class="pl-20 xl:hidden"/>
             </template>
         </div>
 
-        <div v-if="isConfigured" class="scrollbar" style="background-color: #e0d5d5;">
+        <div v-if="isConfigured" class="scrollbar" style="background-color: #e9effb;">
             <div class="waves"></div>
             <div class="container mx-auto py-10">
                 <h2 class="text-3xl font-semibold mb-3 text-center">
                     Most popular products right now
                 </h2>
                 <div class="w-full overflow-x-scroll pb-2">
-                    <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="12" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+                    <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" number-of-recommendations="8" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
                 </div>
             </div>
             <div class="reverse-waves"></div>

@@ -213,6 +213,9 @@ function shareLink() {
         users: context.value.users,
         companies: context.value.companies,
         selectedUserIndex: context.value.selectedUserIndex,
+        allowThirdLevelCategories: context.value.allowThirdLevelCategories,
+        hideSoldOutProducts: context.value.hideSoldOutProducts,
+        recommendationsMinutesAgo: context.value.recommendationsMinutesAgo,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + encodeURIComponent(btoa(JSON.stringify(model))));

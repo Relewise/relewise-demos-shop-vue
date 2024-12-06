@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -13,6 +13,8 @@ import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
+import { addAssortmentFilters } from '@/stores/customFilters';
+import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -21,6 +23,7 @@ const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
+const contentElements = ref<ContentSearchResponse | null>(null);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
 
@@ -74,7 +77,7 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: ''  };
+        filters.value = { price: [], term: '', sort: '' };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
     open.value = show;
@@ -97,7 +100,7 @@ function typeAHeadSearch() {
 
 async function search() {
     abortController.abort();
-    
+
     window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
 
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
@@ -109,14 +112,14 @@ async function search() {
     let applySalesPriceFacet = false;
     if (result.value?.facets?.items?.length === 3) {
         const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
-        
+
         const bothPriceFiltersSet = filters.value.price.length === 2;
 
         const lowerBoundNotEqualOrZero = (Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
-                && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
+            && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
 
         const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
-                && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
+            && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
 
         applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
     }
@@ -136,6 +139,10 @@ async function search() {
                         f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
+                addAssortmentFilters(f);
+            })
+            .relevanceModifiers(rm=>{
+                addCampaignRelevanceModifier(rm);
             })
             .facets(f => {
 
@@ -158,11 +165,11 @@ async function search() {
 
                 f.addBrandFacet(
                     Array.isArray(filters.value['brand'])
-                    && filters.value['brand']?.length > 0
-                        ? filters.value['brand'] 
+                        && filters.value['brand']?.length > 0
+                        ? filters.value['brand']
                         : null);
 
-                f.addSalesPriceRangeFacet('Product', 
+                f.addSalesPriceRangeFacet('Product',
                     applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
                     applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
             })
@@ -170,10 +177,10 @@ async function search() {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
                 }
-                else if(filters.value.sort === 'SalesPriceDesc'){
+                else if (filters.value.sort === 'SalesPriceDesc') {
                     s.sortByProductAttribute('SalesPrice', 'Descending');
                 }
-                else if(filters.value.sort === 'SalesPriceAsc') {
+                else if (filters.value.sort === 'SalesPriceAsc') {
                     s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
@@ -186,11 +193,19 @@ async function search() {
                 },
             })
             .build())
+
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product')
             .setTerm(searchTerm.value)
             .take(5)
             .build())
+
+        .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
+            .setContentProperties(contextStore.selectedContentProperties)
+            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+            .pagination(p => p.setPageSize(10).setPage(1))
+            .build())
+
         .build();
 
     abortController = new AbortController();
@@ -201,13 +216,14 @@ async function search() {
     const query = { ...filters.value };
     if (!applySalesPriceFacet) delete query.price;
 
-    await router.push({ path: route.path, query: query });
+    await router.push({ path: route.path, query: query, replace: true });
 
     if (response && response.responses) {
         result.value = response.responses[0] as ProductSearchResponse;
         products.value = result.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
+        contentElements.value = response.responses[2] as ContentSearchResponse;
 
         if (result.value.hits === 0) {
             const request = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
@@ -226,7 +242,7 @@ async function search() {
 
         if (result.value?.facets && result.value.facets.items) {
             const categoryHeirarchyFacetResult = (result.value.facets.items[0] as CategoryHierarchyFacetResult);
-            
+
             // Populate categories for rendering with display names
             selectedCategoriesForFilters.value = [];
             if (Array.isArray(selectedCategoryFilterIds)) {
@@ -281,17 +297,14 @@ function searchFor(term: string) {
 </script>
 
 <template>
-    <div
-        class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+    <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
         <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
         </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
-        <input v-model="searchTerm"
-               type="text"
-               placeholder="Search..."
-               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-               @keyup="typeAHeadSearch()">
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
+        <input v-model="searchTerm" type="text" placeholder="Search..."
+            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+            @keyup="typeAHeadSearch()">
     </div>
 
     <Teleport to="#modal">
@@ -299,49 +312,72 @@ function searchFor(term: string) {
             <div v-if="result" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
                 <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
                     Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
-                </h2> 
+                </h2>
                 <h2 v-if="route.query.brandName" class="text-xl lg:text-3xl mb-6">
-                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ? route.query.brandName.join('') : route.query.brandName }}</span>
-                </h2> 
+                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ?
+                        route.query.brandName.join('') : route.query.brandName }}</span>
+                </h2>
                 <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
-                             class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">
+                            class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">
                             <h3 class="font-semibold text-lg">
                                 Suggestions
                             </h3>
-                            <a v-for="(prediction) in predictionsList"
-                               :key="prediction.term ?? ''"
-                               class="mb-1 block cursor-pointer text-slate-900"
-                               @click.prevent="searchFor(prediction.term ?? '')">
+                            <a v-for="(prediction) in predictionsList" :key="prediction.term ?? ''"
+                                class="mb-1 block cursor-pointer text-slate-900"
+                                @click.prevent="searchFor(prediction.term ?? '')">
                                 {{ prediction.term }}
                             </a>
                         </div>
-                        <Facets v-if="result.facets && result.hits > 0"
-                                v-model:page="page"
-                                :filters="filters"
-                                :facets="result.facets"
-                                :categories-for-filter-options="categoriesForFilterOptions"
-                                :selected-category-filter-options="selectedCategoriesForFilters"
-                                :hide-brand-facet="!!route.query.brandName"                                
-                                @search="search"/>
+                        <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
+                            :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
+                            :selected-category-filter-options="selectedCategoriesForFilters"
+                            :hide-brand-facet="!!route.query.brandName" @search="search" />
+
+                        <div v-if="contentElements && Array.isArray(contentElements.results) && contentElements?.results?.length > 0"
+                            class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">
+                            <h3 class="font-semibold text-lg">
+                                Articles
+                            </h3>
+                            <ul class="space-y-6">
+                                <li v-for="(blogpost) in contentElements?.results" :key="blogpost.contentId ?? ''"
+                                    class="flex items-center">
+                                    <RouterLink :to="{ name: 'content-blog', params: { id: blogpost.contentId } }"
+                                        class="text-xl text-blue-600 hover:underline font-medium">
+                                        <a class="flex items-center space-x-4">
+                                            <figure class="w-28 h-28 flex-shrink-0 overflow-hidden">
+                                                <picture>
+                                                    <img :src="blogpost?.data?.Image.value"
+                                                        class="w-full h-full object-cover" />
+                                                </picture>
+                                            </figure>
+                                            <span class="text-lg font-semibold text-black">
+                                                {{ blogpost.displayName }}
+                                            </span>
+                                        </a>
+                                    </RouterLink>
+
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="w-full lg:w-4/5">
                         <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
-                            <span v-if="result.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{ result?.hits < pageSize ? result?.hits : page * pageSize }} of {{ result?.hits }}</span>
-                            <div class="hidden lg:block lg:flex-grow">
-                            </div>
-                            <Sorting v-model="filters.sort" @change="search"/>
+                            <span v-if="result.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
+                                result?.hits < pageSize ? result?.hits : page * pageSize }} of {{ result?.hits }}</span>
+                                    <div class="hidden lg:block lg:flex-grow">
+                                    </div>
+                                    <Sorting v-model="filters.sort" @change="search" />
                         </div>
                         <div v-if="result && result?.redirects && result.redirects.length > 0"
-                             class="mb-3 p-3 bg-white">
+                            class="mb-3 p-3 bg-white">
                             <h2 class="text-xl font-semibold mb-2">
                                 Redirect(s)
                             </h2>
 
-                            <div v-for="redirect in result.redirects"
-                                 :key="redirect.id"
-                                 class="mb-1 pb-1 flex border-b border-solid border-gray-300">
+                            <div v-for="redirect in result.redirects" :key="redirect.id"
+                                class="mb-1 pb-1 flex border-b border-solid border-gray-300">
                                 {{ redirect.destination }}
                             </div>
                         </div>
@@ -350,24 +386,22 @@ function searchFor(term: string) {
                         </div>
                         <div v-else>
                             <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                <ProductTile v-for="(product, index) in products"
-                                             :key="index"
-                                             :product="product.product"
-                                             :is-promotion="product.isPromotion"/>
+                                <ProductTile v-for="(product, index) in products" :key="index"
+                                    :product="product.product" :is-promotion="product.isPromotion" />
                             </div>
                             <div class="py-3 flex justify-center">
-                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize" @change="search"/>
+                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize"
+                                    @change="search" />
                             </div>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
-                             class="w-full p-3 bg-white rounded mb-6">
+                            class="w-full p-3 bg-white rounded mb-6">
                             <h2 class="text-xl">
                                 You may like
                             </h2>
                             <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations"
-                                             :key="index"
-                                             :product="product"/>
+                                    :key="index" :product="product" />
                             </div>
                         </div>
                     </div>

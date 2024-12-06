@@ -119,7 +119,7 @@ function init() {
 init();
 
 async function recommend() {
-    const take = 15;
+    const take = 8;
     const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})

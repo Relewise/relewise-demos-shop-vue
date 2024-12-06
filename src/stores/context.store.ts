@@ -1,9 +1,11 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedContentPropertiesSettings, type SelectedVariantPropertiesSettings } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
+
+const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
 
 export interface IDataset {
     datasetId: string;
@@ -60,6 +62,19 @@ class AppContext {
         }
     }
 
+    public get utm(): string | undefined {
+        const urlParams = new URLSearchParams(window.location.search);
+        for (const key of utmKeys) {
+            const value = urlParams.get(key);
+            if (value) return value;
+        }
+        return undefined;
+    }
+
+    public get hasUtmParams(): boolean {
+        return this.utm !== undefined;
+    }
+
     public get isConfigured() {
         return computed(() => this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language);
     }
@@ -112,6 +127,33 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
+        } as SelectedProductPropertiesSettings;
+    }
+
+    public get selectedPdPProductProperties(): SelectedProductPropertiesSettings {
+        return {
+            displayName: true,
+            allData: true,
+            brand: true,
+            categoryPaths: true,
+            pricing: true,
+            filteredVariants: {inheritFiltersFromRequest: true}
+        } as SelectedProductPropertiesSettings;
+    }
+
+    public get selectedVariantProperties(): SelectedVariantPropertiesSettings {
+        return {
+            displayName: true,
+            allData: true,
+            pricing: true,
+        } as SelectedVariantPropertiesSettings;
+    }
+
+    public get selectedContentProperties(): SelectedContentPropertiesSettings {
+        return {
+            displayName: true,
+            allData: true,
+            categoryPaths: true,
         } as SelectedProductPropertiesSettings;
     }
 

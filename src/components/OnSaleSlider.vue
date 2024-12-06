@@ -1,5 +1,5 @@
 <template>
-    <div v-if="result" class="container mx-auto scrollbar mt-8">
+    <div v-if="result && result.recommendations && result.recommendations.length > 0" class="container mx-auto scrollbar mt-8">
         <h2 class="text-3xl font-semibold mb-3 text-center">
             On sale right now
         </h2>
@@ -26,14 +26,14 @@ const recommender = contextStore.getRecommender();
 recommend();
 
 async function recommend() {
-    const take = 15;
+    const take = 8;
     const request = new PopularProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
         .setNumberOfRecommendations(take)
        
         .filters(builder => {
-            builder.addProductDataFilter('OnSale', c => c.addEqualsCondition(DataValueFactory.boolean(true)));
+            builder.addProductDataFilter('OnSale', c => c.addEqualsCondition(DataValueFactory.string('true')));
             globalProductRecommendationFilters(builder); 
         })
         .build();
