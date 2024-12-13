@@ -36,7 +36,10 @@ async function init() {
     }
 
     if (params.has('datasetId')) {
-        contextStore.setDataset(params.get('datasetId'));
+        const datasetId = params.get('datasetId');
+        
+        if (datasetId && contextStore.datasets.value.some(x => x.datasetId === datasetId))
+            contextStore.setDataset(datasetId);
 
         const url = new URL(window.location.href);
         url.searchParams.delete('datasetId');
