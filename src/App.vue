@@ -34,6 +34,16 @@ async function init() {
 
         getCategories(searcher);
     }
+
+    if (params.has('datasetId')) {
+        contextStore.setDataset(params.get('datasetId'));
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete('datasetId');
+        history.replaceState(null, '', url);
+
+        window.location.reload();
+    }
 }
 
 async function getCategories(searcher: Searcher) {
