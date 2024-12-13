@@ -9,6 +9,7 @@ import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
 import breakpointService from './services/breakpoint.service';
+import notificationsStore from './stores/notifications.store';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -38,14 +39,18 @@ async function init() {
     if (params.has('datasetId')) {
         const datasetId = params.get('datasetId');
         
-        if (datasetId && contextStore.datasets.value.some(x => x.datasetId === datasetId))
-            contextStore.setDataset(datasetId);
-
         const url = new URL(window.location.href);
         url.searchParams.delete('datasetId');
         history.replaceState(null, '', url);
 
-        window.location.reload();
+        if (datasetId && contextStore.datasets.value.some(x => x.datasetId === datasetId)) {
+            contextStore.setDataset(datasetId); 
+            window.location.reload();
+        }
+        else {
+            notificationsStore.push({ title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
+        }
+
     }
 }
 
