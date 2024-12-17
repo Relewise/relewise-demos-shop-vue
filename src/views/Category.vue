@@ -233,7 +233,7 @@ async function search() {
     const query = { ...router.currentRoute.value.query, ...filters.value };
     if (!applySalesPriceFacet) delete query.price;
 
-    await router.push({ path: route.path, query: query });
+    await router.push({ path: route.path, query: query, replace: true });
 
     const searcher = contextStore.getSearcher();
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);

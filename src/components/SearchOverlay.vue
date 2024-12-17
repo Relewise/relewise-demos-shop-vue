@@ -201,7 +201,7 @@ async function search() {
     const query = { ...filters.value };
     if (!applySalesPriceFacet) delete query.price;
 
-    await router.push({ path: route.path, query: query });
+    await router.push({ path: route.path, query: query, replace: true });
 
     if (response && response.responses) {
         result.value = response.responses[0] as ProductSearchResponse;
