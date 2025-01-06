@@ -57,14 +57,12 @@
             </div>
         </div>
         <div v-if="rightProducts" class="absolute h-[95%] top-[110px] -right-56 flex flex-col gap-2">
-            <div class="sticky top-10">
-                <ProductTile
-                    v-for="(product, pIndex) in rightProducts.slice(0, 4)"
-                    :key="pIndex"
-                    :product="product.product"
-                    :is-promotion="product.isPromotion"
-                    class="w-[200px]"/>
-            </div>
+            <ProductTile
+                v-for="(product, pIndex) in rightProducts.slice(0, 4)"
+                :key="pIndex"
+                :product="product.product"
+                :is-promotion="product.isPromotion"
+                class="w-[200px]"/>
         </div>
     </div>
 </template>
