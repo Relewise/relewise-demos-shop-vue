@@ -13,6 +13,7 @@ import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
+import { addAssortmentFilters } from '@/stores/customFilters';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -136,6 +137,7 @@ async function search() {
                         f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
+                addAssortmentFilters(f);
             })
             .facets(f => {
 
