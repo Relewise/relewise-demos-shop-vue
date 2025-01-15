@@ -5,12 +5,14 @@
         </h2>
 
         <div class="flex flex-row flex-wrap gap-8 justify-center">
-            <RouterLink v-for="(category, index) in categories?.recommendations"
-                        :key="category.categoryId ?? ''"
-                        :to="`/category/${category.categoryId}`"
-                        class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800">
-                <div class="overflow-hidden rounded-full h-[150px] w-[150px]" :class="`brand${index+1}`">
-                </div>
+            <RouterLink v-for="(category, index) in categories?.recommendations" :key="category.categoryId ?? ''"
+                :to="`/category/${category.categoryId}`"
+                class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800">
+                <div class="overflow-hidden rounded-full h-[150px] w-[150px]" :class="`brand${index + 1}`" :style="{
+                    backgroundImage: `url(${category.data?.Image.value ?? ''})`,
+                    backgroundSize: 'cover',
+                    backgroundRepeat: 'no-repeat'
+                }"></div>
                 <h4 class="font-bold mt-2">
                     {{ category.displayName }}
                 </h4>
@@ -28,7 +30,7 @@ const categories: Ref<ProductCategoryRecommendationResponse | undefined> = ref<P
 
 async function setup() {
     categories.value = await contextStore.getRecommender().recommendPopularProductCategories(new PopularProductCategoriesRecommendationBuilder(contextStore.defaultSettings)
-        .setProductCategoryProperties({ displayName: true })
+        .setProductCategoryProperties({ displayName: true, dataKeys: ['Image'] })
         .setNumberOfRecommendations(6)
         .sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo())
         .build());
