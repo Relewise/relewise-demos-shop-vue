@@ -15,7 +15,6 @@ function setDataset(datasetId: string) {
 
 function setUser(userToSet: User) {
     contextStore.setUser(userToSet);
-    window.location.reload();
 }
 
 function setUserCompany(companyToSet: string) {
@@ -25,12 +24,10 @@ function setUserCompany(companyToSet: string) {
 
 function changeLanguage(language: string) {
     context.value.language = language;
-    persistStateAndReload();
 }
 
 function changeCurrency(currency: string) {
     context.value.currencyCode = currency;
-    persistStateAndReload();
 }
 
 function persistStateAndReload() {
@@ -112,15 +109,19 @@ function persistStateAndReload() {
                     </option>
                 </select>
             </div>
- 
-            <RouterLink 
-                v-close-popper
-                to="/app-settings"
-                class="text-slate-600 inline-flex items-center whitespace-nowrap hover:text-brand-500 right-0 w-fit ml-auto mb-2">
-                <div class="flex items-center justify-center">
-                    <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo 
-                </div>
-            </RouterLink>
+            <div class="flex items-center justify-between">
+                <RouterLink 
+                    v-close-popper
+                    to="/app-settings"
+                    class="text-slate-600 inline-flex items-center whitespace-nowrap hover:text-brand-500 right-0 w-fit mr-auto mb-2">
+                    <div class="flex items-center justify-center">
+                        <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo 
+                    </div>
+                </RouterLink>
+                <button class="ml-auto" @click="persistStateAndReload">
+                    Apply
+                </button>
+            </div>
         </div>
     </div>
 </template>
