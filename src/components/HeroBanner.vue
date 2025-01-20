@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-center relative mx-auto h-[510px] container overflow-hidden">
+    <div class="flex justify-center relative mx-auto h-[300px] container overflow-hidden">
         <div class="sliding-logos-illustration is-animated absolute bottom-0 right-[0px] z-[-1]" style="transform: scale(1);">
             <svg width="500"
                  height="500"

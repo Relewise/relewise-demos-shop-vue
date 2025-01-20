@@ -26,7 +26,7 @@ async function recommend() {
 </script>
 <template>
     <main class="pt-0 flex flex-col gap-20">
-        <div class="flex flex-col gap-10">
+        <div class="flex flex-col">
             <HeroBanner/>
 
             <template v-if="isConfigured">
@@ -34,7 +34,7 @@ async function recommend() {
             </template>
         </div>
 
-        <div v-if="isConfigured" class="scrollbar" style="background-color: #e0d5d5;">
+        <div v-if="isConfigured" class="scrollbar" style="background-color: #e9effb;">
             <div class="waves"></div>
             <div class="container mx-auto py-10">
                 <h2 class="text-3xl font-semibold mb-3 text-center">
