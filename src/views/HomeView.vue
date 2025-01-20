@@ -5,6 +5,7 @@ import { ref } from 'vue';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import OnSaleSlider from '@/components/OnSaleSlider.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
+import PopularCategories from '@/components/PopularCategories.vue';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 
@@ -27,6 +28,9 @@ async function recommend() {
     <main class="pt-0 flex flex-col gap-20">
         <div class="flex flex-col">
             <HeroBanner/>
+            <template v-if="isConfigured">
+                <PopularCategories class="pl-20 xl:hidden"/>
+            </template>
         </div>
 
         <div v-if="isConfigured" class="scrollbar" style="background-color: #e9effb;">

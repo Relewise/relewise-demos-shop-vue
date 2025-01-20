@@ -184,7 +184,7 @@
                 Welcome to our Demo Shop
             </h3>
             <template v-if="isConfigured">
-                <PopularCategories class="pt-20"/>
+                <PopularCategories class="hidden xl:block pt-20"/>
             </template>
         </div>
     </div>
