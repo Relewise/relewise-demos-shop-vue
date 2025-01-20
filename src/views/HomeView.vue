@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import PopularCategories from '@/components/PopularCategories.vue';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
 import { ref } from 'vue';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
@@ -28,10 +27,6 @@ async function recommend() {
     <main class="pt-0 flex flex-col gap-20">
         <div class="flex flex-col">
             <HeroBanner/>
-
-            <template v-if="isConfigured">
-                <PopularCategories/>
-            </template>
         </div>
 
         <div v-if="isConfigured" class="scrollbar" style="background-color: #e9effb;">

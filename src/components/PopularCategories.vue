@@ -1,6 +1,6 @@
 <template>
     <div class="flex mx-auto container">
-        <div class="pl-20 w-full">
+        <div class="w-full">
             <h1 class="text-3xl font-semibold mb-3">
                 Popular Categories
             </h1>

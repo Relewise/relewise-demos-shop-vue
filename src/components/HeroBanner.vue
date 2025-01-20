@@ -1,5 +1,5 @@
 <template>
-    <div class="flex justify-center relative mx-auto h-[300px] container overflow-hidden">
+    <div class="flex justify-center relative mx-auto h-[510px] container overflow-hidden">
         <div class="sliding-logos-illustration is-animated absolute bottom-0 right-[0px] z-[-1]" style="transform: scale(1);">
             <svg width="500"
                  height="500"
@@ -183,6 +183,16 @@
             <h3 class="text-2xl text-center font-medium mt-4">
                 Welcome to our Demo Shop
             </h3>
+            <template v-if="isConfigured">
+                <PopularCategories class="pt-20"/>
+            </template>
         </div>
     </div>
 </template>
+<script setup lang="ts">
+import PopularCategories from '@/components/PopularCategories.vue';
+import contextStore from '@/stores/context.store';
+import { ref } from 'vue';
+
+const isConfigured = ref(contextStore.isConfigured);
+</script>
