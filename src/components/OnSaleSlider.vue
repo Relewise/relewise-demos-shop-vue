@@ -1,5 +1,5 @@
 <template>
-    <div v-if="result" class="container mx-auto scrollbar mt-8">
+    <div v-if="result && result.recommendations && result.recommendations.length > 0" class="container mx-auto scrollbar mt-8">
         <h2 class="text-3xl font-semibold mb-3 text-center">
             On sale right now
         </h2>
