@@ -32,7 +32,7 @@ const categories: Ref<ProductCategoryRecommendationResponse | undefined> = ref<P
 async function setup() {
     categories.value = await contextStore.getRecommender().recommendPopularProductCategories(new PopularProductCategoriesRecommendationBuilder(contextStore.defaultSettings)
         .setProductCategoryProperties({ displayName: true, dataKeys: ['Image'] })
-        .setNumberOfRecommendations(6)
+        .setNumberOfRecommendations(4)
         .sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo())
         .build());
 
