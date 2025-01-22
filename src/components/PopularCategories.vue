@@ -1,10 +1,10 @@
 <template>
-    <div class="container mx-auto pt-10 p-2 xl:p-0">
-        <h2 class="text-3xl font-semibold mb-3 text-center">
-            Popular Categories
-        </h2>
-
-        <div class="flex flex-row flex-wrap gap-8 justify-center">
+    <div class="flex mx-auto container">
+        <div class="w-full">
+            <h1 class="text-3xl font-semibold mb-3">
+                Popular Categories
+            </h1>
+            <div class="flex flex-row flex-wrap gap-8">
             <RouterLink v-for="(category, index) in categories?.recommendations" :key="category.categoryId ?? ''"
                 :to="`/category/${category.categoryId}`"
                 class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800">
@@ -17,6 +17,7 @@
                     {{ category.displayName }}
                 </h4>
             </RouterLink>
+        </div>
         </div>
     </div>
 </template>
