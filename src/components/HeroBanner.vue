@@ -183,6 +183,16 @@
             <h3 class="text-2xl text-center font-medium mt-4">
                 Welcome to our Demo Shop
             </h3>
+            <template v-if="isConfigured">
+                <PopularCategories class="hidden xl:block pt-20"/>
+            </template>
         </div>
     </div>
 </template>
+<script setup lang="ts">
+import PopularCategories from '@/components/PopularCategories.vue';
+import contextStore from '@/stores/context.store';
+import { ref } from 'vue';
+
+const isConfigured = ref(contextStore.isConfigured);
+</script>
