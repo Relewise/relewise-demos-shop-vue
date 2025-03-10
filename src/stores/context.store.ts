@@ -1,5 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedContentPropertiesSettings } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
@@ -112,6 +112,14 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
+        } as SelectedProductPropertiesSettings;
+    }
+
+    public get selectedContentProperties(): SelectedContentPropertiesSettings {
+        return {
+            displayName: true,
+            allData: true,
+            categoryPaths: true,
         } as SelectedProductPropertiesSettings;
     }
 
