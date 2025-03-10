@@ -331,18 +331,18 @@ function searchFor(term: string) {
                             :selected-category-filter-options="selectedCategoriesForFilters"
                             :hide-brand-facet="!!route.query.brandName" @search="search" />
 
-                        <div v-if="contentElements?.results?.length > 0"
+                        <div v-if="contentElements && Array.isArray(contentElements.results) && contentElements?.results?.length > 0"
                             class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">
                             <h3 class="font-semibold text-lg">
                                 Articles
                             </h3>
                             <ul class="space-y-6">
-                                <li v-for="(blogpost) in contentElements?.results" :key="blogpost._id"
+                                <li v-for="(blogpost) in contentElements?.results" :key="blogpost.contentId??''"
                                     class="flex items-center">
                                     <a class="flex items-center space-x-4">
                                         <figure class="w-28 h-28 flex-shrink-0 overflow-hidden">
                                             <picture>
-                                                <img :src="blogpost.data.Image.value"
+                                                <img :src="blogpost?.data?.Image.value"
                                                     class="w-full h-full object-cover" />
                                             </picture>
                                         </figure>
