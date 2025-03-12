@@ -37,6 +37,16 @@ const router = createRouter({
             component: () => import('../views/ProductDetails.vue'),
         },
         {
+            path: '/content',
+            name: 'Inspiration',
+            component: () => import('../views/BlogCategoryPage.vue'),
+        },
+        {
+            path: '/content/:id',
+            name: 'content-category',
+            component: () => import('../views/BlogCategoryPage.vue'),
+        },
+        {
             path: '/category/:id',
             name: 'category',
             component: () => import('../views/Category.vue'),
@@ -49,6 +59,11 @@ const router = createRouter({
         {
             path: '/category/:grand/:parent/:id',
             name: 'sub-sub-category',
+            component: () => import('../views/Category.vue'),
+        },
+        {
+            path: '/blog',
+            name: 'content-blog',
             component: () => import('../views/Category.vue'),
         },
     ],
