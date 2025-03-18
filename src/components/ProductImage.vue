@@ -18,13 +18,14 @@ import { computed } from 'vue';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
+    variantId: {type: String, default: '', required: false},
 });
 
 const image = computed(() => {
-    return findImage(product.value);
+    return findImage(product.value, variantId.value);
 });
 
-const { product } = toRefs(props);
+const { product, variantId } = toRefs(props);
 const error = ref(false);
 </script>
 <style lang="css" scoped>

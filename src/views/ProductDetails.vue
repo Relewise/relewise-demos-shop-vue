@@ -5,7 +5,7 @@
 
             <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
-                    <ProductImage :product="product" class="!h-[300px] xl:!h-[600px] !w-auto" />
+                    <ProductImage :product="product" :variantId="variantId" class="!h-[300px] xl:!h-[600px] !w-auto" />
                 </div>
 
                 <div class="bg-white flex-grow">
@@ -110,9 +110,9 @@
                                 <td class="py-2 px-3">
                                     {{ variant.displayName }}
                                 </td>
-                                <td class="py-2 px-3">
-                                    {{ variant.variantId }}
-                                </td>
+                                <router-link :to="{ path: $route.path, query: { variantId: variant.variantId } }" class="text-blue-600 underline">
+                                        {{ variant.variantId }}
+                                    </router-link>
                                 <td class="py-2 px-3 text-green-600">
                                     In stock
                                 </td>
@@ -190,6 +190,7 @@ const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const similarProds = ref<ProductRecommendationResponse | null | undefined>(null);
 const languageCode = contextStore.defaultSettings.language;
 const dynamicKey = `${languageCode}_StockLevel`;
+const variantId = computed(() => route.query.variantId?.toString() ?? '');
 
 const details = computed(() => {
     if (!product.value) return [];

@@ -1,7 +1,11 @@
 import type { DataValue, ProductResult } from '@relewise/client';
 
-export const findImage = (product: ProductResult) => {
-    return mapDataKey(product.variant?.data ?? {}) ??
+export const findImage = (product: ProductResult, varId?: string) => {
+    const variantData = varId
+        ? product.filteredVariants?.find(v => v.variantId === varId)?.data
+        : product.variant?.data;
+
+    return mapDataKey(variantData ?? {}) ??
         mapDataKey(product.data ?? {}) ??
         '';
 };
