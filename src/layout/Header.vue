@@ -75,7 +75,7 @@ const route = useRoute();
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
                     <div class="xl:items-center flex-grow">
-                        <component :is="route.path === '/content' ? ContentSearchOverlay : SearchOverlay" />
+                        <component :is="route.path.startsWith('/content') || route.path.startsWith('/blog') ? ContentSearchOverlay : SearchOverlay" />
                     </div>
                     <div class="flex items-center gap-6">
                         <Popover placement="bottom-end">
