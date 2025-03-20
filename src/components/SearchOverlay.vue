@@ -337,19 +337,23 @@ function searchFor(term: string) {
                                 Articles
                             </h3>
                             <ul class="space-y-6">
-                                <li v-for="(blogpost) in contentElements?.results" :key="blogpost.contentId??''"
+                                <li v-for="(blogpost) in contentElements?.results" :key="blogpost.contentId ?? ''"
                                     class="flex items-center">
-                                    <a class="flex items-center space-x-4">
-                                        <figure class="w-28 h-28 flex-shrink-0 overflow-hidden">
-                                            <picture>
-                                                <img :src="blogpost?.data?.Image.value"
-                                                    class="w-full h-full object-cover" />
-                                            </picture>
-                                        </figure>
-                                        <span class="text-lg font-semibold text-black">
-                                            {{ blogpost.displayName }}
-                                        </span>
-                                    </a>
+                                    <RouterLink :to="{ name: 'content-blog', params: { id: blogpost.contentId } }"
+                                        class="text-xl text-blue-600 hover:underline font-medium">
+                                        <a class="flex items-center space-x-4">
+                                            <figure class="w-28 h-28 flex-shrink-0 overflow-hidden">
+                                                <picture>
+                                                    <img :src="blogpost?.data?.Image.value"
+                                                        class="w-full h-full object-cover" />
+                                                </picture>
+                                            </figure>
+                                            <span class="text-lg font-semibold text-black">
+                                                {{ blogpost.displayName }}
+                                            </span>
+                                        </a>
+                                    </RouterLink>
+
                                 </li>
                             </ul>
                         </div>
