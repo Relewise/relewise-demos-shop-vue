@@ -62,9 +62,9 @@ const router = createRouter({
             component: () => import('../views/Category.vue'),
         },
         {
-            path: '/blog',
+            path: '/blog/:id',
             name: 'content-blog',
-            component: () => import('../views/Category.vue'),
+            component: () => import('../views/blogpost.vue'),
         },
     ],
 });
