@@ -27,10 +27,8 @@ const { content } = toRefs(props);
                 <div v-html="content.data?.Body.value ?? 'No description available.'" class="text-sm text-slate-700 line-clamp-2"></div>
             </div>
         </div>
-        <div class="w-32 h-32 flex-shrink-0">
-            <div class="relative w-full h-full overflow-hidden justify-center flex">
-                <ProductImage :product="content" />
-            </div>
+        <div class="w-32 h-32 flex-shrink-0 flex items-center justify-center">
+            <ProductImage :product="content" class="max-w-full max-h-full object-contain" />
         </div>
     </div>
 </template>
