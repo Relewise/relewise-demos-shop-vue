@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ContentResult, ContentSearchResponse } from '@relewise/client';
-import { toRefs, type PropType } from 'vue';
+import type { ContentResult } from '@relewise/client';
+import { toRefs, type PropType, computed } from 'vue';
 import ProductImage from './ProductImage.vue';
 
 const props = defineProps({
@@ -8,6 +8,21 @@ const props = defineProps({
 });
 
 const { content } = toRefs(props);
+
+const summarySnippet = computed(() => {
+    const highlight = content.value?.highlight;
+    const snippetText = highlight?.snippets?.data?.find(h => h.key === 'Summary')?.value?.[0]?.text;
+    const offset = highlight?.offsets?.data?.find(h => h.key === 'Summary')?.value?.[0];
+
+    if (snippetText && offset) {
+        const before = snippetText.slice(0, offset.lowerBoundInclusive);
+        const match = snippetText.slice(offset.lowerBoundInclusive, offset.upperBoundInclusive + 1);
+        const after = snippetText.slice(offset.upperBoundInclusive + 1);
+        return `${before}<strong>${match}</strong>${after}`;
+    }
+
+    return snippetText ?? content.value?.data?.Summary?.value ?? 'No description available.';
+});
 
 </script>
 
@@ -24,7 +39,7 @@ const { content } = toRefs(props);
                 /content-blog/{{ content.contentId }}
             </div>
             <div class="text-sm text-slate-700 line-clamp-2">
-                <div v-html="content.data?.Body.value ?? 'No description available.'" class="text-sm text-slate-700 line-clamp-2"></div>
+                <div v-html="summarySnippet" class="text-sm text-slate-700 line-clamp-2"></div>
             </div>
         </div>
         <div class="w-32 h-32 flex-shrink-0 flex items-center justify-center">

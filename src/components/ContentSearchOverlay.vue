@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { SearchCollectionBuilder, type ProductRecommendationResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { SearchCollectionBuilder, ContentHighlightingBuilder, type SearchTermPredictionResult, type PriceRangeFacetResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ContentResult from './ContentResult.vue';
 import { useRoute } from 'vue-router';
@@ -111,23 +111,48 @@ async function search() {
 
         applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
     }
-    const variationName = breakpointService.active.value.toUpperCase();
 
-    const selectedCategoryFilterIds = filters.value['category'];
-    const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
-
-    const request = new SearchCollectionBuilder()
-        .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
+    // const request = new SearchCollectionBuilder()
+        // .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
+        const request = new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .pagination(p => p.setPageSize(10).setPage(1))
-            .build())
+            .highlighting(h =>
+                h.enabled(true)
+                    .setHighlightable({
+                        displayName: true,
+                        dataKeys: ['Summary'],
+                    })
+                    .setLimit({
+                        maxEntryLimit: 10,
+                        maxSnippetsPerEntry: 4,
+                        maxSnippetsPerField: 1,
+                        maxWordsBeforeMatch: 20,
+                        maxWordsAfterMatch: 20,
+                        maxSentencesToIncludeBeforeMatch: 0,
+                        maxSentencesToIncludeAfterMatch: 0
+                    })
+                .setShape({
+                    snippets: {
+                        include: true,
+                        useEllipses: true,
+                        includeMatchedWords: true
+                        },
+                    offsets: {
+                        include: true
+                    }
+                    })
+                )
+                .build();
+            // .build())
 
-        .build();
+        // .build();
 
     abortController = new AbortController();
     const searcher = contextStore.getSearcher();
-    const response = await searcher.batch(request, { abortSignal: abortController.signal });
+    // const response = await searcher.batch(request, { abortSignal: abortController.signal });
+    const response = await searcher.searchContents(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
 
     const query = { ...filters.value };
@@ -135,9 +160,8 @@ async function search() {
 
     await router.push({ path: route.path, query: query, replace: true });
 
-    if (response && response.responses) {
-        result.value = response.responses[0] as ContentSearchResponse;
-    }
+    if(response)
+    result.value = response as ContentSearchResponse;
 }
 
 function searchFor(term: string) {
@@ -177,11 +201,9 @@ function searchFor(term: string) {
                             No products found
                         </div>
                         <div v-else>
-                                <div class="flex flex-col divide-y divide-slate-200">
-                                <ContentResult 
-                                    v-for="(content, pIndex) in result?.results" 
-                                    :key="content.contentId || pIndex"
-                                    :content="content" />
+                            <div class="flex flex-col divide-y divide-slate-200">
+                                <ContentResult v-for="(content, pIndex) in result?.results"
+                                    :key="content.contentId || pIndex" :content="content" />
                             </div>
                             <div class="py-3 flex justify-center">
                                 <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize"
