@@ -36,9 +36,9 @@
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, UserFactory } from '@relewise/client';
 
-const localeMap: Record<string, { language: string; currency: string }> = {
-    dk: { language: 'da-dk', currency: 'DKK' },
-    gb: { language: 'en-gb', currency: 'GBP' },
+const localeMap: Record<string, { language: string; currency: string; term: string }> = {
+    dk: { language: 'da-dk', currency: 'DKK', term:'belysning' },
+    gb: { language: 'en-gb', currency: 'GBP', term:'lighting' },
 };
 const userClassifications = [{ "country": "dk", "channel": "B2C" }, { "country": "gb", "channel": "B2C" }];
 
@@ -89,11 +89,11 @@ async function generateSearchImpactScenario() {
 
     userClassifications.forEach(classification => {
         for (let index = 0; index < 30; index++) {
-            const { user, settings } = createUserAndSettings(classification);
+            const { user, settings, term } = createUserAndSettings(classification);
 
             const builder = new ProductSearchBuilder(settings)
                 .setSelectedProductProperties({ displayName: true })
-                .setTerm('belysning')
+                .setTerm(term)
                 .pagination(
                     p => p
                         .setPageSize(100)
@@ -164,7 +164,7 @@ function createUserAndSettings(classification: { country: string; channel: strin
     user.classifications = classification;
 
     const { country } = classification;
-    const { language, currency } = localeMap[country] ?? { language: 'da-dk', currency: 'DKK' };
+    const { language, currency, term } = localeMap[country] ?? { language: 'da-dk', currency: 'DKK', term:'belysning' };
 
     const settings = {
         language,
@@ -173,7 +173,7 @@ function createUserAndSettings(classification: { country: string; channel: strin
         user: user
     };
 
-    return { user, settings };
+    return { user, settings, term };
 }
 
 // init();
