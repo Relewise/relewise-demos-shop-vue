@@ -14,6 +14,7 @@ import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters } from '@/stores/customFilters';
+import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -139,6 +140,9 @@ async function search() {
                     });
                 }
                 addAssortmentFilters(f);
+            })
+            .relevanceModifiers(rm=>{
+                addCampaignRelevanceModifier(rm);
             })
             .facets(f => {
 

@@ -85,6 +85,7 @@ import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addAssortmentFilters } from '@/stores/customFilters';
+import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -210,6 +211,9 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             addAssortmentFilters(f);
+        })
+        .relevanceModifiers(rm=>{
+            addCampaignRelevanceModifier(rm);
         })
         .facets(f => {
             if (renderCatoryLinks.value) {

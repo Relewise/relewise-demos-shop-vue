@@ -12,13 +12,26 @@ const { content } = toRefs(props);
 const summarySnippet = computed(() => {
     const highlight = content.value?.highlight;
     const snippetText = highlight?.snippets?.data?.find(h => h.key === 'Summary')?.value?.[0]?.text;
-    const offset = highlight?.offsets?.data?.find(h => h.key === 'Summary')?.value?.[0];
+    const matchedOffsets = highlight?.snippets?.data?.find(h => h.key === 'Summary')?.value?.[0]?.matchedWords?.map(m => m.offset) ?? [];
 
-    if (snippetText && offset) {
-        const before = snippetText.slice(0, offset.lowerBoundInclusive);
-        const match = snippetText.slice(offset.lowerBoundInclusive, offset.upperBoundInclusive + 1);
-        const after = snippetText.slice(offset.upperBoundInclusive + 1);
-        return `${before}<strong>${match}</strong>${after}`;
+    if (snippetText && matchedOffsets.length > 0) {
+        const sortedOffsets = matchedOffsets.sort((a, b) => {
+            if (!a || !b) return 0;
+            return a.lowerBoundInclusive - b.lowerBoundInclusive;
+        });
+
+        let result = '';
+        let currentIndex = 0;
+
+        for (const offset of sortedOffsets) {
+            if (!offset) continue;
+            result += snippetText.slice(currentIndex, offset.lowerBoundInclusive);
+            result += '<strong>' + snippetText.slice(offset.lowerBoundInclusive, offset.upperBoundInclusive + 1) + '</strong>';
+            currentIndex = offset.upperBoundInclusive + 1;
+        }
+
+        result += snippetText.slice(currentIndex);
+        return result;
     }
 
     return snippetText ?? content.value?.data?.Summary?.value ?? 'No description available.';

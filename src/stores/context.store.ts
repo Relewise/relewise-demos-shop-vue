@@ -5,6 +5,8 @@ import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
 
+const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
 export interface IDataset {
     datasetId: string;
     apiKey: string;
@@ -58,6 +60,19 @@ class AppContext {
             });
             this.initializeWebComponents();
         }
+    }
+
+    public get utm(): string | undefined {
+        const urlParams = new URLSearchParams(window.location.search);
+        for (const key of utmKeys) {
+            const value = urlParams.get(key);
+            if (value) return value;
+        }
+        return undefined;
+    }
+
+    public get hasUtmParams(): boolean {
+        return this.utm !== undefined;
     }
 
     public get isConfigured() {
