@@ -1,5 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedContentPropertiesSettings, type SelectedVariantPropertiesSettings } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedContentPropertiesSettings, type SelectedVariantPropertiesSettings, FilterBuilder } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
@@ -137,8 +137,31 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
-            filteredVariants: {inheritFiltersFromRequest: true}
+            filteredVariants: { inheritFiltersFromRequest: true }
         } as SelectedProductPropertiesSettings;
+    }
+
+    public selectedPdPWithVariantProductProperties(productId: string): SelectedProductPropertiesSettings {
+        const props: SelectedProductPropertiesSettings = {
+            displayName: true,
+            allData: true,
+            brand: true,
+            categoryPaths: true,
+            pricing: true,
+            filteredVariants: {
+                filters:
+                    new FilterBuilder()
+                        .addProductIdFilter(productId)
+                        .build()
+                    ,  inheritFiltersFromRequest: false},
+            assortments: false,
+            viewedByUserInfo: false,
+            purchasedByUserInfo: false,
+            allVariants: false,
+            viewedByUserCompanyInfo: false,
+            purchasedByUserCompanyInfo: false
+        };
+        return props;
     }
 
     public get selectedVariantProperties(): SelectedVariantPropertiesSettings {

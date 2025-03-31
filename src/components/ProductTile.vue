@@ -15,7 +15,7 @@ const { product } = toRefs(props);
 </script>
 
 <template>
-    <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
+    <RouterLink :to="{ name: 'product', params: { id: product.productId }, ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {}) }"
                 class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
         <div class="relative flex h-max-[275px] overflow-hidden justify-center">
             <ProductImage :product="product"/>
@@ -56,11 +56,13 @@ const { product } = toRefs(props);
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
                 <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
                     {{ product.displayName }}
+
                 </h5>
-                <!-- <div v-if="product.variant" class="text-sm text-zinc-500">
-                    <div>Color: {{ product.variant.data?.Color.value }}</div>
-                    <div>Material: {{ product.variant.data?.Material.value }}</div>
-                </div> -->
+                <div v-if="product.variant" class="text-sm text-slate-600">
+                    <div><b>Variant Displayname:</b> <span v-html="product.variant.displayName"></span></div>
+
+                    <div><b>VariantId:</b> <span v-html="product.variant.data?.Partnumber.value"></span></div>
+                </div>
             </div>
             <div class="my-2 flex items-center justify-between">
                 <p>
