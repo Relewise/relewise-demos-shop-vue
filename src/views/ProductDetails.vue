@@ -14,13 +14,13 @@
                             <span class="text-slate-600 mb-4 text-lg">{{ product.brand.displayName }}</span>
                         </div>
                         <h1 class="text-2xl mb-4 font-semibold">
-                            <span v-if="variantId">
+                            <template v-if="variantId">
                                 <span v-html="product.variant?.displayName"></span>
-                            </span>
-                            <span v-else>
+                            </template>
+                            <template v-else>
                                 <span v-html="product.displayName"></span>
-                            </span>
-                          
+                            </template>
+
                         </h1>
 
                         <div v-if="product.data && product.data.description && product.data.description.value">
@@ -79,12 +79,12 @@
                                     </dt>
 
                                     <dd class="break-all">
-                                    <template v-if="value && value.value?.$values">
-                                        {{ value.value.$values.join(', ') }}
-                                    </template>
-                                    <template v-else>
-                                        {{ value.value }}
-                                    </template>
+                                        <template v-if="value && value.value?.$values">
+                                            {{ value.value.$values.join(', ') }}
+                                        </template>
+                                        <template v-else>
+                                            {{ value.value }}
+                                        </template>
                                     </dd>
                                 </template>
                             </template>
@@ -130,26 +130,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(variant, index) in product.filteredVariants.slice(0, 10)" :key="index" class="border-b border-gray-200">
-                                <td class="py-2 px-3">
-                                    <img :src="variant.data?.Image?.value" alt="Variant Image"
-                                        class="w-12 h-12 object-contain" />
-                                </td>
-                                <td class="py-2 px-3">
-                                    <span v-html="variant.displayName"></span>
-                                </td>
-                                <router-link :to="{ path: $route.path, query: { variantId: variant.variantId } }" class="text-blue-600 underline">
+                            <tr v-for="(variant, index) in product.filteredVariants.slice(0, 10)" :key="index"
+                                class="border-b border-gray-200">
+                                <template v-if="variant.variantId != variantId">
+                                    <td class="py-2 px-3">
+                                        <img :src="variant.data?.Image?.value" alt="Variant Image"
+                                            class="w-12 h-12 object-contain" />
+                                    </td>
+                                    <td class="py-2 px-3">
+                                        <span v-html="variant.displayName"></span>
+                                    </td>
+                                    <router-link :to="{ path: $route.path, query: { variantId: variant.variantId } }"
+                                        class="text-blue-600 underline">
                                         {{ variant.variantId }}
                                     </router-link>
-                                <td class="py-2 px-3 text-green-600">
-                                    In stock
-                                </td>
-                                <td class="py-2 px-3 font-semibold">
-                                    EUR {{variant.listPrice??product.listPrice}}
-                                </td>
-                                <td class="py-2 px-3 font-semibold">
-                                    EUR {{variant.salesPrice??product.salesPrice}}
-                                </td>
+                                    <td class="py-2 px-3 text-green-600">
+                                        In stock
+                                    </td>
+                                    <td class="py-2 px-3 font-semibold">
+                                        EUR {{ variant.listPrice ?? product.listPrice }}
+                                    </td>
+                                    <td class="py-2 px-3 font-semibold">
+                                        EUR {{ variant.salesPrice ?? product.salesPrice }}
+                                    </td>
+                                </template>
                             </tr>
                         </tbody>
                     </table>
@@ -159,7 +163,7 @@
             </template>
         </div>
 
-        <div v-if="product!.data && product!.data.SoldOut && product!.data.SoldOut.value == 'true'">
+        <div v-if="product && product!.data && product!.data.SoldOut && product!.data.SoldOut.value == 'true'">
             <div class="my-3">
                 <div class="text-2xl font-semibold">
                     Sold out....consider an alternative
@@ -202,11 +206,11 @@ import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, SimilarProductsProductBuilder, type CategoryNameAndIdResult, type ProductRecommendationResponse, type ProductResult } from '@relewise/client';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import ProductImage from '../components/ProductImage.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
-import { addAssortmentFilters, addCartFilter } from '@/stores/customFilters';
+import { addAssortmentFilters, addCartFilter, removeEmptyBrandFilter } from '@/stores/customFilters';
 import ProductTile from '../components/ProductTile.vue';
 import { onBeforeRouteUpdate } from 'vue-router';
 
@@ -231,6 +235,7 @@ const details = computed(() => {
 });
 
 async function init() {
+    console.log("RUNNING INIT");
     const id = route.params.id;
     if (id && !Array.isArray(id)) {
         productId.value = id;
@@ -243,21 +248,21 @@ async function init() {
             builder.setExplodedVariants(1);
         } else {
             builder.setSelectedProductProperties(contextStore.selectedPdPProductProperties);
-        }   
-            const request = builder
+        }
+        const request = builder
             .setSelectedVariantProperties(contextStore.selectedVariantProperties)
-            .filters(f => 
-                {
-                    f.addProductIdFilter([id]);
-                    if(variantId.value)
-                        f.addVariantIdFilter([variantId.value]);
-                }
-                
+            .filters(f => {
+                f.addProductIdFilter([id]);
+                removeEmptyBrandFilter(f);
+                if (variantId.value)
+                    f.addVariantIdFilter([variantId.value]);
+            }
+
             )
             .pagination(p => p.setPageSize(1))
 
             .build();
-            
+
         request.custom = { "Debug_TraceMerchandising": "true" };
 
         const searcher = contextStore.getSearcher();
@@ -270,6 +275,7 @@ async function init() {
             .filters(f => {
                 // Safely add assortment and cart filters
                 addAssortmentFilters(f);
+                removeEmptyBrandFilter(f);
                 addCartFilter(f);
 
                 // Safely access the category ID
@@ -296,12 +302,18 @@ async function init() {
     }
 }
 
-init();
-
-onBeforeRouteUpdate((to, from, next) => {
-    init();
-    next();
+watchEffect(() => {
+  const id = route.params.id;
+  const variant = route.query.variantId;
+  init(); // will re-run when either id or variantId changes
 });
+
+// onBeforeRouteUpdate((to, from, next) => {
+//     init();
+//     next();
+// });
+
+
 
 function addToBasket() {
     if (!product.value) return;

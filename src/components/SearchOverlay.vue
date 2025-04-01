@@ -13,7 +13,7 @@ import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
-import { addAssortmentFilters } from '@/stores/customFilters';
+import { addAssortmentFilters, removeEmptyBrandFilter } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
 
 const open = ref(false);
@@ -156,6 +156,7 @@ async function search() {
                     });
                 }
                 addAssortmentFilters(f);
+                removeEmptyBrandFilter(f);
             })
             .relevanceModifiers(rm => {
                 addCampaignRelevanceModifier(rm);

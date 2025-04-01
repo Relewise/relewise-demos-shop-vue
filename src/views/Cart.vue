@@ -104,6 +104,7 @@ import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
+import { removeEmptyBrandFilter } from '@/stores/customFilters';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -130,7 +131,7 @@ async function recommend() {
                 productId: item.product.productId as string,
             })),
         )
-        .filters(builder => globalProductRecommendationFilters(builder))
+        .filters(builder => {globalProductRecommendationFilters(builder); removeEmptyBrandFilter(builder);})
         .build();
 
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);

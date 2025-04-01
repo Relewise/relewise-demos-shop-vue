@@ -84,7 +84,7 @@ import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
-import { addAssortmentFilters } from '@/stores/customFilters';
+import { addAssortmentFilters, removeEmptyBrandFilter } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
 
 const products = ref<ProductWithType[] | null>(null);
@@ -128,6 +128,7 @@ async function init() {
             .setSelectedCategoryProperties({ displayName: true })
             .filters(f => {
                 f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]);
+                removeEmptyBrandFilter(f);
             })
             .facets(f => f.addProductCategoryHierarchyFacet('Descendants', [], { displayName: true }))
             .build();
@@ -211,6 +212,7 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             addAssortmentFilters(f);
+            removeEmptyBrandFilter(f);
         })
         .relevanceModifiers(rm=>{
             addCampaignRelevanceModifier(rm);

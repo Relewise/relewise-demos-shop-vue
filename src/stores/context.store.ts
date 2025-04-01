@@ -4,6 +4,7 @@ import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
+import { removeEmptyBrandFilter } from './customFilters';
 
 const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
 
@@ -316,6 +317,7 @@ class AppContext {
                 filters: {
                     product(builder) {
                         globalProductRecommendationFilters(builder);
+                        removeEmptyBrandFilter(builder);
                     },
                 },
             }).useRecommendations();

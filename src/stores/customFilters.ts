@@ -16,6 +16,10 @@ export function addAssortmentFilters(filterBuilder: FilterBuilder) {
     }
 }
 
+export function removeEmptyBrandFilter(filterBuilder: FilterBuilder) {
+    filterBuilder.addBrandIdFilter("empty", true);
+}
+
 export function addCartFilter(filterBuilder: FilterBuilder)
 {
     const productIds = basketService.model.value.lineItems.map(p=>p.product.productId) as string[];

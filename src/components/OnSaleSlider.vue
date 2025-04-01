@@ -19,6 +19,7 @@ import { ref } from 'vue';
 import { DataValueFactory, PopularProductsBuilder, type ProductRecommendationResponse } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
+import { removeEmptyBrandFilter } from '@/stores/customFilters';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -35,6 +36,7 @@ async function recommend() {
         .filters(builder => {
             builder.addProductDataFilter('OnSale', c => c.addEqualsCondition(DataValueFactory.string('true')));
             globalProductRecommendationFilters(builder); 
+            removeEmptyBrandFilter(builder);
         })
         .build();
 
