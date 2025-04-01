@@ -438,7 +438,7 @@ function searchFor(term: string) {
                                                 <RouterLink
                                                     :to="{
                                                         name: 'product',
-                                                        params: { id: variant.variantId },
+                                                        params: { id: product.productId },
                                                         ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {})}"
                                                     class="block text-blue-600 underline">
                                                     {{ variant.variantId }}
