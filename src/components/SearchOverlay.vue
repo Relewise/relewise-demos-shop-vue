@@ -34,17 +34,17 @@ let abortController = new AbortController();
 
 const pageSize = 40;
 
-import type { ProductResult } from '@relewise/client';
+import type { ProductResult, VariantResult } from '@relewise/client';
 
 const groupedProducts = computed(() => {
-    const groups: Record<string, ProductResult & { Variants: ProductResult[] }> = {};
+    const groups: Record<string, ProductResult & { Variants: VariantResult[] }> = {};
 
-    result.value?.results?.forEach((product) => {
+result.value?.results?.forEach((product) => {
         const id = product.productId as string;
         if (!groups[id]) {
             groups[id] = { ...product, Variants: [] };
         }
-        groups[id].Variants.push(product);
+        groups[id].Variants.push(product.variant as VariantResult);
     });
 
     return Object.values(groups);
@@ -409,7 +409,7 @@ function searchFor(term: string) {
                                         name: 'product',
                                         params: { id: product.productId }
                                     }" class="text-blue-600 underline">
-                                        {{ product.displayName }}
+                                        <span v-html="product.displayName"></span>
                                     </RouterLink>
                                 </h3>
                                 <table class="w-full mt-4 border-t border-gray-200 text-left text-sm">
@@ -425,7 +425,7 @@ function searchFor(term: string) {
                                     </thead>
                                     <tbody>
                                         <tr v-for="(variant, index) in product.Variants"
-                                            :key="variant.variant?.variantId ?? 'variant-' + index"
+                                            :key="variant.variantId ?? 'variant-' + index"
                                             class="border-b border-gray-200">
                                             <td class="py-2 px-3">
                                                 <img :src="variant.data?.Image?.value" alt="Variant Image"
@@ -438,10 +438,10 @@ function searchFor(term: string) {
                                                 <RouterLink
                                                     :to="{
                                                         name: 'product',
-                                                        params: { id: variant.productId },
+                                                        params: { id: variant.variantId },
                                                         ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {})}"
                                                     class="block text-blue-600 underline">
-                                                    {{ variant.variant?.variantId }}
+                                                    {{ variant.variantId }}
                                                 </RouterLink>
                                             </td>
 
