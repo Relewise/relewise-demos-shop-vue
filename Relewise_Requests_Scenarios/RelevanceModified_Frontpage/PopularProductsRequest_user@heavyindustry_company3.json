@@ -1,0 +1,79 @@
+{
+    "$type": "Relewise.Client.Requests.Recommendations.PopularProductsRequest, Relewise.Client",
+    "BasedOn": "MostPurchased",
+    "SinceMinutesAgo": 20160,
+    "Settings": {
+      "NumberOfRecommendations": 8,
+      "AllowFillIfNecessaryToReachNumberOfRecommendations": true,
+      "AllowReplacingOfRecentlyShownRecommendations": true,
+      "RecommendVariant": false,
+      "SelectedProductProperties": {
+        "DisplayName": true,
+        "CategoryPaths": false,
+        "Assortments": false,
+        "Pricing": false,
+        "AllData": false,
+        "ViewedByUserInfo": false,
+        "PurchasedByUserInfo": false,
+        "Brand": true,
+        "AllVariants": false,
+        "ViewedByUserCompanyInfo": false,
+        "PurchasedByUserCompanyInfo": false
+      },
+      "PrioritizeDiversityBetweenRequests": false
+    },
+    "Language": {
+      "Value": "nl"
+    },
+    "User": {
+      "AuthenticatedId": "c8ccb4a2-5eac-4439-be05-2aba1971067b",
+      "Email": "user@heavyindustry_company3",
+      "Classifications": {
+        "IndustryType": "Heavy"
+      },
+      "Identifiers": {},
+      "Data": {},
+      "Company": {
+        "Id": "Company3"
+      }
+    },
+    "RelevanceModifiers": {},
+    "Filters": {
+      "Items": [
+        {
+          "$type": "Relewise.Client.Requests.Filters.ProductDataFilter, Relewise.Client",
+          "Key": "SoldOut",
+          "FilterOutIfKeyIsNotFound": false,
+          "MustMatchAllConditions": true,
+          "Conditions": {
+            "Items": [
+              {
+                "$type": "Relewise.Client.Requests.Conditions.EqualsCondition, Relewise.Client",
+                "Value": {
+                  "Type": "String",
+                  "Value": "false",
+                  "IsCollection": false
+                },
+                "TypeName": "EqualsCondition",
+                "Negated": false
+              }
+            ]
+          },
+          "TypeName": "ProductDataFilter",
+          "Negated": false
+        },
+        {
+          "$type": "Relewise.Client.Requests.Filters.BrandIdFilter, Relewise.Client",
+          "BrandIds": [
+            "empty"
+          ],
+          "TypeName": "BrandIdFilter",
+          "Negated": true
+        }
+      ]
+    },
+    "DisplayedAtLocationType": "Relewise Demo Store",
+    "Currency": {
+      "Value": "EUR"
+    }
+  }

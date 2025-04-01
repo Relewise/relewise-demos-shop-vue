@@ -302,18 +302,23 @@ async function init() {
     }
 }
 
-watchEffect(() => {
-  const id = route.params.id;
-  const variant = route.query.variantId;
-  init(); // will re-run when either id or variantId changes
-});
+watch(
+  () => [route.params.id, route.query.variantId],
+  (newVal, oldVal) => {
+    const [newId, newVariantId] = newVal;
+    const [oldId, oldVariantId] = oldVal ?? [];
 
-// onBeforeRouteUpdate((to, from, next) => {
-//     init();
-//     next();
+    if (newId !== oldId || newVariantId !== oldVariantId) {
+      init();
+    }
+  },
+  { immediate: true }
+);
+// watchEffect(() => {
+//   const id = route.params.id;
+//   const variant = route.query.variantId;
+//   init(); // will re-run when either id or variantId changes
 // });
-
-
 
 function addToBasket() {
     if (!product.value) return;

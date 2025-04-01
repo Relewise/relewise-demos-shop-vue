@@ -1,0 +1,19 @@
+Company 1
+Manometer - PR3676302379133640 - 12531025
+Terugslagklep - PR4026386266540115 - 1048615
+Vlinderklep - PR1325906861612829 - 13417033
+Kogelkraan - PR1508089113332228 – 11286295
+
+Company2
+koppeling- PR1227086996662411 - 24125960
+pakking - PR1445869060999, 12476702
+pakking - PR1579278066335918, 13258825
+momentsleutel - PR_EC002132_0178_GGE – 23448540
+
+Company 3
+Manometer - PR1579278045751142 - 14229197
+pakking - PR1579278066335918, 13258825
+
+
+Show difference between different recommendations. (heavy industry users)
+Show different searches for "manometer" - show difference in Troubleshooter

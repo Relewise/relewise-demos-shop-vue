@@ -81,7 +81,7 @@ async function getCategories(searcher: Searcher) {
             :main-categories="mainCategories"/>
 
     <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <RouterView/>
+        <router-view :key="$route.name" />
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
 
