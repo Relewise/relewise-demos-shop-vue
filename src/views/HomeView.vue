@@ -6,6 +6,7 @@ import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import OnSaleSlider from '@/components/OnSaleSlider.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
 import PopularCategories from '@/components/PopularCategories.vue';
+import { removeEmptyBrandFilter } from '@/stores/customFilters';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
 
@@ -19,7 +20,12 @@ async function recommend() {
 
     const recommender = contextStore.getRecommender();
 
-    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(4).sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo()).build();
+    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings)
+        .setWeights({brandViews: 2, productPurchases: 4, productViews: 2})
+        .setNumberOfRecommendations(4)
+        .sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo())
+        .filters(f=>removeEmptyBrandFilter(f))
+    .build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
 }

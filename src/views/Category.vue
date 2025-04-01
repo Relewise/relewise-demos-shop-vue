@@ -201,7 +201,7 @@ async function search() {
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
-        .setExplodedVariants(1)
+        //.setExplodedVariants(1)
         .setRetailMedia({
             location: {
                 key: 'PRODUCT_LISTING_PAGE',
