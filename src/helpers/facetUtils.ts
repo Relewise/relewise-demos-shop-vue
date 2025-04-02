@@ -34,8 +34,8 @@ export function shouldApplyRangeFacet(
     return shouldApply ? [Number(range[0]), Number(range[1])] : [undefined, undefined];
   }
 
-  function findFacetByKey(key: string) {
-    return result.value?.facets?.items?.find(
-      (f): f is { key: string } => 'key' in f && f.key === key
-    );
-  }
+//   function findFacetByKey(key: string) {
+//     return result.value?.facets?.items?.find(
+//       (f): f is { key: string } => 'key' in f && f.key === key
+//     );
+//   }
