@@ -15,6 +15,7 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters, removeEmptyBrandFilter } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
+import { shouldApplyRangeFacet, getDoubleRangeFacetBounds } from '@/helpers/facetUtils';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -24,17 +25,20 @@ const fallbackRecommendations = ref<ProductRecommendationResponse | null | undef
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const contentElements = ref<ContentSearchResponse | null>(null);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[]  });
+ //const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[]  });
 const route = useRoute();
 
 const selectedCategoriesForFilters = ref<ProductCategoryResult[]>([]);
 const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
 
+
+
 let abortController = new AbortController();
 
 const pageSize = 40;
 
-import type { ProductResult, VariantResult } from '@relewise/client';
+import type { DoubleNullableProductDataRangeFacetResult, ProductResult, VariantResult } from '@relewise/client';
 
 const groupedProducts = computed(() => {
     const groups: Record<string, ProductResult & { Variants: VariantResult[] }> = {};
@@ -124,6 +128,15 @@ async function search() {
     if (!show) return; else showOrHide(show);
 
     filters.value.term = searchTerm.value;
+    
+    const EF022456_MMT_FLOATFacet = result.value?.facets?.items?.find(f => f.key === 'EF022456_MMT_FLOAT');
+    const [floatMin, floatMax] = getDoubleRangeFacetBounds('EF022456_MMT_FLOAT', filters.value, EF022456_MMT_FLOATFacet);
+
+    const EF023270_CEL_FLOAT_MINFacet = result.value?.facets?.items?.find(f => f.key === 'EF023270_CEL_FLOAT_MIN');
+    const [celMin_MIN, celMax_MIN] = getDoubleRangeFacetBounds('EF023270_CEL_FLOAT_MIN', filters.value, EF023270_CEL_FLOAT_MINFacet);
+
+    const EF023270_CEL_FLOAT_MAXFacet = result.value?.facets?.items?.find(f => f.key === 'EF023270_CEL_FLOAT_MAX');
+    const [celMin_MAX, celMax_MAX] = getDoubleRangeFacetBounds('EF023270_CEL_FLOAT_MIN', filters.value, EF023270_CEL_FLOAT_MAXFacet);
 
     let applySalesPriceFacet = false;
     if (result.value?.facets?.items?.length === 3) {
@@ -189,6 +202,10 @@ async function search() {
                 f.addSalesPriceRangeFacet('Product',
                     applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
                     applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+                
+                f.addProductDataDoubleRangeFacet('EF022456_MMT_FLOAT', 'Variant', floatMin, floatMax)
+                f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MIN', 'Variant', celMin_MIN, celMax_MIN)
+                f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MAX', 'Variant', celMin_MAX, celMax_MAX)
             })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
