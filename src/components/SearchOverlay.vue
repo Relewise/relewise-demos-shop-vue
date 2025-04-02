@@ -139,8 +139,8 @@ async function search() {
     const [celMin_MAX, celMax_MAX] = getDoubleRangeFacetBounds('EF023270_CEL_FLOAT_MIN', filters.value, EF023270_CEL_FLOAT_MAXFacet);
 
     let applySalesPriceFacet = false;
-    if (result.value?.facets?.items?.length === 3) {
-        const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
+    if(result.value?.facets?.items?.find(f => f.field === 'SalesPrice')){
+        const salesPriceFacet = result.value?.facets?.items?.find(f => f.field === 'SalesPrice')  as PriceRangeFacetResult;
 
         const bothPriceFiltersSet = filters.value.price.length === 2;
 
@@ -160,7 +160,7 @@ async function search() {
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({ displayName: true, allData: true })
+            .setSelectedVariantProperties({ displayName: true, pricing:true, allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds)) {
@@ -199,7 +199,7 @@ async function search() {
                         ? filters.value['brand']
                         : null);
 
-                f.addSalesPriceRangeFacet('Product',
+                f.addSalesPriceRangeFacet('Variant',
                     applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
                     applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
                 

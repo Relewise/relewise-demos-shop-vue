@@ -44,11 +44,11 @@
 
                         <div>
                             <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
-                                {{ $format(product.salesPrice) }}
+                                {{ $format(product.variant?.salesPrice ?? product.salesPrice) }}
                             </h3>
                             <span v-if="product.salesPrice !== product.listPrice"
                                 class="text-slate-900 line-through ml-4">
-                                {{ $format(product.listPrice) }}
+                                {{ $format(product.variant?.listPrice ?? product.listPrice) }}
                             </span>
                         </div>
                     </div>
