@@ -11,11 +11,11 @@
                     Personalization
                 </span>
             </div>
-            <div :class="(openTab == Tabs.DemoScenarios ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'" @click="() => openTab = Tabs.DemoScenarios">
+            <!-- <div :class="(openTab == Tabs.DemoScenarios ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'" @click="() => openTab = Tabs.DemoScenarios">
                 <span>
                     Demo Scenarios
                 </span>
-            </div>
+            </div> -->
         </div>
         <div class="">
             <Settings v-if="openTab === Tabs.Settings"/>
