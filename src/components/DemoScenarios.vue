@@ -17,6 +17,11 @@
                 </button>
             </div>
             <div class="flex items-center mb-8">
+                <button class="bg-gray-500 text-white" @click="generateEriksSearchTermPredictions">
+                    Generate Eriks Search Term predictions
+                </button>
+            </div>
+            <div class="flex items-center mb-8">
                 <button class="bg-gray-500 text-white" @click="generateSearchImpactScenario">
                     Generate Search impact scenario
                 </button>
@@ -41,6 +46,50 @@ const localeMap: Record<string, { language: string; currency: string; term: stri
     gb: { language: 'en-gb', currency: 'GBP', term:'lighting' },
 };
 const userClassifications = [{ "country": "dk", "channel": "B2C" }, { "country": "gb", "channel": "B2C" }];
+
+async function generateEriksSearchTermPredictions() {
+
+const searcher = contextStore.getSearcher();
+const tracker = contextStore.getTracker();
+
+    for (let index = 0; index < 30; index++) {
+        const user = UserFactory.byTemporaryId(crypto.randomUUID());
+        user.classifications = {"TermDemo": "true"}
+
+        const settings = {
+        language: "nl",
+        currency: "EUR",
+        displayedAtLocation: '',
+        user: user
+    };
+
+        const builder = new ProductSearchBuilder(settings)
+            .setSelectedProductProperties({ displayName: true })
+            .setTerm('manometer')
+            .pagination(
+                p => p
+                    .setPageSize(100)
+                    .setPage(1)
+            )
+
+        searcher.searchProducts(builder.build());
+
+        builder.setTerm("manometer Onderaansluiting")
+        searcher.searchProducts(builder.build());
+        tracker.trackProductView({ productId: 'PR_EC011170_0008_MVD', user: user });
+
+        builder.setTerm("manometer afdichtring")
+        searcher.searchProducts(builder.build());
+        tracker.trackProductView({ productId: 'PR1259429315686539', user: user });
+
+        builder.setTerm("manometer kraan")
+        searcher.searchProducts(builder.build());
+        tracker.trackProductView({ productId: 'PR_EC010262_0017_MVD', user: user });
+};
+
+await refreshPredictionsAndPresorters();
+
+}
 
 async function generateSearchTermPredictions() {
 
@@ -78,9 +127,11 @@ async function generateSearchTermPredictions() {
 
         }
     });
-    await refreshPredictions();
+    await refreshPredictionsAndPresorters();
 
 }
+
+
 
 async function generateSearchImpactScenario() {
     const searcher = contextStore.getSearcher();
@@ -143,20 +194,15 @@ async function generateNullSearcScenario() {
     });
 }
 
-const refreshPredictions = async () => {
-    const url = `https://sandbox-api.relewise.com/${contextStore.context.value.datasetId}/tools/RebuildSearchPredictionCaches?datasetId=${contextStore.context.value.datasetId}&rebuildEvenIfNotStale=true`;
-
+const refreshPredictionsAndPresorters = async () => {
+        
     try {
-        const response = await fetch(url, {
-            method: 'GET'
-        });
+        var response = await fetch('https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production/tools/rebuild/' + contextStore.context.value.datasetId, { method: 'POST', body: null });
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
-        // const data = await response.json();
-        // console.log(data);
+        console.log(response);
     } catch (error) {
         console.error('Error calling API:', error);
     }

@@ -34,12 +34,6 @@
 import { ref, watch } from 'vue';
 import Slider from '@vueform/slider';
 
-// const props = defineProps<{
-//   value: [string, string];
-//   min?: number | null | undefined;
-//   max?: number | null | undefined;
-// }>();
-
 const props = defineProps<{
   value: [number | string, number | string];
   min?: number | null | undefined;
@@ -48,18 +42,11 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:value', 'update']);
 
-//const internalValue = ref<[string, string]>([props.value[0] || '', props.value[1] || '']);
 const internalValue = ref<[string, string]>([
   String(props.value[0] ?? ''),
   String(props.value[1] ?? ''),
 ]);
 
-// watch(
-//   () => props.value,
-//   (val) => {
-//     internalValue.value = [...val];
-//   }
-// );
 watch(
   () => props.value,
   (val) => {

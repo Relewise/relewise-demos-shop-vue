@@ -39,100 +39,101 @@
                 </template>
             </template>
 
-            
             <CheckListFacet  
-            v-if="facet.$type.includes('ContentDataStringValueFacetResult')"
-            :facet="facet"
-            class=""
-            @search="applyFacet" />
-
-
+                v-if="facet.$type.includes('ContentDataStringValueFacetResult')"
+                :facet="facet"
+                class=""
+                @search="applyFacet" />
+            
             <CheckListFacet
                 v-if="((facet.field == 'Category' && !hideCategoryFacet) || (facet.field === 'Brand' && !hideBrandFacet)) && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
                 class=""
                 @search="applyFacet"/>
             
+            <CheckListFacet 
+                v-if="(facet.key === 'EF000007__STRING')" 
+                :facet="facet"
+                class=""
+                @search="applyFacet"/>
+
+            <template v-if="isPriceRangeFacetResult(facet) && facet.field === 'SalesPrice'">
                 <RangeFacet
-                    v-else-if="facet.field === 'SalesPrice'"
+                    :facet="facet"
                     :value="[
                             filters[facet.key ?? 'price']?.[0] ?? (facet.available?.value?.lowerBoundInclusive ?? 0).toString(),
-                            filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()
-                        ]"
+                            filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()]"
                     :min="facet.available?.value?.lowerBoundInclusive"
                     :max="facet.available?.value?.upperBoundInclusive"
                     @update:value="(val) => filters.price = val"
                     @update="priceChange"
                 />
-
-                <template v-if="isDoubleRangeFacetResult(facet) && facet.key === 'EF022456_MMT_FLOAT' && (facet.available?.hits ?? 0) > 0">
-                    <RangeFacet
-                        :facet="facet"
-                        :value="[
+        </template>
+            <template v-if="isDoubleRangeFacetResult(facet) && facet.key === 'EF022456_MMT_FLOAT' && (facet.available?.hits ?? 0) > 0">
+                <RangeFacet
+                    :facet="facet"
+                    :value="[
+                        filters[facet.key ?? 'price']?.[0] ?? (facet.available?.value?.lowerBoundInclusive ?? 0).toString(),
+                        filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()]"
+                    :min="facet.available?.value?.lowerBoundInclusive"
+                    :max="facet.available?.value?.upperBoundInclusive"
+                    @update:value="(val) => filters[facet.key ?? 'price'] = val"
+                    @update="priceChange"
+                    />
+            </template>
+            <template v-if="isDoubleRangeFacetResult(facet) && facet.key === 'EF023270_CEL_FLOAT_MIN' && (facet.available?.hits ?? 0) > 0">
+                <RangeFacet
+                    :facet="facet"
+                    :value="[
                             filters[facet.key ?? 'price']?.[0] ?? (facet.available?.value?.lowerBoundInclusive ?? 0).toString(),
-                            filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()
-                        ]"
-                        :min="facet.available?.value?.lowerBoundInclusive"
-                        :max="facet.available?.value?.upperBoundInclusive"
-                        @update:value="(val) => filters[facet.key ?? 'price'] = val"
-                        @update="priceChange"
-                        />
-                </template>
-
-                <template v-if="isDoubleRangeFacetResult(facet) && facet.key === 'EF023270_CEL_FLOAT_MIN' && (facet.available?.hits ?? 0) > 0">
-                    <RangeFacet
-                        :facet="facet"
-                        :value="[
-                            filters[facet.key ?? 'price']?.[0] ?? (facet.available?.value?.lowerBoundInclusive ?? 0).toString(),
-                            filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()
-                        ]"
-                        :min="facet.available?.value?.lowerBoundInclusive"
-                        :max="facet.available?.value?.upperBoundInclusive"
-                        @update:value="(val) => filters[facet.key ?? 'price'] = val"
-                        @update="priceChange"
-                        />
-                </template>
-                <template v-if="isDoubleRangeFacetResult(facet) && facet.key === 'EF023270_CEL_FLOAT_MAX' && (facet.available?.hits ?? 0) > 0">
-                    <RangeFacet
-                        :facet="facet"
-                        :value="[
-                            filters[facet.key ?? 'price']?.[0] ?? (facet.available?.value?.lowerBoundInclusive ?? 0).toString(),
-                            filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()
-                        ]"
-                        :min="facet.available?.value?.lowerBoundInclusive"
-                        :max="facet.available?.value?.upperBoundInclusive"
-                        @update:value="(val) => filters[facet.key ?? 'price'] = val"
-                        @update="priceChange"
-                        />
-                </template>                         
+                            filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()]"
+                    :min="facet.available?.value?.lowerBoundInclusive"
+                    :max="facet.available?.value?.upperBoundInclusive"
+                    @update:value="(val) => filters[facet.key ?? 'price'] = val"
+                    @update="priceChange"
+                    />
+            </template>
+            <!-- <template v-if="isDoubleRangeFacetResult(facet) && facet.key === 'EF023270_CEL_FLOAT_MAX' && (facet.available?.hits ?? 0) > 0">
+                <RangeFacet
+                    :facet="facet"
+                    :value="[
+                        filters[facet.key ?? 'price']?.[0] ?? (facet.available?.value?.lowerBoundInclusive ?? 0).toString(),
+                        filters[facet.key ?? 'price']?.[1] ?? (facet.available?.value?.upperBoundInclusive ?? 0).toString()]"
+                    :min="facet.available?.value?.lowerBoundInclusive"
+                    :max="facet.available?.value?.upperBoundInclusive"
+                    @update:value="(val) => filters[facet.key ?? 'price'] = val"
+                    @update="priceChange"
+                    />
+            </template>                          -->
         </div>
     </template>
 </template>
 
 <script setup lang="ts">
-import type { CategoryHierarchyFacetResultCategoryNode, ContentDataStringValueFacet, ProductCategoryResult, ProductDataDoubleRangeFacet, ProductFacetResult } from '@relewise/client';
+import type { CategoryHierarchyFacetResultCategoryNode, ProductDataStringValueFacet, ContentDataStringValueFacet, ProductCategoryResult, ProductDataDoubleRangeFacet, ProductFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
 import RangeFacet from './RangeFacet.vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
-import type { DoubleNullableProductDataRangeFacetResult } from '@relewise/client';
+import type { DoubleNullableProductDataRangeFacetResult, PriceRangeFacetResult } from '@relewise/client';
 
-function isDoubleRangeFacetResult(
-  facet: unknown
-): facet is DoubleNullableProductDataRangeFacetResult {
-    // console.log("checking facet - " + JSON.stringify(facet, null, 2));
-    // console.log("checking !!facet - " + !!facet);
-    // console.log("checking typeof facet === 'object' - " + typeof facet === 'object');
-    // console.log("checking $type' in facet - " + '$type' in facet);
-    // console.log("checking (facet as any).$type?.includes('DoubleNullableProductDataRangeFacetResult') - " + (facet as any).$type?.includes('DoubleNullableProductDataRangeFacetResult'));
-
+function isDoubleRangeFacetResult(facet: unknown): facet is DoubleNullableProductDataRangeFacetResult {
   return (
     !!facet &&
     typeof facet === 'object' &&
     '$type' in facet &&
     (facet as any).$type?.includes('ProductDataDoubleRangeFacetResult')
+  );
+}
+
+function isPriceRangeFacetResult(facet: unknown): facet is PriceRangeFacetResult {
+  return (
+    !!facet &&
+    typeof facet === 'object' &&
+    '$type' in facet &&
+    (facet as any).$type?.includes('PriceRangeFacetResult')
   );
 }
 
@@ -153,7 +154,7 @@ const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCatego
 function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
     if (!value) return;
 
-    const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
+    const nameAsProp = name; //name.charAt(0).toLowerCase() + name.slice(1);
  
     const existing = filters.value[nameAsProp];
     if (existing && Array.isArray(existing)) {
@@ -190,11 +191,10 @@ return (
     (facet.field === 'Brand' && !props.hideBrandFacet) ||
     ((facet as ProductDataDoubleRangeFacet).key === 'EF022456_MMT_FLOAT') ||
     ((facet as ProductDataDoubleRangeFacet).key === 'EF023270_CEL_FLOAT_MIN') ||
-    ((facet as ProductDataDoubleRangeFacet).key === 'EF023270_CEL_FLOAT_MAX') ||
+    //((facet as ProductDataDoubleRangeFacet).key === 'EF023270_CEL_FLOAT_MAX') ||
+    ((facet as ProductDataStringValueFacet).key === 'EF000007__STRING')||
     (facet.field === 'Data' && 'key' in facet && facet.key === 'Brand') ||
-    (facet.field === 'Category' && !props.hideCategoryFacet) ||
-    facet.field === 'SalesPrice' ||
-    (facet.$type.includes('CategoryHierarchyFacetResult') && props.categoriesForFilterOptions)
+    (facet.field === 'Category' && !props.hideCategoryFacet) || facet.field === 'SalesPrice' || (facet.$type.includes('CategoryHierarchyFacetResult') && props.categoriesForFilterOptions)
   );
 }
 </script>

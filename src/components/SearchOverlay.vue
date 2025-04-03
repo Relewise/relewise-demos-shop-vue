@@ -26,7 +26,7 @@ const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const contentElements = ref<ContentSearchResponse | null>(null);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[]  });
- //const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[]  });
+//const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[], EF000007__STRING:[]  });
 const route = useRoute();
 
 const selectedCategoriesForFilters = ref<ProductCategoryResult[]>([]);
@@ -97,7 +97,7 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: '' };
+        filters.value = { price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[], eF000007__STRING:[] };
         router.push({ path: router.currentRoute.value.path, query: { ...route.query }, replace: true });
     }
     open.value = show;
@@ -194,9 +194,9 @@ async function search() {
                 f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
 
                 f.addBrandFacet(
-                    Array.isArray(filters.value['brand'])
-                        && filters.value['brand']?.length > 0
-                        ? filters.value['brand']
+                    Array.isArray(filters.value['Brand'])
+                        && filters.value['Brand']?.length > 0
+                        ? filters.value['Brand']
                         : null);
 
                 f.addSalesPriceRangeFacet('Variant',
@@ -205,7 +205,12 @@ async function search() {
                 
                 f.addProductDataDoubleRangeFacet('EF022456_MMT_FLOAT', 'Variant', floatMin, floatMax)
                 f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MIN', 'Variant', celMin_MIN, celMax_MIN)
-                f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MAX', 'Variant', celMin_MAX, celMax_MAX)
+                //f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MAX', 'Variant', celMin_MAX, celMax_MAX)
+                f.addProductDataStringValueFacet('EF000007__STRING', "Variant", 
+                    Array.isArray(filters.value['EF000007__STRING'])
+                        && filters.value['EF000007__STRING']?.length > 0
+                        ? filters.value['EF000007__STRING']
+                        : null)
             })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -306,7 +311,7 @@ async function search() {
                 }
             }
 
-            if (result.value.facets.items[2] !== null) {
+            if (result.value?.facets?.items?.find(f => f.field === 'SalesPrice')) {
                 const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
                 if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
                     filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];

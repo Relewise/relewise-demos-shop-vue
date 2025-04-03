@@ -40,6 +40,26 @@
             </li>
             <!-- {{ JSON.stringify(facet.available, null, 2) }} -->
         </ul>
+
+        <ul v-if="(facet.key === 'EF000007__STRING') && allOptions.length > 0">
+            <!-- {{ JSON.stringify(options, null, 2) }} -->
+            <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
+                <label v-if="option.value && typeof option.value === 'string'"
+                    class="flex items-center cursor-pointer w-full">
+                    <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0" type="checkbox"
+                        :value="option.value" :checked="option.selected" @click="applyFacet(facet.key, option.value)">
+                    {{ option.value }}
+                    <span class="flex-grow"></span>
+                    <span class="">{{ option.hits }}</span>
+                </label>
+            </li>
+            <li v-if="elementsToShow < allOptions.length">
+                <button class="bg-slate-900 hover:bg-slate-700 py-1 px-2" @click="elementsToShow = allOptions.length">
+                    Show all
+                </button>
+            </li>
+            <!-- {{ JSON.stringify(facet.available, null, 2) }} -->
+        </ul>
     </div>
 </template>
 
