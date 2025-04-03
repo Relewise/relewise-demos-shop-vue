@@ -25,7 +25,7 @@ const fallbackRecommendations = ref<ProductRecommendationResponse | null | undef
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const contentElements = ref<ContentSearchResponse | null>(null);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[]  });
+const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN: [] });
 //const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[], EF000007__STRING:[]  });
 const route = useRoute();
 
@@ -43,7 +43,7 @@ import type { DoubleNullableProductDataRangeFacetResult, ProductResult, VariantR
 const groupedProducts = computed(() => {
     const groups: Record<string, ProductResult & { Variants: VariantResult[] }> = {};
 
-result.value?.results?.forEach((product) => {
+    result.value?.results?.forEach((product) => {
         const id = product.productId as string;
         if (!groups[id]) {
             groups[id] = { ...product, Variants: [] };
@@ -97,7 +97,7 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN:[], eF000007__STRING:[] };
+        filters.value = { price: [], term: '', sort: '', EF022456_MMT_FLOAT: [], EF023270_CEL_FLOAT_MIN: [], eF000007__STRING: [] };
         router.push({ path: router.currentRoute.value.path, query: { ...route.query }, replace: true });
     }
     open.value = show;
@@ -128,7 +128,7 @@ async function search() {
     if (!show) return; else showOrHide(show);
 
     filters.value.term = searchTerm.value;
-    
+
     const EF022456_MMT_FLOATFacet = result.value?.facets?.items?.find(f => f.key === 'EF022456_MMT_FLOAT');
     const [floatMin, floatMax] = getDoubleRangeFacetBounds('EF022456_MMT_FLOAT', filters.value, EF022456_MMT_FLOATFacet);
 
@@ -139,8 +139,8 @@ async function search() {
     const [celMin_MAX, celMax_MAX] = getDoubleRangeFacetBounds('EF023270_CEL_FLOAT_MIN', filters.value, EF023270_CEL_FLOAT_MAXFacet);
 
     let applySalesPriceFacet = false;
-    if(result.value?.facets?.items?.find(f => f.field === 'SalesPrice')){
-        const salesPriceFacet = result.value?.facets?.items?.find(f => f.field === 'SalesPrice')  as PriceRangeFacetResult;
+    if (result.value?.facets?.items?.find(f => f.field === 'SalesPrice')) {
+        const salesPriceFacet = result.value?.facets?.items?.find(f => f.field === 'SalesPrice') as PriceRangeFacetResult;
 
         const bothPriceFiltersSet = filters.value.price.length === 2;
 
@@ -160,7 +160,7 @@ async function search() {
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({ displayName: true, pricing:true, allData: true })
+            .setSelectedVariantProperties({ displayName: true, pricing: true, allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds)) {
@@ -202,11 +202,11 @@ async function search() {
                 f.addSalesPriceRangeFacet('Variant',
                     applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
                     applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
-                
+
                 f.addProductDataDoubleRangeFacet('EF022456_MMT_FLOAT', 'Variant', floatMin, floatMax)
                 f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MIN', 'Variant', celMin_MIN, celMax_MIN)
                 //f.addProductDataDoubleRangeFacet('EF023270_CEL_FLOAT_MAX', 'Variant', celMin_MAX, celMax_MAX)
-                f.addProductDataStringValueFacet('EF000007__STRING', "Variant", 
+                f.addProductDataStringValueFacet('EF000007__STRING', "Variant",
                     Array.isArray(filters.value['EF000007__STRING'])
                         && filters.value['EF000007__STRING']?.length > 0
                         ? filters.value['EF000007__STRING']
@@ -257,10 +257,10 @@ async function search() {
     if (!applySalesPriceFacet) delete query.price;
 
     await router.push({
-  path: route.path,
-  query: { ...route.query, ...query }, // Merge in existing query
-  replace: true
-});
+        path: route.path,
+        query: { ...route.query, ...query }, // Merge in existing query
+        replace: true
+    });
 
     if (response && response.responses) {
         result.value = response.responses[0] as ProductSearchResponse;
@@ -431,14 +431,28 @@ function searchFor(term: string) {
                         <div v-else>
                             <div v-for="(product, index) in groupedProducts"
                                 :key="product.productId ?? 'group-' + index" class="bg-white p-4 rounded shadow">
-                                <h3 class="text-lg font-semibold">
+                                <h3 class="text-lg font-semibold flex justify-between items-center mb-2">
+                                    <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
+                                        class="text-blue-600 underline">
+                                        <span v-html="product.displayName"></span>
+                                    </RouterLink>
+
+                                    <!-- Brand name on the right -->
+                                    <span class="text-sm text-gray-500 ml-4">
+                                        <!-- <RouterLink :to="{ query: { Brand: product.brand?.id, open: '1', brandName: product.brand?.displayName } }"
+                                        class="text-blue-600 underline"> -->
+                                        {{ product.brand?.displayName }}
+                                    <!-- </RouterLink> -->
+                                    </span>
+                                </h3>
+                                <!-- <h3 class="text-lg font-semibold">
                                     <RouterLink :to="{
                                         name: 'product',
                                         params: { id: product.productId }
                                     }" class="text-blue-600 underline">
-                                        <span v-html="product.displayName"></span>
+                                        <span v-html="product.displayName"></span>                                        
                                     </RouterLink>
-                                </h3>
+                                </h3> -->
                                 <table class="w-full mt-4 border-t border-gray-200 text-left text-sm">
                                     <thead class="bg-gray-50 text-gray-700 uppercase">
                                         <tr>
@@ -458,7 +472,8 @@ function searchFor(term: string) {
                                                 <img :src="variant.data?.Image?.value" alt="Variant Image"
                                                     class="w-12 h-12 object-contain" />
                                             </td>
-                                            <td class="py-2 px-3 max-w-[300px] truncate whitespace-nowrap overflow-hidden align-top">
+                                            <td
+                                                class="py-2 px-3 max-w-[300px] truncate whitespace-nowrap overflow-hidden align-top">
                                                 <span v-html="variant.displayName"></span>
                                             </td>
                                             <td class="py-2 px-3">
@@ -466,7 +481,8 @@ function searchFor(term: string) {
                                                     :to="{
                                                         name: 'product',
                                                         params: { id: product.productId },
-                                                        ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {})}"
+                                                        ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {})
+                                                    }"
                                                     class="block text-blue-600 underline">
                                                     {{ variant.variantId }}
                                                 </RouterLink>
