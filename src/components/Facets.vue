@@ -51,11 +51,12 @@
                 class=""
                 @search="applyFacet"/>
             
-            <CheckListFacet 
-                v-if="(facet.key === 'EF000007__STRING')" 
-                :facet="facet"
-                class=""
-                @search="applyFacet"/>
+            <template v-if="isStringProductDataValueFacetResult(facet) && facet.key === 'EF000007__STRING'">
+                <CheckListFacet 
+                    :facet="facet"
+                    class=""
+                    @search="applyFacet"/>
+            </template>
 
             <template v-if="isPriceRangeFacetResult(facet) && facet.field === 'SalesPrice'">
                 <RangeFacet
@@ -110,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CategoryHierarchyFacetResultCategoryNode, ProductDataStringValueFacet, ContentDataStringValueFacet, ProductCategoryResult, ProductDataDoubleRangeFacet, ProductFacetResult } from '@relewise/client';
+import type { CategoryHierarchyFacetResultCategoryNode, ProductDataStringValueFacet, ContentDataStringValueFacet, ProductCategoryResult, ProductDataDoubleRangeFacet, ProductFacetResult, ProductDataDoubleValueFacetResult, ProductDataStringValueFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
@@ -137,6 +138,14 @@ function isPriceRangeFacetResult(facet: unknown): facet is PriceRangeFacetResult
   );
 }
 
+function isStringProductDataValueFacetResult(facet: unknown): facet is ProductDataStringValueFacetResult {
+    return (
+    !!facet &&
+    typeof facet === 'object' &&
+    '$type' in facet &&
+    (facet as any).$type?.includes('ProductDataStringValueFacetResult')
+  );
+}
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     categoriesForFilterOptions: { type: Object as PropType<CategoryHierarchyFacetResultCategoryNode[] | undefined>, required: false },
@@ -184,6 +193,10 @@ function shouldRenderFacet(facet: any): boolean {
     if(((facet.$type === 'Relewise.Client.DataTypes.Search.Facets.Result.ProductDataDoubleRangeFacetResult, Relewise.Client') && (facet.available?.hits < 1)))
         {
             //Don't render range facets without hits. 
+            return false;
+        }
+    if((facet.$type === 'Relewise.Client.DataTypes.Search.Facets.Result.ProductDataStringValueFacetResult, Relewise.Client') && 'available' in facet && Array.isArray(facet.available) && facet.available.length < 1)
+        {
             return false;
         }
 
