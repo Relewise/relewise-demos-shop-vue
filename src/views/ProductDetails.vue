@@ -17,9 +17,9 @@
                             {{ product.displayName }}
                         </h1>
 
-                        <div v-if="product.data && product.data.description && product.data.description.value">
+                        <div v-if="product.data && ((product.data.description && product.data.description.value) || (product.data.Description && product.data.Description.value))">
                             <p class="text-slate-600 line-clamp-3">
-                                {{ product.data.description.value }}
+                                {{ product.data.description?.value ?? product.data.Description?.value }}
                             </p> 
                         </div>
                     </div>
@@ -130,7 +130,7 @@ const details = computed(() => {
     return Object.entries(product.value.data ?? {})
         .filter((x) => 
             x[1].type.indexOf('Object') === -1 && 
-            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets'].includes(x[0]));
+            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0]));
 });
 
 async function init() {
