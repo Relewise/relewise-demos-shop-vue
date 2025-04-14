@@ -120,11 +120,7 @@
             <button class="" @click="save">
                 Save
             </button>
-
-            <button class="" @click="rebuild">
-                rebuild
-            </button>
-
+            
             <span v-if="saved" class="ml-4 text-green-600">
                 Settings have been saved.
             </span>
@@ -180,11 +176,6 @@ function save() {
 
     saved.value = true;
     setTimeout(() => saved.value = false, 3000);
-}
-
-async function rebuild() {
-    var response = await fetch('https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production/tools/rebuild/' + contextStore.context.value.datasetId, { method: 'POST', body: null });
-    console.log(response);
 }
 
 function addEmptyDataset() {
