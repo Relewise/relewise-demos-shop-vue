@@ -15,7 +15,7 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
-import { facetConfig, getDefaultFilters } from '@/config/FacetConfig';
+import { facetConfig, getCategoryThreshold, getDefaultFilters, getSelectedCategoryFilterIds } from '@/config/FacetConfig';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -132,8 +132,8 @@ async function search() {
     filters.value.term = searchTerm.value;
 
     const variationName = breakpointService.active.value.toUpperCase();
-    const selectedCategoryFilterIds = filters.value['category'];
-    const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
+    const selectedCategoryFilterIds = getSelectedCategoryFilterIds(filters.value);
+    const categoryFilterThreshold = getCategoryThreshold();
 
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
@@ -152,24 +152,6 @@ async function search() {
                 addCampaignRelevanceModifier(rm);
             })
             .facets(f => {
-
-                let selectedCategoriesForFacet: CategoryPath[] | undefined = undefined;
-                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
-                    if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
-                        selectedCategoriesForFacet = [{
-                            breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id })),
-                        }];
-                    } else {
-                        const basePath: CategoryNameAndId[] = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id }));
-                        selectedCategoriesForFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
-                            const thisPath = [...basePath, { id }];
-                            return { breadcrumbPathStartingFromRoot: thisPath };
-                        });
-                    }
-                }
-
-                f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
-
                 Object.entries(facetConfig).forEach(([key, config]) => {
                     if (config.addToBuilder) {
                         config.addToBuilder(f, filters.value);

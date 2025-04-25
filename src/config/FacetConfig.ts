@@ -6,7 +6,8 @@ import type {
     FacetResult,
     CategoryHierarchyFacetResult,
     ProductDataStringValueFacet,
-    ProductDataStringValueFacetResult,
+    CategoryPath,
+    CategoryNameAndId,
   } from '@relewise/client';
   
 import type { CheckListFacet } from '@relewise/web-components';
@@ -60,6 +61,33 @@ export function facetHasKeyOrField(facet: unknown): facet is { key?: string; fie
 
   export const facetConfig: Record<string, FacetConfigEntry> = {
     
+    category: defineFacetConfig<CategoryHierarchyFacetResult>({
+      is: (facet): facet is CategoryHierarchyFacetResult =>
+        facet.$type.includes('CategoryHierarchyFacetResult'),
+      render: 'checklist',
+      addToBuilder: (f, filters) => {
+        const selectedCategoryFilterIds = filters['category'];
+        const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
+    
+        let selectedCategoriesForFacet: CategoryPath[] | undefined = undefined;
+        if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
+          if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
+            selectedCategoriesForFacet = [{
+              breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id })),
+            }];
+          } else {
+            const basePath: CategoryNameAndId[] = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id }));
+            selectedCategoriesForFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
+              const thisPath = [...basePath, { id }];
+              return { breadcrumbPathStartingFromRoot: thisPath };
+            });
+          }
+        }
+    
+        f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
+      },
+    }),
+
     Brand: defineFacetConfig({
       is: (facet): facet is ContentDataStringValueFacetResult =>
         facet.$type.includes('ContentDataStringValueFacetResult'),
@@ -142,4 +170,12 @@ export function facetHasKeyOrField(facet: unknown): facet is { key?: string; fie
     }
   
     return defaults;
+  }
+
+  export function getSelectedCategoryFilterIds(filters: Record<string, string | string[]>) {
+    return filters['category'];
+  }
+  
+  export function getCategoryThreshold(): number {
+    return contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
   }
