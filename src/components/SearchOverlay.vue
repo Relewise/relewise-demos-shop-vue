@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId, ContentSearchBuilder, type ContentSearchResponse, type ProductResult, type VariantResult, type FacetResult, type DoubleNullableDataObjectRangeFacet } from '@relewise/client';
+import { computed, ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
@@ -15,6 +15,7 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
+import { facetConfig, getDefaultFilters } from '@/config/FacetConfig';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -24,7 +25,9 @@ const fallbackRecommendations = ref<ProductRecommendationResponse | null | undef
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const contentElements = ref<ContentSearchResponse | null>(null);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
+
+const filters = ref(getDefaultFilters());
+
 const route = useRoute();
 
 const selectedCategoriesForFilters = ref<ProductCategoryResult[]>([]);
@@ -33,6 +36,22 @@ const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[
 let abortController = new AbortController();
 
 const pageSize = 40;
+
+
+//USED IN B2B Variant scenario
+const groupedProducts = computed(() => {
+    const groups: Record<string, ProductResult & { Variants: VariantResult[] }> = {};
+
+    result.value?.results?.forEach((product) => {
+        const id = product.productId as string;
+        if (!groups[id]) {
+            groups[id] = { ...product, Variants: [] };
+        }
+        groups[id].Variants.push(product.variant as VariantResult);
+    });
+
+    return Object.values(groups);
+});
 
 function close() {
     showOrHide(false);
@@ -44,20 +63,22 @@ watch(() => ({ ...route }), (value, oldValue) => {
 
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.forEach((value, key) => {
+            const normalizedKey = key.toLowerCase();
 
-            if (key === 'term') {
+            if (normalizedKey === 'term') {
                 searchTerm.value = value;
                 return;
             }
-            if (key === 'sort') {
+            if (normalizedKey === 'sort') {
                 filters.value.sort = value;
                 return;
             }
 
-            const existing = filters.value[key];
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
+            const existing = filters.value[normalizedKey];
+            existing && Array.isArray(existing)
+                ? existing.push(value)
+                : filters.value[normalizedKey] = [value];
         });
-
         filters.value['open'] = '1';
 
         search();
@@ -77,8 +98,9 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         result.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: '' };
-        router.push({ path: router.currentRoute.value.path, query: {} });
+        filters.value = { SalesPrice: [], term: '', sort: '' };
+        router.push({ path: router.currentRoute.value.path, query: {}, replace: true });
+        //router.push({ path: router.currentRoute.value.path, query: { ...route.query }, replace: true });
     }
     open.value = show;
     if (show) {
@@ -109,29 +131,14 @@ async function search() {
 
     filters.value.term = searchTerm.value;
 
-    let applySalesPriceFacet = false;
-    if (result.value?.facets?.items?.length === 3) {
-        const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
-
-        const bothPriceFiltersSet = filters.value.price.length === 2;
-
-        const lowerBoundNotEqualOrZero = (Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
-            && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
-
-        const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
-            && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
-
-        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
-    }
     const variationName = breakpointService.active.value.toUpperCase();
-
     const selectedCategoryFilterIds = filters.value['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({ allData: true })
+            .setSelectedVariantProperties({ displayName: true, pricing: true, allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds)) {
@@ -141,7 +148,7 @@ async function search() {
                 }
                 addAssortmentFilters(f);
             })
-            .relevanceModifiers(rm=>{
+            .relevanceModifiers(rm => {
                 addCampaignRelevanceModifier(rm);
             })
             .facets(f => {
@@ -163,15 +170,11 @@ async function search() {
 
                 f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
 
-                f.addBrandFacet(
-                    Array.isArray(filters.value['brand'])
-                        && filters.value['brand']?.length > 0
-                        ? filters.value['brand']
-                        : null);
-
-                f.addSalesPriceRangeFacet('Product',
-                    applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
-                    applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+                Object.entries(facetConfig).forEach(([key, config]) => {
+                    if (config.addToBuilder) {
+                        config.addToBuilder(f, filters.value);
+                    }
+                });
             })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -192,6 +195,7 @@ async function search() {
                     variation: { key: variationName },
                 },
             })
+            .setExplodedVariants(5)
             .build())
 
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
@@ -214,9 +218,12 @@ async function search() {
     contextStore.assertApiCall(response);
 
     const query = { ...filters.value };
-    if (!applySalesPriceFacet) delete query.price;
 
-    await router.push({ path: route.path, query: query, replace: true });
+    await router.push({
+        path: route.path,
+        query: { ...route.query, ...query }, // Merge in existing query
+        replace: true
+    });
 
     if (response && response.responses) {
         result.value = response.responses[0] as ProductSearchResponse;
@@ -264,13 +271,6 @@ async function search() {
                 if (rootCategoryId) {
                     const rootCategoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, rootCategoryId);
                     categoriesForFilterOptions.value = rootCategoryNode?.children ?? undefined;
-                }
-            }
-
-            if (result.value.facets.items[2] !== null) {
-                const salesPriceFacet = result.value.facets!.items[2] as PriceRangeFacetResult;
-                if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-                    filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
                 }
             }
         }
@@ -330,6 +330,7 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
+                        {{ console.log(filters) }}
                         <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
                             :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
                             :selected-category-filter-options="selectedCategoriesForFilters"
@@ -394,6 +395,83 @@ function searchFor(term: string) {
                                     @change="search" />
                             </div>
                         </div>
+                        <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
+                            class="w-full p-3 bg-white rounded mb-6">
+                            <h2 class="text-xl">
+                                You may like
+                            </h2>
+                            <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations"
+                                    :key="index" :product="product" />
+                            </div>
+                        </div>
+                        <!-- 
+                        //A B2B VARIATION WITH VARIANTS
+                        <div v-else>
+                            <div v-for="(product, index) in groupedProducts"
+                                :key="product.productId ?? 'group-' + index" class="bg-white p-4 rounded shadow">
+                                <h3 class="text-lg font-semibold flex justify-between items-center mb-2">
+                                    <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
+                                        class="text-blue-600 underline">
+                                        <span v-html="product.displayName"></span>
+                                    </RouterLink>
+                                    <span class="text-sm text-gray-500 ml-4">
+                                        {{ product.brand?.displayName }}
+                                    </span>
+                                </h3>
+                                <table class="w-full mt-4 border-t border-gray-200 text-left text-sm">
+                                    <thead class="bg-gray-50 text-gray-700 uppercase">
+                                        <tr>
+                                            <th class="py-2 px-3">Image</th>
+                                            <th class="py-2 px-3">Variant name</th>
+                                            <th class="py-2 px-3">Variant Id</th>
+                                            <th class="py-2 px-3">Availability</th>
+                                            <th class="py-2 px-3">Price</th>
+                                            <th class="py-2 px-3">Price incl. VAT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(variant, index) in product.Variants"
+                                            :key="variant.variantId ?? 'variant-' + index"
+                                            class="border-b border-gray-200">
+                                            <td class="py-2 px-3">
+                                                <img :src="variant.data?.Image?.value" alt="Variant Image"
+                                                    class="w-12 h-12 object-contain" />
+                                            </td>
+                                            <td
+                                                class="py-2 px-3 max-w-[300px] truncate whitespace-nowrap overflow-hidden align-top">
+                                                <span v-html="variant.displayName"></span>
+                                            </td>
+                                            <td class="py-2 px-3">
+                                                <RouterLink
+                                                    :to="{
+                                                        name: 'product',
+                                                        params: { id: product.productId },
+                                                        ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {})
+                                                    }"
+                                                    class="block text-blue-600 underline">
+                                                    {{ variant.variantId }}
+                                                </RouterLink>
+                                            </td>
+
+                                            <td class="py-2 px-3 text-green-600">
+                                                In stock
+                                            </td>
+                                            <td class="py-2 px-3 font-semibold">
+                                                EUR {{ variant.listPrice ?? product.listPrice }}
+                                            </td>
+                                            <td class="py-2 px-3 font-semibold">
+                                                EUR {{ variant.salesPrice ?? product.salesPrice }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="py-3 flex justify-center">
+                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize"
+                                    @change="search" />
+                            </div>
+                        </div> -->
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
                             class="w-full p-3 bg-white rounded mb-6">
                             <h2 class="text-xl">
