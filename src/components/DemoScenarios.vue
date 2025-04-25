@@ -144,8 +144,7 @@ async function generateNullSearcScenario() {
 }
 
 const refreshPredictions = async () => {
-    const url = `https://sandbox-api.relewise.com/${contextStore.context.value.datasetId}/tools/RebuildSearchPredictionCaches?datasetId=${contextStore.context.value.datasetId}&rebuildEvenIfNotStale=true`;
-
+    const url = "";
     try {
         const response = await fetch(url, {
             method: 'GET'

@@ -198,6 +198,7 @@ async function search() {
             .setExplodedVariants(5)
             .build())
 
+
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product')
             .setTerm(searchTerm.value)
