@@ -10,8 +10,6 @@ import type {
     CategoryNameAndId,
   } from '@relewise/client';
   
-import type { CheckListFacet } from '@relewise/web-components';
-
 import contextStore from '@/stores/context.store';
   
   type FacetRenderType = 'range' | 'checklist' | 'custom';
