@@ -1,6 +1,6 @@
 <template>
     <div class="category-page container mx-auto p-2 xl:p-0 relative">
-        <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
+        <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" />
 
         <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
             {{ category?.displayName }}
@@ -8,27 +8,10 @@
 
         <div class="flex gap-10">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
-                <div v-if="(childCategories?.length ?? 0) > 0" class="mb-6 border-b border-solid border-slate-300 pb-6">
-                    <div class="font-semibold text-lg mb-1">
-                        Categories
-                    </div>
-                    <ul>
-                        <li v-for="(childCategory, index) in childCategories" :key="index">
-                            <RouterLink 
-                                :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.category.categoryId } }"
-                                class="text-slate-700 hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
-                                {{ childCategory.category.displayName ?? childCategory.category.categoryId }} 
-                            </RouterLink>
-                        </li>    
-                    </ul>
-                </div>
-                
-                <Facets v-if="result?.facets"
-                        v-model:page="page"
-                        :filters="filters"
-                        :facets="result.facets"
-                        :hide-category-facet="renderCatoryLinks"
-                        @search="search"/>
+                <Facets v-if="result?.facets" v-model:page="page" :filters="filters" :facets="result.facets"
+                    :hide-category-facet="renderCategoryLinks"
+                    :additional-params="{ parentCategoryId, categoryId, childCategories }" context="category-page"
+                    @search="search" />
             </div>
             <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
@@ -36,33 +19,27 @@
                         <div>
                             <span v-if="result.hits > 0" class="text-sm lg:text-base whitespace-nowrap">
                                 Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of
-                                {{ result?.hits }} products </span>
+                                    {{ result?.hits }} products </span>
                         </div>
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <Sorting v-model="filters.sort" @change="search"/>
+                        <Sorting v-model="filters.sort" @change="search" />
                     </div>
                     <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
-                        <ProductTile v-for="(product, pIndex) in products"
-                                     :key="pIndex"
-                                     :product="product.product"
-                                     :is-promotion="product.isPromotion"/>
+                        <ProductTile v-for="(product, pIndex) in products" :key="pIndex" :product="product.product"
+                            :is-promotion="product.isPromotion" />
                     </div>
 
                     <div class="py-3 flex justify-center mt-10">
-                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" @change="search"/>
+                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" @change="search" />
                     </div>
                 </div>
             </div>
         </div>
         <div v-if="rightProducts" class="absolute h-[95%] top-[110px] -right-56 flex flex-col gap-2">
-            <ProductTile
-                v-for="(product, pIndex) in rightProducts.slice(0, 4)"
-                :key="pIndex"
-                :product="product.product"
-                :is-promotion="product.isPromotion"
-                class="w-[200px]"/>
+            <ProductTile v-for="(product, pIndex) in rightProducts.slice(0, 4)" :key="pIndex" :product="product.product"
+                :is-promotion="product.isPromotion" class="w-[200px]" />
         </div>
     </div>
 </template>
@@ -86,6 +63,7 @@ import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
+import { facetConfig, FacetContexts, getDefaultFilters, getFacetKeysForContext } from '@/config/FacetConfig';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -98,26 +76,27 @@ const parentCategoryId = ref<string | undefined>();
 const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
-const renderCatoryLinks = ref<boolean | undefined>(false);
+const renderCategoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
 async function init() {
     const id = route.params.id;
-    parentCategoryId.value = Array.isArray(route.params.parent) 
-        ? route.params.parent[0] 
+    parentCategoryId.value = Array.isArray(route.params.parent)
+        ? route.params.parent[0]
         : route.params.parent;
 
-    grandParentCategoryId.value = Array.isArray(route.params.grand) ? 
+    grandParentCategoryId.value = Array.isArray(route.params.grand) ?
         route.params.grand[0]
         : route.params.grand;
 
     // We never want to go any deeper than a third level category
-    renderCatoryLinks.value = !grandParentCategoryId.value && (!parentCategoryId.value || contextStore.context.value.allowThirdLevelCategories); 
+    renderCategoryLinks.value = !grandParentCategoryId.value && (!parentCategoryId.value || contextStore.context.value.allowThirdLevelCategories);
 
     if (id && !Array.isArray(id) && id !== categoryId.value) {
         trackingService.trackProductCategoryView(id);
 
         const facets = new URLSearchParams(window.location.search);
+        console.log("facets:", Object.fromEntries(facets.entries()));
         facets.forEach((value, key) => {
             if (key === 'sort') { filters.value.sort = value; return; }
             const existing = filters.value[key];
@@ -136,6 +115,7 @@ async function init() {
         const response: ProductCategorySearchResponse | undefined = await searcher.searchProductCategories(request);
         contextStore.assertApiCall(response);
 
+        //build breadcrumb
         if (response?.results) {
             category.value = response.results[0];
 
@@ -153,7 +133,7 @@ async function init() {
                         displayName: categoryFound?.category.displayName,
                     });
                 }
-                
+
                 if (parentCategoryId.value) {
                     const categoryFound = findCategoryById(categoryHeirachy, parentCategoryId.value);
                     breadcrumb.value.push({
@@ -191,12 +171,6 @@ async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
     scrollTo({ top: 0 });
 
-    let applySalesPriceFacet = false;
-    if (result.value?.facets?.items?.length === 3) {
-        const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
-        applySalesPriceFacet = salesPriceFacet && filters.value.price.length === 2 && Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive || Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive;
-    }
-
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
@@ -212,17 +186,24 @@ async function search() {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             addAssortmentFilters(f);
         })
-        .relevanceModifiers(rm=>{
+        .relevanceModifiers(rm => {
             addCampaignRelevanceModifier(rm);
         })
         .facets(f => {
-            if (renderCatoryLinks.value) {
-                f.addProductCategoryHierarchyFacet('Descendants', [{ breadcrumbPathStartingFromRoot: [{ id: categoryId.value }]}], { displayName: true });
-            } else {
-                f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
-            }
-            f.addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
-            f.addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+            const keys = getFacetKeysForContext(FacetContexts.CategoryPage);
+
+            keys.forEach(key => {
+                const facetItem = facetConfig.find(k =>
+                    k.key === key &&
+                    (!k.config.context || k.config.context.includes(FacetContexts.CategoryPage))
+                );
+
+                facetItem?.config?.addToBuilder?.(f, filters.value, {
+                    categoryId: categoryId.value,
+                    renderCategoryLinks: renderCategoryLinks.value,
+                    routeItem: route
+                });
+            });
         })
         .pagination(p => p.setPageSize(40).setPage(page.value))
         .sorting(s => {
@@ -239,7 +220,7 @@ async function search() {
         .build();
 
     const query = { ...router.currentRoute.value.query, ...filters.value };
-    if (!applySalesPriceFacet) delete query.price;
+    // if (!applySalesPriceFacet) delete query.price;
 
     await router.push({ path: route.path, query: query, replace: true });
 
@@ -248,14 +229,15 @@ async function search() {
     contextStore.assertApiCall(response);
 
     if (response && response.facets && response.facets.items) {
-        if (renderCatoryLinks.value && response.facets.items[0] !== null) {
+        if (renderCategoryLinks.value && response.facets.items[0] !== null) {
             const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
+            // console.log('categoryHeirarchyFacetResult.nodes: ' + JSON.stringify(categoryHeirarchyFacetResult, null, 2));
             var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
             while (root.category.categoryId !== categoryId.value) {
                 if (!root.children) {
                     root = null;
                     break;
-                } 
+                }
 
                 root = root.children[0];
             }
@@ -264,13 +246,6 @@ async function search() {
             }
         } else {
             childCategories.value = undefined;
-        }
-
-        if (response.facets.items[2] !== null) {
-            const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
-            if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-                filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
-            }
         }
     }
 

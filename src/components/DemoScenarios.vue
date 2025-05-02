@@ -101,8 +101,8 @@ async function generateSearchImpactScenario() {
 
             searcher.searchProducts(builder.build());
 
-            tracker.trackProductView({ productId: 'd812cd4d-6798-4a67-9da9-1714006f7936', user: user });
-            tracker.trackProductView({ productId: '23cdeaf0-d406-4c83-bc36-065d12aedd46', user: user });
+            tracker.trackProductView({ productId: 'd812cd4d-6798-4a67-9da9-1714006f7936', user: user }); //white ambience LED
+            tracker.trackProductView({ productId: '23cdeaf0-d406-4c83-bc36-065d12aedd46', user: user }); //D-Link DAP
         }
     });
 }

@@ -1,5 +1,5 @@
-<script setup lang="ts">
 import contextStore from '@/stores/context.store';
+<script setup lang="ts">
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId, ContentSearchBuilder, type ContentSearchResponse, type ProductResult, type VariantResult, type FacetResult, type DoubleNullableDataObjectRangeFacet } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
@@ -15,7 +15,8 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
-import { facetConfig, getCategoryThreshold, getDefaultFilters, getSelectedCategoryFilterIds } from '@/config/FacetConfig';
+import { facetConfig, FacetContexts, getCategoryThreshold, getDefaultFilters, getFacetKeysForContext, getSelectedCategoryFilterIds } from '@/config/FacetConfig';
+import contextStore from '@/stores/context.store';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -152,11 +153,11 @@ async function search() {
                 addCampaignRelevanceModifier(rm);
             })
             .facets(f => {
-                Object.entries(facetConfig).forEach(([key, config]) => {
-                    if (config.addToBuilder) {
-                        config.addToBuilder(f, filters.value);
-                    }
-                });
+                const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
+                    keys.forEach(key => {
+                        const facetItem = facetConfig.find(k=> k.key == key);
+                        facetItem?.config?.addToBuilder?.(f, filters.value);
+                        });
             })
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -313,11 +314,14 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
-                        {{ console.log(filters) }}
                         <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
                             :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
                             :selected-category-filter-options="selectedCategoriesForFilters"
-                            :hide-brand-facet="!!route.query.brandName" @search="search" />
+                            :hide-brand-facet="!!route.query.brandName" context="search-overlay" @search="search" />
+                        <!-- <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
+                            :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
+                            :selected-category-filter-options="selectedCategoriesForFilters"
+                            :hide-brand-facet="!!route.query.brandName" @search="search" /> -->
 
                         <div v-if="contentElements && Array.isArray(contentElements.results) && contentElements?.results?.length > 0"
                             class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">
