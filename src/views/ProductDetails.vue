@@ -188,8 +188,6 @@ const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const similarProds = ref<ProductRecommendationResponse | null | undefined>(null);
-const languageCode = contextStore.defaultSettings.language;
-const dynamicKey = `${languageCode}_StockLevel`;
 const variantId = computed(() => route.query.variantId?.toString() ?? '');
 
 const details = computed(() => {
@@ -198,7 +196,7 @@ const details = computed(() => {
     return Object.entries(product.value.data ?? {})
         .filter((x) =>
             x[1].type.indexOf('Object') === -1 &&
-            ['Description', 'Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`, dynamicKey].includes(x[0]));
+            ['Description', 'Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0]));
 });
 
 async function init() {
