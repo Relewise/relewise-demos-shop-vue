@@ -16,6 +16,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router';
 export const FacetContexts = {
   CategoryPage: 'category-page',
   SearchOverlay: 'search-overlay',
+  ContentCategoryPage: 'content-search-overlay'
 } as const;
 
 export type FacetContext = typeof FacetContexts[keyof typeof FacetContexts];
@@ -142,8 +143,27 @@ export const facetConfig: FacetConfigItem[] = [
     })
   },
   {
+    key: 'Category',
+    config: defineFacetConfig<CategoryHierarchyFacetResult>({
+      context: [FacetContexts.ContentCategoryPage],
+      is: (facet): facet is CategoryHierarchyFacetResult =>
+        facet.$type.includes('CategoryHierarchyFacetResult'),
+      render: 'checklist',
+      addToBuilder: (f, filters, params) => {
+        const selected = filters['Category'];
+    
+        const categoryValues = Array.isArray(selected) && selected.length > 0 
+          ? selected
+          : null;
+
+          f.addCategoryFacet('ImmediateParent', categoryValues);
+      }
+    })
+  },
+  {
     key: 'Brand',
     config: defineFacetConfig({
+      context: [FacetContexts.SearchOverlay, FacetContexts.CategoryPage],
       is: (facet): facet is ContentDataStringValueFacetResult =>
         facet.$type.includes('ContentDataStringValueFacetResult'),
       render: 'checklist',
@@ -153,8 +173,21 @@ export const facetConfig: FacetConfigItem[] = [
     }),
   },
   {
+    key: 'Brand',
+    config: defineFacetConfig({
+      context: [FacetContexts.ContentCategoryPage],
+      is: (facet): facet is ContentDataStringValueFacetResult =>
+        facet.$type.includes('ContentDataStringValueFacetResult'),
+      render: 'checklist',
+      addToBuilder: (f, filters) => {
+        f.addContentDataStringValueFacet('Brand', Array.isArray(filters['Brand']) && filters['Brand'].length > 0 ? filters['Brand'] : null);
+      },
+    }),
+  },
+  {
     key: 'SalesPrice',
     config: defineFacetConfig<PriceRangeFacetResult>({
+      context: [FacetContexts.SearchOverlay, FacetContexts.CategoryPage],
       is: (facet): facet is PriceRangeFacetResult =>
         facet.$type.includes('PriceRangeFacetResult'),
       render: 'range',
@@ -180,6 +213,7 @@ export const facetConfig: FacetConfigItem[] = [
   {
     key: 'AvailableInChannels',
     config: defineFacetConfig({
+      context: [FacetContexts.SearchOverlay, FacetContexts.CategoryPage],
       is: (facet): facet is ProductDataStringValueFacet =>
         'key' in facet && typeof facet.key === 'string' && facet.key.includes('AvailableInChannels'),
       render: 'checklist',
@@ -191,6 +225,7 @@ export const facetConfig: FacetConfigItem[] = [
   {
     key: `${contextStore.context.value.language}_StockLevel`,
     config: defineFacetConfig<DoubleNullableProductDataRangeFacetResult>({
+      context: [FacetContexts.CategoryPage],
       is: (facet): facet is DoubleNullableProductDataRangeFacetResult =>
         facet.$type.includes('DoubleNullableProductDataRangeFacetResult'),
       render: 'range',

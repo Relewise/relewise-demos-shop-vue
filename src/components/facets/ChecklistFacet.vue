@@ -87,7 +87,7 @@ function getValueId(value: any): string {
 }
 
 function getFacetIdentifier(facet: any): string {
-    if ('dataSelectionStrategy' in facet && typeof facet.key === 'string') {
+    if (('dataSelectionStrategy' in facet && typeof facet.key === 'string') || facet.$type === 'Relewise.Client.DataTypes.Search.Facets.Result.ContentDataStringValueFacetResult, Relewise.Client') {
         return facet.key;
     }
     return facet.field ?? '';

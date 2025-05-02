@@ -8,7 +8,7 @@
 
         <div class="flex gap-10">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
-                <div v-if="(childCategories?.length ?? 0) > 0" class="mb-6 border-b border-solid border-slate-300 pb-6">
+                <!-- <div v-if="(childCategories?.length ?? 0) > 0" class="mb-6 border-b border-solid border-slate-300 pb-6">
                     <div class="font-semibold text-lg mb-1">
                         Categories
                     </div>
@@ -21,14 +21,18 @@
                             </RouterLink>
                         </li>    
                     </ul>
-                </div>
+                </div> -->
                 
-                 <Facets v-if="result?.facets"
+                 <!-- <Facets v-if="result?.facets"
                         v-model:page="page"
                         :filters="filters"
                         :facets="result.facets"
-                        :hide-category-facet="renderCatoryLinks"
-                        @search="search"/>
+                        :hide-category-facet="renderCategoryLinks"
+                        @search="search"/> -->
+                        <Facets v-if="result?.facets" v-model:page="page" :filters="filters" :facets="result.facets"
+                    :hide-category-facet="renderCategoryLinks"
+                    :additional-params="{ parentCategoryId, categoryId, childCategories }" context="category-page"
+                    @search="search" />
             </div>
             <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
@@ -75,6 +79,7 @@ import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import ContentTile from '@/components/ContentTile.vue';
+import { facetConfig, FacetContexts, getFacetKeysForContext } from '@/config/FacetConfig';
 
 const contentElements = ref<ContentSearchResponse | null>(null);
 const route = useRoute();
@@ -86,77 +91,13 @@ const parentCategoryId = ref<string | undefined>();
 const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
-const renderCatoryLinks = ref<boolean | undefined>(false);
+const renderCategoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
 async function init() {
     const id = route.params.id;
-    // parentCategoryId.value = Array.isArray(route.params.parent)
-    //     ? route.params.parent[0]
-    //     : route.params.parent;
-
-    // grandParentCategoryId.value = Array.isArray(route.params.grand) ?
-    //     route.params.grand[0]
-    //     : route.params.grand;
-
-    // We never want to go any deeper than a third level category
-    //renderCatoryLinks.value = !grandParentCategoryId.value && (!parentCategoryId.value || contextStore.context.value.allowThirdLevelCategories);
 
     if (id && !Array.isArray(id) && id !== categoryId.value) {
-        // //trackingService.trackProductCategoryView(id);
-
-        // const facets = new URLSearchParams(window.location.search);
-        // facets.forEach((value, key) => {
-        //     if (key === 'sort') { filters.value.sort = value; return; }
-        //     const existing = filters.value[key];
-        //     existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
-        // });
-
-        // const request = new ProductCategorySearchBuilder(contextStore.defaultSettings)
-        //     .setSelectedCategoryProperties({ displayName: true })
-        //     .filters(f => {
-        //         f.addProductCategoryIdFilter('ImmediateParentOrItsParent', [id]);
-        //     })
-        //     .facets(f => f.addProductCategoryHierarchyFacet('Descendants', [], { displayName: true }))
-        //     .build();
-
-        // const searcher = contextStore.getSearcher();
-        // const response: ProductCategorySearchResponse | undefined = await searcher.searchProductCategories(request);
-        // contextStore.assertApiCall(response);
-
-        // if (response?.results) {
-        //     category.value = response.results[0];
-
-        //     if (response.facets && response.facets.items) {
-
-        //         // Resetting the breadcrumb
-        //         breadcrumb.value = [];
-
-        //         const categoryHeirachy = (response.facets.items[0] as CategoryHierarchyFacetResult).nodes;
-
-        //         if (grandParentCategoryId.value) {
-        //             const categoryFound = findCategoryById(categoryHeirachy, grandParentCategoryId.value);
-        //             breadcrumb.value.push({
-        //                 id: categoryFound?.category.categoryId,
-        //                 displayName: categoryFound?.category.displayName,
-        //             });
-        //         }
-
-        //         if (parentCategoryId.value) {
-        //             const categoryFound = findCategoryById(categoryHeirachy, parentCategoryId.value);
-        //             breadcrumb.value.push({
-        //                 id: categoryFound?.category.categoryId,
-        //                 displayName: categoryFound?.category.displayName,
-        //             });
-        //         }
-
-        //         breadcrumb.value.push({
-        //             id: category.value.categoryId,
-        //             displayName: category.value.displayName,
-        //         });
-
-        //     }
-        // }
 
         categoryId.value = id;
         search();
@@ -188,13 +129,29 @@ async function search() {
             }
         })
         .facets(f => {
-            if (renderCatoryLinks.value) {
-                f.addContentCategoryHierarchyFacet('Descendants', [{ breadcrumbPathStartingFromRoot: [{ id: categoryId.value }]}], { displayName: true });
-            } else {
-                f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
-            }
-            f.addContentDataStringValueFacet('Brand', Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
+            const keys = getFacetKeysForContext(FacetContexts.ContentCategoryPage);
+
+            keys.forEach(key => {
+                const facetItem = facetConfig.find(k =>
+                    k.key === key &&
+                    (!k.config.context || k.config.context.includes(FacetContexts.ContentCategoryPage))
+                );
+
+                facetItem?.config?.addToBuilder?.(f, filters.value, {
+                    categoryId: categoryId.value,
+                    renderCategoryLinks: renderCategoryLinks.value,
+                    routeItem: route
+                });
+            });
         })
+        // .facets(f => {
+        //     if (renderCategoryLinks.value) {
+        //         f.addContentCategoryHierarchyFacet('Descendants', [{ breadcrumbPathStartingFromRoot: [{ id: categoryId.value }]}], { displayName: true });
+        //     } else {
+        //         f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
+        //     }
+        //     f.addContentDataStringValueFacet('Brand', Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
+        // })
         .pagination(p => p.setPageSize(10).setPage(page.value))
         .build();
 
@@ -205,26 +162,6 @@ async function search() {
     const searcher = contextStore.getSearcher();
     const response: ContentSearchResponse | undefined = await searcher.searchContents(request);
     contextStore.assertApiCall(response);
-
-    // if (response && response.facets && response.facets.items) {
-    //     if (renderCatoryLinks.value && response.facets.items[0] !== null) {
-    //         const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
-    //         var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
-    //         while (root.category.categoryId !== categoryId.value) {
-    //             if (!root.children) {
-    //                 root = null;
-    //                 break;
-    //             } 
-
-    //             root = root.children[0];
-    //         }
-    //         if (root != null) {
-    //             childCategories.value = root.children ?? undefined;
-    //         }
-    //     } else {
-    //         childCategories.value = undefined;
-    //     }
-    // }
 
     result.value = response;
 }

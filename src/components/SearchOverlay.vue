@@ -297,10 +297,10 @@ function searchFor(term: string) {
                 <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
                     Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
                 </h2>
-                <h2 v-if="route.query.brandName" class="text-xl lg:text-3xl mb-6">
-                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ?
-                        route.query.brandName.join('') : route.query.brandName }}</span>
-                </h2>
+                <!-- <h2 v-if="route.query.Brand" class="text-xl lg:text-3xl mb-6">
+                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.Brand) ?
+                        route.query.Brand.join(' ') : route.query.Brand }}</span>
+                </h2> -->
                 <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
@@ -314,14 +314,14 @@ function searchFor(term: string) {
                                 {{ prediction.term }}
                             </a>
                         </div>
-                        <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
-                            :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
-                            :selected-category-filter-options="selectedCategoriesForFilters"
-                            :hide-brand-facet="!!route.query.brandName" context="search-overlay" @search="search" />
                         <!-- <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
                             :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
                             :selected-category-filter-options="selectedCategoriesForFilters"
-                            :hide-brand-facet="!!route.query.brandName" @search="search" /> -->
+                            :hide-brand-facet="!!route.query.Brand" context="search-overlay" @search="search" /> -->
+                            <Facets v-if="result.facets && result.hits > 0" v-model:page="page" :filters="filters"
+                            :facets="result.facets" :categories-for-filter-options="categoriesForFilterOptions"
+                            :selected-category-filter-options="selectedCategoriesForFilters"
+                            context="search-overlay" @search="search" />
 
                         <div v-if="contentElements && Array.isArray(contentElements.results) && contentElements?.results?.length > 0"
                             class="pb-6 bg-white mb-6 border-b border-solid border-slate-300">

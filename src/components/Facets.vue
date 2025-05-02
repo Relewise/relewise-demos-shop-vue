@@ -24,12 +24,14 @@
                         </ul>
                     </div>
                 </template>
+
                 <template v-if="facet.$type.includes('CategoryFacetResult') && context == FacetContexts.CategoryPage">
                     <div class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
                         <FacetHeadline :facet=facet />
                         <CheckListFacet :facet="facet" class="" @search="applyFacet" />
                     </div>
                 </template>
+
                 <template
                     v-if="facet.$type.includes('CategoryHierarchyFacetResult') && context == FacetContexts.SearchOverlay">
                     <div class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
@@ -72,13 +74,15 @@
                         </template>
                     </div>
                 </template>
+
                 <template
-                    v-if="getFacetConfigEntry(facet, context)?.render === 'checklist' && facetHasKeyOrField(facet) && ((facet.field === 'Brand' && !hideBrandFacet)) && 'available' in facet && Array.isArray(facet.available)">
+                    v-if="getFacetConfigEntry(facet, context)?.render === 'checklist' && facetHasKeyOrField(facet) && ((facet.field === 'Brand' || facet.key === 'Brand')) && 'available' in facet && Array.isArray(facet.available)">
                     <div class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
                         <FacetHeadline :facet=facet />
                         <CheckListFacet :facet="facet" class="" @search="applyFacet" />
                     </div>
                 </template>
+
                 <template
                     v-if="getFacetConfigEntry(facet, context)?.render === 'range' && facetHasKeyOrField(facet) && (isPriceRangeFacetResult(facet) || isDoubleRangeFacetResult(facet))">
                     <div class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
@@ -93,6 +97,7 @@
                             }" @update="rangeChange" />
                     </div>
                 </template>
+                
                 <template
                     v-if="getFacetConfigEntry(facet)?.render === 'checklist' && facetHasKeyOrField(facet) && facet.key === 'AvailableInChannels'">
                     <div class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
