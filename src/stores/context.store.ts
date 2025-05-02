@@ -115,6 +115,16 @@ class AppContext {
         } as SelectedProductPropertiesSettings;
     }
 
+    public get selectedContentProperties(): SelectedProductPropertiesSettings {
+        return {
+            displayName: true,
+            allData: true,
+            brand: true,
+            categoryPaths: true,
+            pricing: true,
+        } as SelectedProductPropertiesSettings;
+    }
+
     public getSearcher(): Searcher {
         if (!this.context.value.apiKey || !this.context.value.datasetId) {
             throw new Error('Missing apiKey or datasetId');

@@ -11,20 +11,20 @@
 
 <script setup lang="ts">
 import { PhotoIcon } from '@heroicons/vue/24/outline';
-import type { ProductResult } from '@relewise/client';
+import type { ContentResult, ProductResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
 import { findImage } from '@/helpers/imageHelper';
 import { computed } from 'vue';
 
 const props = defineProps({
-    product: { type: Object as PropType<ProductResult>, required: true },
+    entity: { type: Object as PropType<ProductResult | ContentResult>, required: true },
 });
 
 const image = computed(() => {
     return findImage(product.value);
 });
 
-const { product } = toRefs(props);
+const { entity: product } = toRefs(props);
 const error = ref(false);
 </script>
 <style lang="css" scoped>
@@ -33,7 +33,6 @@ const error = ref(false);
     overflow: hidden;
     position: relative;
     justify-content: center;
-    height: 275px;
     width: 100%;
 }
 

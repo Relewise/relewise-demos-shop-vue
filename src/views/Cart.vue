@@ -14,7 +14,7 @@
         <div class="justify-center md:flex md:space-x-6 xl:px-0">
             <div class="md:w-3/5">
                 <div v-for="item in model.lineItems" :key="item.product.productId ?? ''" class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start">
-                    <ProductImage :product="item.product" class="w-full rounded sm:!w-20 xl:!w-60"/>
+                    <Image :entity="item.product" class="w-full rounded sm:!w-20 xl:!w-60"/>
                     <div class="sm:ml-4 flex-grow">
                         <div class="mt-5 sm:mt-0">
                             <p v-if="item.product.brand" class="mt-1 text-gray-500">
@@ -101,7 +101,7 @@ import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import { computed } from 'vue';
-import ProductImage from '@/components/ProductImage.vue';
+import Image from '@/components/Image.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
 

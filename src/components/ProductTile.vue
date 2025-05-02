@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ProductResult } from '@relewise/client';
 import { toRefs, type PropType } from 'vue';
-import ProductImage from './ProductImage.vue';
+import Image from './Image.vue';
 import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 
@@ -18,7 +18,7 @@ const { product } = toRefs(props);
     <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
                 class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
         <div class="relative flex h-max-[275px] overflow-hidden justify-center">
-            <ProductImage :product="product"/>
+            <Image :entity="product"/>
             <div class="absolute top-0 left-0 flex gap-1">
                 <Popover v-if="isPromotion" placement="bottom-start" class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3">
                     <span @click="(e) => e.preventDefault()">SPONSORED</span>

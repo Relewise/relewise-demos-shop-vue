@@ -5,7 +5,7 @@
 
             <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
-                    <ProductImage :product="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
+                    <Image :entity="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>
 
                 <div class="bg-white flex-grow">
@@ -114,7 +114,7 @@ import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import ProductImage from '../components/ProductImage.vue';
+import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 
 const productId = ref<string>('');

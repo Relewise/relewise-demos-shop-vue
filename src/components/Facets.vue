@@ -1,7 +1,7 @@
 <template>
     <template v-for="(facet, index) in facets.items" :key="index">
-        <div v-if="(facet.field === 'Brand' && !hideBrandFacet) || (facet.field == 'Category' && !hideCategoryFacet) || facet.field === 'SalesPrice' || (facet.$type.includes('CategoryHierarchyFacetResult') && categoriesForFilterOptions)" class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
-            <h4 class="font-semibold text-lg mb-1">
+        <div v-if="(facet.field === 'Brand' && !hideBrandFacet) || (facet.field == 'Category' && !hideCategoryFacet) || facet.field === 'SalesPrice' || (facet.$type.includes('CategoryHierarchyFacetResult') && categoriesForFilterOptions)" class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1">
+            <h4 class="font-semibold text-lg">
                 {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
             </h4>
             <template v-if="facet.$type.includes('CategoryHierarchyFacetResult')">
@@ -20,7 +20,7 @@
                     <template v-if="selectedCategoryFilterOptions && selectedCategoryFilterOptions.length < categoryFilterThreshold">
                         <span v-for="(categoryLink, filterOptionIndex) in categoryHierarchyOptions"
                               :key="filterOptionIndex"
-                              class="mb-1 block cursor-pointer"
+                              class="block cursor-pointer hover:!text-brand-500"
                               @click.prevent="applyFacet(facet.field, categoryLink.category.categoryId)">
                             {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
                         </span>
