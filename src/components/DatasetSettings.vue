@@ -85,9 +85,7 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.hideSoldOutProducts"
-                           class="accent-brand-500 mr-3 h-5 w-5"
-                           type="checkbox">
+                    <input v-model="context.hideSoldOutProducts" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
                     Hide <span class="font-medium px-1">Sold out</span> in recommendations</label>
 
                 <p class="text-gray-500 text-sm mt-1">
@@ -97,9 +95,7 @@
 
             <div>
                 <label class="text-sm block mt-6">Set 'Minutes ago' used for recommendations</label>
-                <input v-model="context.recommendationsMinutesAgo"
-                       
-                       type="text">
+                <input v-model="context.recommendationsMinutesAgo" type="text">
                 <p class="text-gray-500 text-sm mt-1">
                     Default is 14 days.
                 </p>
@@ -124,7 +120,7 @@
             <button class="" @click="save">
                 Save
             </button>
-
+            
             <span v-if="saved" class="ml-4 text-green-600">
                 Settings have been saved.
             </span>
