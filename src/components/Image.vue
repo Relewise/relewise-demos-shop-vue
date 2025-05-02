@@ -21,10 +21,10 @@ const props = defineProps({
 });
 
 const image = computed(() => {
-    return findImage(product.value);
+    return findImage(entity.value);
 });
 
-const { entity: product } = toRefs(props);
+const { entity: entity } = toRefs(props);
 const error = ref(false);
 </script>
 <style lang="css" scoped>
