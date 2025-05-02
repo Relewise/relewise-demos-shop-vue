@@ -18,6 +18,14 @@ class TrackingService {
         tracker.trackProductView({ productId: id, user: contextStore.user.value });
     }
 
+    public async trackContentView(id: string) {
+        if (!contextStore.tracking.value.enabled) return;
+
+        const tracker = contextStore.getTracker();
+
+        tracker.trackContentView({ contentId: id, user: contextStore.user.value });
+    }
+
     public async trackCart(lineItems: ILineItem[]) {
         if (!contextStore.tracking.value.enabled) return;
 

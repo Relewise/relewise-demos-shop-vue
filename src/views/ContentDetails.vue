@@ -2,7 +2,7 @@
     <div id="product-page" class="container mx-auto px-2 lg:p-0">
         <div v-if="content" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content"/>
-            <Image :entity="content" class="content-image"/>
+            <Image v-if="findImage(content)" :entity="content"/>
             <h1 class="text-4xl mb-4 font-semibold">
                 {{ content.displayName }}
             </h1>
@@ -16,7 +16,7 @@
             </div>
             <div v-if="productRecommendations" class="scrollbar mt-8">
                 <h2 class="text-2xl font-semibold mb-3">
-                    People also buy
+                    People buy
                 </h2>
                 <div class="w-full overflow-x-scroll">
                     <div class="flex flex-row gap-6">
@@ -39,6 +39,8 @@ import Breadcrumb from '../components/Breadcrumb.vue';
 import Image from '../components/Image.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import ProductTile from '../components/ProductTile.vue';
+import trackingService from '@/services/tracking.service';
+import { findImage } from '@/helpers/imageHelper';
 
 const contentId = ref<string>('');
 const content = ref<ContentResult|null|undefined>(null);
@@ -52,8 +54,7 @@ async function init() {
     if (id && !Array.isArray(id)) {
         contentId.value = id;
 
-        // TODO: Add content tracking
-        // trackingService.trackProductView(id);
+        trackingService.trackProductView(id);
 
         const request = new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
@@ -97,24 +98,5 @@ watch(route, () => {
 </script>
 
 <style lang="scss">
-.content-wrapper {
-    margin-bottom: 20px;
-}
 
-.content-image-wrapper {
-    float: left;
-    width: 300px;
-    margin: 0 20px 10px 0;
-}
-
-.content-image {
-    width: 100%;
-    height: auto;
-}
-
-.content-body {
-    p {
-        margin-bottom: 1rem;
-    }
-}
 </style>

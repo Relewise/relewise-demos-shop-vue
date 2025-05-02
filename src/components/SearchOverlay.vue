@@ -196,10 +196,7 @@ async function search() {
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setTerm(searchTerm.value)
             .pagination(p => p.setPageSize(10))
-            .setContentProperties({
-                displayName: true,
-                dataKeys: ['Image'],
-            })
+            .setContentProperties(contextStore.selectedContentProperties)
             .build())
         .build();
 

@@ -118,10 +118,10 @@ class AppContext {
     public get selectedContentProperties(): SelectedProductPropertiesSettings {
         return {
             displayName: true,
-            allData: true,
             brand: true,
             categoryPaths: true,
             pricing: true,
+            dataKeys: ['ByLine', 'Body', 'Image'],
         } as SelectedProductPropertiesSettings;
     }
 
