@@ -22,6 +22,7 @@ export interface IDataset {
     allowThirdLevelCategories?: boolean;
     hideSoldOutProducts?: boolean;
     recommendationsMinutesAgo?: number;
+    switchOnVariantBasedSearchDisplay?:boolean;
 }
 
 export interface ITracking {
@@ -180,6 +181,10 @@ class AppContext {
 
     public getRecommendationsSinceMinutesAgo(): number {
         return this.context.value.recommendationsMinutesAgo ?? 20160;
+    }
+
+    public getswitchOnVariantBasedSearchDisplay(): boolean {
+        return this.context.value.switchOnVariantBasedSearchDisplay ?? false;
     }
 
     public persistState() {
