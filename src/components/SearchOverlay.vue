@@ -137,64 +137,136 @@ async function search() {
     const categoryFilterThreshold = getCategoryThreshold();
 
     const request = new SearchCollectionBuilder()
-        .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
-            .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({ displayName: true, pricing: true, allData: true })
-            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .filters(f => {
-                if (Array.isArray(selectedCategoryFilterIds)) {
-                    selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
-                        f.addProductCategoryIdFilter('Ancestor', id);
+    .addRequest(
+        (() => {
+            const builder = new ProductSearchBuilder(contextStore.defaultSettings)
+                .setSelectedProductProperties(contextStore.selectedProductProperties)
+                .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+                .filters(f => {
+                    if (Array.isArray(selectedCategoryFilterIds)) {
+                        selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
+                            f.addProductCategoryIdFilter('Ancestor', id);
+                        });
+                    }
+                    addAssortmentFilters(f);
+                })
+                .relevanceModifiers(rm => {
+                    addCampaignRelevanceModifier(rm);
+                })
+                .facets(f => {
+                    const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
+                    keys.forEach(key => {
+                        const facetItem = facetConfig.find(k => k.key == key);
+                        facetItem?.config?.addToBuilder?.(f, filters.value);
                     });
-                }
-                addAssortmentFilters(f);
-            })
-            .relevanceModifiers(rm => {
-                addCampaignRelevanceModifier(rm);
-            })
-            .facets(f => {
-                const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
-                keys.forEach(key => {
-                    const facetItem = facetConfig.find(k => k.key == key);
-                    facetItem?.config?.addToBuilder?.(f, filters.value);
+                })
+                .sorting(s => {
+                    if (filters.value.sort === 'Popular') {
+                        s.sortByProductPopularity();
+                    } else if (filters.value.sort === 'SalesPriceDesc') {
+                        s.sortByProductAttribute('SalesPrice', 'Descending');
+                    } else if (filters.value.sort === 'SalesPriceAsc') {
+                        s.sortByProductAttribute('SalesPrice', 'Ascending');
+                    }
+                })
+                .pagination(p => p.setPageSize(pageSize).setPage(page.value))
+                .setRetailMedia({
+                    location: {
+                        key: 'SEARCH_RESULTS_PAGE',
+                        placements: [{ key: 'TOP' }],
+                        variation: { key: variationName },
+                    },
+                })
+                .setExplodedVariants(1);
+
+            if (contextStore.getswitchOnVariantBasedSearchDisplay()) {
+                builder.setExplodedVariants(5);
+                builder.setSelectedVariantProperties({
+                    displayName: true,
+                    pricing: true,
+                    allData: true,
                 });
-            })
-            .sorting(s => {
-                if (filters.value.sort === 'Popular') {
-                    s.sortByProductPopularity();
-                }
-                else if (filters.value.sort === 'SalesPriceDesc') {
-                    s.sortByProductAttribute('SalesPrice', 'Descending');
-                }
-                else if (filters.value.sort === 'SalesPriceAsc') {
-                    s.sortByProductAttribute('SalesPrice', 'Ascending');
-                }
-            })
-            .pagination(p => p.setPageSize(pageSize).setPage(page.value))
-            .setRetailMedia({
-                location: {
-                    key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'TOP' }],
-                    variation: { key: variationName },
-                },
-            })
-            .setExplodedVariants(5)
-            .build())
+            }
 
-
-        .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
+            return builder.build();
+        })()
+    )
+    .addRequest(
+        new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product')
             .setTerm(searchTerm.value)
             .take(5)
-            .build())
-
-        .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
+            .build()
+    )
+    .addRequest(
+        new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .pagination(p => p.setPageSize(10).setPage(1))
-            .build())
+            .build()
+    )
+    .build();
 
-        .build();
+    // const request = new SearchCollectionBuilder()
+    //     .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
+    //         .setSelectedProductProperties(contextStore.selectedProductProperties)
+            
+    //         .setSelectedVariantProperties(contextStore.getswitchOnVariantBasedSearchDisplay() ? { displayName: true, pricing: true, allData: true }: {})
+    //         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+    //         .filters(f => {
+    //             if (Array.isArray(selectedCategoryFilterIds)) {
+    //                 selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
+    //                     f.addProductCategoryIdFilter('Ancestor', id);
+    //                 });
+    //             }
+    //             addAssortmentFilters(f);
+    //         })
+    //         .relevanceModifiers(rm => {
+    //             addCampaignRelevanceModifier(rm);
+    //         })
+    //         .facets(f => {
+    //             const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
+    //             keys.forEach(key => {
+    //                 const facetItem = facetConfig.find(k => k.key == key);
+    //                 facetItem?.config?.addToBuilder?.(f, filters.value);
+    //             });
+    //         })
+    //         .sorting(s => {
+    //             if (filters.value.sort === 'Popular') {
+    //                 s.sortByProductPopularity();
+    //             }
+    //             else if (filters.value.sort === 'SalesPriceDesc') {
+    //                 s.sortByProductAttribute('SalesPrice', 'Descending');
+    //             }
+    //             else if (filters.value.sort === 'SalesPriceAsc') {
+    //                 s.sortByProductAttribute('SalesPrice', 'Ascending');
+    //             }
+    //         })
+    //         .pagination(p => p.setPageSize(pageSize).setPage(page.value))
+    //         .setRetailMedia({
+    //             location: {
+    //                 key: 'SEARCH_RESULTS_PAGE',
+    //                 placements: [{ key: 'TOP' }],
+    //                 variation: { key: variationName },
+    //             },
+    //         })
+    //         .setExplodedVariants(5)
+    //         .build())
+
+
+    //     .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
+    //         .addEntityType('Product')
+    //         .setTerm(searchTerm.value)
+    //         .take(5)
+    //         .build())
+
+    //     .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
+    //         .setContentProperties(contextStore.selectedContentProperties)
+    //         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+    //         .pagination(p => p.setPageSize(10).setPage(1))
+    //         .build())
+
+    //     .build();
 
     abortController = new AbortController();
     const searcher = contextStore.getSearcher();
@@ -297,10 +369,6 @@ function searchFor(term: string) {
                 <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
                     Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
                 </h2>
-                <!-- <h2 v-if="route.query.Brand" class="text-xl lg:text-3xl mb-6">
-                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.Brand) ?
-                        route.query.Brand.join(' ') : route.query.Brand }}</span>
-                </h2> -->
                 <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
@@ -398,7 +466,7 @@ function searchFor(term: string) {
                                                 <tr v-for="(variant, index) in product.Variants"
                                                     :key="variant.variantId ?? 'variant-' + index"
                                                     class="border-b border-gray-200">
-                                                    {{ console.log(variant, 2, null) }}
+
                                                     <td class="py-2 px-3">
                                                         <img :src="variant.data?.Image?.value" alt="Variant Image"
                                                             class="w-12 h-12 object-contain" />
@@ -459,73 +527,6 @@ function searchFor(term: string) {
                                     :key="index" :product="product" />
                             </div>
                         </div>
-                        <!-- 
-                        //A B2B VARIATION WITH VARIANTS
-                        <div v-else>
-                            <div v-for="(product, index) in groupedProducts"
-                                :key="product.productId ?? 'group-' + index" class="bg-white p-4 rounded shadow">
-                                <h3 class="text-lg font-semibold flex justify-between items-center mb-2">
-                                    <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
-                                        class="text-blue-600 underline">
-                                        <span v-html="product.displayName"></span>
-                                    </RouterLink>
-                                    <span class="text-sm text-gray-500 ml-4">
-                                        {{ product.brand?.displayName }}
-                                    </span>
-                                </h3>
-                                <table class="w-full mt-4 border-t border-gray-200 text-left text-sm">
-                                    <thead class="bg-gray-50 text-gray-700 uppercase">
-                                        <tr>
-                                            <th class="py-2 px-3">Image</th>
-                                            <th class="py-2 px-3">Variant name</th>
-                                            <th class="py-2 px-3">Variant Id</th>
-                                            <th class="py-2 px-3">Availability</th>
-                                            <th class="py-2 px-3">Price</th>
-                                            <th class="py-2 px-3">Price incl. VAT</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="(variant, index) in product.Variants"
-                                            :key="variant.variantId ?? 'variant-' + index"
-                                            class="border-b border-gray-200">
-                                            <td class="py-2 px-3">
-                                                <img :src="variant.data?.Image?.value" alt="Variant Image"
-                                                    class="w-12 h-12 object-contain" />
-                                            </td>
-                                            <td
-                                                class="py-2 px-3 max-w-[300px] truncate whitespace-nowrap overflow-hidden align-top">
-                                                <span v-html="variant.displayName"></span>
-                                            </td>
-                                            <td class="py-2 px-3">
-                                                <RouterLink
-                                                    :to="{
-                                                        name: 'product',
-                                                        params: { id: product.productId },
-                                                        ...(product.variant?.variantId ? { query: { variantId: product.variant.variantId } } : {})
-                                                    }"
-                                                    class="block text-blue-600 underline">
-                                                    {{ variant.variantId }}
-                                                </RouterLink>
-                                            </td>
-
-                                            <td class="py-2 px-3 text-green-600">
-                                                In stock
-                                            </td>
-                                            <td class="py-2 px-3 font-semibold">
-                                                EUR {{ variant.listPrice ?? product.listPrice }}
-                                            </td>
-                                            <td class="py-2 px-3 font-semibold">
-                                                EUR {{ variant.salesPrice ?? product.salesPrice }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="py-3 flex justify-center">
-                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize"
-                                    @change="search" />
-                            </div>
-                        </div> -->
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
                             class="w-full p-3 bg-white rounded mb-6">
                             <h2 class="text-xl">

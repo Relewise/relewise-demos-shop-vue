@@ -5,9 +5,11 @@ export const findImage = (product: ProductResult, varId?: string) => {
         ? product.filteredVariants?.find(v => v.variantId === varId)?.data
         : product.variant?.data;
 
-    return mapDataKey(variantData ?? {}) ??
-        mapDataKey(product.data ?? {}) ??
-        '';
+        return mapDataKey(product.data ?? {});
+        //Removed ability to Show Variant images from here. 
+    // return mapDataKey(variantData ?? {}) ??
+    //     mapDataKey(product.data ?? {}) ??
+    //     '';
 };
 
 function mapDataKey(data: Record<string, DataValue>) {
