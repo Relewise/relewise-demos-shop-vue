@@ -5,7 +5,7 @@
             <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
                     <div>
-                        <Image :entity="content"/>
+                        <Image v-if="findImage(content)" :entity="content"/>
                     </div>
                 </div>
 
