@@ -3,7 +3,7 @@
         <div v-if="content" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content"/>
             <Image v-if="findImage(content)" :entity="content"/>
-            <h1 class="text-4xl mb-4 font-semibold">
+            <h1 class="text-4xl mb-4 mt-4 font-semibold">
                 {{ content.displayName }}
             </h1>
             <div v-if="content.data?.ByLine.value" class="inline-block">
@@ -14,9 +14,9 @@
             <div v-if="content.data?.Body?.value">
                 <div class="content-body" v-html="content.data?.Body?.value"></div>
             </div>
-            <div v-if="productRecommendations" class="scrollbar mt-8">
+            <div v-if="productRecommendations" class="scrollbar mt-16">
                 <h2 class="text-2xl font-semibold mb-3">
-                    People buy
+                    Products viewed after viewing content
                 </h2>
                 <div class="w-full overflow-x-scroll">
                     <div class="flex flex-row gap-6">
