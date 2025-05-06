@@ -1,5 +1,5 @@
 <template>
-    <div id="product-page" class="container mx-auto px-2 lg:p-0">
+    <div id="product-page" class="container entity-page mx-auto px-2 lg:p-0">
         <div v-if="product" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
 
