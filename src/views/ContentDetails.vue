@@ -1,18 +1,25 @@
 <template>
-    <div id="product-page" class="container mx-auto px-2 lg:p-0">
+    <div id="content-page" class="container entity-page mx-auto px-2 lg:p-0">
         <div v-if="content" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content"/>
-            <Image v-if="findImage(content)" :entity="content"/>
-            <h1 class="text-4xl mb-4 mt-4 font-semibold">
-                {{ content.displayName }}
-            </h1>
-            <div v-if="content.data?.ByLine.value" class="inline-block">
-                <hr> 
-                <span class="text-slate-500 uppercase">{{ content.data?.ByLine.value }}</span>
-                <hr>
-            </div>
-            <div v-if="content.data?.Body?.value">
-                <div class="content-body" v-html="content.data?.Body?.value"></div>
+            <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
+                    <div>
+                        <Image :entity="content"/>
+                    </div>
+                </div>
+
+                <div class="bg-white xl:w-1/2">
+                    <div>
+                        <h1 class="text-4xl mb-4 font-semibold">
+                            {{ content.displayName }}
+                        </h1>
+
+                        <div v-if="content.data?.Body?.value">
+                            <div class="content-body" v-html="content.data?.Body?.value"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div v-if="productRecommendations" class="scrollbar mt-16">
                 <h2 class="text-2xl font-semibold mb-3">
