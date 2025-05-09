@@ -132,6 +132,7 @@ async function search() {
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+            .setExplodedVariants(1)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds)) {
                     selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
