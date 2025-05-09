@@ -4,11 +4,11 @@
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="product"/>
 
             <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
-                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
+                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center items-center">
                     <Image :entity="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>
 
-                <div class="bg-white flex-grow">
+                <div class="bg-white w-full xl:w-1/2">
                     <div>
                         <div v-if="product.brand">
                             <span class="text-slate-600 mb-4 text-lg">{{ product.brand.displayName }}</span>
@@ -23,7 +23,22 @@
                             </p> 
                         </div>
                     </div>
-
+                    <div v-if="product.allVariants">
+                        <div class="flex flex-wrap mb-4 mt-4 gap-2">
+                            <template v-for="variant in product.allVariants" :key="variant.variantId">
+                                <RouterLink :to="{ name: 'variant', params: { id: product.productId, variant: variant.variantId } }"> 
+                                    <div 
+                                        :class="[
+                                            variantId === variant.variantId ? 'underline--yellow' : ''
+                                        ]">
+                                        <div class="pb-2">
+                                            <Image :entity="variant" class="!h-[50px] xl:!h-[100px] !w-auto"/>
+                                        </div>
+                                    </div>
+                                </RouterLink>
+                            </template>
+                        </div>
+                    </div>
                     <div class="mt-6">
                         <div class="mb-2 flex gap-2">
                             <span v-if="product.salesPrice !== product.listPrice" class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900">ON SALE</span>
@@ -83,11 +98,12 @@
                 </h2>
                 <div class="w-full overflow-x-scroll">
                     <relewise-purchased-with-product
-                        :key="productId" 
+                        :key="productId"
                         class="flex flex-row gap-3"
                         number-of-recommendations="15" 
                         :displayed-at-location="defaultSettings.displayedAtLocation" 
-                        :product-id="productId"/>
+                        :product-id="productId"
+                        :variant-id="variantId"/>
                 </div>
             </div>
             <div class="scrollbar">
@@ -100,7 +116,8 @@
                         class="flex flex-row gap-3"
                         number-of-recommendations="15" 
                         :displayed-at-location="defaultSettings.displayedAtLocation" 
-                        :product-id="productId"/>
+                        :product-id="productId"
+                        :variant-id="variantId"/>
                 </div>
             </div>
         </relewise-product-recommendation-batcher>
@@ -118,6 +135,7 @@ import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 
 const productId = ref<string>('');
+const variantId = ref<string | null>(null);
 const product = ref<ProductResult|null|undefined>(null);
 const route = useRoute();
 const buttonClass = ref('');
@@ -135,8 +153,14 @@ const details = computed(() => {
 
 async function init() {
     const id = route.params.id;
+    const variantIdFromRoute = route.params.variant;
+
     if (id && !Array.isArray(id)) {
         productId.value = id;
+
+        if (variantIdFromRoute && !Array.isArray(variantIdFromRoute)) {
+            variantId.value = variantIdFromRoute;
+        }
 
         trackingService.trackProductView(id);
 
@@ -144,7 +168,13 @@ async function init() {
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({allData: true, displayName: true})
             .setExplodedVariants(1)
-            .filters(f => f.addProductIdFilter([id]))
+            .filters(f => {
+                f.addProductIdFilter([id]);
+
+                if (variantId.value) {
+                    f.addVariantIdFilter(variantId.value);
+                }
+            })
             .pagination(p => p.setPageSize(1))
             .build();
 
