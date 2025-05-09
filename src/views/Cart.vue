@@ -129,6 +129,7 @@ async function recommend() {
             .filter(item => item.product.productId)
             .map(item => ({
                 productId: item.product.productId as string,
+                variantId: item.product.variant?.variantId ?? undefined,
             })),
         )
         .filters(builder => globalProductRecommendationFilters(builder))
