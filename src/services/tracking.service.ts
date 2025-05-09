@@ -10,12 +10,12 @@ class TrackingService {
         tracker.trackProductCategoryView({ idPath: [id], user: contextStore.user.value });
     }
 
-    public async trackProductView(id: string) {
+    public async trackProductView(id: string, variantId?: string) {
         if (!contextStore.tracking.value.enabled) return;
 
         const tracker = contextStore.getTracker();
 
-        tracker.trackProductView({ productId: id, user: contextStore.user.value });
+        tracker.trackProductView({ productId: id, variantId: variantId, user: contextStore.user.value });
     }
 
     public async trackContentView(id: string) {
@@ -60,6 +60,7 @@ class TrackingService {
     private mapLineItems(lineItems: ILineItem[]) {
         return lineItems.map(x => ({
             productId: x.product.productId ?? '',
+            variantId: x.product.variant?.variantId ?? undefined,
             quantity: x.quantity,
             lineTotal: x.quantity * (x.product.salesPrice ?? 0),
         }));

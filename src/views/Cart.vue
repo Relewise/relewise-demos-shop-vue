@@ -111,6 +111,7 @@ const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
 
 function init() {
+    console.log(basketService.model.value);
     if (!isEmpty.value) {
         recommend();
     }

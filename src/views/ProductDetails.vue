@@ -162,7 +162,7 @@ async function init() {
             variantId.value = variantIdFromRoute;
         }
 
-        trackingService.trackProductView(id);
+        trackingService.trackProductView(id, variantId.value ?? undefined);
 
         const request = new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
