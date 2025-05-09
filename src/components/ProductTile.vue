@@ -15,7 +15,7 @@ const { product } = toRefs(props);
 </script>
 
 <template>
-    <RouterLink :to="{ name: 'product', params: { id: product.productId } }"
+    <RouterLink :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
                 class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
         <div class="relative flex h-max-[275px] overflow-hidden justify-center">
             <Image :entity="product" class="h-[275px]"/>

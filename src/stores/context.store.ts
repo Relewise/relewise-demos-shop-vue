@@ -112,6 +112,7 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
+            allVariants: true,
         } as SelectedProductPropertiesSettings;
     }
 
