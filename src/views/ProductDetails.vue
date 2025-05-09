@@ -24,20 +24,7 @@
                         </div>
                     </div>
                     <div v-if="product.allVariants">
-                        <div class="flex flex-wrap mb-4 mt-4 gap-2">
-                            <template v-for="variant in product.allVariants" :key="variant.variantId">
-                                <RouterLink :to="{ name: 'variant', params: { id: product.productId, variant: variant.variantId } }"> 
-                                    <div 
-                                        :class="[
-                                            variantId === variant.variantId ? 'underline--yellow' : ''
-                                        ]">
-                                        <div class="pb-2">
-                                            <Image :entity="variant" class="!h-[50px] xl:!h-[100px] !w-auto"/>
-                                        </div>
-                                    </div>
-                                </RouterLink>
-                            </template>
-                        </div>
+                        <ProductVariants :product="product" :selected-variant-id="variantId ?? undefined"/>
                     </div>
                     <div class="mt-6">
                         <div class="mb-2 flex gap-2">
@@ -133,6 +120,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
+import ProductVariants from '../components/ProductVariants.vue';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);
