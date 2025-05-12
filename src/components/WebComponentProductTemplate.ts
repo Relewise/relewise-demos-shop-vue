@@ -5,7 +5,7 @@ import type { TemplateExtensions } from '@relewise/web-components';
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {
     let path = `/product/${product.productId}`;
 
-    if (product.variant) {
+    if (product.variant?.variantId) {
         path += `/variant/${product.variant.variantId}`;
     }
 
