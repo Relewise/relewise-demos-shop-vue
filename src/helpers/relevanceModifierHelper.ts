@@ -20,7 +20,7 @@ export function addRelevanceModifiers(relevancemodifierBuilder: RelevanceModifie
 
     if (!utmValue) return;
 
-    // Should we boost promoted?
+    // Check if we should boost promoted products
     if (utmValue === 'promoted') {
         relevancemodifierBuilder.addProductDataRelevanceModifier(
             'Promoted',
