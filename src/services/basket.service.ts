@@ -31,7 +31,8 @@ class BasketService {
     }
 
     async addProduct({ product, quantityDelta }: {product: ProductResult, quantityDelta: number}) {
-        const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId);
+        const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId 
+            && x.product.variant?.variantId === product.variant?.variantId);
 
         if (productIndex > -1) {
             const lineItem = this.state.model.lineItems[productIndex];

@@ -3,7 +3,12 @@ import type { ProductResult } from '@relewise/client';
 import type { TemplateExtensions } from '@relewise/web-components';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {
-    const path = `/product/${product.productId}`;
+    let path = `/product/${product.productId}`;
+
+    if (product.variant?.variantId) {
+        path += `/variant/${product.variant.variantId}`;
+    }
+
     return html`
         <style>
             a {
