@@ -14,6 +14,7 @@ import Pagination from '../components/Pagination.vue';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import ContentTile from './ContentTile.vue';
+import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -169,6 +170,7 @@ async function search() {
                     applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
                     applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
             })
+            .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();

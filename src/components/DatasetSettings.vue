@@ -100,6 +100,22 @@
                     Default is 14 days.
                 </p>
             </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    UTM-based Product Boosting
+                </label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    Automatically boosts specific products in search results and product listings based on UTM parameters in the URL:
+                    <br><br>
+                    • When UTM value is <code>promoted</code>: Products with the Data Key "Promoted" as <code>true</code> will receive a 50% relevance boost
+                    <br>
+                    • For all other UTM values: Products with matching campaign IDs in Data Key <code>campaignIds</code> will receive a 50% relevance boost
+                    <br><br>
+                    Supported UTM parameters: <code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>, <code>utm_term</code>, <code>utm_content</code>
+                </p>
+            </div>
         </div>
 
         <hr class="my-8">

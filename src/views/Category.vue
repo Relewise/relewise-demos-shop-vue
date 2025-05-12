@@ -84,6 +84,7 @@ import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
+import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -218,6 +219,7 @@ async function search() {
             f.addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
             f.addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
         })
+        .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))
         .sorting(s => {
             if (filters.value.sort === 'Popular') {
