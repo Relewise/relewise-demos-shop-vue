@@ -195,6 +195,9 @@ async function search() {
         new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product')
             .setTerm(searchTerm.value)
+            .filters(f=>{
+                addAssortmentFilters(f);
+            })
             .take(5)
             .build()
     )
