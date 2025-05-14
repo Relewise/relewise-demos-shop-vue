@@ -94,6 +94,16 @@
             </div>
 
             <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.userClassificationFilters" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Hide products not available for the user's <code class="px-1">country</code> or <code class="px-1">channel</code> classification
+                </label>
+                <p class="text-gray-500 text-sm mt-1">
+                    We base the filters on the product's <code>AvailableInMarkets</code> and <code>AvailableInChannels</code> data keys.
+                </p>
+            </div>
+
+            <div>
                 <label class="text-sm block mt-6">Set 'Minutes ago' used for recommendations</label>
                 <input v-model="context.recommendationsMinutesAgo" type="text">
                 <p class="text-gray-500 text-sm mt-1">
@@ -227,6 +237,7 @@ function shareLink() {
         selectedUserIndex: context.value.selectedUserIndex,
         allowThirdLevelCategories: context.value.allowThirdLevelCategories,
         hideSoldOutProducts: context.value.hideSoldOutProducts,
+        userClassificationFilters: context.value.userClassificationFilters,
         recommendationsMinutesAgo: context.value.recommendationsMinutesAgo,
     };
 

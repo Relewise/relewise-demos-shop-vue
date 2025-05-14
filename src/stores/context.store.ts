@@ -1,5 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings,  type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
@@ -19,6 +19,7 @@ export interface IDataset {
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
     hideSoldOutProducts?: boolean;
+    userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
 }
 
@@ -137,6 +138,23 @@ class AppContext {
 
     public get numberOfProductsToRecommend(): number {
         return AppContext.numberOfProductsToRecommend;
+    }
+
+    public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
+        if (!this.user.value.classifications || !this.context.value.userClassificationFilters)
+            return;
+
+        const country = this.user.value.classifications['country'];
+        if (country) {
+            filterBuilder.addProductDataFilter('AvailableInMarkets',
+                (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(country)));
+        }
+
+        const channel = this.user.value.classifications['channel'];
+        if (channel) {
+            filterBuilder.addProductDataFilter('AvailableInChannels',
+                (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(channel)));
+        }
     }
 
     public getSearcher(): Searcher {

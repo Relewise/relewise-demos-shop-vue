@@ -209,6 +209,7 @@ async function search() {
         })
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
+            contextStore.userClassificationBasedFilters(f);
         })
         .facets(f => {
             if (renderCatoryLinks.value) {

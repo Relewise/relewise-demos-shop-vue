@@ -140,6 +140,8 @@ async function search() {
                         f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
+
+                contextStore.userClassificationBasedFilters(f);
             })
             .facets(f => {
 
