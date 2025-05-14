@@ -87,7 +87,7 @@
                     <relewise-purchased-with-product
                         :key="productId"
                         class="flex flex-row gap-3"
-                        number-of-recommendations="15" 
+                        :number-of-recommendations="contextStore.numberOfProductsToRecommend"
                         :displayed-at-location="defaultSettings.displayedAtLocation" 
                         :product-id="productId"
                         :variant-id="variantId"/>
@@ -101,7 +101,7 @@
                     <relewise-products-viewed-after-viewing-product
                         :key="productId" 
                         class="flex flex-row gap-3"
-                        number-of-recommendations="15" 
+                        :number-of-recommendations="contextStore.numberOfProductsToRecommend"
                         :displayed-at-location="defaultSettings.displayedAtLocation" 
                         :product-id="productId"
                         :variant-id="variantId"/>

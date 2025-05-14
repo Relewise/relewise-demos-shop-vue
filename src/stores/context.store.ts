@@ -1,15 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import {
-    Searcher,
-    type Settings,
-    Recommender,
-    type SelectedProductPropertiesSettings,
-    Tracker,
-    type User,
-    type Company,
-    UserFactory,
-    type FilterBuilder, type ConditionBuilder, DataValueFactory,
-} from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings,  type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
@@ -52,6 +42,8 @@ class AppContext {
     private readonly localStorageName = 'shopContext';
     private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', allLanguages: [], currencyCode: '', allCurrencies: [], users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
+
+    public static numberOfProductsToRecommend = 8;
 
     constructor() {
         const storedContext = localStorage.getItem(this.localStorageName);
@@ -135,6 +127,17 @@ class AppContext {
             pricing: true,
             dataKeys: ['ByLine', 'Body', 'Image'],
         } as SelectedProductPropertiesSettings;
+    }
+
+    public get selectedCategoryProperties(): SelectedCategoryPropertiesSettings {
+        return {
+            displayName: true,
+            dataKeys: ['Image'],
+        } as SelectedCategoryPropertiesSettings;
+    }
+
+    public get numberOfProductsToRecommend(): number {
+        return AppContext.numberOfProductsToRecommend;
     }
 
     public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
