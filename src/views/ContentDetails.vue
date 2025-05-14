@@ -81,11 +81,10 @@ async function init() {
 }
 
 async function recommend() {
-    const take = 15;
     const request = new ProductsViewedAfterViewingContentBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
-        .setNumberOfRecommendations(take)
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .setContentId(contentId.value)
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();

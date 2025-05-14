@@ -26,11 +26,10 @@ const recommender = contextStore.getRecommender();
 recommend();
 
 async function recommend() {
-    const take = 15;
     const request = new PopularProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
-        .setNumberOfRecommendations(take)
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
        
         .filters(builder => {
             builder.addProductDataFilter('OnSale', c => c.addEqualsCondition(DataValueFactory.boolean(true)));
