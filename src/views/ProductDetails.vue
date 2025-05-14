@@ -162,6 +162,8 @@ async function init() {
                 if (variantId.value) {
                     f.addVariantIdFilter(variantId.value);
                 }
+
+                contextStore.userClassificationBasedFilters(f);
             })
             .pagination(p => p.setPageSize(1))
             .build();

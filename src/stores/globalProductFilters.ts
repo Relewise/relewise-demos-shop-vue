@@ -5,4 +5,5 @@ export function globalProductRecommendationFilters(filterBuilder: FilterBuilder)
     if (!contextStore.context.value.hideSoldOutProducts) return;
     
     filterBuilder.addProductDataFilter('SoldOut', (c: ConditionBuilder) => c.addEqualsCondition(DataValueFactory.boolean(false)), true, false);
+    contextStore.userClassificationBasedFilters(filterBuilder);
 }

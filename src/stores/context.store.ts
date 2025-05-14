@@ -1,5 +1,15 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory } from '@relewise/client';
+import {
+    Searcher,
+    type Settings,
+    Recommender,
+    type SelectedProductPropertiesSettings,
+    Tracker,
+    type User,
+    type Company,
+    UserFactory,
+    type FilterBuilder, type ConditionBuilder, DataValueFactory,
+} from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
@@ -124,6 +134,23 @@ class AppContext {
             pricing: true,
             dataKeys: ['ByLine', 'Body', 'Image'],
         } as SelectedProductPropertiesSettings;
+    }
+
+    public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
+        if (!this.user.value.classifications)
+            return;
+
+        const country = this.user.value.classifications['country'];
+        if (country) {
+            filterBuilder.addProductDataFilter('AvailableInMarkets',
+                (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(country)));
+        }
+
+        const channel = this.user.value.classifications['channel'];
+        if (channel) {
+            filterBuilder.addProductDataFilter('AvailableInChannels',
+                (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(channel)));
+        }
     }
 
     public getSearcher(): Searcher {
