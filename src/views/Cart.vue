@@ -119,11 +119,10 @@ function init() {
 init();
 
 async function recommend() {
-    const take = 15;
     const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({allData: true})
-        .setNumberOfRecommendations(take)
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .addProducts(basketService.model.value.lineItems
             .filter(item => item.product.productId)
             .map(item => ({

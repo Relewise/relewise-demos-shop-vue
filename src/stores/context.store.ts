@@ -42,6 +42,8 @@ class AppContext {
     private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', allLanguages: [], currencyCode: '', allCurrencies: [], users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
+    public static numberOfProductsToRecommend = 8;
+
     constructor() {
         const storedContext = localStorage.getItem(this.localStorageName);
 
@@ -131,6 +133,10 @@ class AppContext {
             displayName: true,
             dataKeys: ['Image'],
         } as SelectedCategoryPropertiesSettings;
+    }
+
+    public get numberOfProductsToRecommend(): number {
+        return AppContext.numberOfProductsToRecommend;
     }
 
     public getSearcher(): Searcher {
