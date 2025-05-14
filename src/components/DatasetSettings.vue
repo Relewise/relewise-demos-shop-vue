@@ -96,10 +96,10 @@
             <div>
                 <label class="flex mt-2 items-center">
                     <input v-model="context.userClassificationFilters" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
-                    Hide products not available for the user's <span class="font-medium px-1">Country</span> or <span class="font-medium px-1">Channel</span> classification
+                    Hide products not available for the user's <code class="px-1">country</code> or <code class="px-1">channel</code> classification
                 </label>
                 <p class="text-gray-500 text-sm mt-1">
-                    We base the filters on the product's <span class="font-medium px-1">AvailableInMarkets</span> and <span class="font-medium px-1">AvailableInChannels</span> data keys.
+                    We base the filters on the product's <code>AvailableInMarkets</code> and <code>AvailableInChannels</code> data keys.
                 </p>
             </div>
 
