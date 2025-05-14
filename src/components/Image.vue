@@ -11,13 +11,13 @@
 
 <script setup lang="ts">
 import { PhotoIcon } from '@heroicons/vue/24/outline';
-import type { ContentResult, ProductResult } from '@relewise/client';
+import type { CategoryResult, ContentResult, ProductResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
 import { findImage } from '@/helpers/imageHelper';
 import { computed } from 'vue';
 
 const props = defineProps({
-    entity: { type: Object as PropType<ProductResult | ContentResult>, required: true },
+    entity: { type: Object as PropType<ProductResult | ContentResult | CategoryResult>, required: true },
 });
 
 const image = computed(() => {
