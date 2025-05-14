@@ -1,15 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import {
-    Searcher,
-    type Settings,
-    Recommender,
-    type SelectedProductPropertiesSettings,
-    Tracker,
-    type User,
-    type Company,
-    UserFactory,
-    type SelectedCategoryPropertiesSettings,
-} from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
