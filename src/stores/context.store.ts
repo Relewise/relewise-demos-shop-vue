@@ -29,6 +29,7 @@ export interface IDataset {
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
     hideSoldOutProducts?: boolean;
+    userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
 }
 
@@ -137,7 +138,7 @@ class AppContext {
     }
 
     public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
-        if (!this.user.value.classifications)
+        if (!this.user.value.classifications || !this.context.value.userClassificationFilters)
             return;
 
         const country = this.user.value.classifications['country'];
