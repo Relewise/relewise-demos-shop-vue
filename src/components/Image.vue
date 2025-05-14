@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { PhotoIcon } from '@heroicons/vue/24/outline';
-import type {CategoryResult, ContentResult, ProductResult} from '@relewise/client';
+import type { CategoryResult, ContentResult, ProductResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
 import { findImage } from '@/helpers/imageHelper';
 import { computed } from 'vue';
