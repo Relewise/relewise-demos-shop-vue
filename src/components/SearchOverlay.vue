@@ -15,7 +15,10 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
-import { facetConfig, FacetContexts, getCategoryThreshold, getDefaultFilters, getFacetKeysForContext, getSelectedCategoryFilterIds } from '@/config/FacetConfig';
+import { getFacetKeysForContext } from '@/config/FacetConfig';
+import { getCategoryThreshold, getSelectedCategoryFilterIds, getDefaultFilters } from '@/helpers/facetHelpers'
+import { FacetContexts, getFacetDefinition } from '@/config/FacetConfigSmarter';
+
 import contextStore from '@/stores/context.store';
 
 const open = ref(false);
@@ -137,83 +140,83 @@ async function search() {
     const categoryFilterThreshold = getCategoryThreshold();
 
     const request = new SearchCollectionBuilder()
-    .addRequest(
-        (() => {
-            const builder = new ProductSearchBuilder(contextStore.defaultSettings)
-                .setSelectedProductProperties(contextStore.selectedProductProperties)
-                .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-                .filters(f => {
-                    if (Array.isArray(selectedCategoryFilterIds)) {
-                        selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
-                            f.addProductCategoryIdFilter('Ancestor', id);
+        .addRequest(
+            (() => {
+                const builder = new ProductSearchBuilder(contextStore.defaultSettings)
+                    .setSelectedProductProperties(contextStore.selectedProductProperties)
+                    .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+                    .filters(f => {
+                        if (Array.isArray(selectedCategoryFilterIds)) {
+                            selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
+                                f.addProductCategoryIdFilter('Ancestor', id);
+                            });
+                        }
+                        addAssortmentFilters(f);
+                    })
+                    .relevanceModifiers(rm => {
+                        addCampaignRelevanceModifier(rm);
+                    })
+                    .facets(f => {
+                        const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
+                        keys.forEach(key => {
+                            const def = getFacetDefinition(key, FacetContexts.SearchOverlay);
+                            def?.addToBuilder(f, filters.value);
                         });
-                    }
+                    })
+                    .sorting(s => {
+                        if (filters.value.sort === 'Popular') {
+                            s.sortByProductPopularity();
+                        } else if (filters.value.sort === 'SalesPriceDesc') {
+                            s.sortByProductAttribute('SalesPrice', 'Descending');
+                        } else if (filters.value.sort === 'SalesPriceAsc') {
+                            s.sortByProductAttribute('SalesPrice', 'Ascending');
+                        }
+                    })
+                    .pagination(p => p.setPageSize(pageSize).setPage(page.value))
+                    .setRetailMedia({
+                        location: {
+                            key: 'SEARCH_RESULTS_PAGE',
+                            placements: [{ key: 'TOP' }],
+                            variation: { key: variationName },
+                        },
+                    })
+                    .setExplodedVariants(1);
+
+                if (contextStore.getswitchOnVariantBasedSearchDisplay()) {
+                    builder.setExplodedVariants(5);
+                    builder.setSelectedVariantProperties({
+                        displayName: true,
+                        pricing: true,
+                        allData: true,
+                    });
+                }
+
+                return builder.build();
+            })()
+        )
+        .addRequest(
+            new SearchTermPredictionBuilder(contextStore.defaultSettings)
+                .addEntityType('Product')
+                .setTerm(searchTerm.value)
+                .filters(f => {
                     addAssortmentFilters(f);
                 })
-                .relevanceModifiers(rm => {
-                    addCampaignRelevanceModifier(rm);
-                })
-                .facets(f => {
-                    const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
-                    keys.forEach(key => {
-                        const facetItem = facetConfig.find(k => k.key == key);
-                        facetItem?.config?.addToBuilder?.(f, filters.value);
-                    });
-                })
-                .sorting(s => {
-                    if (filters.value.sort === 'Popular') {
-                        s.sortByProductPopularity();
-                    } else if (filters.value.sort === 'SalesPriceDesc') {
-                        s.sortByProductAttribute('SalesPrice', 'Descending');
-                    } else if (filters.value.sort === 'SalesPriceAsc') {
-                        s.sortByProductAttribute('SalesPrice', 'Ascending');
-                    }
-                })
-                .pagination(p => p.setPageSize(pageSize).setPage(page.value))
-                .setRetailMedia({
-                    location: {
-                        key: 'SEARCH_RESULTS_PAGE',
-                        placements: [{ key: 'TOP' }],
-                        variation: { key: variationName },
-                    },
-                })
-                .setExplodedVariants(1);
-
-            if (contextStore.getswitchOnVariantBasedSearchDisplay()) {
-                builder.setExplodedVariants(5);
-                builder.setSelectedVariantProperties({
-                    displayName: true,
-                    pricing: true,
-                    allData: true,
-                });
-            }
-
-            return builder.build();
-        })()
-    )
-    .addRequest(
-        new SearchTermPredictionBuilder(contextStore.defaultSettings)
-            .addEntityType('Product')
-            .setTerm(searchTerm.value)
-            .filters(f=>{
-                addAssortmentFilters(f);
-            })
-            .take(5)
-            .build()
-    )
-    .addRequest(
-        new ContentSearchBuilder(contextStore.defaultSettings)
-            .setContentProperties(contextStore.selectedContentProperties)
-            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .pagination(p => p.setPageSize(10).setPage(1))
-            .build()
-    )
-    .build();
+                .take(5)
+                .build()
+        )
+        .addRequest(
+            new ContentSearchBuilder(contextStore.defaultSettings)
+                .setContentProperties(contextStore.selectedContentProperties)
+                .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+                .pagination(p => p.setPageSize(10).setPage(1))
+                .build()
+        )
+        .build();
 
     // const request = new SearchCollectionBuilder()
     //     .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
     //         .setSelectedProductProperties(contextStore.selectedProductProperties)
-            
+
     //         .setSelectedVariantProperties(contextStore.getswitchOnVariantBasedSearchDisplay() ? { displayName: true, pricing: true, allData: true }: {})
     //         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
     //         .filters(f => {

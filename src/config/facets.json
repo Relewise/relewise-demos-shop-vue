@@ -1,0 +1,38 @@
+{
+  "Category": {
+    "type": "CategoryHierarchyFacetResult",
+    "contexts": {
+      "search-overlay":  { "render": "checklist", "strategy": "search-overlay" },
+      "category-page":   { "render": "checklist", "strategy": "category-page" },
+      "content-search-overlay": { "render": "checklist", "strategy": "simple" }
+    }
+  },
+  "Brand": {
+    "type": "ContentDataStringValueFacetResult",
+    "contexts": {
+      "search-overlay":  { "render": "checklist" },
+      "category-page":   { "render": "checklist" },
+      "content-search-overlay": { "render": "checklist" }
+    }
+  },
+  "SalesPrice": {
+    "type": "PriceRangeFacetResult",
+    "contexts": {
+      "search-overlay":  { "render": "range" },
+      "category-page":   { "render": "range" }
+    }
+  },
+  "AvailableInChannels": {
+    "type": "ProductDataStringValueFacet",
+    "contexts": {
+      "search-overlay": { "render": "checklist", "field": "AvailableInChannels" },
+      "category-page":  { "render": "checklist", "field": "AvailableInChannels" }
+    }
+  },
+  "StockLevel": {
+    "type": "DoubleNullableProductDataRangeFacetResult",
+    "contexts": {
+      "category-page": { "render": "range", "field": "StockLevel" }
+    }
+  }
+}
