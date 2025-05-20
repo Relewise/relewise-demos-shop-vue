@@ -15,9 +15,8 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
-import { getFacetKeysForContext } from '@/config/FacetConfig';
 import { getCategoryThreshold, getSelectedCategoryFilterIds, getDefaultFilters } from '@/helpers/facetHelpers'
-import { FacetContexts, getFacetDefinition } from '@/config/FacetConfigSmarter';
+import { FacetContexts, getFacetDefinition, getFacetKeysForContext } from '@/config/FacetConfigSmarter';
 
 import contextStore from '@/stores/context.store';
 

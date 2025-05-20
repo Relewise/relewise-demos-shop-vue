@@ -29,10 +29,6 @@ export interface FacetContextConfig {
   ) => void;
 }
 
-//export interface FacetDefinition<TFacet extends FacetResult = FacetResult> {
-//  is: (facet: FacetResult) => facet is TFacet;
-//  contexts: Record<FacetContext, FacetContextConfig>;
-//}
 export interface FacetDefinition<TFacet extends FacetResult = FacetResult> {
   is: (facet: FacetResult) => facet is TFacet;
   contexts: Partial<Record<FacetContext, FacetContextConfig>>;
@@ -128,10 +124,6 @@ interface JsonFacetEntry {
   type: string;
   contexts: Partial<Record<FacetContext, JsonContextConfig>>;
 }
-//interface JsonFacetEntry {
-//  type: string;
-//  contexts: Record<FacetContext, JsonContextConfig>;
-//}
 
 const typeChecks = {
   CategoryHierarchyFacetResult: (f: FacetResult): f is CategoryHierarchyFacetResult =>
@@ -188,6 +180,12 @@ for (const [key, value] of Object.entries(rawConfig as Record<string, JsonFacetE
 
 export function getFacetContextsForKey(key: string): FacetContext[] {
   return Object.keys(facetConfigMap[key]?.contexts ?? {}) as FacetContext[];
+}
+
+export function getFacetKeysForContext(context: FacetContext): string[] {
+  return Object.entries(facetConfigMap)
+    .filter(([, def]) => def.contexts[context])
+    .map(([key]) => key);
 }
 
 export function getFacetDefinition(
