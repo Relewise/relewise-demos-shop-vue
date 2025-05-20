@@ -78,7 +78,7 @@
             </div>
         </div>
 
-        <div v-if="result && !isEmpty" class="scrollbar mt-8">
+        <div v-if="result" class="scrollbar mt-8">
             <h2 class="text-2xl font-semibold mb-3">
                 People also buy
             </h2>
@@ -104,6 +104,8 @@ import { computed } from 'vue';
 import ProductImage from '@/components/ProductImage.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
+import { addAssortmentFilters } from '@/stores/customFilters';
+import { context } from '@relewise/web-components';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -111,13 +113,45 @@ const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
 
 function init() {
-    if (!isEmpty.value) {
-        recommend();
-    }
+    insertRecommendation();
 }
 
 init();
 
+
+
+
+async function recommendB2B() {
+    const take = 8;
+    const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .setSelectedVariantProperties({allData: true})
+        .setNumberOfRecommendations(take)
+        .relevanceModifiers(modifier => {
+            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 100)
+            })
+        .addProducts(
+                [
+                    {
+                        productId: "1f0e56a5-5cb9-4f92-bb01-440e1e093654",
+                    },
+                            {
+                        productId: "bac2a64e-de29-45c8-a73a-bf06033b585f",
+                    }
+                ]
+            )
+        .filters(builder =>{
+            globalProductRecommendationFilters(builder);
+            addAssortmentFilters(builder);
+            builder.addProductCategoryIdFilter("ImmediateParent", ["3_5"]);
+        })
+        .build();
+
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
+    contextStore.assertApiCall(response);
+
+    result.value = response;
+}
 async function recommend() {
     const take = 8;
     const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
@@ -130,7 +164,9 @@ async function recommend() {
                 productId: item.product.productId as string,
             })),
         )
-        .filters(builder => globalProductRecommendationFilters(builder))
+        .filters(builder =>{globalProductRecommendationFilters(builder);
+            addAssortmentFilters(builder);
+        })
         .build();
 
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
@@ -147,6 +183,8 @@ function updateLineItem(item : ILineItem, quantityDelta: number) {
 function remove(item: ILineItem) {
     basketService.remove(item);
     trackingService.trackCart(basketService.model.value.lineItems);
+
+    insertRecommendation();
 }
 
 function checkout() {
@@ -155,5 +193,17 @@ function checkout() {
     router.push({
         name: 'receipt',
     });
+}
+
+function insertRecommendation() {
+    if (!isEmpty.value) {
+        recommend();
+    }
+    else {
+        if (contextStore.user.value.classifications?.["channel"] === "B2B") {
+            recommendB2B();
+        }
+    }
+    result.value = undefined;
 }
 </script>

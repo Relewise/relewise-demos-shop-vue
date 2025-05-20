@@ -76,20 +76,24 @@ async function generateSearchTermPredictions() {
 
             builder.setTerm('smart philips led');
             promises.push(searcher.searchProducts(builder.build()));
-            promises.push(tracker.trackProductView({ productId: 'ce8c88e5-3be1-4d58-b4b2-dbb67ae00965', user }));
+            promises.push(tracker.trackProductView({ productId: 'ce8c88e5-3be1-4d58-b4b2-dbb67ae00965', user })); //WiZ Smart LED-pære / WiZ Smart LED Bulb
 
-            builder.setTerm('fjernbetjent led philips');
-            promises.push(searcher.searchProducts(builder.build()));
-            promises.push(tracker.trackProductView({ productId: '56e901b1-e052-4997-86b0-5f338fe5a836', user }));
+            if (classification.country == "dk") {
+                builder.setTerm('fjernbetjent philips');
+                promises.push(searcher.searchProducts(builder.build()));
+                promises.push(tracker.trackProductView({ productId: '56e901b1-e052-4997-86b0-5f338fe5a836', user })); //Philips Hue Lightstrip Plus
+            }
+            else {
+                builder.setTerm('remote philips');
+                promises.push(searcher.searchProducts(builder.build()));
+                promises.push(tracker.trackProductView({ productId: '56e901b1-e052-4997-86b0-5f338fe5a836', user })); //Philips Hue Lightstrip Plus
+            }
 
-            builder.setTerm('remote led philips');
-            promises.push(searcher.searchProducts(builder.build()));
-            promises.push(tracker.trackProductView({ productId: '56e901b1-e052-4997-86b0-5f338fe5a836', user }));
         }
     });
 
     await Promise.all(promises);
-    await refreshPresortersAndCollections();
+    //await refreshPresortersAndCollections();
 }
 
 async function generateSearchImpactScenario() {
@@ -108,13 +112,13 @@ async function generateSearchImpactScenario() {
                 .pagination(p => p.setPageSize(100).setPage(1));
 
             promises.push(searcher.searchProducts(builder.build()));
-            promises.push(tracker.trackProductView({ productId: 'd812cd4d-6798-4a67-9da9-1714006f7936', user }));
-            promises.push(tracker.trackProductView({ productId: '23cdeaf0-d406-4c83-bc36-065d12aedd46', user }));
+            promises.push(tracker.trackProductView({ productId: 'd812cd4d-6798-4a67-9da9-1714006f7936', user })); //Philips Hue White Ambiance LED Pære / Philips Hue White Ambiance LED Bulb
+            promises.push(tracker.trackProductView({ productId: '23cdeaf0-d406-4c83-bc36-065d12aedd46', user })); //D-Link DAP-1610 / D-Link DAP-1610
         }
     });
 
     await Promise.all(promises);
-    await refreshPresortersAndCollections();
+    //await refreshPresortersAndCollections();
 }
 
 async function generateNullSearchScenario() {
@@ -153,7 +157,7 @@ async function generateNullSearchScenario() {
     });
 
     await Promise.all(promises);
-    await refreshPresortersAndCollections();
+    //await refreshPresortersAndCollections();
 }
 
 const refreshPresortersAndCollections = async () => {
@@ -192,32 +196,32 @@ function createUserAndSettings(classification: { country: string; channel: strin
 
 
 const loading = reactive({
-  term: false,
-  impact: false,
-  null: false,
+    term: false,
+    impact: false,
+    null: false,
 });
 
 const done = reactive({
-  term: false,
-  impact: false,
-  null: false,
+    term: false,
+    impact: false,
+    null: false,
 });
 
 const hasRun = reactive({
-  term: false,
-  impact: false,
-  null: false,
+    term: false,
+    impact: false,
+    null: false,
 });
 
 async function runWithLoading(type: 'term' | 'impact' | 'null', fn: () => Promise<void>) {
-  loading[type] = true;
-  done[type] = false;
-  hasRun[type] = true;
+    loading[type] = true;
+    done[type] = false;
+    hasRun[type] = true;
 
-  await fn();
+    await fn();
 
-  loading[type] = false;
-  done[type] = true;
+    loading[type] = false;
+    done[type] = true;
 }
 
 // init();
