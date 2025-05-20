@@ -4,7 +4,7 @@
     "contexts": {
       "search-overlay":  { "render": "checklist", "strategy": "search-overlay" },
       "category-page":   { "render": "checklist", "strategy": "category-page" },
-      "content-search-overlay": { "render": "checklist", "strategy": "simple" }
+      "content-search-overlay": { "render": "checklist", "strategy": "content-search-overlay" }
     }
   },
   "Brand": {

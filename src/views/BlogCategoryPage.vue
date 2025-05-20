@@ -48,7 +48,7 @@ import router from '@/router';
 import breakpointService from '@/services/breakpoint.service';
 import Sorting from '../components/Sorting.vue';
 import ContentTile from '@/components/ContentTile.vue';
-import { facetConfig, FacetContexts, getFacetKeysForContext } from '@/config/FacetConfig';
+import { FacetContexts, getFacetDefinition, getFacetKeysForContext } from '@/config/FacetConfigSmarter';
 
 const route = useRoute();
 const childCategories = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
@@ -92,22 +92,29 @@ async function search() {
                 f.addContentCategoryIdFilter('Ancestor', [categoryId.value]);
             }
         })
-        .facets(f => {
-            const keys = getFacetKeysForContext(FacetContexts.ContentCategoryPage);
+                            .facets(f => {
+                        const keys = getFacetKeysForContext(FacetContexts.ContentCategoryPage);
+                        keys.forEach(key => {
+                            const def = getFacetDefinition(key, FacetContexts.ContentCategoryPage);
+                            def?.addToBuilder(f, filters.value);
+                        });
+                    })
+        // .facets(f => {
+        //     const keys = getFacetKeysForContext(FacetContexts.ContentCategoryPage);
 
-            keys.forEach(key => {
-                const facetItem = facetConfig.find(k =>
-                    k.key === key &&
-                    (!k.config.context || k.config.context.includes(FacetContexts.ContentCategoryPage))
-                );
+        //     keys.forEach(key => {
+        //         const facetItem = facetConfig.find(k =>
+        //             k.key === key &&
+        //             (!k.config.context || k.config.context.includes(FacetContexts.ContentCategoryPage))
+        //         );
 
-                facetItem?.config?.addToBuilder?.(f, filters.value, {
-                    categoryId: categoryId.value,
-                    renderCategoryLinks: renderCategoryLinks.value,
-                    routeItem: route
-                });
-            });
-        })
+        //         facetItem?.config?.addToBuilder?.(f, filters.value, {
+        //             categoryId: categoryId.value,
+        //             renderCategoryLinks: renderCategoryLinks.value,
+        //             routeItem: route
+        //         });
+        //     });
+        // })
         .pagination(p => p.setPageSize(10).setPage(page.value))
         .build();
 
