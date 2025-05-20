@@ -99,7 +99,7 @@
                 </template>
                 
                 <template
-                    v-if="getFacetConfigEntry(facet)?.render === 'checklist' && facetHasKeyOrField(facet) && facet.key === 'AvailableInChannels'">
+                    v-if="getFacetConfigEntry(facet, context)?.render === 'checklist' && facetHasKeyOrField(facet) && facet.key === 'AvailableInChannels'">
                     <div class="bg-white mb-6 border-b border-solid border-slate-300 pb-6">
                         <FacetHeadline :facet=facet />
                         <CheckListFacet :facet="facet" class="" @search="applyFacet" />
@@ -117,9 +117,8 @@ import CheckListFacet from './facets/ChecklistFacet.vue';
 import RangeFacet from './facets/RangeFacet.vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
-import { getFacetConfigEntry, getFacetKey, facetHasKeyOrField, getFacetKeysForContext } from '@/config/FacetConfig';
+import { getFacetDefinition, getFacetKeysForContext, FacetContexts, type FacetContext } from '@/config/FacetConfigSmarter';
 import type { CategoryHierarchyFacetResult, DoubleNullableProductDataRangeFacetResult, PriceRangeFacetResult } from '@relewise/client';
-import { FacetContexts, type FacetContext } from '@/config/FacetConfig';
 import FacetHeadline from './FacetHeadline.vue'
 
 function isDoubleRangeFacetResult(facet: unknown): facet is DoubleNullableProductDataRangeFacetResult {
@@ -138,6 +137,21 @@ function isPriceRangeFacetResult(facet: unknown): facet is PriceRangeFacetResult
         '$type' in facet &&
         (facet as any).$type?.includes('PriceRangeFacetResult')
     );
+}
+
+function facetHasKeyOrField(facet: unknown): facet is { key?: string; field?: string } {
+    return !!facet && typeof facet === 'object' && ('key' in facet || 'field' in facet);
+}
+
+function getFacetKey(facet: { key?: string; field?: string }): string {
+    return facet.key ?? facet.field ?? '';
+}
+
+function getFacetConfigEntry(facet: unknown, context: FacetContext) {
+    if (facetHasKeyOrField(facet)) {
+        return getFacetDefinition(getFacetKey(facet), context);
+    }
+    return undefined;
 }
 
 const props = defineProps({
