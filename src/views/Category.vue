@@ -63,7 +63,7 @@ import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addAssortmentFilters } from '@/stores/customFilters';
 import { addCampaignRelevanceModifier } from '@/stores/campaignRelevanceModifier';
-import { facetConfig, FacetContexts, getDefaultFilters, getFacetKeysForContext } from '@/config/FacetConfig';
+import { FacetContexts, getFacetDefinition, getFacetKeysForContext } from '@/config/FacetConfigSmarter';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -191,18 +191,13 @@ async function search() {
         })
         .facets(f => {
             const keys = getFacetKeysForContext(FacetContexts.CategoryPage);
-
             keys.forEach(key => {
-                const facetItem = facetConfig.find(k =>
-                    k.key === key &&
-                    (!k.config.context || k.config.context.includes(FacetContexts.CategoryPage))
-                );
-
-                facetItem?.config?.addToBuilder?.(f, filters.value, {
-                    categoryId: categoryId.value,
-                    renderCategoryLinks: renderCategoryLinks.value,
-                    routeItem: route
-                });
+                const def = getFacetDefinition(key, FacetContexts.CategoryPage);
+                def?.addToBuilder(f, filters.value, {
+                     categoryId: categoryId.value,
+                     renderCategoryLinks: renderCategoryLinks.value,
+                     routeItem: route
+                 });
             });
         })
         .pagination(p => p.setPageSize(40).setPage(page.value))
@@ -231,7 +226,6 @@ async function search() {
     if (response && response.facets && response.facets.items) {
         if (renderCategoryLinks.value && response.facets.items[0] !== null) {
             const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
-            // console.log('categoryHeirarchyFacetResult.nodes: ' + JSON.stringify(categoryHeirarchyFacetResult, null, 2));
             var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
             while (root.category.categoryId !== categoryId.value) {
                 if (!root.children) {

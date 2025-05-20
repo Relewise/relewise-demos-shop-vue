@@ -1,4 +1,5 @@
-import { facetConfig } from "@/config/FacetConfig";
+//import { facetConfig } from "@/config/FacetConfig";
+import { facetConfigMap } from "@/config/FacetConfigSmarter";
 import contextStore from "@/stores/context.store";
 
 export function getSelectedCategoryFilterIds(filters: Record<string, string | string[]>) {
@@ -15,12 +16,15 @@ export function getDefaultFilters(): Record<string, string | string[]> {
     sort: '',
   };
 
-  for (const [key, item] of Object.entries(facetConfig)) {
-    // Initialize array-based filters for checklist and range types
-    if (item.config.render === 'checklist' || item.config.render === 'range') {
-      defaults[key] = [];
-    }
-  }
+    for (const [key, def] of Object.entries(facetConfigMap)) {
+        const hasSelectableContext = Object.values(def.contexts).some(ctx =>
+            ctx.render === 'checklist' || ctx.render === 'range'
+        );
 
-  return defaults;
+        if (hasSelectableContext) {
+            defaults[key] = [];
+        }
+
+}
+return defaults;
 }

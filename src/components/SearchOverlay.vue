@@ -212,67 +212,6 @@ async function search() {
         )
         .build();
 
-    // const request = new SearchCollectionBuilder()
-    //     .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
-    //         .setSelectedProductProperties(contextStore.selectedProductProperties)
-
-    //         .setSelectedVariantProperties(contextStore.getswitchOnVariantBasedSearchDisplay() ? { displayName: true, pricing: true, allData: true }: {})
-    //         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-    //         .filters(f => {
-    //             if (Array.isArray(selectedCategoryFilterIds)) {
-    //                 selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
-    //                     f.addProductCategoryIdFilter('Ancestor', id);
-    //                 });
-    //             }
-    //             addAssortmentFilters(f);
-    //         })
-    //         .relevanceModifiers(rm => {
-    //             addCampaignRelevanceModifier(rm);
-    //         })
-    //         .facets(f => {
-    //             const keys = getFacetKeysForContext(FacetContexts.SearchOverlay);
-    //             keys.forEach(key => {
-    //                 const facetItem = facetConfig.find(k => k.key == key);
-    //                 facetItem?.config?.addToBuilder?.(f, filters.value);
-    //             });
-    //         })
-    //         .sorting(s => {
-    //             if (filters.value.sort === 'Popular') {
-    //                 s.sortByProductPopularity();
-    //             }
-    //             else if (filters.value.sort === 'SalesPriceDesc') {
-    //                 s.sortByProductAttribute('SalesPrice', 'Descending');
-    //             }
-    //             else if (filters.value.sort === 'SalesPriceAsc') {
-    //                 s.sortByProductAttribute('SalesPrice', 'Ascending');
-    //             }
-    //         })
-    //         .pagination(p => p.setPageSize(pageSize).setPage(page.value))
-    //         .setRetailMedia({
-    //             location: {
-    //                 key: 'SEARCH_RESULTS_PAGE',
-    //                 placements: [{ key: 'TOP' }],
-    //                 variation: { key: variationName },
-    //             },
-    //         })
-    //         .setExplodedVariants(5)
-    //         .build())
-
-
-    //     .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
-    //         .addEntityType('Product')
-    //         .setTerm(searchTerm.value)
-    //         .take(5)
-    //         .build())
-
-    //     .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
-    //         .setContentProperties(contextStore.selectedContentProperties)
-    //         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-    //         .pagination(p => p.setPageSize(10).setPage(1))
-    //         .build())
-
-    //     .build();
-
     abortController = new AbortController();
     const searcher = contextStore.getSearcher();
     const response = await searcher.batch(request, { abortSignal: abortController.signal });
