@@ -174,18 +174,18 @@ const typeChecks: Record<FacetType, FacetDefinition['is']> = {
 } as const;
 
 const addToBuilderFactory: Record<string,
-    (ctx: string, conf: JsonContextConfig) => FacetContextConfig['addToBuilder']
+    (ctx: string, conf: JsonContextConfig, key: string) => FacetContextConfig['addToBuilder']
 > = {
-    Category: (_, conf) => createCategoryAddToBuilder(conf.strategy as any),
-    StockLevel: (_, conf) => createStockLevelAddToBuilder(conf.field!),
-    Brand: ctx => createBrandAddToBuilder(ctx),
-    SalesPrice: () => (f, filters) =>
+    Category: (_ctx, conf, _key) => createCategoryAddToBuilder(conf.strategy as any),
+    StockLevel: (_ctx, conf, _key) => createStockLevelAddToBuilder(conf.field!),
+    Brand: (ctx, _conf, _key) => createBrandAddToBuilder(ctx),
+    SalesPrice: (_ctx, _conf, _key) => (f, filters) =>
         f.addSalesPriceRangeFacet(
             'Product',
             filters.SalesPrice?.[0] !== undefined ? Number(filters.SalesPrice[0]) : undefined,
             filters.SalesPrice?.[1] !== undefined ? Number(filters.SalesPrice[1]) : undefined
         ),
-    AvailableInChannels: (_, conf, key) => (f, filters) =>
+    AvailableInChannels: (_ctx, conf, key) => (f, filters) =>
         f.addProductDataStringValueFacet(conf.field!, 'Product', filters[key]),
 };
 
@@ -197,53 +197,12 @@ for (const [key, value] of Object.entries(rawConfig as Record<string, JsonFacetE
                 ctx,
                 {
                     render: conf.render,
-                    addToBuilder: addToBuilderFactory[key]?.(ctx, conf, key) ?? (() => {})
+                    addToBuilder: addToBuilderFactory[key]?.(ctx, conf, key) ?? (() => { })
                 }
             ])
         )
     };
 }
-
-// for (const [key, value] of Object.entries(rawConfig as Record<string, JsonFacetEntry>)) {
-//     const facetDef: FacetDefinition = {
-//         is: typeChecks[value.type],
-//         contexts: {}
-//     };
-
-//     for (const [ctx, ctxConf] of Object.entries(value.contexts)) {
-//         let addToBuilder: FacetContextConfig['addToBuilder'];
-
-//         if (key === 'Category') {
-//             addToBuilder = createCategoryAddToBuilder(ctxConf.strategy as any);
-//         } else if (key === 'StockLevel') {
-//             addToBuilder = createStockLevelAddToBuilder(ctxConf.field!);
-//         } else if (key === 'Brand') {
-//             addToBuilder = createBrandAddToBuilder(ctx);
-//         } else if (key === 'SalesPrice') {
-//             addToBuilder = (f, filters) => {
-//                 f.addSalesPriceRangeFacet(
-//                     'Product',
-//                     filters.SalesPrice?.[0] !== undefined ? Number(filters.SalesPrice[0]) : undefined,
-//                     filters.SalesPrice?.[1] !== undefined ? Number(filters.SalesPrice[1]) : undefined
-//                 );
-//             };
-//         } else if (key === 'AvailableInChannels') {
-//             addToBuilder = (f, filters) => {
-//                 f.addProductDataStringValueFacet(ctxConf.field!, 'Product', filters[key]);
-//             };
-//         } else {
-//             addToBuilder = () => { };
-//         }
-
-//         facetDef.contexts[ctx as FacetContext] = {
-//             render: ctxConf.render,
-//             addToBuilder
-//         };
-//     }
-
-//     facetConfigMap[key] = facetDef;
-// }
-
 
 export function getFacetContextsForKey(key: string): FacetContext[] {
     return Object.keys(facetConfigMap[key]?.contexts ?? {}) as FacetContext[];
