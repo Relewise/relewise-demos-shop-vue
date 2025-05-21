@@ -2,7 +2,7 @@ import contextStore from '@/stores/context.store';
 import { GetProductFacet, type BrandFacetResult, type CategoryFacetResult, type CategoryHierarchyFacetResult, type CategoryNameAndId, type CategoryPath, type ContentAssortmentFacetResult, type ContentDataBooleanValueFacetResult, type ContentDataDoubleRangeFacetResult, type ContentDataDoubleRangesFacetResult, type ContentDataDoubleValueFacetResult, type ContentDataIntegerValueFacetResult, type ContentDataObjectFacetResult, type ContentDataStringValueFacetResult, type DataObjectBooleanValueFacetResult, type DataObjectDoubleRangeFacetResult, type DataObjectDoubleRangesFacetResult, type DataObjectDoubleValueFacetResult, type DataObjectFacetResult, type DataObjectStringValueFacetResult, type DataSelectionStrategy, type FacetBuilder, type PriceRangeFacetResult, type PriceRangesFacetResult, type ProductAssortmentFacetResult, type ProductCategoryAssortmentFacetResult, type ProductCategoryDataBooleanValueFacetResult, type ProductCategoryDataDoubleRangeFacetResult, type ProductCategoryDataDoubleRangesFacetResult, type ProductCategoryDataDoubleValueFacetResult, type ProductCategoryDataObjectFacetResult, type ProductCategoryDataStringValueFacetResult, type ProductDataBooleanValueFacetResult, type ProductDataDoubleRangeFacetResult, type ProductDataDoubleRangesFacetResult, type ProductDataDoubleValueFacetResult, type ProductDataIntegerValueFacetResult, type ProductDataObjectFacetResult, type ProductDataStringValueFacetResult, type ProductFacetResult, type RecentlyPurchasedFacetResult, type VariantSpecificationFacetResult } from '@relewise/client';
 
 export type FacetContext = 'PLP' | 'SearchOverlay';
-type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice';
+type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble';
 type FacetRenderType = 'Checklist' | 'Range';
 
 type FacetConfigEntry = {
@@ -41,6 +41,14 @@ const defaultFacetConfiguration: FacetConfigEntry[] = [
         dataSelectionStrategy: 'Product',
         label: 'Available In Channels',
     },
+    {
+        contexts: ['PLP', 'SearchOverlay'],
+        type: 'DataDouble',
+        renderType: 'Checklist',
+        dataKey: 'da-dk_StockLevel',
+        dataSelectionStrategy: 'Product',
+        label: 'Stock Level',
+    },
 ];
     
 export function getFacets(
@@ -49,7 +57,6 @@ export function getFacets(
     filters: Record<string, string | string[]>, 
     facets: ProductFacetResult | null | undefined) {
 
-    console.log('GETTING FACETS');
     const facetConfig = defaultFacetConfiguration;
 
     const facetsToAdd = facetConfig.filter(x => x.contexts.includes(context));
@@ -67,6 +74,9 @@ export function getFacets(
             break;
         case 'SalesPrice':
             addSalesPriceFacet(facetBuilder, filters, facets);
+            break;
+        case 'DataDouble':
+            addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
             break;
         }
     });
@@ -169,4 +179,29 @@ function addDataStringFacet(
         : null;
     
     facetBuilder.addProductDataStringValueFacet(dataKey, dataSelectionStrategy, selectedValues);
+}
+
+function addDataDoubleFacet(
+    dataKey: string | undefined,
+    dataSelectionStrategy: DataSelectionStrategy | undefined,
+    facetBuilder: FacetBuilder,
+    filters: Record<string, string | string[]>) {
+
+    if (!dataKey) {
+        console.error('DataDouble facet requires a data key');
+        return;
+    }
+
+    if (!dataSelectionStrategy) {
+        console.error('DataDouble facet requires a selection strategy');
+        return;
+    }
+
+    const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
+
+    const selectedValues = Array.isArray(filters[loweredDataKey]) && filters[loweredDataKey]?.length > 0
+        ? filters[loweredDataKey].map(value => Number(value)).filter(value => !isNaN(value))
+        : null;
+    
+    facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy, selectedValues);
 }

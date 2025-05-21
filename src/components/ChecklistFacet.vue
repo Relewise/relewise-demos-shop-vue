@@ -55,8 +55,8 @@ const options = computed(() => {
 
         const aText = a.value?.displayName ?? a.value ?? '';
         const bText = b.value?.displayName ?? b.value ?? '';
-
-        return aText.localeCompare(bText);
+        
+        return aText.toString().localeCompare(bText.toString(), 'da', { numeric: true});
     });
 
     return sorted.slice(0, elementsToShow.value);
