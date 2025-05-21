@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryPath, type CategoryNameAndId, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -15,6 +15,7 @@ import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
+import { getFacets } from '@/helpers/facetHelper';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -143,35 +144,7 @@ async function search() {
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .facets(f => {
-
-                let selectedCategoriesForFacet: CategoryPath[] | undefined = undefined;
-                if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
-                    if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
-                        selectedCategoriesForFacet = [{
-                            breadcrumbPathStartingFromRoot: selectedCategoryFilterIds.map(id => ({ id })),
-                        }];
-                    } else {
-                        const basePath: CategoryNameAndId[] = selectedCategoryFilterIds.slice(0, categoryFilterThreshold).map(id => ({ id }));
-                        selectedCategoriesForFacet = selectedCategoryFilterIds.slice(categoryFilterThreshold).map(id => {
-                            const thisPath = [...basePath, { id }];
-                            return { breadcrumbPathStartingFromRoot: thisPath };
-                        });
-                    }
-                }
-
-                f.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
-
-                f.addBrandFacet(
-                    Array.isArray(filters.value['brand'])
-                    && filters.value['brand']?.length > 0
-                        ? filters.value['brand'] 
-                        : null);
-
-                f.addSalesPriceRangeFacet('Product', 
-                    applySalesPriceFacet ? Number(filters.value.price[0]) : undefined,
-                    applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
-            })
+            .facets(f => getFacets('SearchOverlay', f, filters.value, productResult.value?.facets))
             .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -336,7 +309,7 @@ function searchFor(term: string) {
                                 :facets="productResult.facets"
                                 :categories-for-filter-options="categoriesForFilterOptions"
                                 :selected-category-filter-options="selectedCategoriesForFilters"
-                                :hide-brand-facet="!!route.query.brandName"                                
+                                :hide-brand-facet="!!route.query.brandName"                             
                                 @search="search"/>
                         <div v-if="contentResult && contentResult.results && contentResult.results.length > 0">
                             <h4 class="font-semibold text-lg mb-1">

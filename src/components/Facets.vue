@@ -1,8 +1,13 @@
 <template>
     <template v-for="(facet, index) in facets.items" :key="index">
-        <div v-if="(facet.field === 'Brand' && !hideBrandFacet) || (facet.field == 'Category' && !hideCategoryFacet) || facet.field === 'SalesPrice' || (facet.$type.includes('CategoryHierarchyFacetResult') && categoriesForFilterOptions)" class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1">
+        <div v-if="(facet.field === 'Brand' && !hideBrandFacet)
+                 || (facet.field == 'Category' && !hideCategoryFacet)
+                 || facet.field === 'SalesPrice'
+                 || (facet.$type.includes('CategoryHierarchyFacetResult') && categoriesForFilterOptions)
+                 || facet.field === 'Data'"
+             class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1">
             <h4 class="font-semibold text-lg">
-                {{ facet.field.split(/(?=[A-Z])/).join(' ') }}
+                {{ getFacetConfigEntryForResult(facet)?.label }}
             </h4>
             <template v-if="facet.$type.includes('CategoryHierarchyFacetResult')">
                 <div v-for="(category, selectedCategoryFilterOptionIndex) in selectedCategoryFilterOptions" :key="selectedCategoryFilterOptionIndex">
@@ -39,13 +44,15 @@
                     </ul>
                 </template>
             </template>
-
+            
             <CheckListFacet
-                v-if="((facet.field == 'Category' && !hideCategoryFacet) || (facet.field === 'Brand' && !hideBrandFacet)) && 'available' in facet && Array.isArray(facet.available)"
+                v-if="getFacetConfigEntryForResult(facet)?.renderType === 'Checklist' &&
+                    ((facet.field == 'Category' && !hideCategoryFacet) || (facet.field === 'Brand' && !hideBrandFacet) || facet.field === 'Data')
+                    && 'available' in facet && Array.isArray(facet.available)"
                 :facet="facet" 
-                class=""
                 @search="applyFacet"/>
-            <div v-else-if="facet.field === 'SalesPrice'">
+                
+            <div v-else-if="getFacetConfigEntryForResult(facet)?.renderType === 'Range'">
                 <div class="w-full flex items-center justify-between mb-5 gap-2">
                     <input v-model="filters.price[0]" type="text" class="small" @keypress.enter="priceChange"> - <input
                         v-model="filters.price[1]"
@@ -73,6 +80,7 @@ import Slider from '@vueform/slider';
 import CheckListFacet from './ChecklistFacet.vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
+import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },

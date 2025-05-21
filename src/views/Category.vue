@@ -85,6 +85,7 @@ import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
+import { getFacets } from '@/helpers/facetHelper';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -217,8 +218,7 @@ async function search() {
             } else {
                 f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
             }
-            f.addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
-            f.addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+            getFacets('PLP', f, filters.value, result.value?.facets);
         })
         .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))
