@@ -1,63 +1,12 @@
+import { facetConfig, type FacetContext } from '@/facetConfig';
 import contextStore from '@/stores/context.store';
-import { GetProductFacet, type BrandFacetResult, type CategoryFacetResult, type CategoryHierarchyFacetResult, type CategoryNameAndId, type CategoryPath, type ContentAssortmentFacetResult, type ContentDataBooleanValueFacetResult, type ContentDataDoubleRangeFacetResult, type ContentDataDoubleRangesFacetResult, type ContentDataDoubleValueFacetResult, type ContentDataIntegerValueFacetResult, type ContentDataObjectFacetResult, type ContentDataStringValueFacetResult, type DataObjectBooleanValueFacetResult, type DataObjectDoubleRangeFacetResult, type DataObjectDoubleRangesFacetResult, type DataObjectDoubleValueFacetResult, type DataObjectFacetResult, type DataObjectStringValueFacetResult, type DataSelectionStrategy, type FacetBuilder, type PriceRangeFacetResult, type PriceRangesFacetResult, type ProductAssortmentFacetResult, type ProductCategoryAssortmentFacetResult, type ProductCategoryDataBooleanValueFacetResult, type ProductCategoryDataDoubleRangeFacetResult, type ProductCategoryDataDoubleRangesFacetResult, type ProductCategoryDataDoubleValueFacetResult, type ProductCategoryDataObjectFacetResult, type ProductCategoryDataStringValueFacetResult, type ProductDataBooleanValueFacetResult, type ProductDataDoubleRangeFacetResult, type ProductDataDoubleRangesFacetResult, type ProductDataDoubleValueFacetResult, type ProductDataIntegerValueFacetResult, type ProductDataObjectFacetResult, type ProductDataStringValueFacetResult, type ProductFacetResult, type RecentlyPurchasedFacetResult, type VariantSpecificationFacetResult } from '@relewise/client';
+import { type BrandFacetResult, type CategoryFacetResult, type CategoryHierarchyFacetResult, type CategoryNameAndId, type CategoryPath, type ContentAssortmentFacetResult, type ContentDataBooleanValueFacetResult, type ContentDataDoubleRangeFacetResult, type ContentDataDoubleRangesFacetResult, type ContentDataDoubleValueFacetResult, type ContentDataIntegerValueFacetResult, type ContentDataObjectFacetResult, type ContentDataStringValueFacetResult, type DataObjectBooleanValueFacetResult, type DataObjectDoubleRangeFacetResult, type DataObjectDoubleRangesFacetResult, type DataObjectDoubleValueFacetResult, type DataObjectFacetResult, type DataObjectStringValueFacetResult, type DataSelectionStrategy, type FacetBuilder, type PriceRangeFacetResult, type PriceRangesFacetResult, type PriceSelectionStrategy, type ProductAssortmentFacetResult, type ProductCategoryAssortmentFacetResult, type ProductCategoryDataBooleanValueFacetResult, type ProductCategoryDataDoubleRangeFacetResult, type ProductCategoryDataDoubleRangesFacetResult, type ProductCategoryDataDoubleValueFacetResult, type ProductCategoryDataObjectFacetResult, type ProductCategoryDataStringValueFacetResult, type ProductDataBooleanValueFacetResult, type ProductDataDoubleRangeFacetResult, type ProductDataDoubleRangesFacetResult, type ProductDataDoubleValueFacetResult, type ProductDataIntegerValueFacetResult, type ProductDataObjectFacetResult, type ProductDataStringValueFacetResult, type ProductFacetResult, type RecentlyPurchasedFacetResult, type VariantSpecificationFacetResult } from '@relewise/client';
 
-export type FacetContext = 'PLP' | 'SearchOverlay';
-type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble';
-type FacetRenderType = 'Checklist' | 'Range';
-
-type FacetConfigEntry = {
-    contexts: FacetContext[],
-    type: FacetType;
-    renderType: FacetRenderType;
-    label: string;
-    dataKey?: string;
-    dataSelectionStrategy?: DataSelectionStrategy;
-}
-
-const defaultFacetConfiguration: FacetConfigEntry[] = [
-    {
-        contexts: ['SearchOverlay'],
-        type: 'Category',
-        renderType: 'Checklist',
-        label: 'Category',
-    },
-    {
-        contexts: ['PLP', 'SearchOverlay'],
-        type: 'BrandFacet',
-        renderType: 'Checklist',
-        label: 'Brand',
-    },
-    {
-        contexts: ['PLP', 'SearchOverlay'],
-        type: 'SalesPrice',
-        renderType: 'Range',
-        label: 'Sales Price',
-    },
-    {
-        contexts: ['PLP', 'SearchOverlay'],
-        type: 'DataString',
-        renderType: 'Checklist',
-        dataKey: 'AvailableInChannels',
-        dataSelectionStrategy: 'Product',
-        label: 'Available In Channels',
-    },
-    {
-        contexts: ['PLP', 'SearchOverlay'],
-        type: 'DataDouble',
-        renderType: 'Checklist',
-        dataKey: 'da-dk_StockLevel',
-        dataSelectionStrategy: 'Product',
-        label: 'Stock Level',
-    },
-];
-    
 export function getFacets(
     context: FacetContext,
     facetBuilder: FacetBuilder,
     filters: Record<string, string | string[]>, 
     facets: ProductFacetResult | null | undefined) {
-
-    const facetConfig = defaultFacetConfiguration;
 
     const facetsToAdd = facetConfig.filter(x => x.contexts.includes(context));
 
@@ -83,8 +32,6 @@ export function getFacets(
 }
 
 export function getFacetConfigEntryForResult(facetResult: (ProductAssortmentFacetResult | ContentAssortmentFacetResult | ProductCategoryAssortmentFacetResult | BrandFacetResult | CategoryFacetResult | CategoryHierarchyFacetResult | ContentDataObjectFacetResult | ContentDataDoubleRangeFacetResult | ContentDataDoubleRangesFacetResult | ContentDataStringValueFacetResult | ContentDataBooleanValueFacetResult | ContentDataDoubleValueFacetResult | ContentDataIntegerValueFacetResult | DataObjectFacetResult | DataObjectDoubleRangeFacetResult | DataObjectDoubleRangesFacetResult | DataObjectStringValueFacetResult | DataObjectBooleanValueFacetResult | DataObjectDoubleValueFacetResult | PriceRangeFacetResult | PriceRangesFacetResult | ProductCategoryDataObjectFacetResult | ProductCategoryDataDoubleRangeFacetResult | ProductCategoryDataDoubleRangesFacetResult | ProductCategoryDataStringValueFacetResult | ProductCategoryDataBooleanValueFacetResult | ProductCategoryDataDoubleValueFacetResult | ProductDataObjectFacetResult | ProductDataDoubleRangeFacetResult | ProductDataDoubleRangesFacetResult | ProductDataStringValueFacetResult | ProductDataBooleanValueFacetResult | ProductDataDoubleValueFacetResult | ProductDataIntegerValueFacetResult | RecentlyPurchasedFacetResult | VariantSpecificationFacetResult) ) {
-    const facetConfig = defaultFacetConfiguration;
-
     switch(facetResult.field) {
     case 'Brand':
         return facetConfig.find(x => x.type === 'BrandFacet');
@@ -133,17 +80,14 @@ function addBrandFacet(facetBuilder: FacetBuilder, filters: Record<string, strin
 }
 
 function addSalesPriceFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>, facets: ProductFacetResult | null |undefined) {
-
-    // TODO: Is this nececarry?
     let applySalesPriceFacet = false;
 
-    const salesPriceFacet = facets ? GetProductFacet.salesPriceRange(facets, 'Product') : null;
-
+    const salesPriceFacet = facets ? getSalesPriceRangeFacet(facets, 'Product') : null;
+    
     if (salesPriceFacet) {
         const bothPriceFiltersSet = filters.price.length === 2;
-
-        const lowerBoundNotEqualOrZero = (Number(filters.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
-                && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
+        
+        const lowerBoundNotEqualOrZero = (Number(filters.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive);
 
         const upperBoundNotEqualOrZero = (Number(filters.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
                 && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
@@ -154,6 +98,21 @@ function addSalesPriceFacet(facetBuilder: FacetBuilder, filters: Record<string, 
     facetBuilder.addSalesPriceRangeFacet('Product', 
         applySalesPriceFacet ? Number(filters.price[0]) : undefined,
         applySalesPriceFacet ? Number(filters.price[1]) : undefined);
+}
+
+// TODO: This method is implemented in the JS SDK but has an error.
+// Once we have solved the error we should use that method instead: https://trello.com/c/YqJnf6TH
+function getSalesPriceRangeFacet(
+    facets: ProductFacetResult,
+    selectionStrategy: PriceSelectionStrategy,
+): PriceRangeFacetResult | null {
+    if (!facets?.items) return null;
+    return facets.items.find((item): item is PriceRangeFacetResult => 
+        item.field === 'SalesPrice' &&
+            item.$type === 'Relewise.Client.DataTypes.Search.Facets.Result.PriceRangeFacetResult, Relewise.Client' &&
+            'priceSelectionStrategy' in item &&
+            item.priceSelectionStrategy === selectionStrategy,
+    ) || null;
 }
 
 function addDataStringFacet(
