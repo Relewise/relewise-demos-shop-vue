@@ -27,6 +27,8 @@ export function getFacets(
         case 'DataDouble':
             addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
             break;
+        default:
+            console.error(`Could not handle facet configuration with type '${facetToAdd.type}'`);
         }
     });
 }
@@ -46,6 +48,8 @@ export function getFacetConfigEntryForResult(facetResult: (ProductAssortmentFace
         }
 
         return facetConfig.find(x => facetResult.key === x.dataKey);
+    default:
+        console.error(`Could not get facet configuration for result with field '${facetResult.field}'`);
     }
 }
 
