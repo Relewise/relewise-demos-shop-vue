@@ -24,7 +24,7 @@ const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
 const route = useRoute();
 
 let abortController = new AbortController();
@@ -74,7 +74,7 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         productResult.value = null;
         predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: ''  };
+        filters.value = { term: '', sort: ''  };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
     open.value = show;
@@ -166,8 +166,6 @@ async function search() {
     contextStore.assertApiCall(response);
 
     const query = { ...filters.value };
-    // if (!applySalesPriceFacet) delete query.price; // TODO
-
     await router.push({ path: route.path, query: query, replace: true });
 
     if (response && response.responses) {

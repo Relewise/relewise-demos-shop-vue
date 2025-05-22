@@ -96,15 +96,15 @@ function addSalesPriceFacet(facetBuilder: FacetBuilder, filters: Record<string, 
 
     const salesPriceFacet = facets ? getSalesPriceRangeFacet(facets, 'Product') : null;
     
-    if (salesPriceFacet) {
+    if (salesPriceFacet && filters.price) {
         const bothPriceFiltersSet = filters.price.length === 2;
         
-        const lowerBoundNotEqualOrZero = (Number(filters.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive);
-
+        const lowerBoundNotEqual = (Number(filters.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive);
+        
         const upperBoundNotEqualOrZero = (Number(filters.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
-                && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
-
-        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
+            && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
+        
+        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqual || upperBoundNotEqualOrZero);
     }
 
     facetBuilder.addSalesPriceRangeFacet('Product', 
@@ -199,15 +199,15 @@ function addDataDoubleRangeFacet(
 
     const dataDoubleRangeFacet = facets ? getSalesPriceRangeFacet(facets, 'Product') : null;
     
-    if (dataDoubleRangeFacet) {
+    if (dataDoubleRangeFacet && filters[loweredDataKey]) {
         const bothPriceFiltersSet = filters[loweredDataKey].length === 2;
         
-        const lowerBoundNotEqualOrZero = (Number(filters[loweredDataKey][0]) !== dataDoubleRangeFacet.available!.value?.lowerBoundInclusive);
+        const lowerBoundNotEqual = (Number(filters[loweredDataKey][0]) !== dataDoubleRangeFacet.available!.value?.lowerBoundInclusive);
 
         const upperBoundNotEqualOrZero = (Number(filters[loweredDataKey][1]) !== dataDoubleRangeFacet.available!.value?.upperBoundInclusive
                 && dataDoubleRangeFacet.available!.value?.upperBoundInclusive !== 0);
 
-        applyDefaultValues = dataDoubleRangeFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
+        applyDefaultValues = dataDoubleRangeFacet && bothPriceFiltersSet && (lowerBoundNotEqual || upperBoundNotEqualOrZero);
     }
 
     const lowerBound = applyDefaultValues ? Number(filters[loweredDataKey][0]) : undefined;

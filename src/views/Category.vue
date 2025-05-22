@@ -98,7 +98,7 @@ const categoryId = ref<string>('');
 const parentCategoryId = ref<string | undefined>();
 const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
-const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
+const filters = ref<Record<string, string | string[]>>({ sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
@@ -262,13 +262,6 @@ async function search() {
             }
         } else {
             childCategories.value = undefined;
-        }
-
-        if (response.facets.items[2] !== null) {
-            const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
-            if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-                filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
-            }
         }
     }
 
