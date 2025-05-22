@@ -13,13 +13,13 @@
                 @keypress.enter="$emit('update')">
         </div>
         <div 
-            v-if="'available' in facet && facet.available && (facet.available as DecimalRangeAvailableFacetValue).value"
+            v-if="availableRange"
             class="px-1">
             <Slider 
                 v-model="sliderModel"
                 :tooltips="false"
-                :max="(facet.available as DecimalRangeAvailableFacetValue)?.value?.upperBoundInclusive"
-                :min="(facet.available as DecimalRangeAvailableFacetValue)?.value?.lowerBoundInclusive"
+                :max="availableRange.upperBoundInclusive"
+                :min="availableRange.lowerBoundInclusive"
                 @update="$emit('update')"/>
         </div>
     </div>
@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import type { DecimalRangeAvailableFacetValue, FacetResult } from '@relewise/client';
-import { ref, toRefs, watch, type PropType } from 'vue';
+import { computed, ref, toRefs, watch, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
 
@@ -46,6 +46,7 @@ const { facet, filters } = toRefs(props);
 defineEmits(['update']);
 
 const config = getFacetConfigEntryForResult(facet.value);
+
 const filterKey = calculateFilterKey();
 
 function calculateFilterKey() {
@@ -55,56 +56,58 @@ function calculateFilterKey() {
     if (config?.dataKey) {
         return config.dataKey.charAt(0).toLowerCase() + config.dataKey.slice(1);
     }
-
-    console.error('Could not calculate filter key for range facet');
 }
 
-watch(facet, () => {
-    if (filterKey && filters.value[filterKey] && filterKey && 'available' in facet.value && facet.value.available) {
-        const range = facet.value.available as DecimalRangeAvailableFacetValue;
+const availableRange = computed(() => {
+    if ('available' in facet.value && facet.value.available) {
+        return (facet.value.available as DecimalRangeAvailableFacetValue).value;
+    }
 
-        min.value = Number(filters.value[filterKey][0]) < (range.value?.lowerBoundInclusive ?? 0) ? range.value?.lowerBoundInclusive ?? 0 : Number(filters.value[filterKey][0]);
-        max.value = Number(filters.value[filterKey][1]) < (range.value?.upperBoundInclusive ?? 0) ? range.value?.upperBoundInclusive ?? 0 : Number(filters.value[filterKey][1]);
+    return null;
+});
+
+watch(facet, () => {
+    if (filterKey && filters.value[filterKey]) {
+
+        min.value = Number(filters.value[filterKey][0]) < (availableRange.value?.lowerBoundInclusive ?? 0) 
+            ? availableRange.value?.lowerBoundInclusive ?? 0 
+            : Number(filters.value[filterKey][0]);
+
+        max.value = Number(filters.value[filterKey][1]) < (availableRange.value?.upperBoundInclusive ?? 0) 
+            ? availableRange.value?.upperBoundInclusive ?? 0 
+            : Number(filters.value[filterKey][1]);
 
         sliderModel.value = [min.value, max.value];
         return;
     }
 
-    if ('available' in facet.value && facet.value.available) {
-        const range = facet.value.available as DecimalRangeAvailableFacetValue;
-
-        min.value = range.value?.lowerBoundInclusive ?? 0;
-        max.value = range.value?.upperBoundInclusive ?? 0;
-    }
-
-    console.log([min.value, max.value]);
+    min.value = availableRange.value?.lowerBoundInclusive ?? 0;
+    max.value = availableRange.value?.upperBoundInclusive ?? 0;
 
     sliderModel.value = [min.value, max.value];
     
 }, { immediate: true, deep: true });
 
 watch(min, (newValue) => {
-    if (filterKey && 'available' in facet.value && facet.value.available) {
-        const range = facet.value.available as DecimalRangeAvailableFacetValue;
+    if (!filterKey) 
+        return;
+    
+    if (newValue === (availableRange.value?.lowerBoundInclusive ?? 0)) return;
 
-        if (newValue === (range.value?.lowerBoundInclusive ?? 0)) return;
+    const updatedValue = newValue < (availableRange.value?.lowerBoundInclusive ?? 0) ? availableRange.value?.lowerBoundInclusive : newValue;
 
-        const updatedValue = newValue < (range.value?.lowerBoundInclusive ?? 0) ? range.value?.lowerBoundInclusive : newValue;
-
-        filters.value[filterKey] = [updatedValue?.toString() ?? '', max.value.toString()];
-    }
+    filters.value[filterKey] = [updatedValue?.toString() ?? '', max.value.toString()];
 });
 
 watch(max, (newValue) => {
-    if (filterKey && 'available' in facet.value && facet.value.available) {
-        const range = facet.value.available as DecimalRangeAvailableFacetValue;
+    if (!filterKey) 
+        return;
 
-        if (newValue === (range.value?.upperBoundInclusive ?? 0)) return;
+    if (newValue === (availableRange.value?.upperBoundInclusive ?? 0)) return;
 
-        const updatedValue = newValue > (range.value?.upperBoundInclusive ?? 0) ? range.value?.upperBoundInclusive : newValue;
+    const updatedValue = newValue > (availableRange.value?.upperBoundInclusive ?? 0) ? availableRange.value?.upperBoundInclusive : newValue;
 
-        filters.value[filterKey] = [min.value.toString(), updatedValue?.toString() ?? ''];
-    }
+    filters.value[filterKey] = [min.value.toString(), updatedValue?.toString() ?? ''];
 });
 
 watch(sliderModel, (newValue) => {
