@@ -111,18 +111,13 @@ function addDataStringFacet(
         return;
     }
 
-    if (!dataSelectionStrategy) {
-        console.error('DataString facet requires a selection strategy');
-        return;
-    }
-
     const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
 
     const selectedValues = Array.isArray(filters[loweredDataKey]) && filters[loweredDataKey]?.length > 0
         ? filters[loweredDataKey] 
         : null;
     
-    facetBuilder.addProductDataStringValueFacet(dataKey, dataSelectionStrategy, selectedValues);
+    facetBuilder.addProductDataStringValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
 }
 
 function addDataDoubleFacet(
@@ -136,18 +131,13 @@ function addDataDoubleFacet(
         return;
     }
 
-    if (!dataSelectionStrategy) {
-        console.error('DataDouble facet requires a selection strategy');
-        return;
-    }
-
     const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
 
     const selectedValues = Array.isArray(filters[loweredDataKey]) && filters[loweredDataKey]?.length > 0
         ? filters[loweredDataKey].map(value => Number(value)).filter(value => !isNaN(value))
         : null;
     
-    facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy, selectedValues);
+    facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
 }
 
 function addDataDoubleRangeFacet(
@@ -162,15 +152,10 @@ function addDataDoubleRangeFacet(
         return;
     }
 
-    if (!dataSelectionStrategy) {
-        console.error('DataDoubleRange facet requires a selection strategy');
-        return;
-    }
-
     const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
 
     const lower = filters[loweredDataKey] ? Number(filters[loweredDataKey][0]) : undefined;
     const upper = filters[loweredDataKey] ? Number(filters[loweredDataKey][1]) : undefined;
 
-    facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy, lower, upper);
+    facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', lower, upper);
 }

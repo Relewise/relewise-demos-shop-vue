@@ -33,20 +33,4 @@ export const facetConfig: FacetConfigEntry[] = [
         renderType: 'Range',
         label: 'Sales Price',
     },
-    {
-        contexts: ['Category', 'SearchOverlay', 'Brand'],
-        type: 'DataString',
-        renderType: 'Checklist',
-        dataKey: 'AvailableInChannels',
-        dataSelectionStrategy: 'Product',
-        label: 'Available In Channels',
-    },
-    {
-        contexts: ['Category', 'SearchOverlay', 'Brand'],
-        type: 'DataDoubleRange',
-        renderType: 'Range',
-        dataKey: 'da-dk_StockLevel',
-        dataSelectionStrategy: 'Product',
-        label: 'Stock Level Range',
-    },
 ];
