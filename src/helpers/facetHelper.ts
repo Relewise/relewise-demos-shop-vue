@@ -27,6 +27,14 @@ export function getFacets(
         case 'DataDouble':
             addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
             break;
+        case 'DataDoubleRange':
+            addDataDoubleRangeFacet(
+                facetToAdd.dataKey, 
+                facetToAdd.dataSelectionStrategy,
+                facetBuilder,
+                filters,
+                facets);
+            break;
         default:
             console.error(`Could not handle facet configuration with type '${facetToAdd.type}'`);
         }
@@ -167,4 +175,43 @@ function addDataDoubleFacet(
         : null;
     
     facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy, selectedValues);
+}
+
+function addDataDoubleRangeFacet(
+    dataKey: string | undefined,
+    dataSelectionStrategy: DataSelectionStrategy | undefined,
+    facetBuilder: FacetBuilder,
+    filters: Record<string, string | string[]>,
+    facets: ProductFacetResult | null |undefined) {
+
+    if (!dataKey) {
+        console.error('DataDoubleRange facet requires a data key');
+        return;
+    }
+
+    if (!dataSelectionStrategy) {
+        console.error('DataDoubleRange facet requires a selection strategy');
+        return;
+    }
+    let applyDefaultValues = false;
+
+    const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
+
+    const dataDoubleRangeFacet = facets ? getSalesPriceRangeFacet(facets, 'Product') : null;
+    
+    if (dataDoubleRangeFacet) {
+        const bothPriceFiltersSet = filters[loweredDataKey].length === 2;
+        
+        const lowerBoundNotEqualOrZero = (Number(filters[loweredDataKey][0]) !== dataDoubleRangeFacet.available!.value?.lowerBoundInclusive);
+
+        const upperBoundNotEqualOrZero = (Number(filters[loweredDataKey][1]) !== dataDoubleRangeFacet.available!.value?.upperBoundInclusive
+                && dataDoubleRangeFacet.available!.value?.upperBoundInclusive !== 0);
+
+        applyDefaultValues = dataDoubleRangeFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
+    }
+
+    const lowerBound = applyDefaultValues ? Number(filters[loweredDataKey][0]) : undefined;
+    const upperBound = applyDefaultValues ? Number(filters[loweredDataKey][1]) : undefined;
+
+    facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy, lowerBound, upperBound);
 }

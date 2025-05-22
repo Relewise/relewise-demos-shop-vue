@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, type PriceRangeFacetResult, type CategoryHierarchyFacetResult, type ProductCategoryResult, type CategoryHierarchyFacetResultCategoryNode, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
 import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
@@ -11,7 +11,6 @@ import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
-import { findCategoryById } from '@/helpers/categoryHelper';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
@@ -27,9 +26,6 @@ const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
 const route = useRoute();
-
-const selectedCategoriesForFilters = ref<ProductCategoryResult[]>([]);
-const categoriesForFilterOptions = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
 
 let abortController = new AbortController();
 
@@ -110,20 +106,6 @@ async function search() {
 
     filters.value.term = searchTerm.value;
 
-    let applySalesPriceFacet = false;
-    if (productResult.value?.facets?.items?.length === 3) {
-        const salesPriceFacet = productResult.value?.facets.items[2] as PriceRangeFacetResult;
-        
-        const bothPriceFiltersSet = filters.value.price.length === 2;
-
-        const lowerBoundNotEqualOrZero = (Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
-                && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
-
-        const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
-                && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
-
-        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
-    }
     const variationName = breakpointService.active.value.toUpperCase();
 
     const selectedCategoryFilterIds = filters.value['category'];
@@ -184,7 +166,7 @@ async function search() {
     contextStore.assertApiCall(response);
 
     const query = { ...filters.value };
-    if (!applySalesPriceFacet) delete query.price;
+    // if (!applySalesPriceFacet) delete query.price; // TODO
 
     await router.push({ path: route.path, query: query, replace: true });
 
@@ -208,41 +190,6 @@ async function search() {
 
             fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
             return;
-        }
-
-        if (productResult.value?.facets && productResult.value.facets.items) {
-            const categoryHeirarchyFacetResult = (productResult.value.facets.items[0] as CategoryHierarchyFacetResult);
-            
-            // Populate categories for rendering with display names
-            selectedCategoriesForFilters.value = [];
-            if (Array.isArray(selectedCategoryFilterIds)) {
-                selectedCategoryFilterIds.forEach(selectedId => {
-                    const categoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, selectedId);
-                    if (categoryNode) selectedCategoriesForFilters.value.push(categoryNode.category);
-                });
-            }
-
-            // If no categories are selected, show root categories as options
-            if (selectedCategoriesForFilters.value.length === 0) {
-                categoriesForFilterOptions.value = categoryHeirarchyFacetResult.nodes;
-            } else {
-                // Determine the category to use as the root for filter options
-                const rootCategoryId = selectedCategoriesForFilters.value[
-                    Math.min(selectedCategoriesForFilters.value.length, categoryFilterThreshold) - 1
-                ]?.categoryId;
-
-                if (rootCategoryId) {
-                    const rootCategoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, rootCategoryId);
-                    categoriesForFilterOptions.value = rootCategoryNode?.children ?? undefined;
-                }
-            }
-
-            if (productResult.value.facets.items[2] !== null) {
-                const salesPriceFacet = productResult.value.facets!.items[2] as PriceRangeFacetResult;
-                if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-                    filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
-                }
-            }
         }
 
         fallbackRecommendations.value = null;
@@ -307,9 +254,8 @@ function searchFor(term: string) {
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="productResult.facets"
-                                :categories-for-filter-options="categoriesForFilterOptions"
-                                :selected-category-filter-options="selectedCategoriesForFilters"
-                                :hide-brand-facet="!!route.query.brandName"                             
+                                :hide-brand-facet="!!route.query.brandName"      
+                                context="SearchOverlay"
                                 @search="search"/>
                         <div v-if="contentResult && contentResult.results && contentResult.results.length > 0">
                             <h4 class="font-semibold text-lg mb-1">

@@ -2,7 +2,7 @@ import type { DataSelectionStrategy } from '@relewise/client';
 
 export type FacetContext = 'PLP' | 'SearchOverlay';
 
-type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble';
+type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange';
 type FacetRenderType = 'Checklist' | 'Range';
 
 type FacetConfigEntry = {
@@ -43,10 +43,10 @@ export const facetConfig: FacetConfigEntry[] = [
     },
     {
         contexts: ['PLP', 'SearchOverlay'],
-        type: 'DataDouble',
-        renderType: 'Checklist',
+        type: 'DataDoubleRange',
+        renderType: 'Range',
         dataKey: 'da-dk_StockLevel',
         dataSelectionStrategy: 'Product',
-        label: 'Stock Level',
+        label: 'Stock Level Range',
     },
 ];

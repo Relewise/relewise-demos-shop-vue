@@ -28,6 +28,7 @@
                         :filters="filters"
                         :facets="result.facets"
                         :hide-category-facet="renderCatoryLinks"
+                        context="PLP"
                         @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">
