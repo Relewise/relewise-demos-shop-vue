@@ -1,6 +1,6 @@
 import type { DataSelectionStrategy } from '@relewise/client';
 
-export type FacetContext = 'PLP' | 'SearchOverlay';
+export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand';
 
 type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange';
 type FacetRenderType = 'Checklist' | 'Range';
@@ -16,25 +16,25 @@ type FacetConfigEntry = {
 
 export const facetConfig: FacetConfigEntry[] = [
     {
-        contexts: ['SearchOverlay'],
+        contexts: ['SearchOverlay', 'Brand'],
         type: 'Category',
         renderType: 'Checklist',
         label: 'Category',
     },
     {
-        contexts: ['PLP', 'SearchOverlay'],
+        contexts: ['Category', 'SearchOverlay'],
         type: 'BrandFacet',
         renderType: 'Checklist',
         label: 'Brand',
     },
     {
-        contexts: ['PLP', 'SearchOverlay'],
+        contexts: ['Category', 'SearchOverlay', 'Brand'],
         type: 'SalesPrice',
         renderType: 'Range',
         label: 'Sales Price',
     },
     {
-        contexts: ['PLP', 'SearchOverlay'],
+        contexts: ['Category', 'SearchOverlay', 'Brand'],
         type: 'DataString',
         renderType: 'Checklist',
         dataKey: 'AvailableInChannels',
@@ -42,7 +42,7 @@ export const facetConfig: FacetConfigEntry[] = [
         label: 'Available In Channels',
     },
     {
-        contexts: ['PLP', 'SearchOverlay'],
+        contexts: ['Category', 'SearchOverlay', 'Brand'],
         type: 'DataDoubleRange',
         renderType: 'Range',
         dataKey: 'da-dk_StockLevel',

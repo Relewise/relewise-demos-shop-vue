@@ -27,8 +27,7 @@
                         v-model:page="page"
                         :filters="filters"
                         :facets="result.facets"
-                        :hide-category-facet="renderCatoryLinks"
-                        context="PLP"
+                        context="Category"
                         @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">
@@ -219,7 +218,7 @@ async function search() {
             } else {
                 f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
             }
-            getFacets('PLP', f, filters.value, result.value?.facets);
+            getFacets('Category', f, filters.value, result.value?.facets);
         })
         .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))

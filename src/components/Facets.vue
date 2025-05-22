@@ -13,9 +13,7 @@
                 @search="applyFacet"/>
             
             <CheckListFacet
-                v-if="getFacetConfigEntryForResult(facet)?.renderType === 'Checklist' &&
-                    ((facet.field == 'Category' && !hideCategoryFacet) || (facet.field === 'Brand' && !hideBrandFacet) || facet.field === 'Data')
-                    && 'available' in facet && Array.isArray(facet.available)"
+                v-if="getFacetConfigEntryForResult(facet)?.renderType === 'Checklist'"
                 :facet="facet" 
                 @search="applyFacet"/>
             
@@ -40,8 +38,6 @@ import type { FacetContext } from '@/facetConfig';
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
-    hideCategoryFacet: { type: Boolean, default: true },
-    hideBrandFacet: { type: Boolean, default: false },
     context: { type: Object as PropType<FacetContext>, required: true },
 });
 

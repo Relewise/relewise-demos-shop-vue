@@ -126,7 +126,7 @@ async function search() {
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .facets(f => getFacets('SearchOverlay', f, filters.value, productResult.value?.facets))
+            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value, productResult.value?.facets))
             .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -252,8 +252,7 @@ function searchFor(term: string) {
                                 v-model:page="page"
                                 :filters="filters"
                                 :facets="productResult.facets"
-                                :hide-brand-facet="!!route.query.brandName"      
-                                context="SearchOverlay"
+                                :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
                                 @search="search"/>
                         <div v-if="contentResult && contentResult.results && contentResult.results.length > 0">
                             <h4 class="font-semibold text-lg mb-1">
