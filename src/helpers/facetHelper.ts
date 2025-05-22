@@ -2,6 +2,8 @@ import { facetConfig, type FacetContext } from '@/facetConfig';
 import contextStore from '@/stores/context.store';
 import { type BrandFacetResult, type CategoryFacetResult, type CategoryHierarchyFacetResult, type CategoryNameAndId, type CategoryPath, type ContentAssortmentFacetResult, type ContentDataBooleanValueFacetResult, type ContentDataDoubleRangeFacetResult, type ContentDataDoubleRangesFacetResult, type ContentDataDoubleValueFacetResult, type ContentDataIntegerValueFacetResult, type ContentDataObjectFacetResult, type ContentDataStringValueFacetResult, type DataObjectBooleanValueFacetResult, type DataObjectDoubleRangeFacetResult, type DataObjectDoubleRangesFacetResult, type DataObjectDoubleValueFacetResult, type DataObjectFacetResult, type DataObjectStringValueFacetResult, type DataSelectionStrategy, type FacetBuilder, type PriceRangeFacetResult, type PriceRangesFacetResult, type PriceSelectionStrategy, type ProductAssortmentFacetResult, type ProductCategoryAssortmentFacetResult, type ProductCategoryDataBooleanValueFacetResult, type ProductCategoryDataDoubleRangeFacetResult, type ProductCategoryDataDoubleRangesFacetResult, type ProductCategoryDataDoubleValueFacetResult, type ProductCategoryDataObjectFacetResult, type ProductCategoryDataStringValueFacetResult, type ProductDataBooleanValueFacetResult, type ProductDataDoubleRangeFacetResult, type ProductDataDoubleRangesFacetResult, type ProductDataDoubleValueFacetResult, type ProductDataIntegerValueFacetResult, type ProductDataObjectFacetResult, type ProductDataStringValueFacetResult, type ProductFacetResult, type RecentlyPurchasedFacetResult, type VariantSpecificationFacetResult } from '@relewise/client';
 
+type allFacetResultTypes = (ProductAssortmentFacetResult | ContentAssortmentFacetResult | ProductCategoryAssortmentFacetResult | BrandFacetResult | CategoryFacetResult | CategoryHierarchyFacetResult | ContentDataObjectFacetResult | ContentDataDoubleRangeFacetResult | ContentDataDoubleRangesFacetResult | ContentDataStringValueFacetResult | ContentDataBooleanValueFacetResult | ContentDataDoubleValueFacetResult | ContentDataIntegerValueFacetResult | DataObjectFacetResult | DataObjectDoubleRangeFacetResult | DataObjectDoubleRangesFacetResult | DataObjectStringValueFacetResult | DataObjectBooleanValueFacetResult | DataObjectDoubleValueFacetResult | PriceRangeFacetResult | PriceRangesFacetResult | ProductCategoryDataObjectFacetResult | ProductCategoryDataDoubleRangeFacetResult | ProductCategoryDataDoubleRangesFacetResult | ProductCategoryDataStringValueFacetResult | ProductCategoryDataBooleanValueFacetResult | ProductCategoryDataDoubleValueFacetResult | ProductDataObjectFacetResult | ProductDataDoubleRangeFacetResult | ProductDataDoubleRangesFacetResult | ProductDataStringValueFacetResult | ProductDataBooleanValueFacetResult | ProductDataDoubleValueFacetResult | ProductDataIntegerValueFacetResult | RecentlyPurchasedFacetResult | VariantSpecificationFacetResult);
+
 export function getFacets(
     context: FacetContext,
     facetBuilder: FacetBuilder,
@@ -41,7 +43,7 @@ export function getFacets(
     });
 }
 
-export function getFacetConfigEntryForResult(facetResult: (ProductAssortmentFacetResult | ContentAssortmentFacetResult | ProductCategoryAssortmentFacetResult | BrandFacetResult | CategoryFacetResult | CategoryHierarchyFacetResult | ContentDataObjectFacetResult | ContentDataDoubleRangeFacetResult | ContentDataDoubleRangesFacetResult | ContentDataStringValueFacetResult | ContentDataBooleanValueFacetResult | ContentDataDoubleValueFacetResult | ContentDataIntegerValueFacetResult | DataObjectFacetResult | DataObjectDoubleRangeFacetResult | DataObjectDoubleRangesFacetResult | DataObjectStringValueFacetResult | DataObjectBooleanValueFacetResult | DataObjectDoubleValueFacetResult | PriceRangeFacetResult | PriceRangesFacetResult | ProductCategoryDataObjectFacetResult | ProductCategoryDataDoubleRangeFacetResult | ProductCategoryDataDoubleRangesFacetResult | ProductCategoryDataStringValueFacetResult | ProductCategoryDataBooleanValueFacetResult | ProductCategoryDataDoubleValueFacetResult | ProductDataObjectFacetResult | ProductDataDoubleRangeFacetResult | ProductDataDoubleRangesFacetResult | ProductDataStringValueFacetResult | ProductDataBooleanValueFacetResult | ProductDataDoubleValueFacetResult | ProductDataIntegerValueFacetResult | RecentlyPurchasedFacetResult | VariantSpecificationFacetResult) ) {
+export function getFacetConfigEntryForResult(facetResult: allFacetResultTypes) {
     switch(facetResult.field) {
     case 'Brand':
         return facetConfig.find(x => x.type === 'BrandFacet');
@@ -92,39 +94,10 @@ function addBrandFacet(facetBuilder: FacetBuilder, filters: Record<string, strin
 }
 
 function addSalesPriceFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>, facets: ProductFacetResult | null |undefined) {
-    let applySalesPriceFacet = false;
+    const lower = filters.price ? Number(filters.price[0]) : undefined;
+    const upper = filters.price ? Number(filters.price[1]) : undefined;
 
-    const salesPriceFacet = facets ? getSalesPriceRangeFacet(facets, 'Product') : null;
-    
-    if (salesPriceFacet && filters.price) {
-        const bothPriceFiltersSet = filters.price.length === 2;
-        
-        const lowerBoundNotEqual = (Number(filters.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive);
-        
-        const upperBoundNotEqualOrZero = (Number(filters.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
-            && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
-        
-        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqual || upperBoundNotEqualOrZero);
-    }
-
-    facetBuilder.addSalesPriceRangeFacet('Product', 
-        applySalesPriceFacet ? Number(filters.price[0]) : undefined,
-        applySalesPriceFacet ? Number(filters.price[1]) : undefined);
-}
-
-// TODO: This method is implemented in the JS SDK but has an error.
-// Once we have solved the error we should use that method instead: https://trello.com/c/YqJnf6TH
-function getSalesPriceRangeFacet(
-    facets: ProductFacetResult,
-    selectionStrategy: PriceSelectionStrategy,
-): PriceRangeFacetResult | null {
-    if (!facets?.items) return null;
-    return facets.items.find((item): item is PriceRangeFacetResult => 
-        item.field === 'SalesPrice' &&
-            item.$type === 'Relewise.Client.DataTypes.Search.Facets.Result.PriceRangeFacetResult, Relewise.Client' &&
-            'priceSelectionStrategy' in item &&
-            item.priceSelectionStrategy === selectionStrategy,
-    ) || null;
+    facetBuilder.addSalesPriceRangeFacet('Product', lower, upper);
 }
 
 function addDataStringFacet(
@@ -193,25 +166,11 @@ function addDataDoubleRangeFacet(
         console.error('DataDoubleRange facet requires a selection strategy');
         return;
     }
-    let applyDefaultValues = false;
 
     const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
 
-    const dataDoubleRangeFacet = facets ? getSalesPriceRangeFacet(facets, 'Product') : null;
-    
-    if (dataDoubleRangeFacet && filters[loweredDataKey]) {
-        const bothPriceFiltersSet = filters[loweredDataKey].length === 2;
-        
-        const lowerBoundNotEqual = (Number(filters[loweredDataKey][0]) !== dataDoubleRangeFacet.available!.value?.lowerBoundInclusive);
+    const lower = filters[loweredDataKey] ? Number(filters[loweredDataKey][0]) : undefined;
+    const upper = filters[loweredDataKey] ? Number(filters[loweredDataKey][1]) : undefined;
 
-        const upperBoundNotEqualOrZero = (Number(filters[loweredDataKey][1]) !== dataDoubleRangeFacet.available!.value?.upperBoundInclusive
-                && dataDoubleRangeFacet.available!.value?.upperBoundInclusive !== 0);
-
-        applyDefaultValues = dataDoubleRangeFacet && bothPriceFiltersSet && (lowerBoundNotEqual || upperBoundNotEqualOrZero);
-    }
-
-    const lowerBound = applyDefaultValues ? Number(filters[loweredDataKey][0]) : undefined;
-    const upperBound = applyDefaultValues ? Number(filters[loweredDataKey][1]) : undefined;
-
-    facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy, lowerBound, upperBound);
+    facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy, lower, upper);
 }

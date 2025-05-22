@@ -13,26 +13,26 @@
                 @keypress.enter="$emit('update')">
         </div>
         <div 
-            v-if="availableRange"
+            v-if="facet.available?.value"
             class="px-1">
             <Slider 
                 v-model="sliderModel"
                 :tooltips="false"
-                :max="availableRange.upperBoundInclusive"
-                :min="availableRange.lowerBoundInclusive"
+                :max="facet.available?.value.upperBoundInclusive"
+                :min="facet.available?.value.lowerBoundInclusive"
                 @update="$emit('update')"/>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import type { DecimalRangeAvailableFacetValue, FacetResult } from '@relewise/client';
-import { computed, ref, toRefs, watch, type PropType } from 'vue';
+import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult } from '@relewise/client';
+import { ref, toRefs, watch, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
 
 const props = defineProps({
-    facet: { type: Object as PropType<FacetResult>, required: true },
+    facet: { type: Object as PropType<PriceRangeFacetResult | ProductDataDoubleRangeFacetResult>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
 });
 
@@ -58,31 +58,23 @@ function calculateFilterKey() {
     }
 }
 
-const availableRange = computed(() => {
-    if ('available' in facet.value && facet.value.available) {
-        return (facet.value.available as DecimalRangeAvailableFacetValue).value;
-    }
-
-    return null;
-});
-
 watch(facet, () => {
     if (filterKey && filters.value[filterKey]) {
 
-        min.value = Number(filters.value[filterKey][0]) < (availableRange.value?.lowerBoundInclusive ?? 0) 
-            ? availableRange.value?.lowerBoundInclusive ?? 0 
+        min.value = Number(filters.value[filterKey][0]) < (facet.value.available?.value?.lowerBoundInclusive ?? 0) 
+            ? facet.value.available?.value?.lowerBoundInclusive ?? 0 
             : Number(filters.value[filterKey][0]);
 
-        max.value = Number(filters.value[filterKey][1]) < (availableRange.value?.upperBoundInclusive ?? 0) 
-            ? availableRange.value?.upperBoundInclusive ?? 0 
+        max.value = Number(filters.value[filterKey][1]) > (facet.value.available?.value?.upperBoundInclusive ?? 0) 
+            ? facet.value.available?.value?.upperBoundInclusive ?? 0 
             : Number(filters.value[filterKey][1]);
 
         sliderModel.value = [min.value, max.value];
         return;
     }
 
-    min.value = availableRange.value?.lowerBoundInclusive ?? 0;
-    max.value = availableRange.value?.upperBoundInclusive ?? 0;
+    min.value = facet.value.available?.value?.lowerBoundInclusive ?? 0;
+    max.value = facet.value.available?.value?.upperBoundInclusive ?? 0;
 
     sliderModel.value = [min.value, max.value];
     
@@ -92,9 +84,11 @@ watch(min, (newValue) => {
     if (!filterKey) 
         return;
     
-    if (newValue === (availableRange.value?.lowerBoundInclusive ?? 0)) return;
+    if (newValue === (facet.value.available?.value?.lowerBoundInclusive ?? 0)) return;
 
-    const updatedValue = newValue < (availableRange.value?.lowerBoundInclusive ?? 0) ? availableRange.value?.lowerBoundInclusive : newValue;
+    const updatedValue = newValue < (facet.value.available?.value?.lowerBoundInclusive ?? 0) 
+        ? facet.value.available?.value?.lowerBoundInclusive 
+        : newValue;
 
     filters.value[filterKey] = [updatedValue?.toString() ?? '', max.value.toString()];
 });
@@ -103,9 +97,11 @@ watch(max, (newValue) => {
     if (!filterKey) 
         return;
 
-    if (newValue === (availableRange.value?.upperBoundInclusive ?? 0)) return;
+    if (newValue === (facet.value.available?.value?.upperBoundInclusive ?? 0)) return;
 
-    const updatedValue = newValue > (availableRange.value?.upperBoundInclusive ?? 0) ? availableRange.value?.upperBoundInclusive : newValue;
+    const updatedValue = newValue > (facet.value.available?.value?.upperBoundInclusive ?? 0) 
+        ? facet.value.available?.value?.upperBoundInclusive 
+        : newValue;
 
     filters.value[filterKey] = [min.value.toString(), updatedValue?.toString() ?? ''];
 });

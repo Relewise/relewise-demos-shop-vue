@@ -21,7 +21,7 @@
             
             <RangeFacet
                 v-else-if="getFacetConfigEntryForResult(facet)?.renderType === 'Range'"
-                :facet="facet"
+                :facet="(facet as PriceRangeFacetResult | ProductDataDoubleRangeFacetResult)"
                 :filters="filters"
                 @update="rangeChange"/>
         </div>
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ProductFacetResult } from '@relewise/client';
+import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult, ProductFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
 import CheckListFacet from './ChecklistFacet.vue';
 import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
