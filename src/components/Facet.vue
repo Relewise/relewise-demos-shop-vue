@@ -20,7 +20,7 @@
             v-else-if="config?.renderType === 'Range'"
             :facet="(facet as PriceRangeFacetResult | ProductDataDoubleRangeFacetResult)"
             :filters="filters"
-            @update="$emit('update')"/>
+            @search="$emit('search', $event)"/>
     </div>
 </template>
 
@@ -40,8 +40,7 @@ const props = defineProps({
 });
 
 defineEmits<{
-    (e: 'search', payload: { name: string, value: string | null | undefined, clearSubsequentEntries?: boolean }): void
-    (e: 'update'): void
+    (e: 'search', payload: { name: string, value: string | null | undefined, clearSubsequentEntries?: boolean, handlefilters?: boolean }): void
 }>();
 
 const config = computed(() => getFacetConfigEntryForResult(props.facet));

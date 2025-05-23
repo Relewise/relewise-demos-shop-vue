@@ -4,14 +4,13 @@
             :facet="facet"
             :filters="filters"
             :context="context"
-            @search="applyFacet"
-            @update="rangeChange"/>
+            @search="applyFacet"/>
     </template>
 </template>
 
 <script setup lang="ts">
 import type { ProductFacetResult } from '@relewise/client';
-import { nextTick, toRefs, type PropType } from 'vue';
+import { toRefs, type PropType } from 'vue';
 import type { FacetContext } from '@/facetConfig';
 import Facet from './Facet.vue';
 
@@ -25,30 +24,26 @@ const emit = defineEmits(['search']);
 
 const { filters, facets } = toRefs(props);
 
-function applyFacet(payload: { name: string; value: string | null | undefined; clearSubsequentEntries?: boolean }) {
-    const { name, value, clearSubsequentEntries = false } = payload;
-    
-    if (!value) return;
+function applyFacet(payload: { name: string; value: string | null | undefined; clearSubsequentEntries?: boolean, handlefilters?: boolean }) {
+    const { name, value, clearSubsequentEntries = false, handlefilters = false } = payload;
 
-    const existing = filters.value[name];
-    if (existing && Array.isArray(existing)) {
-        const index = existing.indexOf(value);
-        index === -1
-            ? existing.push(value)
-            : (clearSubsequentEntries ? existing.splice(index) : existing.splice(index, 1));
-    } else if (value !== null) {
-        filters.value[name] = [];
-        const t = filters.value[name];
-        Array.isArray(t) && t.push(value);
+    if (handlefilters) {
+        if (!value) return;
+
+        const existing = filters.value[name];
+        if (existing && Array.isArray(existing)) {
+            const index = existing.indexOf(value);
+            index === -1
+                ? existing.push(value)
+                : (clearSubsequentEntries ? existing.splice(index) : existing.splice(index, 1));
+        } else if (value !== null) {
+            filters.value[name] = [];
+            const t = filters.value[name];
+            Array.isArray(t) && t.push(value);
+        }
     }
 
     emit('search');
-}
-
-function rangeChange() {
-    nextTick(() => {
-        emit('search');
-    });
 }
 </script>
 

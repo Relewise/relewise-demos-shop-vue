@@ -66,7 +66,7 @@ const emit = defineEmits(['search']);
 
 const { facet } = toRefs(props);
 
-function applyFacet(name: string, value: string | null | undefined) {
-    emit('search', { name, value });
+function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false, handlefilters: boolean = true) {
+    emit('search', { name, value, clearSubsequentEntries, handlefilters });
 }
 </script>

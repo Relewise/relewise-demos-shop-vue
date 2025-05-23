@@ -89,8 +89,8 @@ function init() {
     return [];
 }
 
-function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
-    emit('search', name, value, clearSubsequentEntries);
+function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false, handlefilters: boolean = true) {
+    emit('search', { name, value, clearSubsequentEntries, handlefilters });
     init();
 }
 </script>

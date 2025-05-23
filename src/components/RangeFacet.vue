@@ -5,12 +5,12 @@
                 v-model="min" 
                 type="text" 
                 class="small" 
-                @keypress.enter="$emit('update')"> - 
+                @keypress.enter="applyFacet(facet.field)"> - 
             <input
                 v-model="max"
                 type="text"
                 class="small"
-                @keypress.enter="$emit('update')">
+                @keypress.enter="applyFacet(facet.field)">
         </div>
         <div 
             v-if="facet.available?.value"
@@ -20,7 +20,7 @@
                 :tooltips="false"
                 :max="facet.available?.value.upperBoundInclusive"
                 :min="facet.available?.value.lowerBoundInclusive"
-                @update="$emit('update')"/>
+                @update="applyFacet(facet.field)"/>
         </div>
     </div>
 </template>
@@ -43,7 +43,7 @@ const sliderModel = ref<number[]>([0, 0]);
 
 const { facet, filters } = toRefs(props);
 
-defineEmits(['update']);
+const emit = defineEmits(['search']);
 
 const config = getFacetConfigEntryForResult(facet.value);
 
@@ -110,5 +110,9 @@ watch(sliderModel, (newValue) => {
     min.value = newValue[0];
     max.value = newValue[1];
 });
+
+function applyFacet(name: string, value: string | null | undefined = null, clearSubsequentEntries: boolean = false, handlefilters: boolean = false) {
+    emit('search', { name, value, clearSubsequentEntries, handlefilters });
+}
 
 </script>
