@@ -86,9 +86,7 @@ function addCategoryFacet(facetBuilder: FacetBuilder, filters: Record<string, st
 }
 
 function addBrandFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>) {
-    facetBuilder.addBrandFacet(
-        Array.isArray(filters['brand'])
-                    && filters['brand']?.length > 0
+    facetBuilder.addBrandFacet(Array.isArray(filters['brand']) && filters['brand']?.length > 0
             ? filters['brand'] 
             : null);
 }
