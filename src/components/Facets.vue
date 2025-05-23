@@ -1,39 +1,19 @@
 <template>
     <template v-for="(facet, index) in facets.items" :key="index">
-        <div v-if="getFacetConfigEntryForResult(facet)?.contexts.includes(context)" 
-             class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1">
-            <h4 class="font-semibold text-lg">
-                {{ getFacetConfigEntryForResult(facet)?.label }}
-            </h4>
-            
-            <CategoryFacet 
-                v-if="getFacetConfigEntryForResult(facet)?.type === 'Category'"
-                :facet="facet"
-                :filters="filters"
-                @search="applyFacet"/>
-            
-            <CheckListFacet
-                v-if="getFacetConfigEntryForResult(facet)?.renderType === 'Checklist'"
-                :facet="facet" 
-                @search="applyFacet"/>
-            
-            <RangeFacet
-                v-else-if="getFacetConfigEntryForResult(facet)?.renderType === 'Range'"
-                :facet="(facet as PriceRangeFacetResult | ProductDataDoubleRangeFacetResult)"
-                :filters="filters"
-                @update="rangeChange"/>
-        </div>
+        <Facet
+            :facet="facet"
+            :filters="filters"
+            :context="context"
+            @search="applyFacet"
+            @update="rangeChange"/>
     </template>
 </template>
 
 <script setup lang="ts">
-import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult, ProductFacetResult } from '@relewise/client';
+import type { ProductFacetResult } from '@relewise/client';
 import { nextTick, toRefs, type PropType } from 'vue';
-import CheckListFacet from './ChecklistFacet.vue';
-import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
-import RangeFacet from './RangeFacet.vue';
-import CategoryFacet from './CategoryFacet.vue';
 import type { FacetContext } from '@/facetConfig';
+import Facet from './Facet.vue';
 
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
@@ -45,7 +25,9 @@ const emit = defineEmits(['search']);
 
 const { filters, facets } = toRefs(props);
 
-function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
+function applyFacet(payload: { name: string; value: string | null | undefined; clearSubsequentEntries?: boolean }) {
+    const { name, value, clearSubsequentEntries = false } = payload;
+    
     if (!value) return;
 
     const existing = filters.value[name];
