@@ -29,7 +29,7 @@
 import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult } from '@relewise/client';
 import { ref, toRefs, watch, type PropType } from 'vue';
 import Slider from '@vueform/slider';
-import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
+import { getFacetSettings } from '@/helpers/facetHelper';
 
 const props = defineProps({
     facet: { type: Object as PropType<PriceRangeFacetResult | ProductDataDoubleRangeFacetResult>, required: true },
@@ -45,11 +45,11 @@ const { facet, filters } = toRefs(props);
 
 const emit = defineEmits(['search']);
 
-const config = getFacetConfigEntryForResult(facet.value);
-
 const filterKey = calculateFilterKey();
 
 function calculateFilterKey() {
+    const config = getFacetSettings(facet.value);
+
     if (config?.type === 'SalesPrice')
         return 'price';
 

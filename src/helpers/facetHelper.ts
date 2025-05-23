@@ -43,7 +43,7 @@ export function getFacets(
     });
 }
 
-export function getFacetConfigEntryForResult(facetResult: allFacetResultTypes) {
+export function getFacetSettings(facetResult: allFacetResultTypes) {
     switch(facetResult.field) {
     case 'Brand':
         return facetConfig.find(x => x.type === 'BrandFacet');
@@ -86,8 +86,8 @@ function addCategoryFacet(facetBuilder: FacetBuilder, filters: Record<string, st
 }
 
 function addBrandFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>) {
-    facetBuilder.addBrandFacet(Array.isArray(filters['brand']) && filters['brand']?.length > 0
-        ? filters['brand'] 
+    facetBuilder.addBrandFacet(Array.isArray(filters['Brand']) && filters['Brand']?.length > 0
+        ? filters['Brand'] 
         : null);
 }
 

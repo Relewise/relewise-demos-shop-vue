@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult, FacetResult } from '@relewise/client';
 import { computed, type PropType } from 'vue';
-import { getFacetConfigEntryForResult } from '@/helpers/facetHelper';
+import { getFacetSettings } from '@/helpers/facetHelper';
 import type { FacetContext } from '@/facetConfig';
 import CategoryFacet from './CategoryFacet.vue';
 import CheckListFacet from './ChecklistFacet.vue';
@@ -43,5 +43,5 @@ defineEmits<{
     (e: 'search', payload: { name: string, value: string | null | undefined, clearSubsequentEntries?: boolean, handlefilters?: boolean }): void
 }>();
 
-const config = computed(() => getFacetConfigEntryForResult(props.facet));
+const config = computed(() => getFacetSettings(props.facet));
 </script>
