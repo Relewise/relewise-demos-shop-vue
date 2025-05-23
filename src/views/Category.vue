@@ -27,7 +27,7 @@
                         v-model:page="page"
                         :filters="filters"
                         :facets="result.facets"
-                        :hide-category-facet="renderCatoryLinks"
+                        context="Category"
                         @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">
@@ -85,6 +85,7 @@ import Sorting from '../components/Sorting.vue';
 import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
+import { getFacets } from '@/helpers/facetHelper';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightProducts = ref<ProductWithType[] | null>(null);
@@ -96,7 +97,7 @@ const categoryId = ref<string>('');
 const parentCategoryId = ref<string | undefined>();
 const grandParentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
-const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
+const filters = ref<Record<string, string | string[]>>({ sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
@@ -217,8 +218,7 @@ async function search() {
             } else {
                 f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
             }
-            f.addBrandFacet(Array.isArray(filters.value['brand']) && filters.value['brand'].length > 0 ? filters.value['brand'] : null);
-            f.addSalesPriceRangeFacet('Product', applySalesPriceFacet ? Number(filters.value.price[0]) : undefined, applySalesPriceFacet ? Number(filters.value.price[1]) : undefined);
+            getFacets('Category', f, filters.value, result.value?.facets);
         })
         .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))
@@ -261,13 +261,6 @@ async function search() {
             }
         } else {
             childCategories.value = undefined;
-        }
-
-        if (response.facets.items[2] !== null) {
-            const salesPriceFacet = response.facets!.items[2] as PriceRangeFacetResult;
-            if (Object.keys(salesPriceFacet.selected ?? {}).length === 0 && 'available' in salesPriceFacet && salesPriceFacet.available && 'value' in salesPriceFacet.available) {
-                filters.value.price = [salesPriceFacet.available.value?.lowerBoundInclusive.toString() ?? '', salesPriceFacet.available.value?.upperBoundInclusive.toString() ?? ''];
-            }
         }
     }
 
