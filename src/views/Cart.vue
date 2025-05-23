@@ -13,8 +13,9 @@
         </div>
         <div class="justify-center md:flex md:space-x-6 xl:px-0">
             <div class="md:w-3/5">
-                <div v-for="item in model.lineItems" :key="item.product.productId ?? ''" class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start">
-                    <ProductImage :product="item.product" class="w-full rounded sm:!w-20 xl:!w-60"/>
+                <div v-for="item in model.lineItems" :key="item.product.productId ?? ''"
+                    class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start">
+                    <ProductImage :product="item.product" class="w-full rounded sm:!w-20 xl:!w-60" />
                     <div class="sm:ml-4 flex-grow">
                         <div class="mt-5 sm:mt-0">
                             <p v-if="item.product.brand" class="mt-1 text-gray-500">
@@ -26,29 +27,32 @@
                         </div>
                         <div class="mt-4 flex flex-wrap gap-4 justify-between w-full">
                             <div class="flex items-center border-gray-100 w-1/2">
-                                <span class="cursor-pointer rounded-l bg-gray-100 py-1 px-3.5 duration-100 hover:bg-gray-300" @click="updateLineItem(item, -1)"> - </span>
+                                <span
+                                    class="cursor-pointer rounded-l bg-gray-100 py-1 px-3.5 duration-100 hover:bg-gray-300"
+                                    @click="updateLineItem(item, -1)"> - </span>
                                 <input v-model="item.quantity"
-                                       class="h-8 w-12 border bg-white text-center text-xs outline-none"
-                                       type="number"
-                                       min="1">
-                                <span class="cursor-pointer rounded-r bg-gray-100 py-1 px-3 duration-100 hover:bg-gray-300" @click="updateLineItem(item, 1)"> + </span>
+                                    class="h-8 w-12 border bg-white text-center text-xs outline-none" type="number"
+                                    min="1">
+                                <span
+                                    class="cursor-pointer rounded-r bg-gray-100 py-1 px-3 duration-100 hover:bg-gray-300"
+                                    @click="updateLineItem(item, 1)"> + </span>
                             </div>
                             <div class="flex-grow flex items-center justify-end">
-                                <span class="text-xl text-slate-900 mr-1 leading-none">{{ $format(item.product.salesPrice) }}</span>
-                                <span v-if="item.product.salesPrice !== item.product.listPrice" class="text-slate-900 line-through">
+                                <span class="text-xl text-slate-900 mr-1 leading-none">{{
+                                    $format(item.product.salesPrice) }}</span>
+                                <span v-if="item.product.salesPrice !== item.product.listPrice"
+                                    class="text-slate-900 line-through">
                                     {{ $format(item.product.listPrice) }}
                                 </span>
                             </div>
 
                             <div class="flex items-center w-full">
-                                <a href="#" class="inline-flex text-neutral-600 hover:underline" @click.prevent="remove(item)">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                         fill="none"
-                                         viewBox="0 0 24 24"
-                                         stroke-width="1.5"
-                                         stroke="currentColor"
-                                         class="h-5 w-5 cursor-pointer duration-150">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                <a href="#" class="inline-flex text-neutral-600 hover:underline"
+                                    @click.prevent="remove(item)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="h-5 w-5 cursor-pointer duration-150">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     <span class="ml-3 text-sm">Remove from cart</span>
                                 </a>
@@ -65,7 +69,8 @@
                     </h4>
                     <div class="">
                         <h4 class="mb-1 text-xl font-bold">
-                            {{ $format(model.lineItems.map(x => (x.product.salesPrice ?? 0) * x.quantity).reduce((partialSum, a) => partialSum + a, 0)) }}
+                            {{$format(model.lineItems.map(x => (x.product.salesPrice ?? 0) *
+                                x.quantity).reduce((partialSum, a) => partialSum + a, 0)) }}
                         </h4>
                         <p class="text-sm text-gray-700">
                             including VAT
@@ -84,8 +89,9 @@
             </h2>
             <div class="w-full overflow-x-scroll">
                 <div class="flex flex-row gap-6">
-                    <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex" class="min-w-[250px] pb-3">
-                        <ProductTile :product="product"/>
+                    <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex"
+                        class="min-w-[250px] pb-3">
+                        <ProductTile :product="product" />
                     </div>
                 </div>
             </div>
@@ -96,7 +102,7 @@
 <script lang="ts" setup>
 import ProductTile from '../components/ProductTile.vue';
 import { ref } from 'vue';
-import { type ProductRecommendationResponse, PurchasedWithMultipleProductsBuilder } from '@relewise/client';
+import { PopularProductsBuilder, type ProductRecommendationResponse, PurchasedWithMultipleProductsBuilder } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
@@ -105,7 +111,7 @@ import ProductImage from '@/components/ProductImage.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
 import { addAssortmentFilters } from '@/stores/customFilters';
-import { context } from '@relewise/web-components';
+import { context, PopularProducts } from '@relewise/web-components';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -118,36 +124,23 @@ function init() {
 
 init();
 
-
-
-
 async function recommendB2B() {
     const take = 8;
-    const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
+    const request = new PopularProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({allData: true})
+        .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(take)
         .relevanceModifiers(modifier => {
-            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 100)
-            })
-        .addProducts(
-                [
-                    {
-                        productId: "1f0e56a5-5cb9-4f92-bb01-440e1e093654",
-                    },
-                            {
-                        productId: "bac2a64e-de29-45c8-a73a-bf06033b585f",
-                    }
-                ]
-            )
-        .filters(builder =>{
+            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 10)
+        })
+        .filters(builder => {
             globalProductRecommendationFilters(builder);
             addAssortmentFilters(builder);
             builder.addProductCategoryIdFilter("ImmediateParent", ["3_5"]);
         })
         .build();
 
-    const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPopularProducts(request);
     contextStore.assertApiCall(response);
 
     result.value = response;
@@ -156,7 +149,7 @@ async function recommend() {
     const take = 8;
     const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({allData: true})
+        .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(take)
         .addProducts(basketService.model.value.lineItems
             .filter(item => item.product.productId)
@@ -164,7 +157,8 @@ async function recommend() {
                 productId: item.product.productId as string,
             })),
         )
-        .filters(builder =>{globalProductRecommendationFilters(builder);
+        .filters(builder => {
+            globalProductRecommendationFilters(builder);
             addAssortmentFilters(builder);
         })
         .build();
@@ -175,7 +169,7 @@ async function recommend() {
     result.value = response;
 }
 
-function updateLineItem(item : ILineItem, quantityDelta: number) {
+function updateLineItem(item: ILineItem, quantityDelta: number) {
     basketService.addProduct({ product: item.product, quantityDelta });
     trackingService.trackCart(basketService.model.value.lineItems);
 }
