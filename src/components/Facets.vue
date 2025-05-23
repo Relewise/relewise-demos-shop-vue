@@ -48,17 +48,15 @@ const { filters, facets } = toRefs(props);
 function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false) {
     if (!value) return;
 
-    const nameAsProp = name.charAt(0).toLowerCase() + name.slice(1);
- 
-    const existing = filters.value[nameAsProp];
+    const existing = filters.value[name];
     if (existing && Array.isArray(existing)) {
         const index = existing.indexOf(value);
         index === -1
             ? existing.push(value)
             : (clearSubsequentEntries ? existing.splice(index) : existing.splice(index, 1));
     } else if (value !== null) {
-        filters.value[nameAsProp] = [];
-        const t = filters.value[nameAsProp];
+        filters.value[name] = [];
+        const t = filters.value[name];
         Array.isArray(t) && t.push(value);
     }
 

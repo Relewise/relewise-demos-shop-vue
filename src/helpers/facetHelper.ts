@@ -87,8 +87,8 @@ function addCategoryFacet(facetBuilder: FacetBuilder, filters: Record<string, st
 
 function addBrandFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>) {
     facetBuilder.addBrandFacet(Array.isArray(filters['brand']) && filters['brand']?.length > 0
-            ? filters['brand'] 
-            : null);
+        ? filters['brand'] 
+        : null);
 }
 
 function addSalesPriceFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>, facets: ProductFacetResult | null |undefined) {
@@ -109,10 +109,8 @@ function addDataStringFacet(
         return;
     }
 
-    const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
-
-    const selectedValues = Array.isArray(filters[loweredDataKey]) && filters[loweredDataKey]?.length > 0
-        ? filters[loweredDataKey] 
+    const selectedValues = Array.isArray(filters[dataKey]) && filters[dataKey]?.length > 0
+        ? filters[dataKey] 
         : null;
     
     facetBuilder.addProductDataStringValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
@@ -129,10 +127,8 @@ function addDataDoubleFacet(
         return;
     }
 
-    const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
-
-    const selectedValues = Array.isArray(filters[loweredDataKey]) && filters[loweredDataKey]?.length > 0
-        ? filters[loweredDataKey].map(value => Number(value)).filter(value => !isNaN(value))
+    const selectedValues = Array.isArray(filters[dataKey]) && filters[dataKey]?.length > 0
+        ? filters[dataKey].map(value => Number(value)).filter(value => !isNaN(value))
         : null;
     
     facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
@@ -150,10 +146,8 @@ function addDataDoubleRangeFacet(
         return;
     }
 
-    const loweredDataKey = dataKey.charAt(0).toLowerCase() + dataKey.slice(1);
-
-    const lower = filters[loweredDataKey] ? Number(filters[loweredDataKey][0]) : undefined;
-    const upper = filters[loweredDataKey] ? Number(filters[loweredDataKey][1]) : undefined;
+    const lower = filters[dataKey] ? Number(filters[dataKey][0]) : undefined;
+    const upper = filters[dataKey] ? Number(filters[dataKey][1]) : undefined;
 
     facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', lower, upper);
 }

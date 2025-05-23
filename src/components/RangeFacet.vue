@@ -54,7 +54,7 @@ function calculateFilterKey() {
         return 'price';
 
     if (config?.dataKey) {
-        return config.dataKey.charAt(0).toLowerCase() + config.dataKey.slice(1);
+        return config.dataKey;
     }
 }
 
