@@ -249,7 +249,6 @@ function searchFor(term: string) {
                             </a>
                         </div>
                         <Facets v-if="productResult.facets && productResult.hits > 0"
-                                v-model:page="page"
                                 :filters="filters"
                                 :facets="productResult.facets"
                                 :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
@@ -270,7 +269,7 @@ function searchFor(term: string) {
                             <span v-if="productResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{ productResult?.hits < pageSize ? productResult?.hits : page * pageSize }} of {{ productResult?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
-                            <Sorting v-model="filters.sort" @change="search"/>
+                            <Sorting :model-value="filters.sort.toString()" @change="search"/>
                         </div>
                         <div v-if="productResult && productResult?.redirects && productResult.redirects.length > 0"
                              class="mb-3 p-3 bg-white">
@@ -295,7 +294,7 @@ function searchFor(term: string) {
                                              :is-promotion="product.isPromotion"/>
                             </div>
                             <div class="py-3 flex justify-center">
-                                <Pagination v-model.sync="page" v-model:total="productResult.hits" :page-size="pageSize" @change="search"/>
+                                <Pagination v-model:total="productResult.hits" v-model:model-value="page" v-model:page-size="pageSize" @change="search"/>
                             </div>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"

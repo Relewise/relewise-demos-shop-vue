@@ -24,7 +24,6 @@
                 </div>
                 
                 <Facets v-if="result?.facets"
-                        v-model:page="page"
                         :filters="filters"
                         :facets="result.facets"
                         :context="'Category'"
@@ -41,7 +40,7 @@
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <Sorting v-model="filters.sort" @change="search"/>
+                        <Sorting :model-value="filters.sort.toString()" @change="search"/>
                     </div>
                     <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in products"
@@ -74,7 +73,7 @@ import ProductTile from '../components/ProductTile.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type PriceRangeFacetResult, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult } from '@relewise/client';
+import { ProductSearchBuilder, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -191,12 +190,6 @@ async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
     scrollTo({ top: 0 });
 
-    let applySalesPriceFacet = false;
-    if (result.value?.facets?.items?.length === 3) {
-        const salesPriceFacet = result.value?.facets.items[2] as PriceRangeFacetResult;
-        applySalesPriceFacet = salesPriceFacet && filters.value.price.length === 2 && Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive || Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive;
-    }
-
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
@@ -236,7 +229,6 @@ async function search() {
         .build();
 
     const query = { ...router.currentRoute.value.query, ...filters.value };
-    if (!applySalesPriceFacet) delete query.price;
 
     await router.push({ path: route.path, query: query, replace: true });
 

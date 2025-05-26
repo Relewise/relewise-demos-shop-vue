@@ -1,10 +1,10 @@
 <template>
     <div v-if="pageCount > 1" class="flex items-center gap-2">
-        <button v-if="!isFirstPage" class="item" @click="selectPage(currentPage - 1)">
+        <button v-if="modelValue > 1" class="item" @click="selectPage(modelValue - 1)">
             <ChevronLeftIcon class="h-4 w-4 mr-2"/> Previous
         </button>
 
-        <button v-if="!isLastPage" class="item" @click="selectPage(currentPage + 1)">
+        <button v-if="modelValue < pageCount" class="item" @click="selectPage(modelValue + 1)">
             Next <ChevronRightIcon class="h-4 w-4 ml-2"/>
         </button>
     </div>
@@ -14,6 +14,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/solid';
 import { useOffsetPagination } from '@vueuse/core';
 import { toRefs } from 'vue';
+
 const props = defineProps({ 
     pageSize: { 
         type: Number, 
@@ -29,15 +30,13 @@ const props = defineProps({
     },
 });
 const { pageSize, total, modelValue } = toRefs(props);
+
 const {
-    currentPage,
     pageCount,
-    isFirstPage,
-    isLastPage,
 } = useOffsetPagination({
-    total: total,
-    page: modelValue,
-    pageSize,
+    total: total.value,
+    page: modelValue.value,
+    pageSize: pageSize.value,
     onPageChange: (p) => selectPage(p.currentPage),
 });
 
