@@ -218,7 +218,7 @@ async function search() {
             } else {
                 f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
             }
-            getFacets('Category', f, filters.value, result.value?.facets);
+            getFacets('Category', f, filters.value);
         })
         .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))

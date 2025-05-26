@@ -61,11 +61,11 @@ function calculateFilterKey() {
 watch(facet, () => {
     if (filterKey && filters.value[filterKey]) {
 
-        min.value = Number(filters.value[filterKey][0]) < (facet.value.available?.value?.lowerBoundInclusive ?? 0) 
+        min.value = Number(filters.value[filterKey][0]) <= (facet.value.available?.value?.lowerBoundInclusive ?? 0) 
             ? facet.value.available?.value?.lowerBoundInclusive ?? 0 
             : Number(filters.value[filterKey][0]);
 
-        max.value = Number(filters.value[filterKey][1]) > (facet.value.available?.value?.upperBoundInclusive ?? 0) 
+        max.value = Number(filters.value[filterKey][1]) >= (facet.value.available?.value?.upperBoundInclusive ?? 0) 
             ? facet.value.available?.value?.upperBoundInclusive ?? 0 
             : Number(filters.value[filterKey][1]);
 
@@ -84,9 +84,13 @@ watch(min, (newValue) => {
     if (!filterKey) 
         return;
     
-    if (newValue === (facet.value.available?.value?.lowerBoundInclusive ?? 0)) return;
+    if (newValue === (facet.value.available?.value?.lowerBoundInclusive ?? 0)
+        && max.value === (facet.value.available?.value?.upperBoundInclusive ?? 0)) {
+        delete filters.value[filterKey];
+        return;
+    }
 
-    const updatedValue = newValue < (facet.value.available?.value?.lowerBoundInclusive ?? 0) 
+    const updatedValue = newValue <= (facet.value.available?.value?.lowerBoundInclusive ?? 0) 
         ? facet.value.available?.value?.lowerBoundInclusive 
         : newValue;
 
@@ -97,9 +101,13 @@ watch(max, (newValue) => {
     if (!filterKey) 
         return;
 
-    if (newValue === (facet.value.available?.value?.upperBoundInclusive ?? 0)) return;
-
-    const updatedValue = newValue > (facet.value.available?.value?.upperBoundInclusive ?? 0) 
+    if (newValue === (facet.value.available?.value?.upperBoundInclusive ?? 0)
+        && min.value === (facet.value.available?.value?.lowerBoundInclusive ?? 0)) {
+        delete filters.value[filterKey];
+        return;
+    }
+    
+    const updatedValue = newValue >= (facet.value.available?.value?.upperBoundInclusive ?? 0) 
         ? facet.value.available?.value?.upperBoundInclusive 
         : newValue;
 

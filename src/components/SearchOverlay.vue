@@ -126,7 +126,7 @@ async function search() {
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value, productResult.value?.facets))
+            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
             .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
