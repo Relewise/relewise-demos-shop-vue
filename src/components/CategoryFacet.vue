@@ -5,7 +5,7 @@
                 {{ category.displayName ?? category.categoryId }}
             </span>
             <XMarkIcon class="ml-auto h-6 w-6 text-slate-600 cursor-pointer my-auto mr-2"
-                       @click="applyFacet(facet.field, category.categoryId, true)"/>
+                       @click="applyFacet('category', category.categoryId, true)"/>
         </div>
     </div>
 
@@ -15,7 +15,7 @@
             <span v-for="(categoryLink, filterOptionIndex) in options"
                   :key="filterOptionIndex"
                   class="block cursor-pointer hover:!text-brand-500"
-                  @click.prevent="applyFacet(facet.field, categoryLink.category.categoryId)">
+                  @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
                 {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
             </span>
         </template>
@@ -26,7 +26,7 @@
                            type="checkbox"
                            :value="option.category.categoryId"
                            :checked="option.selected"
-                           @click="applyFacet(facet.field, option.category.categoryId)">
+                           @click="applyFacet('category', option.category.categoryId)">
                     {{ option.category.displayName ?? option.category.categoryId }} <span class="">{{ option.hits }}</span>
                 </label>
             </li>
@@ -38,7 +38,7 @@
 import { findCategoryById } from '@/helpers/categoryHelper';
 import contextStore from '@/stores/context.store';
 import type { CategoryHierarchyFacetResult, CategoryHierarchyFacetResultCategoryNode, FacetResult, ProductCategoryResult } from '@relewise/client';
-import { ref, toRefs, type PropType } from 'vue';
+import { ref, toRefs, watch, type PropType } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -55,9 +55,7 @@ const options = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(unde
 
 const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
-init();
-
-function init() {
+watch(facet, () => {
     const selectedCategoryFilterIds = filters.value['category'];
 
     const categoryHeirarchyFacetResult = (facet.value as CategoryHierarchyFacetResult);
@@ -85,12 +83,11 @@ function init() {
             options.value = rootCategoryNode?.children ?? undefined;
         }
     }
+    
+}, { immediate: true, deep: true });
 
-    return [];
-}
 
 function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false, handlefilters: boolean = true) {
     emit('search', { name, value, clearSubsequentEntries, handlefilters });
-    init();
 }
 </script>
