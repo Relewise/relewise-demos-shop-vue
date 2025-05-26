@@ -21,7 +21,7 @@ export const facetConfig: FacetConfigEntry[] = [
     },
 ];
 
-type FacetContext = 'Category' | 'SearchOverlay' | 'Brand';
+export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand';
 
 type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange';
 type FacetRenderType = 'Checklist' | 'Range';
