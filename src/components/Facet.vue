@@ -36,7 +36,7 @@ import RangeFacet from './RangeFacet.vue';
 const props = defineProps({
     facet: { type: Object as PropType<FacetResult>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
-    context: { type: Object as PropType<FacetContext>, required: true },
+    context: { type: String as PropType<FacetContext>, required: true },
 });
 
 defineEmits<{

@@ -17,7 +17,7 @@ import Facet from './Facet.vue';
 const props = defineProps({
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     facets: { type: Object as PropType<ProductFacetResult>, required: true },
-    context: { type: Object as PropType<FacetContext>, required: true },
+    context: { type: String as PropType<FacetContext>, required: true },
 });
 
 const emit = defineEmits(['search']);

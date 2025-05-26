@@ -27,7 +27,7 @@
                         v-model:page="page"
                         :filters="filters"
                         :facets="result.facets"
-                        context="Category"
+                        :context="'Category'"
                         @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">
