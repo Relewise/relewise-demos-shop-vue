@@ -38,7 +38,7 @@ export function getFacets(
                 facets);
             break;
         default:
-            console.error(`Could not handle facet configuration with type '${facetToAdd.type}'`);
+            console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
         }
     });
 }

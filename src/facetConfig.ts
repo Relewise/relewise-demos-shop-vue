@@ -26,11 +26,22 @@ export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand';
 type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange';
 type FacetRenderType = 'Checklist' | 'Range';
 
-type FacetConfigEntry = {
-    contexts: FacetContext[],
-    type: FacetType;
+type BaseFacetConfigEntry = {
+    contexts: FacetContext[];
     renderType: FacetRenderType;
     label: string;
-    dataKey?: string;
-    dataSelectionStrategy?: DataSelectionStrategy;
-}
+};
+
+type FacetConfigWithData = BaseFacetConfigEntry & {
+    type: 'DataString' | 'DataDouble' | 'DataDoubleRange';
+    dataKey: string;
+    dataSelectionStrategy: DataSelectionStrategy;
+};
+
+type FacetConfigWithoutData = BaseFacetConfigEntry & {
+    type: Exclude<FacetType, 'DataString' | 'DataDouble' | 'DataDoubleRange'>;
+    dataKey?: never;
+    dataSelectionStrategy?: never;
+};
+
+type FacetConfigEntry = FacetConfigWithData | FacetConfigWithoutData;
