@@ -22,7 +22,7 @@
 import { computed, toRefs, type PropType } from 'vue';
 
 const props = defineProps({
-    modelValue: { type: Object as PropType<string | string[]>, required: true },
+    modelValue: { type: [String, Array] as PropType<string | string[]>, required: true },
 });
 
 const { modelValue } = toRefs(props);
