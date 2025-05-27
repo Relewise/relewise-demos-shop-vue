@@ -228,8 +228,7 @@ async function search() {
         })
         .build();
 
-    const query = { ...router.currentRoute.value.query, ...filters.value };
-
+    const query = { ...filters.value };
     await router.push({ path: route.path, query: query, replace: true });
 
     const searcher = contextStore.getSearcher();

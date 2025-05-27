@@ -4,13 +4,11 @@
             <input 
                 v-model="min" 
                 type="text" 
-                class="small" 
-                @keypress.enter="applyFacet(facet.field)"> - 
+                class="small"> - 
             <input
                 v-model="max"
                 type="text"
-                class="small"
-                @keypress.enter="applyFacet(facet.field)">
+                class="small">
         </div>
         <div 
             v-if="facet.available?.value"
@@ -19,8 +17,7 @@
                 v-model="sliderModel"
                 :tooltips="false"
                 :max="facet.available?.value.upperBoundInclusive"
-                :min="facet.available?.value.lowerBoundInclusive"
-                @update="applyFacet(facet.field)"/>
+                :min="facet.available?.value.lowerBoundInclusive"/>
         </div>
     </div>
 </template>
@@ -87,6 +84,7 @@ watch(min, (newValue) => {
     if (newValue === (facet.value.available?.value?.lowerBoundInclusive ?? 0)
         && max.value === (facet.value.available?.value?.upperBoundInclusive ?? 0)) {
         delete filters.value[filterKey];
+        applyFacet(facet.value.field);
         return;
     }
 
@@ -95,6 +93,7 @@ watch(min, (newValue) => {
         : newValue;
 
     filters.value[filterKey] = [updatedValue?.toString() ?? '', max.value.toString()];
+    applyFacet(facet.value.field);
 });
 
 watch(max, (newValue) => {
@@ -104,6 +103,7 @@ watch(max, (newValue) => {
     if (newValue === (facet.value.available?.value?.upperBoundInclusive ?? 0)
         && min.value === (facet.value.available?.value?.lowerBoundInclusive ?? 0)) {
         delete filters.value[filterKey];
+        applyFacet(facet.value.field);
         return;
     }
     
@@ -112,6 +112,7 @@ watch(max, (newValue) => {
         : newValue;
 
     filters.value[filterKey] = [min.value.toString(), updatedValue?.toString() ?? ''];
+    applyFacet(facet.value.field);
 });
 
 watch(sliderModel, (newValue) => {
