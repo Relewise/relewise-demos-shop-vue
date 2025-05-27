@@ -269,7 +269,7 @@ function searchFor(term: string) {
                             <span v-if="productResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{ productResult?.hits < pageSize ? productResult?.hits : page * pageSize }} of {{ productResult?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
-                            <Sorting :model-value="filters.sort.toString()" @change="search"/>
+                            <Sorting v-model="filters.sort" @change="search"/>
                         </div>
                         <div v-if="productResult && productResult?.redirects && productResult.redirects.length > 0"
                              class="mb-3 p-3 bg-white">

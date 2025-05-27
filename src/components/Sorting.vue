@@ -19,10 +19,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, toRefs } from 'vue';
+import { computed, toRefs, type PropType } from 'vue';
 
 const props = defineProps({
-    modelValue: { type: String, required: true },
+    modelValue: { type: [String, Array] as PropType<string | string[]>, required: true },
 });
 
 const { modelValue } = toRefs(props);

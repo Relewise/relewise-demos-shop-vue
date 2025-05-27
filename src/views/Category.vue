@@ -40,7 +40,7 @@
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <Sorting :model-value="filters.sort.toString()" @change="search"/>
+                        <Sorting v-model="filters.sort" @change="search"/>
                     </div>
                     <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in products"
