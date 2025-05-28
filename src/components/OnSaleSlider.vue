@@ -32,7 +32,7 @@ async function recommend() {
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
        
         .filters(builder => {
-            builder.addProductDataFilter('OnSale', c => c.addEqualsCondition(DataValueFactory.boolean(true)));
+            builder.addProductDataFilter('OnSale', c => c.addEqualsCondition(DataValueFactory.string('true')));
             globalProductRecommendationFilters(builder); 
         })
         .build();
