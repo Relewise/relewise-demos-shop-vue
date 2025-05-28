@@ -21,7 +21,10 @@
                     </div>
                 </div>
             </div>
-            <div v-if="productRecommendations" class="scrollbar mt-16">
+            <div v-if="productRecommendations 
+                     && productRecommendations.recommendations 
+                     && productRecommendations.recommendations.length > 0"
+                 class="scrollbar mt-16">
                 <h2 class="text-2xl font-semibold mb-3">
                     Products viewed after viewing content
                 </h2>
