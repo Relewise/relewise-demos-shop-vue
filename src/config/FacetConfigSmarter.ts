@@ -126,7 +126,7 @@ function createStockLevelAddToBuilder(field: string): FacetContextConfig['addToB
 function createBrandAddToBuilder(ctx: string): FacetContextConfig['addToBuilder'] {
     if (ctx === FacetContexts.ContentCategoryPage) {
         return (f, filters) => {
-            f.addProductDataStringValueFacet('Brand', 'Product', filters['Brand']);
+            f.addContentDataStringValueFacet('Brand', filters['Brand']);
         };
     }
 
