@@ -13,7 +13,7 @@ const props = defineProps({
 
 const { product } = toRefs(props);
 
-const showScore = contextStore.context.value.showProductQualityScore;
+const showScore = contextStore.context.value.showProductRelevanceScore;
 
 </script>
 

@@ -67,7 +67,7 @@
             Features
         </h2>
 
-        <div class="pl-8 flex flex-col gap-6 features">
+        <div class="pl-8 flex flex-col gap-6">
             <div>
                 <label class="flex mt-2 items-center">
                     <input v-model="context.allowThirdLevelCategories"
@@ -105,7 +105,7 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.showProductQualityScore" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    <input v-model="context.showProductRelevanceScore" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
                     Show Product Relevance Score in Search</label>
 
                 <p class="text-gray-500 text-sm mt-1">

@@ -21,7 +21,7 @@ export interface IDataset {
     hideSoldOutProducts?: boolean;
     userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
-    showProductQualityScore?: boolean;
+    showProductRelevanceScore?: boolean;
 }
 
 export interface ITracking {
