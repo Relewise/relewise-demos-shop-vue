@@ -4,6 +4,7 @@ import { toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
 import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
+import contextStore from '@/stores/context.store';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
@@ -11,6 +12,8 @@ const props = defineProps({
 });
 
 const { product } = toRefs(props);
+
+const showScore = contextStore.context.value.showProductQualityScore;
 
 </script>
 
@@ -54,6 +57,7 @@ const { product } = toRefs(props);
         <div class="mt-2">
             <div class="text-left">
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
+                <span v-if="showScore && product.score?.relevance" class="float-right text-sm text-slate-500">Score: {{ product.score.relevance.toFixed(2) }}</span>
                 <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
                     {{ product.displayName }}
                 </h5>
