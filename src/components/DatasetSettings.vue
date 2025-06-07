@@ -67,7 +67,7 @@
             Features
         </h2>
 
-        <div class="pl-8 flex flex-col gap-4">
+        <div class="pl-8 flex flex-col gap-6">
             <div>
                 <label class="flex mt-2 items-center">
                     <input v-model="context.allowThirdLevelCategories"
@@ -100,6 +100,16 @@
                 </label>
                 <p class="text-gray-500 text-sm mt-1">
                     We base the filters on the product's <code>AvailableInMarkets</code> and <code>AvailableInChannels</code> data keys.
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.showProductRelevanceScore" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Show Product Relevance Score in Search</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will show the product relevance score in search. This can be helpful when showcasing Quality Score Thresholds for Retail Media, as it allows you to see the score and it's therefore easier to set the correct threshold.
                 </p>
             </div>
 

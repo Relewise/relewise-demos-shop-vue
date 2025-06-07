@@ -21,6 +21,7 @@ export interface IDataset {
     hideSoldOutProducts?: boolean;
     userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
+    showProductRelevanceScore?: boolean;
 }
 
 export interface ITracking {
@@ -116,6 +117,10 @@ class AppContext {
             categoryPaths: true,
             pricing: true,
             allVariants: true,
+            score: {
+                adjusted: true,
+                relevance: true,
+            },
         } as SelectedProductPropertiesSettings;
     }
 
