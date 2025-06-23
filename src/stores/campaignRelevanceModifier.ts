@@ -20,3 +20,7 @@ export function addCampaignRelevanceModifier(relevancemodifierBuilder: Relevance
         );
     }
 }
+
+export function addRecentlyIntroducedArticlesRelevanceModifier(relevancemodifierBuilder: RelevanceModifierBuilder){
+
+}

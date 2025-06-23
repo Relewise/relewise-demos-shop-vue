@@ -73,7 +73,7 @@
                                         {{ value.value.$values.join(', ') }}
                                     </template>
                                     <template v-else>
-                                        {{ value.value }}
+                                         <div v-html="value.value"></div>
                                     </template>
                                 </dd>
                             </template>
@@ -151,7 +151,7 @@ const details = computed(() => {
     return Object.entries(product.value.data ?? {})
         .filter((x) =>
             x[1].type.indexOf('Object') === -1 &&
-            ['Description', 'Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0]));
+            ['long_description', 'material_type', 'product_description', 'Description', 'Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0]));
 });
 
 async function init() {

@@ -62,6 +62,7 @@ const { product } = toRefs(props);
                 <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
                     {{ product.displayName }}
                 </h5>
+                <!-- <h1>{{ product.productId }}</h1> -->
                 <!-- <div v-if="product.variant" class="text-sm text-zinc-500">
                     <div>Color: {{ product.variant.data?.Color.value }}</div>
                     <div>Material: {{ product.variant.data?.Material.value }}</div>
