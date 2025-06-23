@@ -66,7 +66,8 @@ watch(() => ({ ...route }), (value, oldValue) => {
 
         const searchParams = new URLSearchParams(window.location.search);
         searchParams.forEach((value, key) => {
-            const normalizedKey = key.toLowerCase();
+            //const normalizedKey = key.toLowerCase();
+            const normalizedKey = key;
 
             if (normalizedKey === 'term') {
                 searchTerm.value = value;
