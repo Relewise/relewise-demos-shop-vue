@@ -21,13 +21,15 @@
         </template>
         <ul v-else>
             <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
-                <label class="flex items-center cursor-pointer">
+                <label class="flex items-center cursor-pointer w-full">
                     <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
                            type="checkbox"
                            :value="option.category.categoryId"
                            :checked="option.selected"
                            @click="applyFacet('category', option.category.categoryId)">
-                    {{ option.category.displayName ?? option.category.categoryId }} <span class="">{{ option.hits }}</span>
+                    {{ option.category.displayName ?? option.category.categoryId }}
+                    <span class="flex-grow"></span>
+                    <span>{{ option.hits }}</span>
                 </label>
             </li>
         </ul>
