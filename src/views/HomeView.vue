@@ -7,6 +7,7 @@ import OnSaleSlider from '@/components/OnSaleSlider.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
 import PopularCategories from '@/components/PopularCategories.vue';
 import ProductTile from '../components/ProductTile.vue';
+import { addAssortmentFilters } from '@/stores/customFilters';
 // import { addAssortmentFilters } from '@/stores/customFilters';
 // import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 
@@ -27,7 +28,10 @@ async function recommendB2B() {
         .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(take)
         .relevanceModifiers(modifier => {
-            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 1,5)
+            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 1, 5)
+        })
+        .filters(f => {
+            addAssortmentFilters(f);
         })
         .build();
 
@@ -58,9 +62,9 @@ async function recommend() {
             <div class="waves"></div>
             <div class="container mx-auto py-10">
                 <div v-if="result" class="scrollbar mt-8">
-                <h2 class="text-3xl font-semibold mb-3 text-center">
-                    Popular products
-                </h2>
+                    <h2 class="text-3xl font-semibold mb-3 text-center">
+                        Popular products
+                    </h2>
                     <div class="w-full overflow-x-scroll">
                         <div class="flex flex-row gap-6">
                             <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex"

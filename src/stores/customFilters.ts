@@ -14,6 +14,10 @@ export function addAssortmentFilters(filterBuilder: FilterBuilder) {
     {
         filterBuilder.addProductDataFilter('AvailableInChannels', (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(appContext.user.value!.classifications!['channel']!)));
     }
+    if(appContext.user.value.company?.id == '99999')
+    {
+        filterBuilder.addProductAssortmentFilter([99999]);
+    }
 }
 
 export function addCartFilter(filterBuilder: FilterBuilder)
