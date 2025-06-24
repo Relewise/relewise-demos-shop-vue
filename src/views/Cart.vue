@@ -22,7 +22,7 @@
                                 {{ item.product.brand?.displayName }}
                             </p>
                             <h2 class="text-xl font-semibold text-gray-900">
-                                {{ item.product.displayName }}
+                                {{ item.product.data?.long_description.value }}
                             </h2>
                         </div>
                         <div class="mt-4 flex flex-wrap gap-4 justify-between w-full">

@@ -60,9 +60,9 @@ const { product } = toRefs(props);
             <div class="text-left">
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
                 <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
-                    {{ product.displayName }}
+                    {{ product.data?.long_description.value }}
                 </h5>
-                <!-- <h1>{{ product.productId }}</h1> -->
+                <h1>{{ product.productId }}</h1>
                 <!-- <div v-if="product.variant" class="text-sm text-zinc-500">
                     <div>Color: {{ product.variant.data?.Color.value }}</div>
                     <div>Material: {{ product.variant.data?.Material.value }}</div>
