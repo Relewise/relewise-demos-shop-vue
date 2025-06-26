@@ -24,6 +24,7 @@ export interface IDataset {
     showProductRelevanceScore?: boolean;
     enableRelewiseSeDemoScenarios?:boolean;
     switchOnVariantBasedSearchDisplay?:boolean;
+    showContentMenu?: boolean;
 }
 
 export interface ITracking {
@@ -195,6 +196,10 @@ class AppContext {
 
     public getSwitchOnVariantBasedSearchDisplay(): boolean {
         return this.context.value.switchOnVariantBasedSearchDisplay ?? false;
+    }
+
+    public getshowContentMenu(): boolean {
+        return this.context.value.showContentMenu ?? false;
     }
 
     public persistState() {

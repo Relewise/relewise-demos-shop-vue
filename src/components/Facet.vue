@@ -6,11 +6,17 @@
         </h4>
         
         <CategoryFacet 
-            v-if="config?.type === 'Category'"
+            v-if="config?.type === 'Category' && context != 'Content'"
             :facet="facet"
             :filters="filters"
             @search="$emit('search', $event)"/>
         
+        <CheckListFacet 
+            v-if="config?.type === 'Category' && context == 'Content'"
+            :facet="facet"
+            :filters="filters"
+            @search="$emit('search', $event)"/>
+
         <CheckListFacet
             v-if="config?.renderType === 'Checklist'"
             :facet="facet" 
@@ -43,5 +49,5 @@ defineEmits<{
     (e: 'search', payload: { name: string, value: string | null | undefined, clearSubsequentEntries?: boolean, handlefilters?: boolean }): void
 }>();
 
-const config = computed(() => getFacetSettings(props.facet));
+const config = computed(() => getFacetSettings(props.facet, props.context));
 </script>

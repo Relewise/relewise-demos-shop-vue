@@ -19,11 +19,24 @@ export const facetConfig: FacetConfigEntry[] = [
         renderType: 'Range',
         label: 'Sales Price',
     },
+    {
+        contexts: ['Content'],
+        type: 'ContentCategory',
+        renderType: 'Checklist',
+        label: 'Content Category'
+    },
+    {
+        contexts: ['Content'],
+        type: 'ContentDataString',
+        renderType: 'Checklist',
+        label: 'Brand',
+        dataKey: 'Brand',
+    },
 ];
 
-export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand';
+export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand' | 'Content';
 
-type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange';
+type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'ContentDataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange' | 'ContentCategory';
 type FacetRenderType = 'Checklist' | 'Range';
 
 type BaseFacetConfigEntry = {
@@ -44,4 +57,9 @@ type FacetConfigWithoutData = BaseFacetConfigEntry & {
     dataSelectionStrategy?: never;
 };
 
-type FacetConfigEntry = FacetConfigWithData | FacetConfigWithoutData;
+type ContentFacetConfigWithData = BaseFacetConfigEntry & {
+    type: 'ContentDataString';
+    dataKey?: string;
+};
+
+type FacetConfigEntry = FacetConfigWithData | FacetConfigWithoutData | ContentFacetConfigWithData;

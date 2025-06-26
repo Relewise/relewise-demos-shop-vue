@@ -12,59 +12,71 @@ export function getFacets(
     const facetsToAdd = facetConfig.filter(x => x.contexts.includes(context));
 
     facetsToAdd.forEach(facetToAdd => {
-        switch(facetToAdd.type) {
-        case 'BrandFacet':
-            addBrandFacet(facetBuilder, filters);
-            break;
-        case 'Category':
-            addCategoryFacet(facetBuilder, filters);
-            break;
-        case 'DataString':
-            addDataStringFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
-            break;
-        case 'SalesPrice':
-            addSalesPriceFacet(facetBuilder, filters);
-            break;
-        case 'DataDouble':
-            addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
-            break;
-        case 'DataDoubleRange':
-            addDataDoubleRangeFacet(
-                facetToAdd.dataKey, 
-                facetToAdd.dataSelectionStrategy,
-                facetBuilder,
-                filters);
-            break;
-        default:
-            console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
+        switch (facetToAdd.type) {
+            case 'BrandFacet':
+                addBrandFacet(facetBuilder, filters);
+                break;
+            case 'Category':
+                addCategoryFacet(facetBuilder, filters);
+                break;
+            case 'ContentCategory':
+                addContentCategoryFacet(facetBuilder, filters);
+                break;
+            case 'DataString':
+                addDataStringFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
+                break;
+            case 'ContentDataString':
+                addContentDataStringFacet(facetToAdd.dataKey, facetBuilder, filters);
+                break;
+            case 'SalesPrice':
+                addSalesPriceFacet(facetBuilder, filters);
+                break;
+            case 'DataDouble':
+                addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
+                break;
+            case 'DataDoubleRange':
+                addDataDoubleRangeFacet(
+                    facetToAdd.dataKey,
+                    facetToAdd.dataSelectionStrategy,
+                    facetBuilder,
+                    filters);
+                break;
+            default:
+                console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
         }
     });
 }
 
-export function getFacetSettings(facetResult: allFacetResultTypes) {
-    switch(facetResult.field) {
-    case 'Brand':
-        return facetConfig.find(x => x.type === 'BrandFacet');
-    case 'Category':
-        return facetConfig.find(x => x.type === 'Category');
-    case 'SalesPrice':
-        return facetConfig.find(x => x.type === 'SalesPrice');
-    case 'Data':
-        if (!('key' in facetResult)) {
-            console.error('Could not find configuration for facet result');
-            return;
-        }
-
-        return facetConfig.find(x => facetResult.key === x.dataKey);
-    default:
-        console.error(`Could not get facet configuration for result with field '${facetResult.field}'`);
+export function getFacetSettings(facetResult: allFacetResultTypes, context?: FacetContext) {
+    switch (facetResult.field) {
+        case 'Brand':
+            return facetConfig.find(x => x.type === 'BrandFacet');
+        case 'Category':
+            {
+                if(context == 'Content')
+                {
+                    return facetConfig.find(x => x.type === 'ContentCategory' && x.contexts.includes(context));
+                }
+                
+                return facetConfig.find(x => x.type === 'Category');
+            }
+        case 'SalesPrice':
+            return facetConfig.find(x => x.type === 'SalesPrice');
+        case 'Data':
+            if (!('key' in facetResult)) {
+                console.error('Could not find configuration for facet result');
+                return;
+            }
+            return facetConfig.find(x => facetResult.key === x.dataKey);
+        default:
+            console.error(`Could not get facet configuration for result with field '${facetResult.field}'`);
     }
 }
 
 function addCategoryFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>) {
     const selectedCategoryFilterIds = filters['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
-    
+
     let selectedCategoriesForFacet: CategoryPath[] | undefined = undefined;
     if (Array.isArray(selectedCategoryFilterIds) && selectedCategoryFilterIds.length > 0) {
         if (selectedCategoryFilterIds.length < categoryFilterThreshold) {
@@ -83,9 +95,19 @@ function addCategoryFacet(facetBuilder: FacetBuilder, filters: Record<string, st
     facetBuilder.addProductCategoryHierarchyFacet('Descendants', selectedCategoriesForFacet, { displayName: true });
 }
 
+function addContentCategoryFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>) {
+    const selected = filters['Category'];
+
+    const categoryValues = Array.isArray(selected) && selected.length > 0
+        ? selected
+        : null;
+
+    facetBuilder.addCategoryFacet('ImmediateParent', categoryValues);
+}
+
 function addBrandFacet(facetBuilder: FacetBuilder, filters: Record<string, string | string[]>) {
     facetBuilder.addBrandFacet(Array.isArray(filters['Brand']) && filters['Brand']?.length > 0
-        ? filters['Brand'] 
+        ? filters['Brand']
         : null);
 }
 
@@ -108,11 +130,29 @@ function addDataStringFacet(
     }
 
     const selectedValues = Array.isArray(filters[dataKey]) && filters[dataKey]?.length > 0
-        ? filters[dataKey] 
+        ? filters[dataKey]
         : null;
-    
+
     facetBuilder.addProductDataStringValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
 }
+
+function addContentDataStringFacet(
+    dataKey: string | undefined,
+    facetBuilder: FacetBuilder,
+    filters: Record<string, string | string[]>) {
+
+    if (!dataKey) {
+        console.error('DataString facet requires a data key');
+        return;
+    }
+
+    const selectedValues = Array.isArray(filters[dataKey]) && filters[dataKey]?.length > 0
+        ? filters[dataKey]
+        : null;
+
+    facetBuilder.addContentDataStringValueFacet(dataKey, selectedValues);
+}
+
 
 function addDataDoubleFacet(
     dataKey: string | undefined,
@@ -128,7 +168,7 @@ function addDataDoubleFacet(
     const selectedValues = Array.isArray(filters[dataKey]) && filters[dataKey]?.length > 0
         ? filters[dataKey].map(value => Number(value)).filter(value => !isNaN(value))
         : null;
-    
+
     facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
 }
 

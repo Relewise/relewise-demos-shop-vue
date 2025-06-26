@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
+import { context } from '@relewise/web-components';
+import contextStore from '@/stores/context.store';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +58,7 @@ const router = createRouter({
             name: 'sub-sub-category',
             component: () => import('../views/Category.vue'),
         },
+
         {
             path: '/content/:id',
             name: 'content',
@@ -64,4 +67,13 @@ const router = createRouter({
     ],
 });
 
+if(contextStore.getshowContentMenu())
+{
+    router.addRoute(
+        {
+            path: '/content',
+            name: 'main-content',
+            component: () => import('../views/BlogCategoryPage.vue'),
+        });
+}
 export default router;
