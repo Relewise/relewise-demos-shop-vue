@@ -114,6 +114,16 @@
             </div>
 
             <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.enableRelewiseSeDemoScenarios" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Enable Relewise SE Specific demo scenarios</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will toggle all the demoscenarios that are described in the accompanying Powerpoint that can be requested from the SE Team.
+                </p>
+            </div>            
+
+            <div>
                 <label class="text-sm block mt-6">Set 'Minutes ago' used for recommendations</label>
                 <input v-model="context.recommendationsMinutesAgo" type="text">
                 <p class="text-gray-500 text-sm mt-1">

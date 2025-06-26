@@ -22,6 +22,7 @@ export interface IDataset {
     userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
     showProductRelevanceScore?: boolean;
+    enableRelewiseSeDemoScenarios?:boolean;
 }
 
 export interface ITracking {
@@ -185,6 +186,10 @@ class AppContext {
 
     public getRecommendationsSinceMinutesAgo(): number {
         return this.context.value.recommendationsMinutesAgo ?? 20160;
+    }
+
+    public getEnableRelewiseSeDemoScenarios(): boolean {
+        return this.context.value.enableRelewiseSeDemoScenarios ?? false;
     }
 
     public persistState() {
