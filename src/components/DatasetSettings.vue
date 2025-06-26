@@ -124,6 +124,18 @@
             </div>            
 
             <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.switchOnVariantBasedSearchDisplay"
+                           class="accent-brand-500 mr-3 h-5 w-5"
+                           type="checkbox">
+                    Turn on the variant based search overlay</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    When this overlay is enabled, a different UI will be used. This overlay is focused on the display of variants in the search result. 
+                </p>
+            </div>
+
+            <div>
                 <label class="text-sm block mt-6">Set 'Minutes ago' used for recommendations</label>
                 <input v-model="context.recommendationsMinutesAgo" type="text">
                 <p class="text-gray-500 text-sm mt-1">

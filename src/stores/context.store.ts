@@ -23,6 +23,7 @@ export interface IDataset {
     recommendationsMinutesAgo?: number;
     showProductRelevanceScore?: boolean;
     enableRelewiseSeDemoScenarios?:boolean;
+    switchOnVariantBasedSearchDisplay?:boolean;
 }
 
 export interface ITracking {
@@ -190,6 +191,10 @@ class AppContext {
 
     public getEnableRelewiseSeDemoScenarios(): boolean {
         return this.context.value.enableRelewiseSeDemoScenarios ?? false;
+    }
+
+    public getSwitchOnVariantBasedSearchDisplay(): boolean {
+        return this.context.value.switchOnVariantBasedSearchDisplay ?? false;
     }
 
     public persistState() {
