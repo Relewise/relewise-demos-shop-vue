@@ -1,11 +1,33 @@
 <template>
     <div id="content-page" class="container entity-page mx-auto px-2 lg:p-0">
         <div v-if="content" class="mb-16">
-            <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content"/>
-            <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+            <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content" />
+
+            <div v-if="contextStore.getshowContentMenu()" class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
+                    <Image v-if="findImage(content)" :entity="content" class="!h-[300px] xl:!h-[600px] !w-auto" />
+                </div>
+                <div class="bg-white flex-grow">
+                    <div>
+                        <h1 class="text-4xl mb-4 font-semibold">
+                            {{ content.displayName }}
+                        </h1>
+
+                        <p v-if="content.data?.Summary.value" class="text-lg text-slate-600 mb-6">
+                            {{ content.data.Summary.value }}
+                        </p>
+
+                        <section class="prose prose-slate max-w-none">
+                            <div v-html="content.data?.Body.value ?? '<p>No content available.</p>'"></div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+            <div v-else class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
                     <div>
-                        <Image v-if="findImage(content)" :entity="content"/>
+                        <Image v-if="findImage(content)" :entity="content" />
                     </div>
                 </div>
 
@@ -21,17 +43,17 @@
                     </div>
                 </div>
             </div>
-            <div v-if="productRecommendations 
-                     && productRecommendations.recommendations 
-                     && productRecommendations.recommendations.length > 0"
-                 class="scrollbar mt-16">
+            <div v-if="productRecommendations
+                && productRecommendations.recommendations
+                && productRecommendations.recommendations.length > 0" class="scrollbar mt-16">
                 <h2 class="text-2xl font-semibold mb-3">
                     Products viewed after viewing content
                 </h2>
                 <div class="w-full overflow-x-scroll">
                     <div class="flex flex-row gap-6">
-                        <div v-for="(product, pIndex) in productRecommendations?.recommendations ?? []" :key="pIndex" class="min-w-[250px] pb-3">
-                            <ProductTile :product="product"/>
+                        <div v-for="(product, pIndex) in productRecommendations?.recommendations ?? []" :key="pIndex"
+                            class="min-w-[250px] pb-3">
+                            <ProductTile :product="product" />
                         </div>
                     </div>
                 </div>
@@ -53,7 +75,7 @@ import trackingService from '@/services/tracking.service';
 import { findImage } from '@/helpers/imageHelper';
 
 const contentId = ref<string>('');
-const content = ref<ContentResult|null|undefined>(null);
+const content = ref<ContentResult | null | undefined>(null);
 const route = useRoute();
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const recommender = contextStore.getRecommender();
@@ -86,7 +108,7 @@ async function init() {
 async function recommend() {
     const request = new ProductsViewedAfterViewingContentBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({allData: true})
+        .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .setContentId(contentId.value)
         .filters(builder => globalProductRecommendationFilters(builder))
@@ -106,6 +128,4 @@ watch(route, () => {
 
 </script>
 
-<style lang="scss">
-
-</style>
+<style lang="scss"></style>

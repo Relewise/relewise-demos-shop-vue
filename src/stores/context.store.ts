@@ -133,7 +133,7 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
-            dataKeys: ['ByLine', 'Body', 'Image'],
+            dataKeys: ['ByLine', 'Body', 'Image', 'Summary'],
         } as SelectedProductPropertiesSettings;
     }
 
