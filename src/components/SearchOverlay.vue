@@ -15,7 +15,7 @@ import { globalProductRecommendationFilters } from '@/stores/globalProductFilter
 import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
-import VariantBasedProductList from '@/components/VariantBasedProductList.vue'
+import VariantBasedProductList from '@/components/VariantBasedProductList.vue';
 
 const open = ref(false);
 const searchTerm = ref<string>('');
@@ -149,7 +149,7 @@ async function search() {
                             placements: [{ key: 'TOP' }],
                             variation: { key: variationName },
                         },
-                    })
+                    });
                 if (contextStore.getSwitchOnVariantBasedSearchDisplay()) {
                     builder.setExplodedVariants(5);
                     builder.setSelectedVariantProperties({
@@ -160,7 +160,7 @@ async function search() {
                 }
 
                 return builder.build();
-            })()
+            })(),
         )
         .addRequest(
             (() => {
@@ -172,11 +172,11 @@ async function search() {
                 if (contextStore.getEnableRelewiseSeDemoScenarios()) {
                     builder.filters(f => {
                         globalProductRecommendationFilters(f);
-                    })
+                    });
                 }
 
                 return builder.build();
-            })()
+            })(),
         )
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setTerm(searchTerm.value)
@@ -239,12 +239,14 @@ function searchFor(term: string) {
 <template>
     <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
         <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
         </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
-        <input v-model="searchTerm" type="text" placeholder="Search..."
-            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-            @keyup="typeAHeadSearch()">
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
+        <input v-model="searchTerm"
+               type="text"
+               placeholder="Search..."
+               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+               @keyup="typeAHeadSearch()">
     </div>
 
     <Teleport to="#modal">
@@ -260,34 +262,38 @@ function searchFor(term: string) {
                 <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
-                            class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1">
+                             class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1">
                             <h3 class="font-semibold text-lg">
                                 Suggestions
                             </h3>
-                            <a v-for="(prediction) in predictionsList" :key="prediction.term ?? ''"
-                                class="block cursor-pointer text-slate-900 hover:!text-brand-500"
-                                @click.prevent="searchFor(prediction.term ?? '')">
+                            <a v-for="(prediction) in predictionsList"
+                               :key="prediction.term ?? ''"
+                               class="block cursor-pointer text-slate-900 hover:!text-brand-500"
+                               @click.prevent="searchFor(prediction.term ?? '')">
                                 {{ prediction.term }}
                             </a>
                         </div>
-                        <Facets v-if="productResult.facets && productResult.hits > 0" :filters="filters"
-                            :facets="productResult.facets" :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
-                            @search="search" />
+                        <Facets v-if="productResult.facets && productResult.hits > 0"
+                                :filters="filters"
+                                :facets="productResult.facets"
+                                :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
+                                @search="search"/>
                         <div v-if="contentResult && contentResult.results && contentResult.results.length > 0">
                             <h4 class="font-semibold text-lg mb-1">
                                 Content
                             </h4>
                             <div class="flex flex-col gap-1">
                                 <ul v-if="contextStore.getshowContentMenu()" class="space-y-6">
-                                    <li v-for="content in contentResult?.results" :key="content.contentId ?? ''"
+                                    <li v-for="content in contentResult?.results"
+                                        :key="content.contentId ?? ''"
                                         class="flex items-center">
                                         <RouterLink :to="{ name: 'content', params: { id: content.contentId } }"
-                                            class="text-xl text-blue-600 hover:underline font-medium">
+                                                    class="text-xl text-blue-600 hover:underline font-medium">
                                             <a class="flex items-center space-x-4">
                                                 <figure class="w-28 h-28 flex-shrink-0 overflow-hidden">
                                                     <picture>
                                                         <img :src="content?.data?.Image.value"
-                                                            class="w-full h-full object-cover" />
+                                                             class="w-full h-full object-cover">
                                                     </picture>
                                                 </figure>
                                                 <span class="text-lg font-semibold text-black">
@@ -297,9 +303,10 @@ function searchFor(term: string) {
                                         </RouterLink>
                                     </li>
                                 </ul>
-                                <template v-else v-for="content in contentResult.results"
-                                    :key="content.contentId ?? ''">
-                                    <ContentTile :content="content" />
+                                <template v-for="content in contentResult.results"
+                                          v-else
+                                          :key="content.contentId ?? ''">
+                                    <ContentTile :content="content"/>
                                 </template>
                             </div>
                         </div>
@@ -308,19 +315,20 @@ function searchFor(term: string) {
                         <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
                             <span v-if="productResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
                                 productResult?.hits < pageSize ? productResult?.hits : page * pageSize }} of {{
-                                    productResult?.hits }}</span>
-                                    <div class="hidden lg:block lg:flex-grow">
-                                    </div>
-                                    <Sorting v-model="filters.sort" @change="search" />
+                                productResult?.hits }}</span>
+                            <div class="hidden lg:block lg:flex-grow">
+                            </div>
+                            <Sorting v-model="filters.sort" @change="search"/>
                         </div>
                         <div v-if="productResult && productResult?.redirects && productResult.redirects.length > 0"
-                            class="mb-3 p-3 bg-white">
+                             class="mb-3 p-3 bg-white">
                             <h2 class="text-xl font-semibold mb-2">
                                 Redirect(s)
                             </h2>
 
-                            <div v-for="redirect in productResult.redirects" :key="redirect.id"
-                                class="mb-1 pb-1 flex border-b border-solid border-gray-300">
+                            <div v-for="redirect in productResult.redirects"
+                                 :key="redirect.id"
+                                 class="mb-1 pb-1 flex border-b border-solid border-gray-300">
                                 {{ redirect.destination }}
                             </div>
                         </div>
@@ -328,27 +336,34 @@ function searchFor(term: string) {
                             No products found
                         </div>
                         <div v-if="contextStore.getSwitchOnVariantBasedSearchDisplay()">
-                            <VariantBasedProductList :product-result="productResult" :page="page" :page-size="pageSize"
-                                :on-search="search" />
+                            <VariantBasedProductList :product-result="productResult"
+                                                     :page="page"
+                                                     :page-size="pageSize"
+                                                     :on-search="search"/>
                         </div>
                         <div v-else>
                             <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                <ProductTile v-for="(product, index) in products" :key="index"
-                                    :product="product.product" :is-promotion="product.isPromotion" />
+                                <ProductTile v-for="(product, index) in products"
+                                             :key="index"
+                                             :product="product.product"
+                                             :is-promotion="product.isPromotion"/>
                             </div>
                             <div class="py-3 flex justify-center">
-                                <Pagination v-model:total="productResult.hits" v-model:model-value="page"
-                                    v-model:page-size="pageSize" @change="search" />
+                                <Pagination v-model:total="productResult.hits"
+                                            v-model:model-value="page"
+                                            v-model:page-size="pageSize"
+                                            @change="search"/>
                             </div>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
-                            class="w-full p-3 bg-white rounded mb-6">
+                             class="w-full p-3 bg-white rounded mb-6">
                             <h2 class="text-xl">
                                 You may like
                             </h2>
                             <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations"
-                                    :key="index" :product="product" />
+                                             :key="index"
+                                             :product="product"/>
                             </div>
                         </div>
                     </div>

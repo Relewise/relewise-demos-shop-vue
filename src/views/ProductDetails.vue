@@ -78,8 +78,8 @@
                 </div>
             </div>
         </div>
-        <div v-if="product!.data && product!.data.SoldOut && product!.data.SoldOut.value == 'true' && contextStore.getEnableRelewiseSeDemoScenarios()">
-            <SimilarProductsOnPDP :product-id="product?.productId!" :product="product!" />
+        <div v-if="product?.data && product!.data?.SoldOut && product!.data?.SoldOut.value == 'true' && contextStore.getEnableRelewiseSeDemoScenarios()">
+            <SimilarProductsOnPDP :product-id="product?.productId!" :product="product!"/>
         </div>
         <relewise-product-recommendation-batcher v-else>
             <div class="mb-16 scrollbar">
@@ -124,7 +124,7 @@ import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import ProductVariants from '../components/ProductVariants.vue';
-import SimilarProductsOnPDP from '../components/SimilarProductsOnPDP.vue';
+import SimilarProductsOnPDP from '../components/SimilarProductsRecommendation.vue';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);

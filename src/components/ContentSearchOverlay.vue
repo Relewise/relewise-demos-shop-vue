@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { SearchCollectionBuilder, ContentHighlightingBuilder, type SearchTermPredictionResult, type PriceRangeFacetResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { type SearchTermPredictionResult, type PriceRangeFacetResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
 import { ref, watch } from 'vue';
-import ContentResult from './ContentResult.vue';
+import ContentSearchResultElement from './ContentSearchResultElement.vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
 import Sorting from '../components/Sorting.vue';
@@ -112,46 +112,40 @@ async function search() {
         applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
     }
 
-    // const request = new SearchCollectionBuilder()
-        // .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
-        const request = new ContentSearchBuilder(contextStore.defaultSettings)
-            .setContentProperties(contextStore.selectedContentProperties)
-            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .pagination(p => p.setPageSize(10).setPage(1))
-            .highlighting(h =>
-                h.enabled(true)
-                    .setHighlightable({
-                        displayName: true,
-                        dataKeys: ['Summary'],
-                    })
-                    .setLimit({
-                        maxEntryLimit: 10,
-                        maxSnippetsPerEntry: 4,
-                        maxSnippetsPerField: 1,
-                        maxWordsBeforeMatch: 20,
-                        maxWordsAfterMatch: 20,
-                        maxSentencesToIncludeBeforeMatch: 0,
-                        maxSentencesToIncludeAfterMatch: 0
-                    })
+    const request = new ContentSearchBuilder(contextStore.defaultSettings)
+        .setContentProperties(contextStore.selectedContentProperties)
+        .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+        .pagination(p => p.setPageSize(10).setPage(1))
+        .highlighting(h =>
+            h.enabled(true)
+                .setHighlightable({
+                    displayName: true,
+                    dataKeys: ['Summary'],
+                })
+                .setLimit({
+                    maxEntryLimit: 10,
+                    maxSnippetsPerEntry: 4,
+                    maxSnippetsPerField: 1,
+                    maxWordsBeforeMatch: 20,
+                    maxWordsAfterMatch: 20,
+                    maxSentencesToIncludeBeforeMatch: 0,
+                    maxSentencesToIncludeAfterMatch: 0,
+                })
                 .setShape({
                     snippets: {
                         include: true,
                         useEllipses: true,
-                        includeMatchedWords: true
-                        },
+                        includeMatchedWords: true,
+                    },
                     offsets: {
-                        include: true
-                    }
-                    })
-                )
-                .build();
-            // .build())
-
-        // .build();
+                        include: true,
+                    },
+                }),
+        )
+        .build();
 
     abortController = new AbortController();
     const searcher = contextStore.getSearcher();
-    // const response = await searcher.batch(request, { abortSignal: abortController.signal });
     const response = await searcher.searchContents(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
 
@@ -161,25 +155,21 @@ async function search() {
     await router.push({ path: route.path, query: query, replace: true });
 
     if(response)
-    result.value = response as ContentSearchResponse;
+        result.value = response as ContentSearchResponse;
 }
-
-function searchFor(term: string) {
-    searchTerm.value = term;
-    search();
-}
-
 </script>
 
 <template>
     <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
         <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
         </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
-        <input v-model="searchTerm" type="text" placeholder="Search..."
-            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-            @keyup="typeAHeadSearch()">
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
+        <input v-model="searchTerm"
+               type="text"
+               placeholder="Search..."
+               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+               @keyup="typeAHeadSearch()">
     </div>
 
     <Teleport to="#modal">
@@ -193,21 +183,24 @@ function searchFor(term: string) {
                         <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
                             <span v-if="result.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
                                 result?.hits < pageSize ? result?.hits : page * pageSize }} of {{ result?.hits }}</span>
-                                    <div class="hidden lg:block lg:flex-grow">
-                                    </div>
-                                    <Sorting v-model="filters.sort" @change="search" />
+                            <div class="hidden lg:block lg:flex-grow">
+                            </div>
+                            <Sorting v-model="filters.sort" @change="search"/>
                         </div>
                         <div v-if="result.hits == 0" class="p-3 text-xl bg-white">
                             No products found
                         </div>
                         <div v-else>
                             <div class="flex flex-col divide-y divide-slate-200">
-                                <ContentResult v-for="(content, pIndex) in result?.results"
-                                    :key="content.contentId || pIndex" :content="content" />
+                                <ContentSearchResultElement v-for="(content, pIndex) in result?.results"
+                                                            :key="content.contentId || pIndex"
+                                                            :content="content"/>
                             </div>
                             <div class="py-3 flex justify-center">
-                                <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="pageSize"
-                                    @change="search" />
+                                <Pagination v-model.sync="page"
+                                            v-model:total="result.hits"
+                                            :page-size="pageSize"
+                                            @change="search"/>
                             </div>
                         </div>
                     </div>
@@ -224,7 +217,7 @@ $headerHeight: 109px;
     @apply bg-white overflow-y-scroll;
     position: fixed;
     z-index: 999;
-    top: $headerHeight; // height of header
+    top: $headerHeight;
     left: 0;
     width: 100%;
     height: calc(100% - $headerHeight);

@@ -13,9 +13,10 @@
         </div>
         <div class="justify-center md:flex md:space-x-6 xl:px-0">
             <div class="md:w-3/5">
-                <div v-for="item in model.lineItems" :key="item.product.productId ?? ''"
-                    class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start">
-                    <Image :entity="item.product" class="w-full rounded sm:!w-20 xl:!w-60" />
+                <div v-for="item in model.lineItems"
+                     :key="item.product.productId ?? ''"
+                     class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start">
+                    <Image :entity="item.product" class="w-full rounded sm:!w-20 xl:!w-60"/>
                     <div class="sm:ml-4 flex-grow">
                         <div class="mt-5 sm:mt-0">
                             <p v-if="item.product.brand" class="mt-1 text-gray-500">
@@ -31,8 +32,9 @@
                                     class="cursor-pointer rounded-l bg-gray-100 py-1 px-3.5 duration-100 hover:bg-gray-300"
                                     @click="updateLineItem(item, -1)"> - </span>
                                 <input v-model="item.quantity"
-                                    class="h-8 w-12 border bg-white text-center text-xs outline-none" type="number"
-                                    min="1">
+                                       class="h-8 w-12 border bg-white text-center text-xs outline-none"
+                                       type="number"
+                                       min="1">
                                 <span
                                     class="cursor-pointer rounded-r bg-gray-100 py-1 px-3 duration-100 hover:bg-gray-300"
                                     @click="updateLineItem(item, 1)"> + </span>
@@ -41,18 +43,22 @@
                                 <span class="text-xl text-slate-900 mr-1 leading-none">{{
                                     $format(item.product.salesPrice) }}</span>
                                 <span v-if="item.product.salesPrice !== item.product.listPrice"
-                                    class="text-slate-900 line-through">
+                                      class="text-slate-900 line-through">
                                     {{ $format(item.product.listPrice) }}
                                 </span>
                             </div>
 
                             <div class="flex items-center w-full">
-                                <a href="#" class="inline-flex text-neutral-600 hover:underline"
-                                    @click.prevent="remove(item)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor"
-                                        class="h-5 w-5 cursor-pointer duration-150">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                <a href="#"
+                                   class="inline-flex text-neutral-600 hover:underline"
+                                   @click.prevent="remove(item)">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 24 24"
+                                         stroke-width="1.5"
+                                         stroke="currentColor"
+                                         class="h-5 w-5 cursor-pointer duration-150">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
                                     <span class="ml-3 text-sm">Remove from cart</span>
                                 </a>
@@ -69,7 +75,7 @@
                     </h4>
                     <div class="">
                         <h4 class="mb-1 text-xl font-bold">
-                            {{$format(model.lineItems.map(x => (x.product.salesPrice ?? 0) *
+                            {{ $format(model.lineItems.map(x => (x.product.salesPrice ?? 0) *
                                 x.quantity).reduce((partialSum, a) => partialSum + a, 0)) }}
                         </h4>
                         <p class="text-sm text-gray-700">
@@ -89,9 +95,10 @@
             </h2>
             <div class="w-full overflow-x-scroll">
                 <div class="flex flex-row gap-6">
-                    <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex"
-                        class="min-w-[250px] pb-3">
-                        <ProductTile :product="product" />
+                    <div v-for="(product, pIndex) in result?.recommendations ?? []"
+                         :key="pIndex"
+                         class="min-w-[250px] pb-3">
+                        <ProductTile :product="product"/>
                     </div>
                 </div>
             </div>
@@ -110,7 +117,6 @@ import { computed } from 'vue';
 import Image from '@/components/Image.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
-import { context, PopularProducts } from '@relewise/web-components';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommender = contextStore.getRecommender();
@@ -129,11 +135,11 @@ async function recommendB2B() {
         .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .relevanceModifiers(modifier => {
-            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 10)
+            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 10);
         })
         .filters(builder => {
             globalProductRecommendationFilters(builder);
-            builder.addProductCategoryIdFilter("ImmediateParent", ["3_5"]);
+            builder.addProductCategoryIdFilter('ImmediateParent', ['3_5']);
         })
         .build();
 
@@ -188,10 +194,8 @@ function insertRecommendation() {
     if (!isEmpty.value) {
         recommend();
     }
-    else {
-        if (contextStore.user.value.classifications?.["channel"] === "B2B" && contextStore.getEnableRelewiseSeDemoScenarios()) {
-            recommendB2B();
-        }
+    else if (contextStore.user.value.classifications?.['channel'] === 'B2B' && contextStore.getEnableRelewiseSeDemoScenarios()) {
+        recommendB2B();
     }
     result.value = undefined;
 }
