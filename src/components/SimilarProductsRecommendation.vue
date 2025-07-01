@@ -10,10 +10,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watchEffect } from 'vue';
+import { ref } from 'vue';
 import contextStore from '@/stores/context.store';
 import { SimilarProductsProductBuilder, type ProductRecommendationResponse, type ProductResult } from '@relewise/client';
-import { addCartFilter } from '../stores/demoSpecificFilters';
+import { addBasketLineitemFilter } from '../stores/applicationFilters';
 import {globalProductRecommendationFilters} from '../stores/globalProductFilters';
 import ProductTile from './ProductTile.vue';
 
@@ -26,10 +26,11 @@ const props = defineProps<{
     product: ProductResult
 }>();
 
-prodId.value = props.productId;
-productResult.value = props.product;
+function init()
+{
+    prodId.value = props.productId;
+    productResult.value = props.product;
 
-watchEffect(async() => {
     if (!prodId.value || !productResult.value) return;
 
     const similarproductsRequest = new SimilarProductsProductBuilder(contextStore.defaultSettings)
@@ -37,7 +38,7 @@ watchEffect(async() => {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .filters(f => {
             globalProductRecommendationFilters(f);
-            addCartFilter(f);
+            addBasketLineitemFilter(f);
 
             const categoryId = productResult.value?.categoryPaths?.[0]?.pathFromRoot?.[1]?.id;
             if (!categoryId || typeof categoryId !== 'string') {
@@ -52,10 +53,13 @@ watchEffect(async() => {
     similarproductsRequest.settings.numberOfRecommendations = 4;
 
     const recommender = contextStore.getRecommender();
-    try {
-        similarProds.value = await recommender.recommendSimilarProducts(similarproductsRequest);
-    } catch (err) {
-        console.error('Error fetching recommendations:', err);
-    }
-});
+    recommender.recommendSimilarProducts(similarproductsRequest)
+        .then(result =>{
+            similarProds.value = result;
+        })
+        .catch (err => {
+            console.error('Error fetching recommendations:', err);
+        });
+}
+init();
 </script>

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { ref } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
-import { useRoute } from 'vue-router';
 import router from '@/router';
 import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
@@ -16,84 +15,44 @@ import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
 import VariantBasedProductList from '@/components/VariantBasedProductList.vue';
+import { useSearchOverlay } from '@/helpers/useSearchOverlay';
 
-const open = ref(false);
-const searchTerm = ref<string>('');
+const {
+    open,
+    searchTerm,
+    page,
+    predictionsList,
+    filters,
+    route,
+    showOrHide: baseShowOrHide,
+    typeAHeadSearch,
+    close: baseClose,
+    setSearchFn,
+} = useSearchOverlay({ term: '', sort: '' });
+
 const productResult = ref<ProductSearchResponse | null>(null);
 const contentResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
-const page = ref(1);
-const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
-const route = useRoute();
 
 let abortController = new AbortController();
 
 const pageSize = 40;
 
 function close() {
-    showOrHide(false);
+    productResult.value = null;
+    contentResult.value = null;
+    fallbackRecommendations.value = null;
+    baseClose();
 }
-
-watch(() => ({ ...route }), (value, oldValue) => {
-    if (route.query.open === '1' && !open.value) {
-        scrollTo({ top: 0 });
-
-        const searchParams = new URLSearchParams(window.location.search);
-        searchParams.forEach((value, key) => {
-
-            if (key === 'term') {
-                searchTerm.value = value;
-                return;
-            }
-            if (key === 'sort') {
-                filters.value.sort = value;
-                return;
-            }
-
-            const existing = filters.value[key];
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
-        });
-
-        filters.value['open'] = '1';
-
-        search();
-        return;
-    } else if (value.query.open !== '1' && oldValue.query.open === '1') {
-        close();
-    }
-});
-
-watch(breakpointService.active, () => {
-    if (route.query.open === '1')
-        search();
-});
 
 function showOrHide(show: boolean) {
     if (!show) {
-        searchTerm.value = '';
         productResult.value = null;
-        predictionsList.value = [];
-        filters.value = { term: '', sort: '' };
-        router.push({ path: router.currentRoute.value.path, query: {} });
+        contentResult.value = null;
+        fallbackRecommendations.value = null;
     }
-    open.value = show;
-    if (show) {
-        window.document.body.classList.add('overflow-hidden');
-        window.document.body.classList.add('xl:pr-[17px]');
-    } else {
-        window.document.body.classList.remove('overflow-hidden');
-        window.document.body.classList.remove('xl:pr-[17px]');
-    }
-}
-
-function typeAHeadSearch() {
-    if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
-
-        search();
-    }
+    baseShowOrHide(show);
 }
 
 async function search() {
@@ -150,7 +109,7 @@ async function search() {
                             variation: { key: variationName },
                         },
                     });
-                if (contextStore.getSwitchOnVariantBasedSearchDisplay()) {
+                if (contextStore.getEnableVariantBasedSearchDisplay()) {
                     builder.setExplodedVariants(5);
                     builder.setSelectedVariantProperties({
                         displayName: true,
@@ -234,6 +193,8 @@ function searchFor(term: string) {
     search();
 }
 
+setSearchFn(search);
+
 </script>
 
 <template>
@@ -283,7 +244,7 @@ function searchFor(term: string) {
                                 Content
                             </h4>
                             <div class="flex flex-col gap-1">
-                                <ul v-if="contextStore.getshowContentMenu()" class="space-y-6">
+                                <ul v-if="contextStore.getEnableshowContentMenu()" class="space-y-6">
                                     <li v-for="content in contentResult?.results"
                                         :key="content.contentId ?? ''"
                                         class="flex items-center">
@@ -306,7 +267,7 @@ function searchFor(term: string) {
                                 <template v-for="content in contentResult.results"
                                           v-else
                                           :key="content.contentId ?? ''">
-                                    <ContentTile :content="content"/>
+                                    <ContentTile :content="content" :show-content-demo-variant="contextStore.getEnableshowContentMenu()"/>
                                 </template>
                             </div>
                         </div>
@@ -335,11 +296,8 @@ function searchFor(term: string) {
                         <div v-if="productResult.hits == 0" class="p-3 text-xl bg-white">
                             No products found
                         </div>
-                        <div v-if="contextStore.getSwitchOnVariantBasedSearchDisplay()">
-                            <VariantBasedProductList :product-result="productResult"
-                                                     :page="page"
-                                                     :page-size="pageSize"
-                                                     :on-search="search"/>
+                        <div v-if="contextStore.getEnableVariantBasedSearchDisplay()">
+                            <VariantBasedProductList :product-result="ref(productResult)"/>
                         </div>
                         <div v-else>
                             <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -348,12 +306,12 @@ function searchFor(term: string) {
                                              :product="product.product"
                                              :is-promotion="product.isPromotion"/>
                             </div>
-                            <div class="py-3 flex justify-center">
-                                <Pagination v-model:total="productResult.hits"
-                                            v-model:model-value="page"
-                                            v-model:page-size="pageSize"
-                                            @change="search"/>
-                            </div>
+                        </div>
+                        <div class="py-3 flex justify-center">
+                            <Pagination v-model:total="productResult.hits"
+                                        v-model:model-value="page"
+                                        v-model:page-size="pageSize"
+                                        @change="search"/>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
                              class="w-full p-3 bg-white rounded mb-6">

@@ -194,11 +194,11 @@ class AppContext {
         return this.context.value.enableRelewiseSeDemoScenarios ?? false;
     }
 
-    public getSwitchOnVariantBasedSearchDisplay(): boolean {
+    public getEnableVariantBasedSearchDisplay(): boolean {
         return this.context.value.switchOnVariantBasedSearchDisplay ?? false;
     }
 
-    public getshowContentMenu(): boolean {
+    public getEnableshowContentMenu(): boolean {
         return this.context.value.showContentMenu ?? false;
     }
 

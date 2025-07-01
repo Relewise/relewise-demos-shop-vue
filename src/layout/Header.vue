@@ -75,7 +75,7 @@ const route = useRoute();
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
                     <div class="xl:items-center flex-grow">
-                        <component :is="((route.path.startsWith('/content') || route.path.startsWith('/blog')) && contextStore.getshowContentMenu()) ? ContentSearchOverlay : SearchOverlay" />
+                        <component :is="((route.path.startsWith('/content') || route.path.startsWith('/blog')) && contextStore.getEnableshowContentMenu()) ? ContentSearchOverlay : SearchOverlay"/>
                     </div>
                     <div class="flex items-center gap-6">
                         <Popover placement="bottom-end">
@@ -184,7 +184,11 @@ const route = useRoute();
                             </div>
                         </div>
                     </ul>
-                    <li v-if="contextStore.getshowContentMenu()" class="inline-flex relative pr-5"><RouterLink :to="{ name: 'main-content'}" class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">Content</RouterLink></li>                    
+                    <li v-if="contextStore.getEnableshowContentMenu()" class="inline-flex relative pr-5">
+                        <RouterLink :to="{ name: 'main-content'}" class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
+                            Content
+                        </RouterLink>
+                    </li>                    
                     <li class="flex-grow"></li>
                 </ul>
             </nav>

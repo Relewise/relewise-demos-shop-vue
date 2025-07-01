@@ -3,7 +3,7 @@
         <div v-if="content" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content"/>
 
-            <div v-if="contextStore.getshowContentMenu()" class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+            <div v-if="contextStore.getEnableshowContentMenu()" class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
                     <Image v-if="findImage(content)" :entity="content" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>

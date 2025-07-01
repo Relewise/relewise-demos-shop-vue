@@ -1,89 +1,43 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type SearchTermPredictionResult, type PriceRangeFacetResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { type PriceRangeFacetResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { ref } from 'vue';
 import ContentSearchResultElement from './ContentSearchResultElement.vue';
-import { useRoute } from 'vue-router';
 import router from '@/router';
 import Sorting from '../components/Sorting.vue';
-import breakpointService from '@/services/breakpoint.service';
 import Pagination from '../components/Pagination.vue';
+import { useSearchOverlay } from '@/helpers/useSearchOverlay';
 
-const open = ref(false);
-const searchTerm = ref<string>('');
+const {
+    open,
+    searchTerm,
+    page,
+    filters,
+    route,
+    showOrHide: baseShowOrHide,
+    typeAHeadSearch,
+    close: baseClose,
+    setSearchFn,
+} = useSearchOverlay({ price: [], term: '', sort: '' });
+
+
 const result = ref<ContentSearchResponse | null>(null);
-const page = ref(1);
-const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ price: [], term: '', sort: '' });
-const route = useRoute();
-
 let abortController = new AbortController();
 
 const pageSize = 40;
 
 function close() {
-    showOrHide(false);
+    result.value = null;
+    baseClose();
 }
-
-watch(() => ({ ...route }), (value, oldValue) => {
-    if (route.query.open === '1' && !open.value) {
-        scrollTo({ top: 0 });
-
-        const searchParams = new URLSearchParams(window.location.search);
-        searchParams.forEach((value, key) => {
-
-            if (key === 'term') {
-                searchTerm.value = value;
-                return;
-            }
-            if (key === 'sort') {
-                filters.value.sort = value;
-                return;
-            }
-
-            const existing = filters.value[key];
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
-        });
-
-        filters.value['open'] = '1';
-
-        search();
-        return;
-    } else if (value.query.open !== '1' && oldValue.query.open === '1') {
-        close();
-    }
-});
-
-watch(breakpointService.active, () => {
-    if (route.query.open === '1')
-        search();
-});
 
 function showOrHide(show: boolean) {
     if (!show) {
-        searchTerm.value = '';
         result.value = null;
-        predictionsList.value = [];
-        filters.value = { price: [], term: '', sort: '' };
-        router.push({ path: router.currentRoute.value.path, query: {} });
-    }
-    open.value = show;
-    if (show) {
-        window.document.body.classList.add('overflow-hidden');
-        window.document.body.classList.add('xl:pr-[17px]');
-    } else {
-        window.document.body.classList.remove('overflow-hidden');
-        window.document.body.classList.remove('xl:pr-[17px]');
-    }
-}
-
-function typeAHeadSearch() {
-    if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
-
         search();
     }
+    baseShowOrHide(show);
 }
 
 async function search() {
@@ -157,6 +111,8 @@ async function search() {
     if(response)
         result.value = response as ContentSearchResponse;
 }
+
+setSearchFn(search);
 </script>
 
 <template>

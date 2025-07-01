@@ -5,7 +5,7 @@
                 <Facets v-if="result?.facets"
                         :facets="result.facets"
                         :filters="filters"
-                        :context="'Content'"
+                        :context="'ContentSearch'"
                         @search="search"/>
             </div>
             <div class="w-full lg:w-4/5">
@@ -19,15 +19,17 @@
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <Sorting v-model="filters.sort" @change="search" />
+                        <Sorting v-model="filters.sort" @change="search"/>
                     </div>
                     <div v-if="result" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
-                        <ContentTile v-for="(content, pIndex) in result.results" :key="content.contentId || pIndex"
-                            :content="content" />
+                        <ContentTile v-for="(content, pIndex) in result.results"
+                                     :key="content.contentId || pIndex"
+                                     :content="content"
+                                     :show-content-demo-variant="contextStore.getEnableshowContentMenu()"/>
                     </div>
 
                     <div class="py-3 flex justify-center mt-10">
-                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="10" @change="search" />
+                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="10" @change="search"/>
                     </div>
                 </div>
             </div>
@@ -53,10 +55,8 @@ const route = useRoute();
 const childCategories = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
 const result: Ref<ContentSearchResponse | undefined> = ref<ContentSearchResponse | undefined>(undefined);
 const categoryId = ref<string>('');
-const parentCategoryId = ref<string | undefined>();
 const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ price: [], sort: '' });
-const renderCategoryLinks = ref<boolean | undefined>(false);
 
 async function init() {
     const id = route.params.id;
@@ -65,7 +65,7 @@ async function init() {
         categoryId.value = id;
         await search();
     }
-    await search()
+    await search();
 }
 
 init();
@@ -91,7 +91,7 @@ async function search() {
             }
         })
         .facets(f => {
-            getFacets('Content', f, filters.value);
+            getFacets('ContentSearch', f, filters.value);
         })
         .pagination(p => p.setPageSize(10).setPage(page.value))
         .build();

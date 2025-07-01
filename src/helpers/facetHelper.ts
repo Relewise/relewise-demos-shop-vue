@@ -13,63 +13,63 @@ export function getFacets(
 
     facetsToAdd.forEach(facetToAdd => {
         switch (facetToAdd.type) {
-            case 'BrandFacet':
-                addBrandFacet(facetBuilder, filters);
-                break;
-            case 'Category':
-                addCategoryFacet(facetBuilder, filters);
-                break;
-            case 'ContentCategory':
-                addContentCategoryFacet(facetBuilder, filters);
-                break;
-            case 'DataString':
-                addDataStringFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
-                break;
-            case 'ContentDataString':
-                addContentDataStringFacet(facetToAdd.dataKey, facetBuilder, filters);
-                break;
-            case 'SalesPrice':
-                addSalesPriceFacet(facetBuilder, filters);
-                break;
-            case 'DataDouble':
-                addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
-                break;
-            case 'DataDoubleRange':
-                addDataDoubleRangeFacet(
-                    facetToAdd.dataKey,
-                    facetToAdd.dataSelectionStrategy,
-                    facetBuilder,
-                    filters);
-                break;
-            default:
-                console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
+        case 'BrandFacet':
+            addBrandFacet(facetBuilder, filters);
+            break;
+        case 'Category':
+            addCategoryFacet(facetBuilder, filters);
+            break;
+        case 'ContentCategory':
+            addContentCategoryFacet(facetBuilder, filters);
+            break;
+        case 'DataString':
+            addDataStringFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
+            break;
+        case 'ContentDataString':
+            addContentDataStringFacet(facetToAdd.dataKey, facetBuilder, filters);
+            break;
+        case 'SalesPrice':
+            addSalesPriceFacet(facetBuilder, filters);
+            break;
+        case 'DataDouble':
+            addDataDoubleFacet(facetToAdd.dataKey, facetToAdd.dataSelectionStrategy, facetBuilder, filters);
+            break;
+        case 'DataDoubleRange':
+            addDataDoubleRangeFacet(
+                facetToAdd.dataKey,
+                facetToAdd.dataSelectionStrategy,
+                facetBuilder,
+                filters);
+            break;
+        default:
+            console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
         }
     });
 }
 
 export function getFacetSettings(facetResult: allFacetResultTypes, context?: FacetContext) {
     switch (facetResult.field) {
-        case 'Brand':
-            return facetConfig.find(x => x.type === 'BrandFacet');
-        case 'Category':
-            {
-                if(context == 'Content')
-                {
-                    return facetConfig.find(x => x.type === 'ContentCategory' && x.contexts.includes(context));
-                }
+    case 'Brand':
+        return facetConfig.find(x => x.type === 'BrandFacet');
+    case 'Category':
+    {
+        if(context === 'ContentSearch')
+        {
+            return facetConfig.find(x => x.type === 'ContentCategory' && x.contexts.includes(context));
+        }
                 
-                return facetConfig.find(x => x.type === 'Category');
-            }
-        case 'SalesPrice':
-            return facetConfig.find(x => x.type === 'SalesPrice');
-        case 'Data':
-            if (!('key' in facetResult)) {
-                console.error('Could not find configuration for facet result');
-                return;
-            }
-            return facetConfig.find(x => facetResult.key === x.dataKey);
-        default:
-            console.error(`Could not get facet configuration for result with field '${facetResult.field}'`);
+        return facetConfig.find(x => x.type === 'Category');
+    }
+    case 'SalesPrice':
+        return facetConfig.find(x => x.type === 'SalesPrice');
+    case 'Data':
+        if (!('key' in facetResult)) {
+            console.error('Could not find configuration for facet result');
+            return;
+        }
+        return facetConfig.find(x => facetResult.key === x.dataKey);
+    default:
+        console.error(`Could not get facet configuration for result with field '${facetResult.field}'`);
     }
 }
 
