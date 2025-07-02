@@ -244,29 +244,7 @@ setSearchFn(search);
                                 Content
                             </h4>
                             <div class="flex flex-col gap-1">
-                                <ul v-if="contextStore.getEnableshowContentMenu()" class="space-y-6">
-                                    <li v-for="content in contentResult?.results"
-                                        :key="content.contentId ?? ''"
-                                        class="flex items-center">
-                                        <RouterLink :to="{ name: 'content', params: { id: content.contentId } }"
-                                                    class="text-xl text-blue-600 hover:underline font-medium">
-                                            <a class="flex items-center space-x-4">
-                                                <figure class="w-28 h-28 flex-shrink-0 overflow-hidden">
-                                                    <picture>
-                                                        <img :src="content?.data?.Image.value"
-                                                             class="w-full h-full object-cover">
-                                                    </picture>
-                                                </figure>
-                                                <span class="text-lg font-semibold text-black">
-                                                    {{ content.displayName }}
-                                                </span>
-                                            </a>
-                                        </RouterLink>
-                                    </li>
-                                </ul>
-                                <template v-for="content in contentResult.results"
-                                          v-else
-                                          :key="content.contentId ?? ''">
+                                <template v-for="content in contentResult.results" :key="content.contentId ?? ''">
                                     <ContentTile :content="content" :show-content-demo-variant="contextStore.getEnableshowContentMenu()"/>
                                 </template>
                             </div>
