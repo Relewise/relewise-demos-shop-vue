@@ -2,9 +2,7 @@
 import { ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
 import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
-import { useRoute } from 'vue-router';
 import SearchOverlay from '../components/SearchOverlay.vue';
-import ContentSearchOverlay from '../components/ContentSearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
@@ -57,7 +55,6 @@ onBeforeUnmount(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
 });
 
-const route = useRoute();
 </script>
 
 <template>
@@ -75,7 +72,7 @@ const route = useRoute();
                 </div>
                 <div class="ml-0 flex gap-2 flex-grow">
                     <div class="xl:items-center flex-grow">
-                        <component :is="((route.path.startsWith('/content') || route.path.startsWith('/blog')) && contextStore.context.value.showContentMenu) ? ContentSearchOverlay : SearchOverlay"/>
+                        <SearchOverlay/>
                     </div>
                     <div class="flex items-center gap-6">
                         <Popover placement="bottom-end">
