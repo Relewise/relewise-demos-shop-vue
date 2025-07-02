@@ -193,7 +193,7 @@ function insertRecommendation() {
     if (!isEmpty.value) {
         recommend();
     }
-    else if (contextStore.user.value.classifications?.['channel'] === 'B2B' && contextStore.getEnableRelewiseSeDemoScenarios()) {
+    else if (contextStore.user.value.classifications?.['channel'] === 'B2B' && contextStore.context.value.enableRelewiseSeDemoScenarios) {
         recommendB2B();
     }
     result.value = undefined;

@@ -66,8 +66,7 @@ const router = createRouter({
     ],
 });
 
-if(contextStore.getEnableshowContentMenu())
-{
+if (contextStore.context.value.showContentMenu) {
     router.addRoute(
         {
             path: '/content',
@@ -75,4 +74,5 @@ if(contextStore.getEnableshowContentMenu())
             component: () => import('../views/ContentCategoryPage.vue'),
         });
 }
+
 export default router;

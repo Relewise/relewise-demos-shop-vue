@@ -23,7 +23,7 @@ const groupedProducts = computed(() => {
 </script>
 
 <template>
-    <div v-if="contextStore.getEnableVariantBasedSearchDisplay()">
+    <div v-if="contextStore.context.value.switchOnVariantBasedSearchDisplay">
         <div v-for="(product, index) in groupedProducts"
              :key="product.productId ?? 'group-' + index"
              class="bg-white p-4 rounded shadow">

@@ -109,7 +109,7 @@ async function search() {
                             variation: { key: variationName },
                         },
                     });
-                if (contextStore.getEnableVariantBasedSearchDisplay()) {
+                if (contextStore.context.value.switchOnVariantBasedSearchDisplay) {
                     builder.setExplodedVariants(5);
                     builder.setSelectedVariantProperties({
                         displayName: true,
@@ -128,7 +128,7 @@ async function search() {
                     .setTerm(searchTerm.value)
                     .take(5);
 
-                if (contextStore.getEnableRelewiseSeDemoScenarios()) {
+                if (contextStore.context.value.enableRelewiseSeDemoScenarios) {
                     builder.filters(f => {
                         globalProductRecommendationFilters(f);
                     });
@@ -245,7 +245,7 @@ setSearchFn(search);
                             </h4>
                             <div class="flex flex-col gap-1">
                                 <template v-for="content in contentResult.results" :key="content.contentId ?? ''">
-                                    <ContentTile :content="content" :show-content-demo-variant="contextStore.getEnableshowContentMenu()"/>
+                                    <ContentTile :content="content" :show-content-demo-variant="contextStore.context.value.showContentMenu"/>
                                 </template>
                             </div>
                         </div>
@@ -274,7 +274,7 @@ setSearchFn(search);
                         <div v-if="productResult.hits == 0" class="p-3 text-xl bg-white">
                             No products found
                         </div>
-                        <div v-if="contextStore.getEnableVariantBasedSearchDisplay()">
+                        <div v-if="contextStore.context.value.switchOnVariantBasedSearchDisplay">
                             <VariantBasedProductList :product-result="ref(productResult)"/>
                         </div>
                         <div v-else>

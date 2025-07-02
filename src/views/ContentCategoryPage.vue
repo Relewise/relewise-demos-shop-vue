@@ -25,7 +25,7 @@
                         <ContentTile v-for="(content, pIndex) in result.results"
                                      :key="content.contentId || pIndex"
                                      :content="content"
-                                     :show-content-demo-variant="contextStore.getEnableshowContentMenu()"/>
+                                     :show-content-demo-variant="contextStore.context.value.showContentMenu"/>
                     </div>
 
                     <div class="py-3 flex justify-center mt-10">
