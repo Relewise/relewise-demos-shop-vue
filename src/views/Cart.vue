@@ -179,7 +179,7 @@ function remove(item: ILineItem) {
     basketService.remove(item);
     trackingService.trackCart(basketService.model.value.lineItems);
 
-    insertRecommendation();
+    init();
 }
 
 function checkout() {

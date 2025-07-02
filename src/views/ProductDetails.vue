@@ -78,7 +78,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="product?.data && product!.data?.SoldOut && product!.data?.SoldOut.value == 'true' && contextStore.getEnableRelewiseSeDemoScenarios()">
+        <div v-if="product?.data && product.data?.SoldOut && product.data?.SoldOut.value == 'true' && contextStore.getEnableRelewiseSeDemoScenarios()">
             <SimilarProductsOnPDP :product-id="product?.productId!" :product="product!"/>
         </div>
         <relewise-product-recommendation-batcher v-else>
