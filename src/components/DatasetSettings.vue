@@ -137,7 +137,7 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context"
+                    <input v-model="context.showContentMenu"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
                     Turn on the Content menu item</label>
