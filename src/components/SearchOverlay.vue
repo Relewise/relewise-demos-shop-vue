@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
-import { ref } from 'vue';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, type SearchTermPredictionResult, ContentSearchBuilder, type ContentSearchResponse } from '@relewise/client';
+import { ref, watch } from 'vue';
 import ProductTile from './ProductTile.vue';
 import Facets from './Facets.vue';
+import { useRoute } from 'vue-router';
 import router from '@/router';
 import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
@@ -14,50 +15,89 @@ import { globalProductRecommendationFilters } from '@/stores/globalProductFilter
 import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
-import VariantBasedProductList from '@/components/VariantBasedProductList.vue';
-import { useSearchOverlay } from '@/helpers/useSearchOverlay';
 
-const {
-    open,
-    searchTerm,
-    page,
-    predictionsList,
-    filters,
-    route,
-    showOrHide: baseShowOrHide,
-    typeAHeadSearch,
-    close: baseClose,
-    setSearchFn,
-} = useSearchOverlay({ term: '', sort: '' });
-
+const open = ref(false);
+const searchTerm = ref<string>('');
 const productResult = ref<ProductSearchResponse | null>(null);
 const contentResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
+const page = ref(1);
+const predictionsList = ref<SearchTermPredictionResult[]>([]);
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
+const route = useRoute();
 
 let abortController = new AbortController();
 
 const pageSize = 40;
 
 function close() {
-    productResult.value = null;
-    contentResult.value = null;
-    fallbackRecommendations.value = null;
-    baseClose();
+    showOrHide(false);
 }
+
+watch(() => ({ ...route }), (value, oldValue) => {
+    if (route.query.open === '1' && !open.value) {
+        scrollTo({ top: 0 });
+
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.forEach((value, key) => {
+
+            if (key === 'term') {
+                searchTerm.value = value;
+                return;
+            }
+            if (key === 'sort') {
+                filters.value.sort = value;
+                return;
+            }
+
+            const existing = filters.value[key];
+            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
+        });
+
+        filters.value['open'] = '1';
+
+        search();
+        return;
+    } else if (value.query.open !== '1' && oldValue.query.open === '1') {
+        close();
+    }
+});
+
+watch(breakpointService.active, () => {
+    if (route.query.open === '1')
+        search();
+});
 
 function showOrHide(show: boolean) {
     if (!show) {
+        searchTerm.value = '';
         productResult.value = null;
-        contentResult.value = null;
-        fallbackRecommendations.value = null;
+        predictionsList.value = [];
+        filters.value = { term: '', sort: ''  };
+        router.push({ path: router.currentRoute.value.path, query: {} });
     }
-    baseShowOrHide(show);
+    open.value = show;
+    if (show) {
+        window.document.body.classList.add('overflow-hidden');
+        window.document.body.classList.add('xl:pr-[17px]');
+    } else {
+        window.document.body.classList.remove('overflow-hidden');
+        window.document.body.classList.remove('xl:pr-[17px]');
+    }
+}
+
+function typeAHeadSearch() {
+    if (filters.value.term !== searchTerm.value) {
+        filters.value['open'] = '1';
+
+        search();
+    }
 }
 
 async function search() {
     abortController.abort();
-
+    
     window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
 
     const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
@@ -72,71 +112,47 @@ async function search() {
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
     const request = new SearchCollectionBuilder()
-        .addRequest(
-            (() => {
-                const builder = new ProductSearchBuilder(contextStore.defaultSettings)
-                    .setSelectedProductProperties(contextStore.selectedProductProperties)
-                    .setSelectedVariantProperties({ allData: true })
-                    .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-                    .setExplodedVariants(1)
-                    .filters(f => {
-                        if (Array.isArray(selectedCategoryFilterIds)) {
-                            selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
-                                f.addProductCategoryIdFilter('Ancestor', id);
-                            });
-                        }
-
-                        contextStore.userClassificationBasedFilters(f);
-                    })
-                    .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
-                    .relevanceModifiers(r => addRelevanceModifiers(r))
-                    .sorting(s => {
-                        if (filters.value.sort === 'Popular') {
-                            s.sortByProductPopularity();
-                        }
-                        else if (filters.value.sort === 'SalesPriceDesc') {
-                            s.sortByProductAttribute('SalesPrice', 'Descending');
-                        }
-                        else if (filters.value.sort === 'SalesPriceAsc') {
-                            s.sortByProductAttribute('SalesPrice', 'Ascending');
-                        }
-                    })
-                    .pagination(p => p.setPageSize(pageSize).setPage(page.value))
-                    .setRetailMedia({
-                        location: {
-                            key: 'SEARCH_RESULTS_PAGE',
-                            placements: [{ key: 'TOP' }],
-                            variation: { key: variationName },
-                        },
-                    });
-                if (contextStore.context.value.switchOnVariantBasedSearchDisplay) {
-                    builder.setExplodedVariants(5);
-                    builder.setSelectedVariantProperties({
-                        displayName: true,
-                        pricing: true,
-                        allData: true,
+        .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
+            .setSelectedProductProperties(contextStore.selectedProductProperties)
+            .setSelectedVariantProperties({ allData: true })
+            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+            .setExplodedVariants(1)
+            .filters(f => {
+                if (Array.isArray(selectedCategoryFilterIds)) {
+                    selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
+                        f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
 
-                return builder.build();
-            })(),
-        )
-        .addRequest(
-            (() => {
-                const builder = new SearchTermPredictionBuilder(contextStore.defaultSettings)
-                    .addEntityType('Product', 'Content')
-                    .setTerm(searchTerm.value)
-                    .take(5);
-
-                if (contextStore.context.value.enableRelewiseSeDemoScenarios) {
-                    builder.filters(f => {
-                        globalProductRecommendationFilters(f);
-                    });
+                contextStore.userClassificationBasedFilters(f);
+            })
+            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
+            .relevanceModifiers(r => addRelevanceModifiers(r))
+            .sorting(s => {
+                if (filters.value.sort === 'Popular') {
+                    s.sortByProductPopularity();
                 }
-
-                return builder.build();
-            })(),
-        )
+                else if(filters.value.sort === 'SalesPriceDesc'){
+                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                }
+                else if(filters.value.sort === 'SalesPriceAsc') {
+                    s.sortByProductAttribute('SalesPrice', 'Ascending');
+                }
+            })
+            .pagination(p => p.setPageSize(pageSize).setPage(page.value))
+            .setRetailMedia({
+                location: {
+                    key: 'SEARCH_RESULTS_PAGE',
+                    placements: [{ key: 'TOP' }],
+                    variation: { key: variationName },
+                },
+            })
+            .build())
+        .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
+            .addEntityType('Product', 'Content')
+            .setTerm(searchTerm.value)
+            .take(5)
+            .build())
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setTerm(searchTerm.value)
             .pagination(p => p.setPageSize(10))
@@ -193,12 +209,11 @@ function searchFor(term: string) {
     search();
 }
 
-setSearchFn(search);
-
 </script>
 
 <template>
-    <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+    <div
+        class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
         <span class="flex items-center bg-slate-100 rounded-none px-3">
             <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
         </span>
@@ -215,11 +230,10 @@ setSearchFn(search);
             <div v-if="productResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
                 <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
                     Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
-                </h2>
+                </h2> 
                 <h2 v-if="route.query.brandName" class="text-xl lg:text-3xl mb-6">
-                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ?
-                        route.query.brandName.join('') : route.query.brandName }}</span>
-                </h2>
+                    <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ? route.query.brandName.join('') : route.query.brandName }}</span>
+                </h2> 
                 <div class="flex gap-10">
                     <div class="hidden lg:block lg:w-1/5">
                         <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
@@ -245,16 +259,14 @@ setSearchFn(search);
                             </h4>
                             <div class="flex flex-col gap-1">
                                 <template v-for="content in contentResult.results" :key="content.contentId ?? ''">
-                                    <ContentTile :content="content" :show-content-demo-variant="contextStore.context.value.showContentMenu"/>
+                                    <ContentTile :content="content"/>
                                 </template>
                             </div>
                         </div>
                     </div>
                     <div class="w-full lg:w-4/5">
                         <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
-                            <span v-if="productResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
-                                productResult?.hits < pageSize ? productResult?.hits : page * pageSize }} of {{
-                                productResult?.hits }}</span>
+                            <span v-if="productResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{ productResult?.hits < pageSize ? productResult?.hits : page * pageSize }} of {{ productResult?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>
                             <Sorting v-model="filters.sort" @change="search"/>
@@ -274,9 +286,6 @@ setSearchFn(search);
                         <div v-if="productResult.hits == 0" class="p-3 text-xl bg-white">
                             No products found
                         </div>
-                        <div v-if="contextStore.context.value.switchOnVariantBasedSearchDisplay">
-                            <VariantBasedProductList :product-result="ref(productResult)"/>
-                        </div>
                         <div v-else>
                             <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 <ProductTile v-for="(product, index) in products"
@@ -284,12 +293,9 @@ setSearchFn(search);
                                              :product="product.product"
                                              :is-promotion="product.isPromotion"/>
                             </div>
-                        </div>
-                        <div class="py-3 flex justify-center">
-                            <Pagination v-model:total="productResult.hits"
-                                        v-model:model-value="page"
-                                        v-model:page-size="pageSize"
-                                        @change="search"/>
+                            <div class="py-3 flex justify-center">
+                                <Pagination v-model:total="productResult.hits" v-model:model-value="page" v-model:page-size="pageSize" @change="search"/>
+                            </div>
                         </div>
                         <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
                              class="w-full p-3 bg-white rounded mb-6">
