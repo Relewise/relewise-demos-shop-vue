@@ -17,6 +17,7 @@ import { getFacets } from '@/helpers/facetHelper';
 import VariantBasedProductList from '@/components/VariantBasedProductList.vue';
 import ContentSearchResultElement from './ContentSearchResultElement.vue';
 import { useRoute } from 'vue-router';
+import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 
 const open = ref(false);	
 const searchTerm = ref<string>('');
@@ -262,7 +263,7 @@ async function contentSearch() {
     await router.push({ path: route.path, query: query, replace: true });
 
     if(response)
-        contentSearchResult.value = response as ContentSearchResponse;
+        contentSearchResult.value = { ...response as ContentSearchResponse };
 }
 
 function searchFor(term: string) {
@@ -313,6 +314,14 @@ watch(() => ({ ...route }), (value, oldValue) => {
 watch(breakpointService.active, () => {	
     if (route.query.open === '1')	
         search();	
+});
+
+watch(activeTab, (newTab) => {
+    if (newTab === 'products') {
+        productSearch();
+    } else if (newTab === 'content') {
+        contentSearch();
+    }
 });
 
 </script>
@@ -460,7 +469,7 @@ watch(breakpointService.active, () => {
                                     <Sorting v-model="filters.sort" @change="contentSearch"/>
                                 </div>
                                 <div v-if="contentSearchResult.hits == 0" class="p-3 text-xl bg-white">
-                                    No products found
+                                    No content found
                                 </div>
                                 <div v-else>
                                     <div class="flex flex-col divide-y divide-slate-200">
@@ -476,6 +485,11 @@ watch(breakpointService.active, () => {
                                     </div>
                                 </div>
                             </div>
+                            <ContentSearchOverlayResult 
+                                :content-search-result="contentSearchResult"
+                                :page="page"
+                                :page-size="pageSize"
+                                :term="filters.term"/>
                         </div>
                     </div>
                 </div>
