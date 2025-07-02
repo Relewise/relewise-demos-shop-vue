@@ -8,8 +8,6 @@
                        @click="applyFacet('category', category.categoryId, true)"/>
         </div>
     </div>
-
-    <!-- Render category hierarchy options as filters or checklist -->
     <template v-if="options">
         <template v-if="selected && selected.length < categoryFilterThreshold">
             <span v-for="(categoryLink, filterOptionIndex) in options"

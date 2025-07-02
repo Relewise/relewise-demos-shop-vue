@@ -67,7 +67,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Sub total -->
             <div v-if="!isEmpty" class="mt-6 h-full bg-neutral-200 p-6 md:mt-0 md:w-2/5">
                 <div class="flex justify-between mb-6">
                     <h4 class="text-xl font-bold">
