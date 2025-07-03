@@ -72,13 +72,10 @@ watch(() => ({ ...route }), (value, oldValue) => {
     }	
 });
 
-function typeAHeadSearch() {
-    if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
-
-        search();
-    }
-}
+watch(breakpointService.active, () => {	
+    if (route.query.open === '1')	
+        search();	
+});
 
 function showOrHide(show: boolean) {
     if (!show) {
@@ -100,10 +97,13 @@ function showOrHide(show: boolean) {
     }
 }
 
-watch(breakpointService.active, () => {	
-    if (route.query.open === '1')	
-        search();	
-});
+function typeAHeadSearch() {
+    if (filters.value.term !== searchTerm.value) {
+        filters.value['open'] = '1';
+
+        search();
+    }
+}
 
 async function productSearch() {
     abortController.abort();
