@@ -153,7 +153,6 @@ function addContentDataStringFacet(
     facetBuilder.addContentDataStringValueFacet(dataKey, selectedValues);
 }
 
-
 function addDataDoubleFacet(
     dataKey: string | undefined,
     dataSelectionStrategy: DataSelectionStrategy | undefined,
