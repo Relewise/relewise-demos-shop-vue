@@ -123,7 +123,14 @@ const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
 
 function init() {
-    insertRecommendation();
+    if (isEmpty.value) return;
+
+    if (contextStore.user.value.classifications?.channel === 'B2B'
+    && contextStore.context.value.enableRelewiseSeDemoScenarios) {
+        recommendB2B();
+    } else {
+        recommend();
+    }
 }
 
 init();
@@ -134,11 +141,12 @@ async function recommendB2B() {
         .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .relevanceModifiers(modifier => {
-            modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company?.id as string], 10);
+            if (contextStore.user.value.company?.id) {
+                modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company.id], 10);
+            }
         })
         .filters(builder => {
             globalProductRecommendationFilters(builder);
-            builder.addProductCategoryIdFilter('ImmediateParent', ['3_5']);
         })
         .build();
 
@@ -187,15 +195,5 @@ function checkout() {
     router.push({
         name: 'receipt',
     });
-}
-
-function insertRecommendation() {
-    if (!isEmpty.value) {
-        recommend();
-    }
-    else if (contextStore.user.value.classifications?.['channel'] === 'B2B' && contextStore.context.value.enableRelewiseSeDemoScenarios) {
-        recommendB2B();
-    }
-    result.value = undefined;
 }
 </script>
