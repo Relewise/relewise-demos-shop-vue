@@ -13,6 +13,11 @@ import { useRoute } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 
+enum Tabs {
+    Products,
+    Content
+}
+
 const open = ref(false);	
 const searchTerm = ref<string>('');
 const productSearchResult = ref<ProductSearchResponse | null>(null);
@@ -30,7 +35,7 @@ let abortController = new AbortController();
 const productPageSize = 40;
 const contentPageSize = 10;
 
-const activeTab = ref<'products' | 'content'>('products');
+const activeTab = ref(Tabs.Products);
 
 function close() {
     showOrHide(false);
@@ -302,46 +307,45 @@ watch(activeTab, () => {
             <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
                 <div v-if="contextStore.context.value.contentSearch" class="mb-6 flex border-b border-slate-200">
                     <div
-                        class="px-4 py-2 text-lg font-semibold focus:outline-none"
-                        :class="activeTab === 'products' ? 'border-b-2 border-brand-500 text-brand-500' : 'text-slate-600'"
-                        @click="activeTab = 'products'">
+                        :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                        @click="() => activeTab = Tabs.Products">
                         Products ({{ productSearchResult?.hits }})
                     </div>
                     <div
-                        class="px-4 py-2 text-lg font-semibold focus:outline-none"
-                        :class="activeTab === 'content' ? 'border-b-2 border-brand-500 text-brand-500' : 'text-slate-600'"
-                        @click="activeTab = 'content'">
+                        :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                        @click="() => activeTab = Tabs.Content">
                         Content ({{ contentSearchResult?.hits }})
                     </div>
                 </div>
 
-                <div v-if="activeTab === 'products' && productSearchResult">
-                    <ProductSearchOverlayResult  
-                        v-model:sort="filters.sort"
-                        v-model:page="page"
-                        :page-size="productPageSize"
-                        :term="filters.term"
-                        :product-search-result="productSearchResult"
-                        :content-recommendation-result="contentRecommendationResult"
-                        :fallback-recommendations="fallbackRecommendations"
-                        :products="products"
-                        :predictions-list="predictionsList"
-                        :filters="filters"
-                        @search-for="searchFor"
-                        @search="search"/>
-                </div>
-                <div v-else-if="activeTab === 'content' && contextStore.context.value.contentSearch && contentSearchResult">
-                    <ContentSearchOverlayResult 
-                        v-model:sort="filters.sort"
-                        v-model:page="page"
-                        :content-search-result="contentSearchResult"
-                        :page-size="contentPageSize"
-                        :term="filters.term"
-                        :predictions-list="predictionsList"
-                        :filters="filters"
-                        @search-for="searchFor"
-                        @search="search"/>
-                </div>
+                <ProductSearchOverlayResult 
+                    v-if="activeTab === Tabs.Products
+                        && productSearchResult" 
+                    v-model:sort="filters.sort"
+                    v-model:page="page"
+                    :page-size="productPageSize"
+                    :term="filters.term"
+                    :product-search-result="productSearchResult"
+                    :content-recommendation-result="contentRecommendationResult"
+                    :fallback-recommendations="fallbackRecommendations"
+                    :products="products"
+                    :predictions-list="predictionsList"
+                    :filters="filters"
+                    @search-for="searchFor"
+                    @search="search"/>
+                <ContentSearchOverlayResult 
+                    v-else-if="activeTab === Tabs.Content 
+                        && contextStore.context.value.contentSearch
+                        && contentSearchResult"
+                    v-model:sort="filters.sort"
+                    v-model:page="page"
+                    :content-search-result="contentSearchResult"
+                    :page-size="contentPageSize"
+                    :term="filters.term"
+                    :predictions-list="predictionsList"
+                    :filters="filters"
+                    @search-for="searchFor"
+                    @search="search"/>
             </div>
         </div>
     </Teleport>
