@@ -15,7 +15,6 @@ import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
 import VariantBasedProductList from '@/components/VariantBasedProductList.vue';
-import ContentSearchResultElement from './ContentSearchResultElement.vue';
 import { useRoute } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 
@@ -27,13 +26,15 @@ const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);	
+const contentPage = ref(1);	
 const predictionsList = ref<SearchTermPredictionResult[]>([]);	
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });	
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', sortContent: '' });	
 const route = useRoute();
 
 let abortController = new AbortController();
 
-const pageSize = 40;
+const productPageSize = 40;
+const contentPageSize = 2;
 
 const activeTab = ref<'products' | 'content'>('products');
 
@@ -47,7 +48,7 @@ function showOrHide(show: boolean) {
         productSearchResult.value = null;
         contentSearchResult.value = null;
         predictionsList.value = [];
-        filters.value = { term: '', sort: ''  };
+        filters.value = { term: '', sort: '', sortContent: '' };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
 
@@ -107,7 +108,7 @@ async function productSearch() {
                             s.sortByProductAttribute('SalesPrice', 'Ascending');
                         }
                     })
-                    .pagination(p => p.setPageSize(pageSize).setPage(page.value))
+                    .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
                     .setRetailMedia({
                         location: {
                             key: 'SEARCH_RESULTS_PAGE',
@@ -223,7 +224,7 @@ async function contentSearch() {
     const request = new ContentSearchBuilder(contextStore.defaultSettings)
         .setContentProperties(contextStore.selectedContentProperties)
         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-        .pagination(p => p.setPageSize(10).setPage(1))
+        .pagination(p => p.setPageSize(contentPageSize).setPage(contentPage.value))
         .highlighting(h =>
             h.enabled(true)
                 .setHighlightable({
@@ -250,6 +251,11 @@ async function contentSearch() {
                     },
                 }),
         )
+        .sorting(s => {
+            if (filters.value.sortContent === 'Popular') {
+                s.sortByContentPopularity();
+            }
+        })
         .build();
 
     abortController = new AbortController();
@@ -299,6 +305,9 @@ watch(() => ({ ...route }), (value, oldValue) => {
             if (key === 'sort') {	
                 filters.value.sort = value;	
                 return;	
+            }
+            if (key === 'sortContent') {
+                filters.value.sortContent = value;
             }	
             const existing = filters.value[key];	
             existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
@@ -317,6 +326,13 @@ watch(breakpointService.active, () => {
 });
 
 watch(activeTab, (newTab) => {
+    // Reset page, facets, and sorting when switching tabs
+    page.value = 1;
+    contentPage.value = 1;
+
+    // Reset facets and sorting
+    filters.value = { term: searchTerm.value, sort: '', sortContent: '', open: '1' };
+
     if (newTab === 'products') {
         productSearch();
     } else if (newTab === 'content') {
@@ -400,12 +416,12 @@ watch(activeTab, (newTab) => {
                         </div>
                         <div class="w-full lg:w-4/5">
                             <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
-                                <span v-if="productSearchResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
-                                    productSearchResult?.hits < pageSize ? productSearchResult?.hits : page * pageSize }} of {{
+                                <span v-if="productSearchResult.hits > 0">Showing {{ page * (productPageSize) - (productPageSize - 1) }} - {{
+                                    productSearchResult?.hits < productPageSize ? productSearchResult?.hits : page * productPageSize }} of {{
                                     productSearchResult?.hits }}</span>
                                 <div class="hidden lg:block lg:flex-grow">
                                 </div>
-                                <Sorting v-model="filters.sort" @change="productSearch"/>
+                                <Sorting v-model="filters.sort" type="Product" @change="productSearch"/>
                             </div>
                             <div v-if="productSearchResult && productSearchResult?.redirects && productSearchResult.redirects.length > 0"
                                  class="mb-3 p-3 bg-white">
@@ -434,9 +450,10 @@ watch(activeTab, (newTab) => {
                                 </div>
                             </div>
                             <div class="py-3 flex justify-center">
+                                {{ productSearchResult.hits }}
                                 <Pagination v-model:total="productSearchResult.hits"
                                             v-model:model-value="page"
-                                            v-model:page-size="pageSize"
+                                            v-model:page-size="productPageSize"
                                             @change="productSearch"/>
                             </div>
                             <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
@@ -456,41 +473,13 @@ watch(activeTab, (newTab) => {
                 </div>
                 <div v-else-if="activeTab === 'content'">
                     <div v-if="contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                        <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
-                            Showing content results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
-                        </h2>
-                        <div class="flex gap-10">
-                            <div class="w-full lg:w-4/5">
-                                <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
-                                    <span v-if="contentSearchResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
-                                        contentSearchResult?.hits < pageSize ? contentSearchResult?.hits : page * pageSize }} of {{ contentSearchResult?.hits }}</span>
-                                    <div class="hidden lg:block lg:flex-grow">
-                                    </div>
-                                    <Sorting v-model="filters.sort" @change="contentSearch"/>
-                                </div>
-                                <div v-if="contentSearchResult.hits == 0" class="p-3 text-xl bg-white">
-                                    No content found
-                                </div>
-                                <div v-else>
-                                    <div class="flex flex-col divide-y divide-slate-200">
-                                        <ContentSearchResultElement v-for="(content, pIndex) in contentSearchResult?.results"
-                                                                    :key="content.contentId || pIndex"
-                                                                    :content="content"/>
-                                    </div>
-                                    <div class="py-3 flex justify-center">
-                                        <Pagination v-model.sync="page"
-                                                    v-model:total="contentSearchResult.hits"
-                                                    :page-size="pageSize"
-                                                    @change="contentSearch"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <ContentSearchOverlayResult 
-                                :content-search-result="contentSearchResult"
-                                :page="page"
-                                :page-size="pageSize"
-                                :term="filters.term"/>
-                        </div>
+                        <ContentSearchOverlayResult 
+                            v-model:sort="filters.sortContent"
+                            v-model:page="contentPage"
+                            :content-search-result="contentSearchResult"
+                            :page-size="contentPageSize"
+                            :term="filters.term"
+                            @search="contentSearch"/>
                     </div>
                 </div>
             </div>

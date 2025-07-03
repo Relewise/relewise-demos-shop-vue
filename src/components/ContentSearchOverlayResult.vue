@@ -1,13 +1,32 @@
 <script setup lang="ts">
 import { type ContentSearchResponse } from '@relewise/client';
-import { type PropType } from 'vue';
+import { ref, watch, type PropType } from 'vue';
 import ContentSearchResultElement from './ContentSearchResultElement.vue';
+import Sorting from '../components/Sorting.vue';
+import Pagination from '../components/Pagination.vue';
 
-defineProps({
+const props = defineProps({
     contentSearchResult: { type: Object as PropType<ContentSearchResponse>, required: true },
     pageSize: { type: Number, required: true },
     page: { type: Number, required: true },
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
+    sort: { type: [String, Array] as PropType<string | string[]>, required: true },
+});
+
+const emit = defineEmits(['search', 'update:sort', 'update:page']);
+
+const sortValue = ref(props.sort);
+const pageValue = ref(props.page);
+
+watch(sortValue, (newVal) => {
+    emit('update:sort', newVal);
+    emit('search');
+});
+
+watch(pageValue, (newVal) => {
+    console.log(newVal);
+    emit('update:page', newVal);
+    emit('search');
 });
 
 </script>
@@ -24,7 +43,7 @@ defineProps({
                         contentSearchResult?.hits < pageSize ? contentSearchResult?.hits : page * pageSize }} of {{ contentSearchResult?.hits }}</span>
                     <div class="hidden lg:block lg:flex-grow">
                     </div>
-                    <!-- <Sorting v-model="filters.sort" @change="contentSearch"/> -->
+                    <Sorting v-model="sortValue" type="Content"/>
                 </div>
                 <div v-if="contentSearchResult.hits == 0" class="p-3 text-xl bg-white">
                     No content found
@@ -36,10 +55,9 @@ defineProps({
                                                     :content="content"/>
                     </div>
                     <div class="py-3 flex justify-center">
-                        <!-- <Pagination v-model.sync="page"
-                                    v-model:total="contentSearchResult.hits"
-                                    :page-size="pageSize"
-                                    @change="contentSearch"/> -->
+                        <Pagination v-model.sync="pageValue"
+                                    :total="contentSearchResult.hits"
+                                    :page-size="pageSize"/>
                     </div>
                 </div>
             </div>
