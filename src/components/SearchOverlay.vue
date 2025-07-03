@@ -42,6 +42,33 @@ function close() {
     showOrHide(false);
 }
 
+watch(() => ({ ...route }), (value, oldValue) => {	
+    if (route.query.open === '1' && !open.value) {
+        scrollTo({ top: 0 });	
+        const searchParams = new URLSearchParams(window.location.search);	
+        searchParams.forEach((value, key) => {	
+            if (key === 'term') {	
+                searchTerm.value = value;	
+                return;	
+            }	
+            if (key === 'sort') {	
+                filters.value.sort = value;	
+                return;	
+            }
+            if (key === 'sortContent') {
+                filters.value.sortContent = value;
+            }	
+            const existing = filters.value[key];	
+            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
+        });	
+        filters.value['open'] = '1';	
+        search();	
+        return;	
+    } else if (value.query.open !== '1' && oldValue.query.open === '1') {	
+        close();	
+    }	
+});	
+
 function showOrHide(show: boolean) {
     if (!show) {
         searchTerm.value = '';
@@ -292,33 +319,6 @@ function typeAHeadSearch() {
         search();
     }
 }
-
-watch(() => ({ ...route }), (value, oldValue) => {	
-    if (route.query.open === '1' && !open.value) {
-        scrollTo({ top: 0 });	
-        const searchParams = new URLSearchParams(window.location.search);	
-        searchParams.forEach((value, key) => {	
-            if (key === 'term') {	
-                searchTerm.value = value;	
-                return;	
-            }	
-            if (key === 'sort') {	
-                filters.value.sort = value;	
-                return;	
-            }
-            if (key === 'sortContent') {
-                filters.value.sortContent = value;
-            }	
-            const existing = filters.value[key];	
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
-        });	
-        filters.value['open'] = '1';	
-        search();	
-        return;	
-    } else if (value.query.open !== '1' && oldValue.query.open === '1') {	
-        close();	
-    }	
-});	
 
 watch(breakpointService.active, () => {	
     if (route.query.open === '1')	
