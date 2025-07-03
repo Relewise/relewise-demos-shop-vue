@@ -42,9 +42,10 @@ function close() {
     showOrHide(false);
 }
 
-watch(() => ({ ...route }), (value, oldValue) => {	
+watch(() => ({ ...route }), (value, oldValue) => {
     if (route.query.open === '1' && !open.value) {
-        scrollTo({ top: 0 });	
+        scrollTo({ top: 0 });
+
         const searchParams = new URLSearchParams(window.location.search);	
         searchParams.forEach((value, key) => {	
             if (key === 'term') {	
@@ -60,14 +61,24 @@ watch(() => ({ ...route }), (value, oldValue) => {
             }	
             const existing = filters.value[key];	
             existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
-        });	
-        filters.value['open'] = '1';	
+        });
+
+        filters.value['open'] = '1';
+
         search();	
         return;	
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {	
         close();	
     }	
-});	
+});
+
+function typeAHeadSearch() {
+    if (filters.value.term !== searchTerm.value) {
+        filters.value['open'] = '1';
+
+        search();
+    }
+}
 
 function showOrHide(show: boolean) {
     if (!show) {
@@ -88,6 +99,11 @@ function showOrHide(show: boolean) {
         window.document.body.classList.remove('xl:pr-[17px]');
     }
 }
+
+watch(breakpointService.active, () => {	
+    if (route.query.open === '1')	
+        search();	
+});
 
 async function productSearch() {
     abortController.abort();
@@ -311,19 +327,6 @@ function search() {
     else if (activeTab.value === 'content')
         contentSearch();
 }
-
-function typeAHeadSearch() {
-    if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
-
-        search();
-    }
-}
-
-watch(breakpointService.active, () => {	
-    if (route.query.open === '1')	
-        search();	
-});
 
 watch(activeTab, (newTab) => {
     // Reset page, facets, and sorting when switching tabs
