@@ -54,7 +54,6 @@ const handleMouseLeave = () => {
 onBeforeUnmount(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
 });
-
 </script>
 
 <template>
