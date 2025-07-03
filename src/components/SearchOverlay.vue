@@ -305,7 +305,7 @@ watch(activeTab, () => {
     <Teleport to="#modal">
         <div v-if="open" id="search-result-overlay" class="modal">
             <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                <div v-if="contextStore.context.value.contentSearch" class="mb-6 flex border-b border-slate-200">
+                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName" class="mb-6 flex border-b border-slate-200">
                     <div
                         :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
                         @click="() => activeTab = Tabs.Products">
