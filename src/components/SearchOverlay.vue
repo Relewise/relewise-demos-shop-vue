@@ -453,7 +453,6 @@ watch(activeTab, (newTab) => {
                                 </div>
                             </div>
                             <div class="py-3 flex justify-center">
-                                {{ productSearchResult.hits }}
                                 <Pagination v-model:total="productSearchResult.hits"
                                             v-model:model-value="page"
                                             v-model:page-size="productPageSize"
