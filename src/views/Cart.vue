@@ -145,9 +145,7 @@ async function recommendB2B() {
                 modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company.id], 10);
             }
         })
-        .filters(builder => {
-            globalProductRecommendationFilters(builder);
-        })
+        .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPopularProducts(request);
@@ -166,9 +164,7 @@ async function recommend() {
                 productId: item.product.productId as string,
             })),
         )
-        .filters(builder => {
-            globalProductRecommendationFilters(builder);
-        })
+        .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
