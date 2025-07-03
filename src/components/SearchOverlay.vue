@@ -26,9 +26,8 @@ const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
 const page = ref(1);	
-const contentPage = ref(1);	
 const predictionsList = ref<SearchTermPredictionResult[]>([]);	
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', sortContent: '' });	
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });	
 const route = useRoute();
 
 let abortController = new AbortController();
@@ -56,9 +55,6 @@ watch(() => ({ ...route }), (value, oldValue) => {
                 filters.value.sort = value;	
                 return;	
             }
-            if (key === 'sortContent') {
-                filters.value.sortContent = value;
-            }	
             const existing = filters.value[key];	
             existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
         });
@@ -83,7 +79,7 @@ function showOrHide(show: boolean) {
         productSearchResult.value = null;
         contentSearchResult.value = null;
         predictionsList.value = [];
-        filters.value = { term: '', sort: '', sortContent: '' };
+        filters.value = { term: '', sort: '' };
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
 
@@ -249,25 +245,10 @@ async function contentSearch() {
 
     filters.value.term = searchTerm.value;
 
-    let applySalesPriceFacet = false;
-    if (contentSearchResult.value?.facets?.items?.length === 3) {
-        const salesPriceFacet = contentSearchResult.value?.facets.items[2] as PriceRangeFacetResult;
-
-        const bothPriceFiltersSet = filters.value.price.length === 2;
-
-        const lowerBoundNotEqualOrZero = (Number(filters.value.price[0]) !== salesPriceFacet.available!.value?.lowerBoundInclusive
-            && salesPriceFacet.available!.value?.lowerBoundInclusive !== 0);
-
-        const upperBoundNotEqualOrZero = (Number(filters.value.price[1]) !== salesPriceFacet.available!.value?.upperBoundInclusive
-            && salesPriceFacet.available!.value?.upperBoundInclusive !== 0);
-
-        applySalesPriceFacet = salesPriceFacet && bothPriceFiltersSet && (lowerBoundNotEqualOrZero || upperBoundNotEqualOrZero);
-    }
-
     const request = new ContentSearchBuilder(contextStore.defaultSettings)
         .setContentProperties(contextStore.selectedContentProperties)
         .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-        .pagination(p => p.setPageSize(contentPageSize).setPage(contentPage.value))
+        .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
         .highlighting(h =>
             h.enabled(true)
                 .setHighlightable({
@@ -295,7 +276,7 @@ async function contentSearch() {
                 }),
         )
         .sorting(s => {
-            if (filters.value.sortContent === 'Popular') {
+            if (filters.value.sort === 'Popular') {
                 s.sortByContentPopularity();
             }
         })
@@ -331,10 +312,9 @@ function search() {
 watch(activeTab, (newTab) => {
     // Reset page, facets, and sorting when switching tabs
     page.value = 1;
-    contentPage.value = 1;
 
     // Reset facets and sorting
-    filters.value = { term: searchTerm.value, sort: '', sortContent: '', open: '1' };
+    filters.value = { term: searchTerm.value, sort: '', open: '1' };
 
     if (newTab === 'products') {
         productSearch();
@@ -476,8 +456,8 @@ watch(activeTab, (newTab) => {
                 <div v-else-if="activeTab === 'content'">
                     <div v-if="contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
                         <ContentSearchOverlayResult 
-                            v-model:sort="filters.sortContent"
-                            v-model:page="contentPage"
+                            v-model:sort="filters.sort"
+                            v-model:page="page"
                             :content-search-result="contentSearchResult"
                             :page-size="contentPageSize"
                             :term="filters.term"
