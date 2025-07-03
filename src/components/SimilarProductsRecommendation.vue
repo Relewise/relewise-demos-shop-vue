@@ -13,9 +13,9 @@
 import { ref } from 'vue';
 import contextStore from '@/stores/context.store';
 import { SimilarProductsProductBuilder, type ProductRecommendationResponse, type ProductResult } from '@relewise/client';
-import { addBasketLineitemFilter } from '../stores/applicationFilters';
 import {globalProductRecommendationFilters} from '../stores/globalProductFilters';
 import ProductTile from './ProductTile.vue';
+import basketService from '@/services/basket.service';
 
 const prodId = ref<string>('');
 const productResult = ref<ProductResult | null | undefined>(null);
@@ -38,7 +38,14 @@ function init()
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .filters(f => {
             globalProductRecommendationFilters(f);
-            addBasketLineitemFilter(f);
+
+            const productIds =  basketService.model.value.lineItems
+                .filter(item => item.product.productId)
+                .map(item => item.product.productId as string);
+            
+            if (productIds.length > 0) {
+                f.addProductIdFilter(productIds, true);
+            }
 
             const categoryId = productResult.value?.categoryPaths?.[0]?.pathFromRoot?.[1]?.id;
             if (!categoryId || typeof categoryId !== 'string') {
