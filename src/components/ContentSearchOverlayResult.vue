@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
 import { ref, watch, type PropType } from 'vue';
-import ContentSearchResultElement from './ContentSearchResultElement.vue';
+import ContentSearchResultTile from './ContentSearchResultTile.vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
 import Facets from './Facets.vue';
@@ -82,9 +82,9 @@ function searchFor(term: string) {
                 </div>
                 <div v-else>
                     <div class="flex flex-col divide-y divide-slate-200">
-                        <ContentSearchResultElement v-for="(content, pIndex) in contentSearchResult?.results"
-                                                    :key="content.contentId || pIndex"
-                                                    :content="content"/>
+                        <ContentSearchResultTile v-for="(content, pIndex) in contentSearchResult?.results"
+                                                 :key="content.contentId || pIndex"
+                                                 :content="content"/>
                     </div>
                     <div class="py-3 flex justify-center">
                         <Pagination v-model.sync="pageValue"

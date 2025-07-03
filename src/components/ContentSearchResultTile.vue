@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ContentResult } from '@relewise/client';
 import { toRefs, type PropType, computed } from 'vue';
+import { findImage } from '@/helpers/imageHelper';
+import Image from './Image.vue';
 
 const props = defineProps({
     content: { type: Object as PropType<ContentResult>, required: true },
@@ -52,8 +54,8 @@ const summarySnippet = computed(() => {
                 <div class="text-sm text-slate-700 line-clamp-2" v-html="summarySnippet"></div>
             </div>
         </div>
-        <div class="w-32 h-32 flex-shrink-0 flex items-center justify-center">
-            <ProductImage :product="content" class="max-w-full max-h-full object-contain"/>
+        <div v-if="findImage(content)" class="w-32 h-32 flex-shrink-0 flex items-center justify-center">
+            <Image :entity="content" class="max-w-full max-h-full object-contain"/>
         </div>
     </div>
 </template>

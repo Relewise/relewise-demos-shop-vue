@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router';
 import contextStore from '@/stores/context.store';
 import type { ProductWithType } from '@/types';
 import ProductTile from './ProductTile.vue';
+import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
 
 const props = defineProps({

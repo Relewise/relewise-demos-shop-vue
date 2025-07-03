@@ -28,7 +28,7 @@ const route = useRoute();
 let abortController = new AbortController();
 
 const productPageSize = 40;
-const contentPageSize = 2;
+const contentPageSize = 10;
 
 const activeTab = ref<'products' | 'content'>('products');
 
@@ -278,10 +278,7 @@ function searchFor(term: string) {
 }
 
 watch(activeTab, () => {
-    // Reset page, facets, and sorting when switching tabs
     page.value = 1;
-
-    // Reset facets and sorting
     filters.value = { term: searchTerm.value, sort: '', open: '1' };
 });
 
