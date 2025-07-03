@@ -1,22 +1,17 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type PriceRangeFacetResult, type SearchTermPredictionResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
 import { ref, watch } from 'vue';
-import ProductTile from './ProductTile.vue';
-import Facets from './Facets.vue';
 import router from '@/router';
-import Sorting from '../components/Sorting.vue';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
-import Pagination from '../components/Pagination.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
-import ContentTile from './ContentTile.vue';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
-import VariantBasedProductList from '@/components/VariantBasedProductList.vue';
 import { useRoute } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
+import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 
 const open = ref(false);	
 const searchTerm = ref<string>('');
@@ -24,7 +19,7 @@ const productSearchResult = ref<ProductSearchResponse | null>(null);
 const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
 const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
-const fallbackRecommendations = ref<ProductRecommendationResponse | null | undefined>(null);
+const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
 const page = ref(1);	
 const predictionsList = ref<SearchTermPredictionResult[]>([]);	
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });	
@@ -101,7 +96,7 @@ function typeAHeadSearch() {
     }
 }
 
-async function productSearch() {
+async function search() {
     abortController.abort();
 
     window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
@@ -188,6 +183,42 @@ async function productSearch() {
             .pagination(p => p.setPageSize(10))
             .setContentProperties(contextStore.selectedContentProperties)
             .build())
+        .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
+            .setContentProperties(contextStore.selectedContentProperties)
+            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+            .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
+            .highlighting(h =>
+                h.enabled(true)
+                    .setHighlightable({
+                        displayName: true,
+                        dataKeys: ['Summary'],
+                    })
+                    .setLimit({
+                        maxEntryLimit: 10,
+                        maxSnippetsPerEntry: 4,
+                        maxSnippetsPerField: 1,
+                        maxWordsBeforeMatch: 20,
+                        maxWordsAfterMatch: 20,
+                        maxSentencesToIncludeBeforeMatch: 0,
+                        maxSentencesToIncludeAfterMatch: 0,
+                    })
+                    .setShape({
+                        snippets: {
+                            include: true,
+                            useEllipses: true,
+                            includeMatchedWords: true,
+                        },
+                        offsets: {
+                            include: true,
+                        },
+                    }),
+            )
+            .sorting(s => {
+                if (filters.value.sort === 'Popular') {
+                    s.sortByContentPopularity();
+                }
+            })
+            .build())
         .build();
 
     abortController = new AbortController();
@@ -203,6 +234,10 @@ async function productSearch() {
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
         products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
+        if (response.responses.length === 4) {
+            contentSearchResult.value = response.responses[3] as ContentSearchResponse;
+        }
+
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
 
         if (productSearchResult.value.hits === 0) {
@@ -216,7 +251,7 @@ async function productSearch() {
 
             const recommender = contextStore.getRecommender();
 
-            fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request);
+            fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request) ?? null;
             return;
         }
 
@@ -234,93 +269,17 @@ async function productSearch() {
     }
 }
 
-async function contentSearch() {
-    abortController.abort();
-
-    window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
-
-    const show = searchTerm.value.length > 0 || Object.keys(filters.value).length > 0;
-
-    if (!show) return; else showOrHide(show);
-
-    filters.value.term = searchTerm.value;
-
-    const request = new ContentSearchBuilder(contextStore.defaultSettings)
-        .setContentProperties(contextStore.selectedContentProperties)
-        .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-        .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
-        .highlighting(h =>
-            h.enabled(true)
-                .setHighlightable({
-                    displayName: true,
-                    dataKeys: ['Summary'],
-                })
-                .setLimit({
-                    maxEntryLimit: 10,
-                    maxSnippetsPerEntry: 4,
-                    maxSnippetsPerField: 1,
-                    maxWordsBeforeMatch: 20,
-                    maxWordsAfterMatch: 20,
-                    maxSentencesToIncludeBeforeMatch: 0,
-                    maxSentencesToIncludeAfterMatch: 0,
-                })
-                .setShape({
-                    snippets: {
-                        include: true,
-                        useEllipses: true,
-                        includeMatchedWords: true,
-                    },
-                    offsets: {
-                        include: true,
-                    },
-                }),
-        )
-        .sorting(s => {
-            if (filters.value.sort === 'Popular') {
-                s.sortByContentPopularity();
-            }
-        })
-        .build();
-
-    abortController = new AbortController();
-    const searcher = contextStore.getSearcher();
-    const response = await searcher.searchContents(request, { abortSignal: abortController.signal });
-    contextStore.assertApiCall(response);
-
-    const query = { ...filters.value };
-    if (!applySalesPriceFacet) delete query.price;
-
-    await router.push({ path: route.path, query: query, replace: true });
-
-    if(response)
-        contentSearchResult.value = { ...response as ContentSearchResponse };
-}
-
 function searchFor(term: string) {
     searchTerm.value = term;
-    productSearch();
-    contentSearch();
+    search();
 }
 
-function search() {
-    if (activeTab.value === 'products')
-        productSearch();
-    else if (activeTab.value === 'content')
-        contentSearch();
-}
-
-watch(activeTab, (newTab) => {
+watch(activeTab, () => {
     // Reset page, facets, and sorting when switching tabs
     page.value = 1;
 
     // Reset facets and sorting
     filters.value = { term: searchTerm.value, sort: '', open: '1' };
-
-    if (newTab === 'products') {
-        productSearch();
-    } else if (newTab === 'content') {
-        contentSearch();
-    }
 });
 
 </script>
@@ -340,129 +299,45 @@ watch(activeTab, (newTab) => {
 
     <Teleport to="#modal">
         <div v-if="open" id="search-result-overlay" class="modal">
-            <div v-if="productSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                <!-- Tabs -->
+            <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
                 <div class="mb-6 flex border-b border-slate-200">
                     <div
                         class="px-4 py-2 text-lg font-semibold focus:outline-none"
                         :class="activeTab === 'products' ? 'border-b-2 border-brand-500 text-brand-500' : 'text-slate-600'"
                         @click="activeTab = 'products'">
-                        Products
+                        Products ({{ productSearchResult?.hits }})
                     </div>
                     <div
                         class="px-4 py-2 text-lg font-semibold focus:outline-none"
                         :class="activeTab === 'content' ? 'border-b-2 border-brand-500 text-brand-500' : 'text-slate-600'"
                         @click="activeTab = 'content'">
-                        Content
+                        Content ({{ contentSearchResult?.hits }})
                     </div>
                 </div>
 
-                <!-- Tab content -->
-                <div v-if="activeTab === 'products'">
-                    <!-- BEGIN: Product tab content (moved from previous markup) -->
-                    <h2 v-if="filters.term" class="text-xl lg:text-3xl mb-6">
-                        Showing results for <span class="underline--yellow inline-block">{{ filters.term }}</span>
-                    </h2>
-                    <h2 v-if="route.query.brandName" class="text-xl lg:text-3xl mb-6">
-                        <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ?
-                            route.query.brandName.join('') : route.query.brandName }}</span>
-                    </h2>
-                    <div class="flex gap-10">
-                        <div class="hidden lg:block lg:w-1/5">
-                            <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
-                                 class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1">
-                                <h3 class="font-semibold text-lg">
-                                    Suggestions
-                                </h3>
-                                <a v-for="(prediction) in predictionsList"
-                                   :key="prediction.term ?? ''"
-                                   class="block cursor-pointer text-slate-900 hover:!text-brand-500"
-                                   @click.prevent="searchFor(prediction.term ?? '')">
-                                    {{ prediction.term }}
-                                </a>
-                            </div>
-                            <Facets v-if="productSearchResult.facets && productSearchResult.hits > 0"
-                                    :filters="filters"
-                                    :facets="productSearchResult.facets"
-                                    :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
-                                    @search="productSearch"/>
-                            <div v-if="contentRecommendationResult && contentRecommendationResult.results && contentRecommendationResult.results.length > 0">
-                                <h4 class="font-semibold text-lg mb-1">
-                                    Content
-                                </h4>
-                                <div class="flex flex-col gap-1">
-                                    <template v-for="content in contentRecommendationResult.results" :key="content.contentId ?? ''">
-                                        <ContentTile :content="content" :show-content-demo-variant="contextStore.context.value.showContentMenu"/>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-full lg:w-4/5">
-                            <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
-                                <span v-if="productSearchResult.hits > 0">Showing {{ page * (productPageSize) - (productPageSize - 1) }} - {{
-                                    productSearchResult?.hits < productPageSize ? productSearchResult?.hits : page * productPageSize }} of {{
-                                    productSearchResult?.hits }}</span>
-                                <div class="hidden lg:block lg:flex-grow">
-                                </div>
-                                <Sorting v-model="filters.sort" type="Product" @change="productSearch"/>
-                            </div>
-                            <div v-if="productSearchResult && productSearchResult?.redirects && productSearchResult.redirects.length > 0"
-                                 class="mb-3 p-3 bg-white">
-                                <h2 class="text-xl font-semibold mb-2">
-                                    Redirect(s)
-                                </h2>
-
-                                <div v-for="redirect in productSearchResult.redirects"
-                                     :key="redirect.id"
-                                     class="mb-1 pb-1 flex border-b border-solid border-gray-300">
-                                    {{ redirect.destination }}
-                                </div>
-                            </div>
-                            <div v-if="productSearchResult.hits == 0" class="p-3 text-xl bg-white">
-                                No products found
-                            </div>
-                            <div v-if="contextStore.context.value.switchOnVariantBasedSearchDisplay">
-                                <VariantBasedProductList :product-result="ref(productSearchResult)"/>
-                            </div>
-                            <div v-else>
-                                <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                    <ProductTile v-for="(product, index) in products"
-                                                 :key="index"
-                                                 :product="product.product"
-                                                 :is-promotion="product.isPromotion"/>
-                                </div>
-                            </div>
-                            <div class="py-3 flex justify-center">
-                                <Pagination v-model:total="productSearchResult.hits"
-                                            v-model:model-value="page"
-                                            v-model:page-size="productPageSize"
-                                            @change="productSearch"/>
-                            </div>
-                            <div v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
-                                 class="w-full p-3 bg-white rounded mb-6">
-                                <h2 class="text-xl">
-                                    You may like
-                                </h2>
-                                <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                    <ProductTile v-for="(product, index) in fallbackRecommendations?.recommendations"
-                                                 :key="index"
-                                                 :product="product"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- END: Product tab content -->
+                <div v-if="activeTab === 'products' && productSearchResult">
+                    <ProductSearchOverlayResult  
+                        v-model:sort="filters.sort"
+                        v-model:page="page"
+                        :page-size="productPageSize"
+                        :term="filters.term"
+                        :product-search-result="productSearchResult"
+                        :content-recommendation-result="contentRecommendationResult"
+                        :fallback-recommendations="fallbackRecommendations"
+                        :products="products"
+                        :predictions-list="predictionsList"
+                        :filters="filters"
+                        @search-for="searchFor"
+                        @search="search"/>
                 </div>
-                <div v-else-if="activeTab === 'content'">
-                    <div v-if="contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                        <ContentSearchOverlayResult 
-                            v-model:sort="filters.sort"
-                            v-model:page="page"
-                            :content-search-result="contentSearchResult"
-                            :page-size="contentPageSize"
-                            :term="filters.term"
-                            @search="contentSearch"/>
-                    </div>
+                <div v-else-if="activeTab === 'content' && contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
+                    <ContentSearchOverlayResult 
+                        v-model:sort="filters.sort"
+                        v-model:page="page"
+                        :content-search-result="contentSearchResult"
+                        :page-size="contentPageSize"
+                        :term="filters.term"
+                        @search="search"/>
                 </div>
             </div>
         </div>
