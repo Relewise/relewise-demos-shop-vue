@@ -84,7 +84,7 @@ function searchFor(term: string) {
                     </h4>
                     <div class="flex flex-col gap-1">
                         <template v-for="content in contentRecommendationResult.results" :key="content.contentId ?? ''">
-                            <ContentTile :content="content" :show-content-demo-variant="contextStore.context.value.showContentMenu"/>
+                            <ContentTile :content="content"/>
                         </template>
                     </div>
                 </div>

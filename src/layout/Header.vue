@@ -181,11 +181,6 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
                     </ul>
-                    <li v-if="contextStore.context.value.showContentMenu" class="inline-flex relative pr-5">
-                        <RouterLink :to="{ name: 'main-content'}" class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
-                            Content
-                        </RouterLink>
-                    </li>                    
                     <li class="flex-grow"></li>
                 </ul>
             </nav>

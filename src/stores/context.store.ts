@@ -24,7 +24,7 @@ export interface IDataset {
     showProductRelevanceScore?: boolean;
     enableRelewiseSeDemoScenarios?:boolean;
     switchOnVariantBasedSearchDisplay?:boolean;
-    showContentMenu?: boolean;
+    contentSearch?: boolean;
 }
 
 export interface ITracking {

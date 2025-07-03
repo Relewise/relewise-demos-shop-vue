@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
 import { ref, watch, type PropType } from 'vue';
-import ContentSearchResultTile from './ContentSearchResultTile.vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
+import ContentTile from './ContentTile.vue';
 
 const props = defineProps({
     contentSearchResult: { type: Object as PropType<ContentSearchResponse>, required: true },
@@ -47,7 +47,7 @@ function searchFor(term: string) {
 <template>
     <div v-if="contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
         <h2 v-if="term" class="text-xl lg:text-3xl mb-6">
-            Showing content results for <span class="underline--yellow inline-block">{{ term }}</span>
+            Showing results for <span class="underline--yellow inline-block">{{ term }}</span>
         </h2>
         <div class="flex gap-10">
             <div class="hidden lg:block lg:w-1/5">
@@ -81,10 +81,12 @@ function searchFor(term: string) {
                     No content found
                 </div>
                 <div v-else>
-                    <div class="flex flex-col divide-y divide-slate-200">
-                        <ContentSearchResultTile v-for="(content, pIndex) in contentSearchResult?.results"
-                                                 :key="content.contentId || pIndex"
-                                                 :content="content"/>
+                    <div class="flex flex-col divide-y divide-slate-200 gap-4">
+                        <ContentTile 
+                            v-for="(content, index) in contentSearchResult?.results"
+                            :key="index"
+                            :content="content"
+                            :show-summary="true"/>
                     </div>
                     <div class="py-3 flex justify-center">
                         <Pagination v-model.sync="pageValue"

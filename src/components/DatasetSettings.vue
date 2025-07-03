@@ -137,13 +137,13 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.showContentMenu"
+                    <input v-model="context.contentSearch"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
-                    Turn on the Content menu item</label>
+                    Content Search</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled, you can access the Content part of the demo, and can use the ContentSearch specific overlay from there. 
+                    When this is enabled content will be able to be searched for en the search overlay. 
                 </p>
             </div>
 

@@ -200,10 +200,10 @@ async function search() {
                         maxEntryLimit: 10,
                         maxSnippetsPerEntry: 4,
                         maxSnippetsPerField: 1,
-                        maxWordsBeforeMatch: 20,
-                        maxWordsAfterMatch: 20,
-                        maxSentencesToIncludeBeforeMatch: 0,
-                        maxSentencesToIncludeAfterMatch: 0,
+                        maxWordsBeforeMatch: 100,
+                        maxWordsAfterMatch: 100,
+                        maxSentencesToIncludeBeforeMatch: 10,
+                        maxSentencesToIncludeAfterMatch: 10,
                     })
                     .setShape({
                         snippets: {
@@ -300,7 +300,7 @@ watch(activeTab, () => {
     <Teleport to="#modal">
         <div v-if="open" id="search-result-overlay" class="modal">
             <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                <div class="mb-6 flex border-b border-slate-200">
+                <div v-if="contextStore.context.value.contentSearch" class="mb-6 flex border-b border-slate-200">
                     <div
                         class="px-4 py-2 text-lg font-semibold focus:outline-none"
                         :class="activeTab === 'products' ? 'border-b-2 border-brand-500 text-brand-500' : 'text-slate-600'"
@@ -330,7 +330,7 @@ watch(activeTab, () => {
                         @search-for="searchFor"
                         @search="search"/>
                 </div>
-                <div v-else-if="activeTab === 'content' && contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
+                <div v-else-if="activeTab === 'content' && contextStore.context.value.contentSearch && contentSearchResult">
                     <ContentSearchOverlayResult 
                         v-model:sort="filters.sort"
                         v-model:page="page"

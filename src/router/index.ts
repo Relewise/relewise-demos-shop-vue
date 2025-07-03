@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
-import contextStore from '@/stores/context.store';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,14 +64,5 @@ const router = createRouter({
         },
     ],
 });
-
-if (contextStore.context.value.showContentMenu) {
-    router.addRoute(
-        {
-            path: '/content',
-            name: 'main-content',
-            component: () => import('../views/ContentCategoryPage.vue'),
-        });
-}
 
 export default router;

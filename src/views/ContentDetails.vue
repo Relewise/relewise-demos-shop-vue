@@ -2,28 +2,7 @@
     <div id="content-page" class="container entity-page mx-auto px-2 lg:p-0">
         <div v-if="content" class="mb-16">
             <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" :product="content"/>
-
-            <div v-if="contextStore.context.value.showContentMenu" class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
-                <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
-                    <Image v-if="findImage(content)" :entity="content" class="!h-[300px] xl:!h-[600px] !w-auto"/>
-                </div>
-                <div class="bg-white flex-grow">
-                    <div>
-                        <h1 class="text-4xl mb-4 font-semibold">
-                            {{ content.displayName }}
-                        </h1>
-
-                        <p v-if="content.data?.Summary.value" class="text-lg text-slate-600 mb-6">
-                            {{ content.data.Summary.value }}
-                        </p>
-
-                        <section class="prose prose-slate max-w-none">
-                            <div v-html="content.data?.Body.value ?? '<p>No content available.</p>'"></div>
-                        </section>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
+            <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
                 <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center">
                     <div>
                         <Image v-if="findImage(content)" :entity="content"/>
