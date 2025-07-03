@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { type ContentSearchResponse } from '@relewise/client';
+import { type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
 import { ref, watch, type PropType } from 'vue';
 import ContentSearchResultElement from './ContentSearchResultElement.vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
+import Facets from './Facets.vue';
+import { useRoute } from 'vue-router';
 
 const props = defineProps({
     contentSearchResult: { type: Object as PropType<ContentSearchResponse>, required: true },
@@ -11,9 +13,12 @@ const props = defineProps({
     page: { type: Number, required: true },
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
     sort: { type: [String, Array] as PropType<string | string[]>, required: true },
+    filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
+    predictionsList: { type: Array as PropType<SearchTermPredictionResult[]>, required: true },
 });
 
-const emit = defineEmits(['search', 'update:sort', 'update:page']);
+const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for']);
+const route = useRoute();
 
 const sortValue = ref(props.sort);
 const pageValue = ref(props.page);
@@ -29,6 +34,14 @@ watch(pageValue, (newVal) => {
     emit('search');
 });
 
+function search() {
+    emit('search');
+}
+
+function searchFor(term: string) {
+    emit('search-for', term);
+}
+
 </script>
 
 <template>
@@ -37,6 +50,25 @@ watch(pageValue, (newVal) => {
             Showing content results for <span class="underline--yellow inline-block">{{ term }}</span>
         </h2>
         <div class="flex gap-10">
+            <div class="hidden lg:block lg:w-1/5">
+                <div v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
+                     class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1">
+                    <h3 class="font-semibold text-lg">
+                        Suggestions
+                    </h3>
+                    <a v-for="(prediction) in predictionsList"
+                       :key="prediction.term ?? ''"
+                       class="block cursor-pointer text-slate-900 hover:!text-brand-500"
+                       @click.prevent="searchFor(prediction.term ?? '')">
+                        {{ prediction.term }}
+                    </a>
+                </div>
+                <Facets v-if="contentSearchResult.facets && contentSearchResult.hits > 0"
+                        :filters="filters"
+                        :facets="contentSearchResult.facets"
+                        :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
+                        @search="search"/>
+            </div>
             <div class="w-full lg:w-4/5">
                 <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
                     <span v-if="contentSearchResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{

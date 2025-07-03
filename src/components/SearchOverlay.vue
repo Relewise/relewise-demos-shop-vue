@@ -187,6 +187,9 @@ async function search() {
             .setContentProperties(contextStore.selectedContentProperties)
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
+            .facets(f => {
+                getFacets('ContentSearch', f, filters.value);
+            })
             .highlighting(h =>
                 h.enabled(true)
                     .setHighlightable({
@@ -337,6 +340,9 @@ watch(activeTab, () => {
                         :content-search-result="contentSearchResult"
                         :page-size="contentPageSize"
                         :term="filters.term"
+                        :predictions-list="predictionsList"
+                        :filters="filters"
+                        @search-for="searchFor"
                         @search="search"/>
                 </div>
             </div>
