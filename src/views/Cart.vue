@@ -123,12 +123,10 @@ const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
 
 function init() {
-    if (isEmpty.value) return;
-
     if (contextStore.user.value.classifications?.channel === 'B2B'
     && contextStore.context.value.B2bRecommendations) {
         recommendB2B();
-    } else {
+    } else if (!isEmpty.value) {
         recommend();
     }
 }
