@@ -1,10 +1,16 @@
 <template>
-    <div class="my-3">
-        <div class="text-2xl font-semibold">
+    <div v-if="productRecommendation" class="scrollbar mt-8">
+        <h2 class="text-2xl font-semibold mb-3">
             Consider an alternative
-        </div>
-        <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <ProductTile v-for="(prod, index) in productRecommendation?.recommendations" :key="index" :product="prod"/>
+        </h2>
+        <div class="w-full">
+            <div class="flex flex-row gap-6">
+                <div v-for="(p, index) in productRecommendation?.recommendations ?? []"
+                     :key="index"
+                     class="min-w-[250px] pb-3">
+                    <ProductTile :product="p"/>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -46,7 +52,7 @@ async function init()
                 f.addProductCategoryIdFilter('ImmediateParentOrItsParent', categoryId);
             }
         })
-        .setNumberOfRecommendations(4)
+        .setNumberOfRecommendations(10)
         .build();
 
     const recommender = contextStore.getRecommender();
