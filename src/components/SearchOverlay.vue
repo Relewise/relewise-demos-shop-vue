@@ -118,55 +118,48 @@ async function search() {
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
     const request = new SearchCollectionBuilder()
-        .addRequest(
-            (() => {
-                const builder = new ProductSearchBuilder(contextStore.defaultSettings)
-                    .setSelectedProductProperties(contextStore.selectedProductProperties)
-                    .setSelectedVariantProperties({ allData: true })
-                    .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-                    .setExplodedVariants(1)
-                    .filters(f => {
-                        if (Array.isArray(selectedCategoryFilterIds)) {
-                            selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
-                                f.addProductCategoryIdFilter('Ancestor', id);
-                            });
-                        }
-
-                        contextStore.userClassificationBasedFilters(f);
-                    })
-                    .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
-                    .relevanceModifiers(r => addRelevanceModifiers(r))
-                    .sorting(s => {
-                        if (filters.value.sort === 'Popular') {
-                            s.sortByProductPopularity();
-                        }
-                        else if (filters.value.sort === 'SalesPriceDesc') {
-                            s.sortByProductAttribute('SalesPrice', 'Descending');
-                        }
-                        else if (filters.value.sort === 'SalesPriceAsc') {
-                            s.sortByProductAttribute('SalesPrice', 'Ascending');
-                        }
-                    })
-                    .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
-                    .setRetailMedia({
-                        location: {
-                            key: 'SEARCH_RESULTS_PAGE',
-                            placements: [{ key: 'TOP' }],
-                            variation: { key: variationName },
-                        },
-                    });
-                if (contextStore.context.value.variantBasedSearchOverlay) {
-                    builder.setExplodedVariants(5);
-                    builder.setSelectedVariantProperties({
-                        displayName: true,
-                        pricing: true,
-                        allData: true,
+        .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
+            .setSelectedProductProperties(contextStore.selectedProductProperties)
+            .setSelectedVariantProperties({displayName: true,
+                pricing: true,
+                allData: true})
+            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+            .setExplodedVariants(contextStore.context.value.variantBasedSearchOverlay ? 5 : 1)
+            .filters(f => {
+                if (Array.isArray(selectedCategoryFilterIds)) {
+                    selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
+                        f.addProductCategoryIdFilter('Ancestor', id);
                     });
                 }
 
-                return builder.build();
-            })(),
-        )
+                if (route.query.brandName && typeof route.query.brandName === 'string') {
+                    f.addBrandIdFilter(route.query.brandName);
+                }
+
+                contextStore.userClassificationBasedFilters(f);
+            })
+            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
+            .relevanceModifiers(r => addRelevanceModifiers(r))
+            .sorting(s => {
+                if (filters.value.sort === 'Popular') {
+                    s.sortByProductPopularity();
+                }
+                else if (filters.value.sort === 'SalesPriceDesc') {
+                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                }
+                else if (filters.value.sort === 'SalesPriceAsc') {
+                    s.sortByProductAttribute('SalesPrice', 'Ascending');
+                }
+            })
+            .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
+            .setRetailMedia({
+                location: {
+                    key: 'SEARCH_RESULTS_PAGE',
+                    placements: [{ key: 'TOP' }],
+                    variation: { key: variationName },
+                },
+            })
+            .build())
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product', 'Content')
             .setTerm(searchTerm.value)

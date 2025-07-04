@@ -9,6 +9,7 @@ import type { ProductWithType } from '@/types';
 import ProductTile from './ProductTile.vue';
 import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
+import VariantBasedProductList from './VariantBasedProductList.vue';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
@@ -113,9 +114,7 @@ function searchFor(term: string) {
                 <div v-if="productSearchResult.hits == 0" class="p-3 text-xl bg-white">
                     No products found
                 </div>
-                <div v-if="contextStore.context.value.variantBasedSearchOverlay">
-                    <VariantBasedProductList :product-result="ref(productSearchResult)"/>
-                </div>
+                <VariantBasedProductList v-else-if="contextStore.context.value.variantBasedSearchOverlay" :product-result="productSearchResult"/>
                 <div v-else>
                     <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         <ProductTile v-for="(product, index) in products"
