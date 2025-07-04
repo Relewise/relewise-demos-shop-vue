@@ -155,7 +155,7 @@ async function search() {
                             variation: { key: variationName },
                         },
                     });
-                if (contextStore.context.value.switchOnVariantBasedSearchDisplay) {
+                if (contextStore.context.value.variantBasedSearchOverlay) {
                     builder.setExplodedVariants(5);
                     builder.setSelectedVariantProperties({
                         displayName: true,

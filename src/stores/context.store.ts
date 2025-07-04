@@ -25,7 +25,7 @@ export interface IDataset {
     B2bRecommendations?: boolean;
     showVariantsBadge?: boolean;
     similarProductsOnPdp?:boolean;
-    switchOnVariantBasedSearchDisplay?:boolean;
+    variantBasedSearchOverlay?:boolean;
     contentSearch?: boolean;
 }
 

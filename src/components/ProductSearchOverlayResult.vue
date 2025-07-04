@@ -113,7 +113,7 @@ function searchFor(term: string) {
                 <div v-if="productSearchResult.hits == 0" class="p-3 text-xl bg-white">
                     No products found
                 </div>
-                <div v-if="contextStore.context.value.switchOnVariantBasedSearchDisplay">
+                <div v-if="contextStore.context.value.variantBasedSearchOverlay">
                     <VariantBasedProductList :product-result="ref(productSearchResult)"/>
                 </div>
                 <div v-else>
