@@ -139,7 +139,7 @@
                     Similar products recommendation on PDP</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    This will replace the recommendation on the PDP with a similar products recommendation with a specific category id filter.
+                    This will replace the recommendation on the PDP with a similar products recommendation with a specific category id filter when the product is sold out.
                 </p>
             </div>
 
@@ -163,7 +163,7 @@
                     Content Search</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled content will be able to be searched for en the search overlay. 
+                    When this is enabled content will be able to be searched for on the search overlay. 
                 </p>
             </div>
 

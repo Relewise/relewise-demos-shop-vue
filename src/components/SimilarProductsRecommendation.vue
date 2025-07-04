@@ -23,7 +23,7 @@ const props = defineProps<{
     product: ProductResult
 }>();
 
-function init()
+async function init()
 {
     if (!props.product.productId) return;
 
@@ -46,18 +46,15 @@ function init()
                 f.addProductCategoryIdFilter('ImmediateParentOrItsParent', categoryId);
             }
         })
+        .setNumberOfRecommendations(4)
         .build();
 
-    similarproductsRequest.settings.numberOfRecommendations = 4;
-
     const recommender = contextStore.getRecommender();
-    recommender.recommendSimilarProducts(similarproductsRequest)
-        .then(result =>{
-            productRecommendation.value = result;
-        })
-        .catch (err => {
-            console.error('Error fetching recommendations:', err);
-        });
+    const response = await recommender.recommendSimilarProducts(similarproductsRequest);
+    
+    contextStore.assertApiCall(response);
+
+    productRecommendation.value = response;
 }
 init();
 </script>
