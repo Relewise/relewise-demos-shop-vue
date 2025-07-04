@@ -22,7 +22,9 @@ export interface IDataset {
     userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
     showProductRelevanceScore?: boolean;
-    enableRelewiseSeDemoScenarios?:boolean;
+    B2bRecommendations?: boolean;
+    showVariantsBadge?: boolean;
+    similarProductsOnPdp?:boolean;
     switchOnVariantBasedSearchDisplay?:boolean;
     contentSearch?: boolean;
 }

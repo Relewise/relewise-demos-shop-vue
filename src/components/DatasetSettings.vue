@@ -115,13 +115,33 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.enableRelewiseSeDemoScenarios" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
-                    Enable Relewise SE Specific demo scenarios</label>
+                    <input v-model="context.B2bRecommendations" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Enable B2B recommendations</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    This will toggle all the demoscenarios that are described in the accompanying Powerpoint that can be requested from the SE Team.
+                    This will replace the recommendation on the cart page with popular products for category with id '3_5'.
                 </p>
-            </div>            
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.showVariantsBadge" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Show variants badge</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will add a badge to product tiles when the product has variants available.
+                </p>
+            </div>
+            
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.similarProductsOnPdp" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Similar products recommendation on PDP</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will replace the recommendation on the PDP with a similar products recommendation with a specific category id filter.
+                </p>
+            </div>
 
             <div>
                 <label class="flex mt-2 items-center">

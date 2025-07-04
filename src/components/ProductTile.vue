@@ -53,7 +53,7 @@ const showScore = contextStore.context.value.showProductRelevanceScore;
                     SOLD OUT
                 </span>
                 <span
-                    v-if="product.variant && contextStore.context.value.enableRelewiseSeDemoScenarios"
+                    v-if="product.variant && contextStore.context.value.showVariantsBadge"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
                     VARIANTS AVAILABLE
                 </span>

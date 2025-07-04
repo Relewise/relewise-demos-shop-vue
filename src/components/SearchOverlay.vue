@@ -167,22 +167,12 @@ async function search() {
                 return builder.build();
             })(),
         )
-        .addRequest(
-            (() => {
-                const builder = new SearchTermPredictionBuilder(contextStore.defaultSettings)
-                    .addEntityType('Product', 'Content')
-                    .setTerm(searchTerm.value)
-                    .take(5);
-
-                if (contextStore.context.value.enableRelewiseSeDemoScenarios) {
-                    builder.filters(f => {
-                        globalProductRecommendationFilters(f);
-                    });
-                }
-
-                return builder.build();
-            })(),
-        )
+        .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
+            .addEntityType('Product', 'Content')
+            .setTerm(searchTerm.value)
+            .take(5)
+            .filters(f => globalProductRecommendationFilters(f))
+            .build())
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setTerm(searchTerm.value)
             .pagination(p => p.setPageSize(10))

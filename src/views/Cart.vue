@@ -126,7 +126,7 @@ function init() {
     if (isEmpty.value) return;
 
     if (contextStore.user.value.classifications?.channel === 'B2B'
-    && contextStore.context.value.enableRelewiseSeDemoScenarios) {
+    && contextStore.context.value.B2bRecommendations) {
         recommendB2B();
     } else {
         recommend();
@@ -145,7 +145,10 @@ async function recommendB2B() {
                 modifier.addProductRecentlyPurchasedByCompanyRelevanceModifier(86400, [contextStore.user.value.company.id], 10);
             }
         })
-        .filters(builder => globalProductRecommendationFilters(builder))
+        .filters(builder => {
+            globalProductRecommendationFilters(builder);
+            builder.addProductCategoryIdFilter('ImmediateParent', ['3_5']);
+        })
         .build();
 
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPopularProducts(request);
