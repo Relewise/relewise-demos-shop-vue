@@ -29,7 +29,6 @@ watch(sortValue, (newVal) => {
 });
 
 watch(pageValue, (newVal) => {
-    console.log(newVal);
     emit('update:page', newVal);
     emit('search');
 });

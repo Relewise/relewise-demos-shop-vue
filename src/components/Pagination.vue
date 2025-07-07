@@ -13,7 +13,7 @@
 <script lang="ts" setup>
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/solid';
 import { useOffsetPagination } from '@vueuse/core';
-import { toRefs, computed } from 'vue';
+import { toRefs, computed, ref, watch } from 'vue';
 
 const props = defineProps({ 
     pageSize: { 
@@ -33,13 +33,18 @@ const { pageSize, total, modelValue } = toRefs(props);
 
 const totalRef = computed(() => total.value);
 const pageSizeRef = computed(() => pageSize.value);
-const modelValueRef = computed(() => modelValue.value);
+
+const currentPage = ref(modelValue.value);
+
+watch(modelValue, (val) => {
+    if (val !== currentPage.value) currentPage.value = val;
+});
 
 const {
     pageCount,
 } = useOffsetPagination({
     total: totalRef,
-    page: modelValueRef,
+    page: currentPage,
     pageSize: pageSizeRef,
     onPageChange: (p) => selectPage(p.currentPage),
 });
