@@ -117,8 +117,6 @@ async function search() {
     const selectedCategoryFilterIds = filters.value['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
-    page.value = 1;
-
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)

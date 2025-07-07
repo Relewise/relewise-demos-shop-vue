@@ -78,7 +78,10 @@ function searchFor(term: string) {
                         :filters="filters"
                         :facets="productSearchResult.facets"
                         :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
-                        @search="search"/>
+                        @search="() => {
+                            pageValue = 1;
+                            search();
+                        }"/>
                 <div v-if="contentRecommendationResult && contentRecommendationResult.results && contentRecommendationResult.results.length > 0">
                     <h4 class="font-semibold text-lg mb-1">
                         Content

@@ -66,7 +66,10 @@ function searchFor(term: string) {
                         :filters="filters"
                         :facets="contentSearchResult.facets"
                         :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
-                        @search="search"/>
+                        @search="() => {
+                            pageValue = 1;    
+                            search();
+                        }"/>
             </div>
             <div class="w-full lg:w-4/5">
                 <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
