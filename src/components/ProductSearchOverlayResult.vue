@@ -13,7 +13,7 @@ import VariantBasedProductList from './VariantBasedProductList.vue';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
-    fallbackRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: true },
+    fallbackRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
     products: { type: Array as PropType<ProductWithType[] | null>, required: true },
     contentRecommendationResult: { type: Object as PropType<ContentSearchResponse | null>, required: true },
     pageSize: { type: Number, required: true },
