@@ -303,6 +303,12 @@ function shareLink() {
         hideSoldOutProducts: context.value.hideSoldOutProducts,
         userClassificationFilters: context.value.userClassificationFilters,
         recommendationsMinutesAgo: context.value.recommendationsMinutesAgo,
+        showProductRelevanceScore: context.value.showProductRelevanceScore,
+        B2bRecommendations: context.value.B2bRecommendations,
+        showVariantsBadge: context.value.showVariantsBadge,
+        similarProductsOnPdp: context.value.similarProductsOnPdp,
+        variantBasedSearchOverlay: context.value.variantBasedSearchOverlay,
+        contentSearch: context.value.contentSearch,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + encodeURIComponent(btoa(JSON.stringify(model))));
