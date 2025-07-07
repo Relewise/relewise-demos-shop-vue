@@ -1,19 +1,30 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, UserFactory, Recommender, type SelectedProductPropertiesSettings, Tracker } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings,  type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
+import basketService from '@/services/basket.service';
+import { globalProductRecommendationFilters } from './globalProductFilters';
 
 export interface IDataset {
     datasetId: string;
     apiKey: string;
-    displayName?: string|null;
+    displayName?: string | null;
     language: string;
+    allLanguages: string[];
     currencyCode: string;
+    allCurrencies: string[];
     serverUrl?: string;
+    users?: User[];
+    selectedUserIndex?: number;
+    companies?: Company[];
+    allowThirdLevelCategories?: boolean;
+    hideSoldOutProducts?: boolean;
+    userClassificationFilters?: boolean;
+    recommendationsMinutesAgo?: number;
+    showProductRelevanceScore?: boolean;
 }
 
 export interface ITracking {
-    temporaryId?: string;
     enabled: boolean;
 }
 
@@ -21,7 +32,6 @@ export interface IAppContext {
     tracking: ITracking;
     selectedDatasetIndex: number;
     datasets: IDataset[];
-
 }
 
 export interface IAppErrorContext {
@@ -31,20 +41,31 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{datasetId: '', apiKey: '', language: '', currencyCode: ''}], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', allLanguages: [], currencyCode: '', allCurrencies: [], users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
+
+    public static numberOfProductsToRecommend = 8;
 
     constructor() {
         const storedContext = localStorage.getItem(this.localStorageName);
 
         if (storedContext) {
             Object.assign(this.state, JSON.parse(storedContext));
+            this.state.datasets.forEach(dataset => {
+                if (!dataset.allCurrencies) {
+                    dataset.allCurrencies = [dataset.currencyCode];
+                }
+
+                if (!dataset.allLanguages) {
+                    dataset.allLanguages = [dataset.language];
+                }
+            });
             this.initializeWebComponents();
         }
+    }
 
-        if (!this.state.tracking.temporaryId) {
-            this.generateNewTemporaryId();
-        }
+    public get isConfigured() {
+        return computed(() => this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language);
     }
 
     public get context() {
@@ -67,6 +88,14 @@ class AppContext {
         return computed(() => this.errorState.datasetIdError);
     }
 
+    public get user() {
+        return computed(() => {
+            this.ensureUsers();
+
+            return this.context.value.users![this.context.value.selectedUserIndex!];
+        });
+    }
+
     public get defaultSettings(): Settings {
         if (this.state.selectedDatasetIndex < -1) {
             throw new Error('Missing language or currencycode');
@@ -76,7 +105,7 @@ class AppContext {
             language: this.context.value.language,
             currency: this.context.value.currencyCode,
             displayedAtLocation: 'Relewise Demo Store',
-            user: this.getUser(),
+            user: this.user.value,
         };
     }
 
@@ -87,7 +116,50 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
+            allVariants: true,
+            score: {
+                adjusted: true,
+                relevance: true,
+            },
         } as SelectedProductPropertiesSettings;
+    }
+
+    public get selectedContentProperties(): SelectedProductPropertiesSettings {
+        return {
+            displayName: true,
+            brand: true,
+            categoryPaths: true,
+            pricing: true,
+            dataKeys: ['ByLine', 'Body', 'Image'],
+        } as SelectedProductPropertiesSettings;
+    }
+
+    public get selectedCategoryProperties(): SelectedCategoryPropertiesSettings {
+        return {
+            displayName: true,
+            dataKeys: ['Image'],
+        } as SelectedCategoryPropertiesSettings;
+    }
+
+    public get numberOfProductsToRecommend(): number {
+        return AppContext.numberOfProductsToRecommend;
+    }
+
+    public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
+        if (!this.user.value.classifications || !this.context.value.userClassificationFilters)
+            return;
+
+        const country = this.user.value.classifications['country'];
+        if (country) {
+            filterBuilder.addProductDataFilter('AvailableInMarkets',
+                (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(country)));
+        }
+
+        const channel = this.user.value.classifications['channel'];
+        if (channel) {
+            filterBuilder.addProductDataFilter('AvailableInChannels',
+                (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(channel)));
+        }
     }
 
     public getSearcher(): Searcher {
@@ -111,6 +183,10 @@ class AppContext {
         return new Tracker(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
     }
 
+    public getRecommendationsSinceMinutesAgo(): number {
+        return this.context.value.recommendationsMinutesAgo ?? 20160;
+    }
+
     public persistState() {
         this.errorState.apiKeyError = false;
         this.errorState.datasetIdError = false;
@@ -118,12 +194,8 @@ class AppContext {
         localStorage.setItem(this.localStorageName, JSON.stringify(this.state));
     }
 
-    public isConfigured() {
-        return this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language;
-    }
-
     public addDataset(newDataset: IDataset) {
-        if (!localStorage.getItem(this.localStorageName) || (this.state.datasets.length === 1 && !this.isConfigured())) {
+        if (!localStorage.getItem(this.localStorageName) || (this.state.datasets.length === 1 && !this.isConfigured)) {
             // when first coming here via share link we want to remove the default created dataset
             this.state.datasets = [];
         }
@@ -132,28 +204,59 @@ class AppContext {
         this.setDataset(newDataset.datasetId);
     }
 
-    public setDataset(datasetId: string) {        
+    public setDataset(datasetId: string) {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
-        this.generateNewTemporaryId();
+        basketService.clear();
         this.persistState();
         this.initializeWebComponents();
-    }
-
-    public generateNewTemporaryId() {
-        this.tracking.value.temporaryId = crypto.randomUUID();
-        this.persistState();
     }
 
     public deleteSelected() {
         this.state.datasets.splice(this.state.selectedDatasetIndex, 1);
 
         this.state.selectedDatasetIndex = 0;
-        
+
         this.initializeWebComponents();
         this.persistState();
     }
 
-    public assertApiCall(response: any|undefined) {
+    public setUser(user: User) {
+        this.ensureUsers();
+
+        this.context.value.selectedUserIndex = this.context.value.users!.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
+        basketService.clear();
+        this.persistState();
+    }
+
+    public deleteSelectedUser() {
+        if (!this.context.value.users || this.context.value.selectedUserIndex === undefined) {
+            return;
+        }
+
+        this.context.value.users.splice(this.context.value.selectedUserIndex, 1);
+
+        this.context.value.selectedUserIndex = 0;
+
+        this.initializeWebComponents();
+        this.persistState();
+    }
+
+    private ensureUsers() {
+        if (!this.context.value.users || this.context.value.users.length === 0) {
+            this.context.value.users = [UserFactory.anonymous()];
+        }
+
+        if (!this.context.value.selectedUserIndex) {
+            this.context.value.selectedUserIndex = 0;
+        }
+    }
+
+    public deleteCompanyById(id: string) {
+        this.context.value.companies = this.context.value.companies?.filter(x => x.id !== id);
+        this.persistState();
+    }
+
+    public assertApiCall(response: any | undefined) {
         if (response.status === 401) {
             this.errorState.datasetIdError = false;
             this.errorState.apiKeyError = true;
@@ -168,18 +271,12 @@ class AppContext {
         }
     }
 
-    public getUser() {
-        return this.state.tracking.enabled && this.state.tracking.temporaryId 
-            ? UserFactory.byTemporaryId(this.state.tracking.temporaryId)
-            : UserFactory.anonymous();
-    }
-
     public initializeWebComponents() {
         initializeRelewiseUI(
             {
                 contextSettings: {
                     getUser: () => {
-                        return this.getUser();
+                        return this.user.value;
                     },
                     language: this.context.value.language,
                     currency: this.context.value.currencyCode,
@@ -191,13 +288,19 @@ class AppContext {
                 },
                 selectedPropertiesSettings: {
                     product: this.selectedProductProperties,
+                    variant: { allData: true },
                 },
                 templates: {
                     product: (product, extentions) => {
                         return WebComponentProductTemplate(product, extentions);
                     },
                 },
-            });
+                filters: {
+                    product(builder) {
+                        globalProductRecommendationFilters(builder);
+                    },
+                },
+            }).useRecommendations();
     }
 }
 
