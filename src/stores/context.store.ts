@@ -22,6 +22,11 @@ export interface IDataset {
     userClassificationFilters?: boolean;
     recommendationsMinutesAgo?: number;
     showProductRelevanceScore?: boolean;
+    B2bRecommendations?: boolean;
+    showVariantsBadge?: boolean;
+    similarProductsOnPdp?: boolean;
+    variantBasedSearchOverlay?: boolean;
+    contentSearch?: boolean;
 }
 
 export interface ITracking {
@@ -130,7 +135,7 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
-            dataKeys: ['ByLine', 'Body', 'Image'],
+            dataKeys: ['ByLine', 'Body', 'Image', 'Summary'],
         } as SelectedProductPropertiesSettings;
     }
 

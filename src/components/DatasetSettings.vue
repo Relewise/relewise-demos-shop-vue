@@ -114,6 +114,60 @@
             </div>
 
             <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.B2bRecommendations" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Enable B2B recommendations</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will replace the recommendation on the cart page with popular products for category with id '3_5'.
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.showVariantsBadge" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Show variants badge</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will add a badge to product tiles when the product has variants available.
+                </p>
+            </div>
+            
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.similarProductsOnPdp" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Similar products recommendation on PDP</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    This will replace the recommendation on the PDP with a similar products recommendation with a specific category id filter when the product is sold out.
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.variantBasedSearchOverlay"
+                           class="accent-brand-500 mr-3 h-5 w-5"
+                           type="checkbox">
+                    Turn on the variant based search overlay</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    When enabled, variants are grouped and displayed under each product. 
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.contentSearch"
+                           class="accent-brand-500 mr-3 h-5 w-5"
+                           type="checkbox">
+                    Content Search</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    When this is enabled content will be able to be searched for on the search overlay. 
+                </p>
+            </div>
+
+            <div>
                 <label class="text-sm block mt-6">Set 'Minutes ago' used for recommendations</label>
                 <input v-model="context.recommendationsMinutesAgo" type="text">
                 <p class="text-gray-500 text-sm mt-1">
@@ -249,6 +303,12 @@ function shareLink() {
         hideSoldOutProducts: context.value.hideSoldOutProducts,
         userClassificationFilters: context.value.userClassificationFilters,
         recommendationsMinutesAgo: context.value.recommendationsMinutesAgo,
+        showProductRelevanceScore: context.value.showProductRelevanceScore,
+        B2bRecommendations: context.value.B2bRecommendations,
+        showVariantsBadge: context.value.showVariantsBadge,
+        similarProductsOnPdp: context.value.similarProductsOnPdp,
+        variantBasedSearchOverlay: context.value.variantBasedSearchOverlay,
+        contentSearch: context.value.contentSearch,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + encodeURIComponent(btoa(JSON.stringify(model))));

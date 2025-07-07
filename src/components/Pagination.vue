@@ -13,7 +13,7 @@
 <script lang="ts" setup>
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/solid';
 import { useOffsetPagination } from '@vueuse/core';
-import { toRefs } from 'vue';
+import { toRefs, ref, watch } from 'vue';
 
 const props = defineProps({ 
     pageSize: { 
@@ -30,20 +30,30 @@ const props = defineProps({
     },
 });
 const { pageSize, total, modelValue } = toRefs(props);
+const emit = defineEmits(['update:modelValue']);
 
-const {
-    pageCount,
-} = useOffsetPagination({
-    total: total.value,
-    page: modelValue.value,
-    pageSize: pageSize.value,
-    onPageChange: (p) => selectPage(p.currentPage),
+const pageSizeRef = ref(pageSize.value);
+const totalRef = ref(total.value);
+const currentPage = ref(modelValue.value);
+
+// Watch for external prop changes
+watch(pageSize, (val) => (pageSizeRef.value = val));
+watch(total, (val) => (totalRef.value = val));
+watch(modelValue, (val) => {
+    if (val !== currentPage.value) currentPage.value = val;
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const { pageCount } = useOffsetPagination({
+    total: totalRef,
+    page: currentPage,
+    pageSize: pageSizeRef,
+});
+
 function selectPage(page: number) {
-    emit('update:modelValue', page);
-    emit('change', page);
+    currentPage.value = page;
+    if (page !== modelValue.value) {
+        emit('update:modelValue', page);
+    }
 }
 </script>
 

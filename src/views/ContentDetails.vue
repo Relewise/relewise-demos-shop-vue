@@ -21,8 +21,8 @@
                     </div>
                 </div>
             </div>
-            <div v-if="productRecommendations 
-                     && productRecommendations.recommendations 
+            <div v-if="productRecommendations
+                     && productRecommendations.recommendations
                      && productRecommendations.recommendations.length > 0"
                  class="scrollbar mt-16">
                 <h2 class="text-2xl font-semibold mb-3">
@@ -30,7 +30,9 @@
                 </h2>
                 <div class="w-full overflow-x-scroll">
                     <div class="flex flex-row gap-6">
-                        <div v-for="(product, pIndex) in productRecommendations?.recommendations ?? []" :key="pIndex" class="min-w-[250px] pb-3">
+                        <div v-for="(product, pIndex) in productRecommendations?.recommendations ?? []"
+                             :key="pIndex"
+                             class="min-w-[250px] pb-3">
                             <ProductTile :product="product"/>
                         </div>
                     </div>
@@ -53,7 +55,7 @@ import trackingService from '@/services/tracking.service';
 import { findImage } from '@/helpers/imageHelper';
 
 const contentId = ref<string>('');
-const content = ref<ContentResult|null|undefined>(null);
+const content = ref<ContentResult | null | undefined>(null);
 const route = useRoute();
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const recommender = contextStore.getRecommender();
@@ -86,7 +88,7 @@ async function init() {
 async function recommend() {
     const request = new ProductsViewedAfterViewingContentBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({allData: true})
+        .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .setContentId(contentId.value)
         .filters(builder => globalProductRecommendationFilters(builder))
@@ -105,7 +107,3 @@ watch(route, () => {
 });
 
 </script>
-
-<style lang="scss">
-
-</style>

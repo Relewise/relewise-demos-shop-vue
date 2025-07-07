@@ -24,7 +24,7 @@ const showScore = contextStore.context.value.showProductRelevanceScore;
             <Image :entity="product" class="h-[275px]"/>
             <div class="absolute top-0 left-0 flex gap-1">
                 <Popover v-if="isPromotion" placement="bottom-start" class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3">
-                    <span @click="(e) => e.preventDefault()">SPONSORED</span>
+                    <span @click="(e) => e.preventDefault()">PROMOTED</span>
                     <ExclamationCircleIcon class="w-5 h-5" @click="(e) => e.preventDefault()"/>
     
                     <template #content>
@@ -51,6 +51,11 @@ const showScore = contextStore.context.value.showProductRelevanceScore;
                     v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
                     SOLD OUT
+                </span>
+                <span
+                    v-if="product.variant && contextStore.context.value.showVariantsBadge"
+                    class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
+                    VARIANTS AVAILABLE
                 </span>
             </div>
         </div>

@@ -78,7 +78,13 @@
                 </div>
             </div>
         </div>
-        <relewise-product-recommendation-batcher>
+        <div v-if="product?.data 
+            && product.data.SoldOut
+            && product.data.SoldOut.value === 'true' 
+            && contextStore.context.value.similarProductsOnPdp">
+            <SimilarProductsRecommendation :product="product"/>
+        </div>
+        <relewise-product-recommendation-batcher v-else>
             <div class="mb-16 scrollbar">
                 <h2 class="text-2xl mb-2 font-semibold">
                     Purchased with the product
@@ -121,6 +127,7 @@ import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import ProductVariants from '../components/ProductVariants.vue';
+import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);
@@ -133,10 +140,22 @@ const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const details = computed(() => {
     if (!product.value) return [];
 
-    return Object.entries(product.value.data ?? {})
+    const productDetails = Object.entries(product.value.data ?? {})
         .filter((x) => 
             x[1].type.indexOf('Object') === -1 && 
             ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0]));
+
+    var variantColor = product.value.variant?.data?.Color;
+    if (variantColor) {
+        productDetails.push(['Color', variantColor]);
+    }
+    
+    var variantMaterial = product.value.variant?.data?.Material;
+    if (variantMaterial) {
+        productDetails.push(['Material', variantMaterial]);
+    }
+
+    return productDetails; 
 });
 
 async function init() {

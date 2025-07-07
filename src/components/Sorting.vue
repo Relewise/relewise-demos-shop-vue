@@ -8,10 +8,10 @@
             <option value="Popular">
                 Popular
             </option>
-            <option value="SalesPriceDesc">
+            <option v-if="type === 'Product'" value="SalesPriceDesc">
                 Sales Price desc
             </option>
-            <option value="SalesPriceAsc">
+            <option v-if="type === 'Product'" value="SalesPriceAsc">
                 Sales Price asc
             </option>
         </select>
@@ -23,9 +23,10 @@ import { computed, toRefs, type PropType } from 'vue';
 
 const props = defineProps({
     modelValue: { type: [String, Array] as PropType<string | string[]>, required: true },
+    type: { type: String as PropType<'Content' | 'Product'>, required: true },
 });
 
-const { modelValue } = toRefs(props);
+const { modelValue, type } = toRefs(props);
 
 const emit = defineEmits(['update:modelValue']);
 

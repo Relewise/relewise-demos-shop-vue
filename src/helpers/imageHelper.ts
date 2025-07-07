@@ -2,7 +2,7 @@ import type { DataValue, ProductResult } from '@relewise/client';
 
 export const findImage = (product: ProductResult) => {
     return mapDataKey(product.variant?.data ?? {}) ??
-        mapDataKey(product?.data ?? {}) ??
+        mapDataKey(product.data ?? {}) ??
         '';
 };
 
