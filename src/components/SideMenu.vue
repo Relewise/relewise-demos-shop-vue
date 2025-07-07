@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@/App.vue';
-import { Bars3Icon, XMarkIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import { Bars3Icon, XMarkIcon, Cog6ToothIcon, UserIcon } from '@heroicons/vue/24/outline';
 import { toRefs } from '@vueuse/core';
 import { ref, type PropType } from 'vue';
 
@@ -23,10 +23,15 @@ const { mainCategories } = toRefs(props);
         <Bars3Icon class="h-8 w-8"/>
     </div>
     <Teleport to="#modal">
-        <div v-if="menuOpen" class="pb-4 px-4 mx-auto top-0 left-0 w-full h-full z-10 fixed overflow-scroll bg-white">
+        <div v-if="menuOpen" class="pb-4 px-4 mx-auto top-0 left-0 w-full h-full z-10 fixed overflow-scroll bg-white z-[1000]">
             <div class="flex w-full">
+                <RouterLink to="/personalisation"
+                            class="text-slate-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
+                            @click="toggleMenu">
+                    <UserIcon class="w-5 h-5 mr-1"/> Personalisation
+                </RouterLink>
                 <RouterLink to="/app-settings"
-                            class="text-zinc-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
+                            class="text-slate-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
                             @click="toggleMenu">
                     <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo
                 </RouterLink>
@@ -51,20 +56,3 @@ const { mainCategories } = toRefs(props);
         </div>
     </Teleport>
 </template>
-<style scoped lang="scss">  
-$headerHeight: 104px;
-
-.modal {
-    @apply bg-zinc-50 overflow-scroll;
-    position: fixed;
-    z-index: 999;
-    top: 0; // height of header
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-:root {
-    --relewise-grid-template-columns: repeat(5, 1fr);
-}
-</style>

@@ -1,17 +1,30 @@
 <template>
-    <ul v-if="(facet.field == 'Category' || facet.field == 'Brand') && allOptions.length > 0">
+    <ul v-if="allOptions.length > 0">
         <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
-            <label v-if="option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer">
+            <label v-if="(facet.field == 'Category' || facet.field == 'Brand') && option.value && typeof option.value === 'object' && 'id' in option.value" class="flex items-center cursor-pointer w-full">
                 <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
                        type="checkbox"
                        :value="option.value.id"
                        :checked="option.selected"
                        @click="applyFacet(facet.field, option.value.id)">
-                {{ option.value?.displayName ?? option.value.id }} <span class="ml-1 text-zinc-400">({{ option.hits }})</span>
+                {{ option.value?.displayName ?? option.value.id }}
+                <span class="flex-grow"></span>
+                <span class="">{{ option.hits }}</span>
+            </label>
+
+            <label v-if="facet.field == 'Data' && 'key' in facet && typeof facet.key === 'string'" class="flex items-center cursor-pointer w-full">
+                <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
+                       type="checkbox"
+                       :value="option.value"
+                       :checked="option.selected"
+                       @click="applyFacet(facet.key, option.value)">
+                {{ option.value }}
+                <span class="flex-grow"></span>
+                <span class="">{{ option.hits }}</span>
             </label>
         </li>
         <li v-if="elementsToShow < allOptions.length">
-            <button class="bg-zinc-500 py-1 px-2" @click="elementsToShow = allOptions.length">
+            <button class="bg-slate-900 hover:bg-slate-700 py-1 px-2" @click="elementsToShow = allOptions.length">
                 Show all
             </button>
         </li>
@@ -38,7 +51,14 @@ const allOptions = computed(() => {
 const options = computed(() => {
     if (!('available' in facet.value)) return [];
 
-    const sorted = [...(facet.value as any).available].sort((a, b) => a.value?.displayName?.localeCompare(b.value?.displayName ?? '') ?? 0);
+    const sorted = [...(facet.value as any).available].sort((a, b) => {
+
+        const aText = a.value?.displayName ?? a.value ?? '';
+        const bText = b.value?.displayName ?? b.value ?? '';
+        
+        return aText.toString().localeCompare(bText.toString(), 'da', { numeric: true });
+    });
+
     return sorted.slice(0, elementsToShow.value);
 });
 
@@ -46,7 +66,7 @@ const emit = defineEmits(['search']);
 
 const { facet } = toRefs(props);
 
-function applyFacet(name: string, value: string | null | undefined) {
-    emit('search', name, value);
+function applyFacet(name: string, value: string | null | undefined, clearSubsequentEntries: boolean = false, handlefilters: boolean = true) {
+    emit('search', { name, value, clearSubsequentEntries, handlefilters });
 }
 </script>

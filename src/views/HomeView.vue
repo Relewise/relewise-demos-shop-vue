@@ -1,67 +1,101 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse, type ProductRecommendationResponse } from '@relewise/client';
-import { ref, type Ref } from 'vue';
-import ProductTile from '../components/ProductTile.vue';
+import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
+import { ref } from 'vue';
+import { ChevronRightIcon } from '@heroicons/vue/24/outline';
+import OnSaleSlider from '@/components/OnSaleSlider.vue';
+import HeroBanner from '@/components/HeroBanner.vue';
+import PopularCategories from '@/components/PopularCategories.vue';
 
-const result: Ref<ProductRecommendationResponse | undefined> = ref<ProductRecommendationResponse | undefined>({} as ProductRecommendationResponse);
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
-const recommender = contextStore.getRecommender();
 
 const defaultSettings = ref(contextStore.defaultSettings);
+const isConfigured = ref(contextStore.isConfigured);
 
 recommend();
 
 async function recommend() {
-    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(20).build();
+    if (!isConfigured.value) return;
+
+    const recommender = contextStore.getRecommender();
+
+    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(4).sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo()).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
 }
-
 </script>
 <template>
-    <main class="">
-        <div class="flex justify-center">
-            <div class="mb-10 bg-white p-6 rounded">
-                <h1 class="text-3xl font-semibold mb-5">
-                    Welcome to the Relewise Demo Shop
-                </h1>
+    <main class="pt-0 flex flex-col gap-20">
+        <div class="flex flex-col">
+            <HeroBanner/>
+            <template v-if="isConfigured">
+                <PopularCategories class="pl-20 xl:hidden"/>
+            </template>
+        </div>
 
-                <p class="pb-2">
-                    Discover a wide range of offerings with our search and discovery tools, and take advantage of personalized product recommendations. Our platform provides a powerful search experience and intelligent recommendations to help you find exactly what you're looking for. With our advanced technology, exploring and discovering new products has never been easier.
-                </p>
-
-                <p>
-                    Relewise is an intelligent personalization platform that provides customized and relevant online experiences, designed to empower both developers and marketers. Our advanced search and recommendation algorithms ensure that you always find what you're looking for, and discover products you'll love.
-                </p>
+        <div v-if="isConfigured" class="scrollbar" style="background-color: #e9effb;">
+            <div class="waves"></div>
+            <div class="container mx-auto py-10">
+                <h2 class="text-3xl font-semibold mb-3 text-center">
+                    Most popular products right now
+                </h2>
+                <div class="w-full overflow-x-scroll pb-2">
+                    <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" :number-of-recommendations="contextStore.numberOfProductsToRecommend" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+                </div>
             </div>
+            <div class="reverse-waves"></div>
         </div>
 
-        <h2 class="text-3xl font-semibold mb-3">
-            Popular products
-        </h2>
-
-        <relewise-popular-products :displayedatlocation="defaultSettings.displayedAtLocation" numberofrecommendations="30"/>
-        <div class="grid gap-3 grid-cols-5 mt-3">
-            <ProductTile v-for="(product, index) in result!.recommendations" :key="index" :product="product"/>
-        </div>
-
-        <template v-if="brands?.recommendations">
-            <h2 class="text-3xl font-semibold mb-3 mt-10">
-                Popular brands
+        <div v-if="brands?.recommendations" class="container mx-auto p-2 xl:p-0">
+            <h2 class="text-3xl font-semibold mb-3 text-center">
+                Shop our popular brands
             </h2>
 
-            <div class="grid gap-3 grid-cols-2 lg:grid-cols-5 mt-3">
-                <RouterLink v-for="(brand, index) in brands.recommendations" :key="index" :to="{ query: { brand: brand.id, open: '1' } }" class="rounded bg-white hover:bg-zinc-200 px-3 py-3">
-                    {{ brand.displayName ?? brand.id }}
+            <div v-if="isConfigured" class="grid gap-3 grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 mt-3">
+                <RouterLink 
+                    v-for="(brand, index) in brands.recommendations" 
+                    :key="index" 
+                    :to="{ query: { brand: brand.id, open: '1', brandName: brand.displayName } }" 
+                    class="rounded text-slate-800 p-6"
+                    :class="`brand${6-index}`">
+                    <h3 class="text-3xl break-all">
+                        {{ brand.displayName ?? brand.id }}
+                    </h3>
+
+                    <button class="mt-4 bg-transparent border border-solid border-gray-800 rounded-lg text-gray-800 flex items-center gap-2">
+                        Shop now <ChevronRightIcon class="h-4"/>
+                    </button>
                 </RouterLink>
             </div>
+        </div>
+
+        <template v-if="isConfigured">
+            <OnSaleSlider/>
         </template>
     </main>
 </template>
 
-<style>
-:root {
-    --relewise-grid-template-columns: repeat(5, 1fr); 
+<style lang="scss">
+.cover {
+    background-image: url('/17580.jpg');
+    height: 500px;
 }
+
+.bg-gradient {
+    background: rgb(55, 100, 228);
+    background: radial-gradient(circle, rgb(55, 100, 228) 0%, rgb(15, 41, 115) 81%);
+}
+
+.is-animated {
+    animation: rotate 200s linear infinite;
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 </style>

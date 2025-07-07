@@ -9,6 +9,7 @@ import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
 import breakpointService from './services/breakpoint.service';
+import notificationsStore from './stores/notifications.store';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -29,10 +30,27 @@ async function init() {
         await router.push({ path: '/app-settings', query: query });
     }
 
-    if (contextStore.isConfigured()) {
+    if (contextStore.isConfigured) {
         const searcher = contextStore.getSearcher();
 
         getCategories(searcher);
+    }
+
+    if (params.has('datasetId')) {
+        const datasetId = params.get('datasetId');
+        
+        const url = new URL(window.location.href);
+        url.searchParams.delete('datasetId');
+        history.replaceState(null, '', url);
+
+        if (datasetId && contextStore.datasets.value.some(x => x.datasetId === datasetId)) {
+            contextStore.setDataset(datasetId); 
+            window.location.reload();
+        }
+        else {
+            notificationsStore.push({ title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
+        }
+
     }
 }
 
@@ -54,7 +72,6 @@ async function getCategories(searcher: Searcher) {
     mainCategories.value = navigation;
     footer.value = navigation.slice(0, 4);
 }
-
 </script>
 
 <template>
@@ -63,7 +80,7 @@ async function getCategories(searcher: Searcher) {
             :has-child-categories="hasChildCategories"
             :main-categories="mainCategories"/>
 
-    <div id="main-container" class="container px-2 mx-auto pt-3 pb-10 flex-grow relative">
+    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
         <RouterView/>
     </div>
     <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
@@ -74,35 +91,25 @@ async function getCategories(searcher: Searcher) {
 </template>
 
 <style lang="scss">
-.scrollable-element {
-    &::-webkit-scrollbar {
-        height: 4px !important;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: rgba(155, 155, 155, 0.5);
-        border-radius: 20px;
-        border: transparent;
-    }
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
-$headerHeight: 104px;
+$headerHeight: 106px;
 
 .navigationmodal {
-    @apply bg-white overflow-hidden;
+    @apply bg-white overflow-hidden border-t border-solid border-slate-100;
     position: fixed;
     z-index: 1000;
     top: $headerHeight; // height of header
     left: 0;
     width: 100%;
-    height: calc(100% - $headerHeight);
 
     .backdrop {
-        background: rgba(155, 155, 155, 0.5);
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.1));
         position: fixed;
         z-index: 1;
         left: 0;

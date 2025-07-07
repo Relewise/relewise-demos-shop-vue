@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import './styling/index.scss';
 import formatting from './plugins/formatting';
+import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
 
 declare module 'vue' {
@@ -17,7 +18,8 @@ const app = createApp(App);
 
 app
     .use(router)
-    .use(formatting);
+    .use(formatting)
+    .use(FloatingVue);
 
 app.mount('#app');
 
