@@ -59,19 +59,19 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
                 {{ product.Variants.length > 0 ? 'Variant name' : 'Product name' }}
             </div>
             <div class="hidden lg:block col-span-2">
+                Material
+            </div>
+            <div class="hidden lg:block col-span-2">
                 Availability
             </div>
             <div class="hidden lg:block col-span-2">
                 Price
             </div>
-            <div class="hidden lg:block col-span-2">
-                Price incl. VAT
-            </div>
         </div>
 
         <div v-for="(variant, vIndex) in product.Variants.length > 0 ? product.Variants : [null]"
              :key="variant?.variantId ?? index"
-             class="lg:grid lg:grid-cols-12 text-sm gap-2 py-2 px-2 border-b border-gray-200 cursor-pointer hover:bg-blue-50 transition items-center"
+             class="lg:grid lg:grid-cols-12 text-sm py-2 px-2 border-b border-gray-200 cursor-pointer hover:bg-blue-50 transition items-center"
              :class="vIndex % 2 === 1 ? 'bg-gray-100': ''"
              tabindex="0"
              @click="goToProductOrVariant(product, variant)">
@@ -86,6 +86,13 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
                 </span>
                 <span class="truncate block flex-1 min-w-0">
                     {{ variant?.displayName || product.displayName }}
+                </span>
+            </div>
+            <hr class="lg:hidden">
+            <div class="col-span-2 flex lg:block w-full">
+                <span class="lg:hidden inline-block w-1/3">Material: </span>
+                <span v-if="variant?.data?.Material" class="text-slate-900">
+                    {{ variant.data.Material.value }}
                 </span>
             </div>
             <hr class="lg:hidden">
@@ -107,13 +114,6 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
                 <span class="lg:hidden inline-block w-1/3">Price: </span>
                 <span v-if="variant?.listPrice ?? product.listPrice" class="text-slate-900">
                     {{ $format(variant?.listPrice ?? product.listPrice) }}
-                </span>
-            </div>
-            <hr class="lg:hidden">
-            <div class="col-span-2 font-semibold flex lg:block w-full">
-                <span class="lg:hidden inline-block w-1/3">Price incl. VAT: </span>
-                <span v-if="variant?.salesPrice ?? product.salesPrice" class="text-slate-900">
-                    {{ $format(variant?.salesPrice ?? product.salesPrice) }}
                 </span>
             </div>
         </div>
