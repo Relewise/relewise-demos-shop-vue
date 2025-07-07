@@ -1,4 +1,4 @@
-name: “Create Trello Card on Issue”
+name: Create Trello Card on Issue
 on:
   issues:
     types: [opened]
