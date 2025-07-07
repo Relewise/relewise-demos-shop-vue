@@ -52,6 +52,17 @@ async function init()
                 f.addProductCategoryIdFilter('ImmediateParentOrItsParent', categoryId);
             }
         })
+        .setEvaluationSettings(s => {
+            s.significanceOfSimilaritiesInDisplayName = 1;
+            s.significanceOfSimilarListPrice = .5;
+            s.significanceOfCommonImmediateParentCategories = 1;
+            s.significanceOfCommonParentsParentCategories = .5;
+            s.significanceOfCommonAncestorCategories = .25;
+            s.significanceOfCommonProductDataKeys = 0;  
+            s.significanceOfIdenticalProductDataValues = 1;
+            s.significanceOfSimilarSalesPrice = .5;
+            s.significanceOfSimilarBrand = .5;
+        })
         .setNumberOfRecommendations(10)
         .build();
 
