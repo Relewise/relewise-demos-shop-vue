@@ -157,6 +157,18 @@
 
             <div>
                 <label class="flex mt-2 items-center">
+                    <input v-model="context.productSearchHightlight"
+                           class="accent-brand-500 mr-3 h-5 w-5"
+                           type="checkbox">
+                    Product Search Hightligt</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    When this is enabled matched words in the displayname of products in the search overlay will be highlighted.
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
                     <input v-model="context.contentSearch"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
@@ -309,6 +321,7 @@ function shareLink() {
         similarProductsOnPdp: context.value.similarProductsOnPdp,
         variantBasedSearchOverlay: context.value.variantBasedSearchOverlay,
         contentSearch: context.value.contentSearch,
+        productSearchHightlight: context.value.productSearchHightlight,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + encodeURIComponent(btoa(JSON.stringify(model))));

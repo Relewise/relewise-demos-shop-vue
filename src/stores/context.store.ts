@@ -27,6 +27,7 @@ export interface IDataset {
     similarProductsOnPdp?: boolean;
     variantBasedSearchOverlay?: boolean;
     contentSearch?: boolean;
+    productSearchHightlight?: boolean;
 }
 
 export interface ITracking {

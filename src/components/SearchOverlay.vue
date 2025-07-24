@@ -159,6 +159,22 @@ async function search() {
                     variation: { key: variationName },
                 },
             })
+            .highlighting(h =>
+                h.enabled(true)
+                    .setHighlightable({
+                        displayName: true,
+                    })
+                    .setShape({
+                        snippets: {
+                            include: false,
+                            useEllipses: true,
+                            includeMatchedWords: true,
+                        },
+                        offsets: {
+                            include: true,
+                        },
+                    }),
+            )
             .build())
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product', 'Content')
