@@ -159,17 +159,28 @@ async function search() {
                     variation: { key: variationName },
                 },
             })
+            .highlighting(h =>
+                h.enabled(contextStore.context.value.searchHighlight ?? false)
+                    .setHighlightable({
+                        displayName: true,
+                    })
+                    .setShape({
+                        snippets: {
+                            include: false,
+                            useEllipses: true,
+                            includeMatchedWords: true,
+                        },
+                        offsets: {
+                            include: true,
+                        },
+                    }),
+            )
             .build())
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product', 'Content')
             .setTerm(searchTerm.value)
             .take(5)
             .filters(f => globalProductRecommendationFilters(f))
-            .build())
-        .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
-            .setTerm(searchTerm.value)
-            .pagination(p => p.setPageSize(10))
-            .setContentProperties(contextStore.selectedContentProperties)
             .build())
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
@@ -179,7 +190,7 @@ async function search() {
                 getFacets('ContentSearch', f, filters.value);
             })
             .highlighting(h =>
-                h.enabled(true)
+                h.enabled(contextStore.context.value.searchHighlight ?? false)
                     .setHighlightable({
                         displayName: true,
                         dataKeys: ['Summary'],
@@ -225,8 +236,8 @@ async function search() {
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
         products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
-        if (response.responses.length === 4) {
-            contentSearchResult.value = response.responses[3] as ContentSearchResponse;
+        if (response.responses.length === 3) {
+            contentSearchResult.value = response.responses[2] as ContentSearchResponse;
         }
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];

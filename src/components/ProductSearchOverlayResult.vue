@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type ContentSearchResponse, type ProductRecommendationResponse, type ProductSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
-import { ref, watch, type PropType } from 'vue';
+import { computed, ref, watch, type PropType } from 'vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
 import { useRoute } from 'vue-router';
@@ -30,6 +30,8 @@ const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for'])
 
 const sortValue = ref(props.sort);
 const pageValue = ref(props.page);
+
+const contentResults = computed(() => props.contentRecommendationResult?.results?.slice(0, 10));
 
 watch(sortValue, (newVal) => {
     emit('update:sort', newVal);
@@ -87,7 +89,7 @@ function searchFor(term: string) {
                         Content
                     </h4>
                     <div class="flex flex-col gap-1">
-                        <template v-for="content in contentRecommendationResult.results" :key="content.contentId ?? ''">
+                        <template v-for="content in contentResults" :key="content.contentId ?? ''">
                             <ContentTile :content="content"/>
                         </template>
                     </div>

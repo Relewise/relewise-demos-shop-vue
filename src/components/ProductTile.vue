@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { ProductResult } from '@relewise/client';
-import { toRefs, type PropType } from 'vue';
+import { computed, toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
 import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
+import { highlightWithOffsets } from '@/helpers/highligther';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
@@ -15,6 +16,15 @@ const { product } = toRefs(props);
 
 const showScore = contextStore.context.value.showProductRelevanceScore;
 
+const displayName = computed(() => {
+    if (!contextStore.context.value.searchHighlight || !product.value.displayName)
+        return product.value.displayName;   
+    
+    const highlight = product.value.highlight;
+    const matchedOffsets = highlight?.offsets?.displayName;
+
+    return highlightWithOffsets(product.value.displayName, matchedOffsets);
+});
 </script>
 
 <template>
@@ -64,7 +74,7 @@ const showScore = contextStore.context.value.showProductRelevanceScore;
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
                 <span v-if="showScore && product.score?.relevance" class="float-right text-sm text-slate-500">Score: {{ product.score.relevance.toFixed(2) }}</span>
                 <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
-                    {{ product.displayName }}
+                    <span v-html="displayName"></span>
                 </h5>
             </div>
             <div class="my-2 flex items-center justify-between">
