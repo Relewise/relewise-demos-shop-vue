@@ -5,6 +5,7 @@ import Image from './Image.vue';
 import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
+import { highlightWithOffsets } from '@/helpers/highligther';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
@@ -16,31 +17,13 @@ const { product } = toRefs(props);
 const showScore = contextStore.context.value.showProductRelevanceScore;
 
 const displayName = computed(() => {
-    if (!contextStore.context.value.productSearchHightlight || !product.value.displayName)
+    if (!contextStore.context.value.searchHighlight || !product.value.displayName)
         return product.value.displayName;   
     
     const highlight = product.value.highlight;
     const matchedOffsets = highlight?.offsets?.displayName;
 
-    if (!matchedOffsets || matchedOffsets.length === 0) return product.value.displayName;
-
-    let result = '';
-    let currentIndex = 0;
-
-    for (const offset of matchedOffsets) {
-        // The text before the match
-        result += product.value.displayName.slice(currentIndex, offset.lowerBoundInclusive);
-
-        // Highligth the match
-        result += `<strong>${product.value.displayName.slice(offset.lowerBoundInclusive, offset.upperBoundInclusive)}</strong>`;
-        
-        currentIndex = offset.upperBoundInclusive;
-    }
-
-    // The text after all matches
-    result += product.value.displayName.slice(currentIndex);
-    return result;
-
+    return highlightWithOffsets(product.value.displayName, matchedOffsets);
 });
 </script>
 

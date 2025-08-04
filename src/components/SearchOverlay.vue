@@ -160,7 +160,7 @@ async function search() {
                 },
             })
             .highlighting(h =>
-                h.enabled(true)
+                h.enabled(contextStore.context.value.searchHighlight ?? false)
                     .setHighlightable({
                         displayName: true,
                     })
@@ -183,11 +183,6 @@ async function search() {
             .filters(f => globalProductRecommendationFilters(f))
             .build())
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
-            .setTerm(searchTerm.value)
-            .pagination(p => p.setPageSize(10))
-            .setContentProperties(contextStore.selectedContentProperties)
-            .build())
-        .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
@@ -195,7 +190,7 @@ async function search() {
                 getFacets('ContentSearch', f, filters.value);
             })
             .highlighting(h =>
-                h.enabled(true)
+                h.enabled(contextStore.context.value.searchHighlight ?? false)
                     .setHighlightable({
                         displayName: true,
                         dataKeys: ['Summary'],
@@ -241,8 +236,8 @@ async function search() {
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
         products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
-        if (response.responses.length === 4) {
-            contentSearchResult.value = response.responses[3] as ContentSearchResponse;
+        if (response.responses.length === 3) {
+            contentSearchResult.value = response.responses[2] as ContentSearchResponse;
         }
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
