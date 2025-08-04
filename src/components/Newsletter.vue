@@ -41,7 +41,7 @@ watch(email, () => {
 }, { immediate: true });
 
 async function subscribe() {
-    if (!isValidEmail.value) {
+    if (!isValidEmail.value || !email.value) {
         return;
     }
     
