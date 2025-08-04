@@ -148,22 +148,22 @@
                     <input v-model="context.variantBasedSearchOverlay"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
-                    Turn on the variant based search overlay</label>
+                    Turn on the variant-based search overlay</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When enabled, variants are grouped and displayed under each product. 
+                    When enabled, variants are grouped and displayed under each product.
                 </p>
             </div>
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.productSearchHightlight"
+                    <input v-model="context.searchHighlight"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
-                    Product Search Hightligt</label>
+                    Search Highlight</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled matched words in the displayname of products in the search overlay will be highlighted.
+                    When this is enabled, matched words in the display name of products & content in the search overlay will be highlighted.
                 </p>
             </div>
 
@@ -175,7 +175,7 @@
                     Content Search</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled content will be able to be searched for on the search overlay. 
+                    When this is enabled, content will be able to be searched for in the search overlay.
                 </p>
             </div>
 
@@ -321,7 +321,7 @@ function shareLink() {
         similarProductsOnPdp: context.value.similarProductsOnPdp,
         variantBasedSearchOverlay: context.value.variantBasedSearchOverlay,
         contentSearch: context.value.contentSearch,
-        productSearchHightlight: context.value.productSearchHightlight,
+        searchHighlight: context.value.searchHighlight,
     };
 
     navigator.clipboard.writeText(window.location.href + '?share=' + encodeURIComponent(btoa(JSON.stringify(model))));
