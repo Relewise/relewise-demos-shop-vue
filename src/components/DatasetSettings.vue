@@ -160,7 +160,7 @@
                     <input v-model="context.productSearchHightlight"
                            class="accent-brand-500 mr-3 h-5 w-5"
                            type="checkbox">
-                    Product Search Hightligt</label>
+                    Product Search Matched Words Hightlighting</label>
 
                 <p class="text-gray-500 text-sm mt-1">
                     When this is enabled matched words in the displayname of products in the search overlay will be highlighted.
