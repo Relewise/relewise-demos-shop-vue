@@ -37,7 +37,7 @@ async function recommend() {
             <div class="waves"></div>
             <div class="container mx-auto py-10">
                 <h2 class="text-3xl font-semibold mb-3 text-center">
-                    Most popular products right now
+                    Most popular products right now.
                 </h2>
                 <div class="w-full overflow-x-scroll pb-2">
                     <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" :number-of-recommendations="contextStore.numberOfProductsToRecommend" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
