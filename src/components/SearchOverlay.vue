@@ -315,7 +315,7 @@ watch(activeTab, () => {
                 <ProductSearchOverlayResult 
                     v-if="activeTab === Tabs.Products
                         && productSearchResult" 
-                    v-model:sort="filters.sort"
+                    v-model:sort="filters.sort!"
                     v-model:page="page"
                     :page-size="productPageSize"
                     :term="filters.term ?? ''"
@@ -331,7 +331,7 @@ watch(activeTab, () => {
                     v-else-if="activeTab === Tabs.Content 
                         && contextStore.context.value.contentSearch
                         && contentSearchResult"
-                    v-model:sort="filters.sort"
+                    v-model:sort="filters.sort!"
                     v-model:page="page"
                     :content-search-result="contentSearchResult"
                     :page-size="contentPageSize"
