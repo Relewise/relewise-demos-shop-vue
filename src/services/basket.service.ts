@@ -30,12 +30,12 @@ class BasketService {
         return computed(() => this.state.model);
     }
 
-    async addProduct({ product, quantityDelta }: {product: ProductResult, quantityDelta: number}) {
-        const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId 
+    async addProduct({ product, quantityDelta }: { product: ProductResult, quantityDelta: number }) {
+        const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId
             && x.product.variant?.variantId === product.variant?.variantId);
 
         if (productIndex > -1) {
-            const lineItem = this.state.model.lineItems[productIndex];
+            const lineItem = this.state.model.lineItems[productIndex]!;
             lineItem.quantity = lineItem.quantity + quantityDelta;
             if (lineItem.quantity <= 0) {
                 this.state.model.lineItems.splice(productIndex, 1);

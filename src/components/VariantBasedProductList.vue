@@ -22,7 +22,7 @@ const groupedProducts = computed(() => {
         } 
 
         if (product.variant) {
-            groups[product.productId].Variants.push(product.variant);
+            groups[product.productId]?.Variants.push(product.variant);
         }
     });
 

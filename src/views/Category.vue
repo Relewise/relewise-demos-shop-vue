@@ -40,7 +40,7 @@
 
                         <div class="hidden lg:block lg:flex-grow">
                         </div>
-                        <Sorting v-model="filters.sort" type="Product" @change="search"/>
+                        <Sorting v-if="filters.sort" v-model="filters.sort" type="Product" @change="search"/>
                     </div>
                     <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
                         <ProductTile v-for="(product, pIndex) in products"
@@ -162,8 +162,8 @@ async function init() {
                 }
 
                 breadcrumb.value.push({
-                    id: category.value.categoryId,
-                    displayName: category.value.displayName,
+                    id: category.value!.categoryId,
+                    displayName: category.value!.displayName,
                 });
 
             }
@@ -238,14 +238,14 @@ async function search() {
     if (response && response.facets && response.facets.items) {
         if (renderCatoryLinks.value && response.facets.items[0] !== null) {
             const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
-            var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0];
-            while (root.category.categoryId !== categoryId.value) {
-                if (!root.children) {
+            var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0]!;
+            while (root?.category.categoryId !== categoryId.value) {
+                if (!root?.children) {
                     root = null;
                     break;
                 } 
 
-                root = root.children[0];
+                root = root.children[0] ?? null;
             }
             if (root != null) {
                 childCategories.value = root.children ?? undefined;

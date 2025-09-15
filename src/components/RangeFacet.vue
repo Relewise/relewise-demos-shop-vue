@@ -116,8 +116,8 @@ watch(max, (newValue) => {
 });
 
 watch(sliderModel, (newValue) => {
-    min.value = newValue[0];
-    max.value = newValue[1];
+    min.value = newValue[0] ?? 0;
+    max.value = newValue[1] ?? 0;
 });
 
 function applyFacet(name: string, value: string | null | undefined = null, clearSubsequentEntries: boolean = false, handlefilters: boolean = false) {
