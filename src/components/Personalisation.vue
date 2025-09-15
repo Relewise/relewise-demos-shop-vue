@@ -205,9 +205,9 @@ const savedCompany = ref(false);
 
 const classifications = ref(Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null })));
 const identifiers = ref(Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null })));
-const data = ref(Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null })));
+const data = ref(Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x]?.type === 'String')  ? user.value.data[x].value as string : null })));
 const errors = ref<string[]>([]);
-const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0] : { id: '' });
+const company = ref<Company>(dataset.value.companies?.length === 1 ? dataset.value.companies[0]! : { id: '' });
 
 function generateId(type: 'temporary' | 'authenticated' | 'companyId') {
     const id = crypto.randomUUID();
@@ -270,7 +270,7 @@ function setUser(userToSet: User) {
 
     classifications.value = Object.keys(user.value.classifications ?? {}).map(x => ({ key: x, value: user.value.classifications![x] ?? null }));
     identifiers.value = Object.keys(user.value.identifiers ?? {}).map(x => ({ key: x, value: user.value.identifiers![x] ?? null }));
-    data.value = Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x].type === 'String')  ? user.value.data[x].value as string : null }));
+    data.value = Object.keys(user.value.data ?? {}).map(x => ({ key: x, value: (user.value.data && user.value.data[x]?.type === 'String')  ? user.value.data[x].value as string : null }));
 }
 
 function addEmptyUser() {

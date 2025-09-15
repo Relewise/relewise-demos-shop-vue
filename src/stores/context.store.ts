@@ -1,5 +1,5 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings,  type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
+import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { initializeRelewiseUI } from '@relewise/web-components';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
@@ -75,7 +75,7 @@ class AppContext {
     }
 
     public get context() {
-        return computed(() => this.state.datasets[this.state.selectedDatasetIndex]);
+        return computed(() => this.state.datasets[this.state.selectedDatasetIndex]!);
     }
 
     public get datasets() {
@@ -98,7 +98,7 @@ class AppContext {
         return computed(() => {
             this.ensureUsers();
 
-            return this.context.value.users![this.context.value.selectedUserIndex!];
+            return this.context.value.users![this.context.value.selectedUserIndex!]!;
         });
     }
 
