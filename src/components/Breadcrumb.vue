@@ -56,21 +56,21 @@ const generateRoute = (index: number): RouteLocationAsRelativeGeneric | undefine
     switch (index) {
     case 0: return {
         name: 'category',
-        params: { id: breadcrumb.value[index].id },
+        params: { id: breadcrumb.value[index]?.id },
     };
     case 1: return {
         name: 'sub-category',
         params: {
-            parent: breadcrumb.value[0].id,
-            id: breadcrumb.value[index].id,
+            parent: breadcrumb.value[0]?.id,
+            id: breadcrumb.value[index]?.id,
         },
     };
     case 2: return {
         name: 'sub-sub-category',
         params: {
-            grand: breadcrumb.value[0].id,
-            parent: breadcrumb.value[1].id,
-            id: breadcrumb.value[index].id,
+            grand: breadcrumb.value[0]?.id,
+            parent: breadcrumb.value[1]?.id,
+            id: breadcrumb.value[index]?.id,
         },
     };
     }

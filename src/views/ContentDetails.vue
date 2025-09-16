@@ -78,7 +78,7 @@ async function init() {
         content.value = (await searcher.searchContents(request))?.results![0];
         if (content.value?.categoryPaths) {
             // Taking the first path on the product to render the breadcrumb
-            breadcrumb.value = content.value?.categoryPaths[0].pathFromRoot ?? [];
+            breadcrumb.value = content.value?.categoryPaths[0]?.pathFromRoot ?? [];
         }
 
         await recommend();
