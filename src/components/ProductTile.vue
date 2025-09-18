@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import type { ProductResult } from '@relewise/client';
+import type { ProductAndVariantId, ProductResult } from '@relewise/client';
 import { computed, toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
 import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
 import { highlightWithOffsets } from '@/helpers/highligther';
+import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/vue/24/solid';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
     isPromotion: { type: Boolean, required: false, default: false },
+    feedId: { type: String, required: false },
 });
 
-const { product } = toRefs(props);
+const { product, feedId } = toRefs(props);
 
 const showScore = contextStore.context.value.showProductRelevanceScore;
 
@@ -25,6 +27,20 @@ const displayName = computed(() => {
 
     return highlightWithOffsets(product.value.displayName, matchedOffsets);
 });
+
+function giveFeedback(kind: "Like" | "Dislike") {
+    if (!feedId?.value) return;
+
+    const item: ProductAndVariantId = { productId: product.value.productId!, variantId: product.value.variant?.variantId };
+
+    contextStore.getTracker().trackProductEngagement({ 
+        user: contextStore.user.value, 
+        engagement: {
+            sentiment: kind
+        },
+        product: item
+    });
+}
 </script>
 
 <template>
@@ -79,15 +95,20 @@ const displayName = computed(() => {
             </div>
             <div class="my-2 flex items-center justify-between">
                 <p>
-                    <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice)
-                    }}</span>
+                    <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">
+                        {{ $format(product.salesPrice) }}
+                    </span>
                     <span
                         v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
                         class="text-slate-900 line-through">
                         {{ $format(product.listPrice) }}
                     </span>
                 </p>
-            </div>
+                <span class="flex gap-3 text-neutral-400" v-if="feedId">
+                    <HandThumbUpIcon class="h-5 hover:text-neutral-800" @click.prevent.stop="giveFeedback('Like')"/>
+                    <HandThumbDownIcon class="h-5 hover:text-neutral-800" @click.prevent.stop="giveFeedback('Dislike')" />
+                </span>
+            </div>            
         </div>
     </RouterLink>
 </template>
