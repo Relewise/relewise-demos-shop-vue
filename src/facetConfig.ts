@@ -3,6 +3,14 @@ import type { DataSelectionStrategy } from '@relewise/client';
 export const facetConfig: FacetConfigEntry[] = [
     {
         contexts: ['SearchOverlay', 'Brand'],
+        type: 'DataString',
+        dataKey: 'Diameter (Ø)',
+        renderType: 'Checklist',
+        dataSelectionStrategy: 'Product',
+        label: 'Diameter (Ø)',
+    },
+    {
+        contexts: ['SearchOverlay', 'Brand'],
         type: 'Category',
         renderType: 'Checklist',
         label: 'Category',

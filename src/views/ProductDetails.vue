@@ -143,7 +143,7 @@ const details = computed(() => {
     const productDetails = Object.entries(product.value.data ?? {})
         .filter((x) => 
             x[1].type.indexOf('Object') === -1 && 
-            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0]));
+            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.context.value.language}_StockLevel`].includes(x[0])); //add fields here to show on PDP
 
     var variantColor = product.value.variant?.data?.Color;
     if (variantColor) {
