@@ -103,7 +103,7 @@ export const facetConfig: FacetConfigEntry[] = [
     },
     {
         contexts: ['Category', 'SearchOverlay', 'Brand'],
-        type: 'DataDouble',
+        type: 'DataString',
         dataKey: 'Brandwerend',
         renderType: 'Checklist',
         dataSelectionStrategy: 'Product',
