@@ -39,22 +39,19 @@ const displayName = computed(() => {
 </script>
 
 <template>
-    <RouterLink
-        :to="{ name: 'content', params: { id: content.contentId } }"
-        class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200 h-full">
+    <RouterLink :to="{ name: 'content', params: { id: content.contentId } }"
+        class="relative flex flex-col overflow-hidden text-slate-900 hover:!text-brand-500 transition duration-200 h-full">
         <div class="mt-2 flex gap-4 items-start h-full">
-            <div v-if="findImage(content)"
-                 class="flex-shrink-0"
-                 :class="showSummary ? 'w-36 h-36' : 'w-28 h-28'">
-                <Image :entity="content"/>
+            <div v-if="findImage(content)" class="flex-shrink-0" :class="showSummary ? 'w-36 h-36' : 'w-28 h-28'">
+                <Image :entity="content" />
             </div>
 
             <div class="text-left flex flex-col flex-1 h-full">
-                <h5 class="tracking-tight font-medium"
-                    :class="showSummary ? 'text-2xl' : 'text-lg'"
+                <h5 class="tracking-tight font-medium" :class="showSummary ? 'text-2xl' : 'text-lg'"
                     v-html="displayName">
                 </h5>
-                <span v-if="showSummary" class="text-slate-700 flex-1 mt-1 overflow-hidden line-clamp-2" v-html="summarySnippet"></span>
+                <span v-if="showSummary" class="text-slate-700 flex-1 mt-1 overflow-hidden line-clamp-2"
+                    v-html="summarySnippet"></span>
             </div>
         </div>
     </RouterLink>
