@@ -16,6 +16,14 @@ export const facetConfig: FacetConfigEntry[] = [
     {
         contexts: ['Category', 'SearchOverlay', 'Brand'],
         type: 'DataString',
+        dataKey: 'Diameter (D)',
+        renderType: 'Checklist',
+        dataSelectionStrategy: 'Product',
+        label: 'Diameter (D)',
+    },
+    {
+        contexts: ['Category', 'SearchOverlay', 'Brand'],
+        type: 'DataString',
         dataKey: 'Materiaal',
         renderType: 'Checklist',
         dataSelectionStrategy: 'Product',
