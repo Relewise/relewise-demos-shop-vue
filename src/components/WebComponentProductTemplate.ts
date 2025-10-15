@@ -1,8 +1,8 @@
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
-import type { TemplateExtensions } from '@relewise/web-components';
+import type { ProductTemplateExtensions } from '@relewise/web-components';
 
-export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: TemplateExtensions) => {
+export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
     let path = `/product/${product.productId}`;
 
     if (product.variant?.variantId) {
