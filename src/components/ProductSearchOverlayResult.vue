@@ -84,7 +84,7 @@ function searchFor(term: string) {
                             pageValue = 1;
                             search();
                         }"/>
-                <div v-if="contentRecommendationResult && contentRecommendationResult.results && contentRecommendationResult.results.length > 0">
+                <div v-if="contentRecommendationResult && contentRecommendationResult.results && contentRecommendationResult.results.length > 0 && !route.query.brandName">
                     <h4 class="font-semibold text-lg mb-1">
                         Content
                     </h4>
