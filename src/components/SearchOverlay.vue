@@ -117,6 +117,10 @@ async function search() {
     const selectedCategoryFilterIds = filters.value['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
+    const contentTerm = filters.value.term.length > 0
+        ? filters.value.term
+        : (typeof route.query.brandName === 'string' ? route.query.brandName : null);
+
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -184,7 +188,7 @@ async function search() {
             .build())
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
-            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
+            .setTerm(contentTerm)
             .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
             .facets(f => {
                 getFacets('ContentSearch', f, filters.value);

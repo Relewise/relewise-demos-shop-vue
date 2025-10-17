@@ -20,7 +20,7 @@ In order to run the demo shop you need access to a dataset in Relewise.
 
 ### Previews
 
-Whenever a pull request is made, there will automaticly be created a preview linked to the PR with a life time of 90 days.
+Whenever a pull request is made, there will automatically be created a preview linked to the PR with a life time of 90 days.
 
 ## Deployments
 
