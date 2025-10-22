@@ -121,6 +121,7 @@ async function search() {
         ? filters.value.term
         : (typeof route.query.brandName === 'string' ? route.query.brandName : null);
 
+    const brandId = route.query.brand;
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -136,8 +137,8 @@ async function search() {
                     });
                 }
 
-                if (route.query.brandName && typeof route.query.brandName === 'string') {
-                    f.addBrandIdFilter(route.query.brandName);
+                if (brandId && typeof brandId === 'string') {
+                    f.addBrandIdFilter(brandId);
                 }
 
                 contextStore.userClassificationBasedFilters(f);
