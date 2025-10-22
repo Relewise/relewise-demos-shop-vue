@@ -138,7 +138,8 @@ async function search() {
                 }
 
                 if (brandId && typeof brandId === 'string') {
-                        f.addBrandIdFilter(brandId);
+                if (brandId && typeof brandId === 'string') {
+                    f.addBrandIdFilter(brandId);
                 }
 
                 contextStore.userClassificationBasedFilters(f);
