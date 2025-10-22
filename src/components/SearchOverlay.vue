@@ -122,7 +122,6 @@ async function search() {
         : (typeof route.query.brandName === 'string' ? route.query.brandName : null);
 
     const brandId = route.query.brand;
-
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
