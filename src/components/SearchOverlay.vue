@@ -138,8 +138,7 @@ async function search() {
                 }
 
                 if (brandId && typeof brandId === 'string') {
-                if (brandId && typeof brandId === 'string') {
-                    f.addBrandIdFilter(brandId);
+                        f.addBrandIdFilter(brandId);
                 }
 
                 contextStore.userClassificationBasedFilters(f);
