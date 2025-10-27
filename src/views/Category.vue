@@ -2,9 +2,22 @@
     <div class="category-page container mx-auto p-2 xl:p-0 relative">
         <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb"/>
 
-        <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
+
+         <div class="grid grid-cols-1 xl:grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start items-center">
+        <div>
+<h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
             {{ category?.displayName }}
         </h1>
+            <span v-if="result && result.hits > 0" class="ml-4 text-sm lg:text-base whitespace-nowrap">
+                                Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of
+                                {{ result?.hits }} products </span>
+        </div>
+
+                        <div class="hidden lg:block lg:flex-grow">
+                        </div>
+                        <Sorting v-if="filters.sort != null " v-model="filters.sort" type="Product" @change="search"/>
+                    </div>
+        
 
         <div class="flex gap-10">
             <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
@@ -31,22 +44,23 @@
             </div>
             <div class="w-full lg:w-4/5">
                 <div v-if="result?.results">
-                    <div class="grid grid-cols-1 xl:grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start">
-                        <div>
-                            <span v-if="result.hits > 0" class="text-sm lg:text-base whitespace-nowrap">
-                                Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of
-                                {{ result?.hits }} products </span>
-                        </div>
+                    <DisplayAdHeroBanner 
+                        v-if="result.retailMedia?.placements?.HERO_BANNER?.results && result.retailMedia?.placements?.HERO_BANNER?.results[0]?.promotedDisplayAd?.result" 
+                        v-model="result.retailMedia.placements.HERO_BANNER.results[0].promotedDisplayAd">
+                    </DisplayAdHeroBanner>
 
-                        <div class="hidden lg:block lg:flex-grow">
-                        </div>
-                        <Sorting v-if="filters.sort" v-model="filters.sort" type="Product" @change="search"/>
-                    </div>
+                   
                     <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
-                        <ProductTile v-for="(product, pIndex) in products"
-                                     :key="pIndex"
-                                     :product="product.product"
-                                     :is-promotion="product.isPromotion"/>
+                        <template v-for="(product, pIndex) in products"    :key="pIndex">
+                            <ProductTile
+                                v-if="product.product"
+                                :product="product.product"
+                                :is-promotion="product.isPromotion"/>
+                             <DisplayAdTile
+                                v-else-if="product.displayAd"
+                                :key="'ad'+pIndex"
+                                :display-ad="product.displayAd"/>
+                        </template>
                     </div>
 
                     <div class="py-3 flex justify-center mt-10">
@@ -55,13 +69,20 @@
                 </div>
             </div>
         </div>
-        <div v-if="rightProducts" class="absolute h-[95%] top-[110px] -right-56 flex flex-col gap-2">
-            <ProductTile
-                v-for="(product, pIndex) in rightProducts.slice(0, 4)"
-                :key="pIndex"
-                :product="product.product"
-                :is-promotion="product.isPromotion"
-                class="w-[200px]"/>
+        <div v-if="rightSide" class="absolute h-[95%] top-[128px] -right-56 flex flex-col gap-2">
+            <template v-for="(item, pIndex) in rightSide.slice(0, 4)">
+                <ProductTile
+                    v-if="item.promotedProduct?.result"
+                    :key="pIndex"
+                    :product="item.promotedProduct?.result"
+                    :is-promotion="true"
+                    class="w-[200px]"/>
+                <DisplayAdTile
+                    v-else-if="item.promotedDisplayAd?.result"
+                    :key="'ad'+pIndex"
+                    :display-ad="item.promotedDisplayAd"
+                    class="w-[200px]"/>
+            </template>
         </div>
     </div>
 </template>
@@ -73,7 +94,7 @@ import ProductTile from '../components/ProductTile.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import Facets from '../components/Facets.vue';
 import { ref, type Ref, watch } from 'vue';
-import { ProductSearchBuilder, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult } from '@relewise/client';
+import { ProductSearchBuilder, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
 import trackingService from '@/services/tracking.service';
@@ -85,9 +106,11 @@ import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
+import DisplayAdHeroBanner from '@/components/DIsplayAds/DisplayAd-HeroBanner.vue';
+import DisplayAdTile from '@/components/DIsplayAds/DisplayAd-Tile.vue';
 
 const products = ref<ProductWithType[] | null>(null);
-const rightProducts = ref<ProductWithType[] | null>(null);
+const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const route = useRoute();
 const category = ref<CategoryResult | undefined>(undefined);
 const childCategories = ref<CategoryHierarchyFacetResultCategoryNode[] | undefined>(undefined);
@@ -197,9 +220,14 @@ async function search() {
         .setRetailMedia({
             location: {
                 key: 'PRODUCT_LISTING_PAGE',
-                placements: [{ key: 'TOP' }, { key: 'RIGHT' }],
+                placements: [{ key: 'TOP' }, { key: 'RIGHT' }, { key: 'HERO_BANNER' }],
                 variation: { key: variationName },
             },
+            settings: {
+                selectedDisplayAdProperties: {
+                    allData: true,
+                }
+            }
         })
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
@@ -256,14 +284,14 @@ async function search() {
     }
 
     products.value = response?.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
-    rightProducts.value = [];
+    rightSide.value = [];
     if (response?.retailMedia?.placements) {
         const placement = response.retailMedia.placements.TOP;
         if (placement) {
 
             if (placement?.results) {
                 products.value = placement.results
-                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result, displayAd: x.promotedDisplayAd }))
                     .concat(products.value ?? []);
             }
         }
@@ -272,8 +300,7 @@ async function search() {
         if (rightPlacement && breakpointService.active.value === 'largeDesktop') {
 
             if (rightPlacement?.results) {
-                rightProducts.value = rightPlacement.results
-                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }));
+                rightSide.value = rightPlacement.results;
             }
         }
     }

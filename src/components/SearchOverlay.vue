@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult } from '@relewise/client';
 import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
@@ -28,6 +28,7 @@ const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
 const page = ref(1);	
 const predictionsList = ref<SearchTermPredictionResult[]>([]);	
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });	
+const heroBanner = ref<DisplayAdResult>();	
 const route = useRoute();
 
 let abortController = new AbortController();
@@ -155,9 +156,14 @@ async function search() {
             .setRetailMedia({
                 location: {
                     key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'TOP' }],
+                    placements: [{ key: 'RIGHT' }],
                     variation: { key: variationName },
                 },
+                settings: {
+                    selectedDisplayAdProperties: {
+                        allData: true,
+                    }
+                }
             })
             .highlighting(h =>
                 h.enabled(contextStore.context.value.searchHighlight ?? false)
@@ -241,7 +247,7 @@ async function search() {
         }
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
-
+        heroBanner.value = productSearchResult.value.retailMedia?.placements?.HERO_BANNER?.results![0]?.promotedDisplayAd?.result ?? undefined;
         if (productSearchResult.value.hits === 0) {
             const request = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
                 .setSelectedProductProperties(contextStore.selectedProductProperties)
