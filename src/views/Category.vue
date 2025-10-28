@@ -91,6 +91,7 @@ import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
 import DisplayAdHeroBanner from '@/components/DIsplayAds/DisplayAd-HeroBanner.vue';
 import DisplayAdTile from '@/components/DIsplayAds/DisplayAd-Tile.vue';
+import { sortCategories } from '@/helpers/sortCategories';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
@@ -261,7 +262,7 @@ async function search() {
                 root = root.children[0] ?? null;
             }
             if (root != null) {
-                childCategories.value = root.children ?? undefined;
+                childCategories.value = sortCategories(root.children);
             }
         } else {
             childCategories.value = undefined;

@@ -10,7 +10,6 @@ import ProductTile from './ProductTile.vue';
 import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
 import VariantBasedProductList from './VariantBasedProductList.vue';
-import DisplayAdHeroBanner from './DIsplayAds/DisplayAd-HeroBanner.vue';
 import DisplayAdTile from './DIsplayAds/DisplayAd-Tile.vue';
 
 const props = defineProps({
@@ -109,8 +108,8 @@ function searchFor(term: string) {
                 </div>
             </div>
             <div class="w-full lg:w-4/5">
-
-                <DisplayAdHeroBanner v-if="banner" v-model="banner"></DisplayAdHeroBanner>
+                <!-- 
+                <DisplayAdHeroBanner v-if="banner" v-model="banner"></DisplayAdHeroBanner> -->
 
                 <div v-if="productSearchResult && productSearchResult?.redirects && productSearchResult.redirects.length > 0"
                     class="mb-3 p-3 bg-white">
@@ -156,7 +155,7 @@ function searchFor(term: string) {
         <div v-if="rightSide" class="absolute h-[95%] top-[85px] -right-56 flex flex-col gap-2">
             <template v-for="(item, pIndex) in rightSide">
                 <ProductTile v-if="item.promotedProduct?.result" :key="pIndex" :product="item.promotedProduct?.result"
-                    :is-promotion="true" class="w-[200px] shadow p-1" />
+                    :is-promotion="true" class="w-[200px] shadow" />
                 <DisplayAdTile v-else-if="item.promotedDisplayAd?.result" :key="'ad' + pIndex"
                     :display-ad="item.promotedDisplayAd" class="w-[200px]" />
             </template>

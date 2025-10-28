@@ -1,16 +1,18 @@
 <template>
-    <div class="shadow rounded overflow-hidden hover:shadow-lg transition duration-200 cursor-pointer flex flex-col"
-        @click="handleClick">
-        <div v-if="displayAd.result?.data?.ImageUrl?.value" class="w-full flex justify-center bg-gray-50">
-            <img :src="displayAd.result?.data.ImageUrl.value"></img>
-        </div>
+    <div>
+        <div class="shadow rounded overflow-hidden hover:shadow-lg transition duration-200 cursor-pointer flex flex-col"
+            @click="handleClick">
+            <div v-if="displayAd.result?.data?.ImageUrl?.value" class="w-full flex justify-center bg-gray-50">
+                <img :src="displayAd.result?.data.ImageUrl.value"></img>
+            </div>
 
-        <div class="flex items-end gap-2 p-2 leading-none w-full grow " v-if="displayAd.result?.data?.Title?.value">
-            <div class="flex items-center gap-2 w-full justify-between">
-                <span class="font-semibold">
-                    {{ displayAd.result?.data?.Title?.value }}
-                </span>
-                <ChevronRightIcon class="h-4 text-neutral-400"></ChevronRightIcon>
+            <div class="flex items-end gap-2 p-2 leading-none w-full grow " v-if="displayAd.result?.data?.Title?.value">
+                <div class="flex items-center gap-2 w-full justify-between">
+                    <span class="font-semibold">
+                        {{ displayAd.result?.data?.Title?.value }}
+                    </span>
+                    <ChevronRightIcon class="h-4 text-neutral-400"></ChevronRightIcon>
+                </div>
             </div>
         </div>
     </div>
