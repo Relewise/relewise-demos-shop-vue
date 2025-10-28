@@ -59,7 +59,7 @@ function searchFor(term: string) {
 </script>
 
 <template>
-    <div v-if="productSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
+    <div v-if="productSearchResult" class="relative container mx-auto pt-6 pb-10 px-2 xl:px-0">
         <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-6">
             <h2 v-if="term" class="text-xl lg:text-3xl">
                 Showing results for <span class="underline--yellow inline-block">{{ term }}</span>
@@ -153,10 +153,10 @@ function searchFor(term: string) {
                 </div>
             </div>
         </div>
-        <div v-if="rightSide" class="absolute h-[95%] top-[128px] right-0 flex flex-col gap-2">
+        <div v-if="rightSide" class="absolute h-[95%] top-[85px] -right-56 flex flex-col gap-2">
             <template v-for="(item, pIndex) in rightSide">
                 <ProductTile v-if="item.promotedProduct?.result" :key="pIndex" :product="item.promotedProduct?.result"
-                    :is-promotion="true" class="w-[200px]" />
+                    :is-promotion="true" class="w-[200px] shadow p-1" />
                 <DisplayAdTile v-else-if="item.promotedDisplayAd?.result" :key="'ad' + pIndex"
                     :display-ad="item.promotedDisplayAd" class="w-[200px]" />
             </template>

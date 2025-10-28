@@ -30,7 +30,7 @@ const displayName = computed(() => {
 <template>
     <RouterLink
         :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
-        class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200 shadow hover:shadow-lg">
+        class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
         <div class="relative flex h-max-[275px] overflow-hidden justify-center">
             <Image :entity="product" class="h-[275px]" />
             <div class="absolute top-0 left-0 flex gap-1">
@@ -82,7 +82,7 @@ const displayName = computed(() => {
             <div class="my-2 flex items-center justify-between">
                 <p>
                     <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice)
-                        }}</span>
+                    }}</span>
                     <span
                         v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
                         class="text-slate-900 line-through">

@@ -2,7 +2,7 @@
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
@@ -31,7 +31,12 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
 const heroBanner = ref<DisplayAdResult>();
 const route = useRoute();
+const banner = computed(() => {
+    if (!productSearchResult.value?.retailMedia?.placements?.HERO_BANNER?.results)
+        return null;
 
+    return productSearchResult.value.retailMedia?.placements?.HERO_BANNER?.results[0]?.promotedDisplayAd;
+});
 let abortController = new AbortController();
 
 const productPageSize = 40;
@@ -338,8 +343,7 @@ watch(activeTab, () => {
                     :page-size="productPageSize" :term="filters.term ?? ''" :product-search-result="productSearchResult"
                     :content-recommendation-result="contentRecommendationResult"
                     :fallback-recommendations="fallbackRecommendations" :products="products"
-                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    :banner="productSearchResult.retailMedia?.placements?.HERO_BANNER?.results?.at(0)?.promotedDisplayAd"
+                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide" :banner="banner"
                     @search-for="searchFor" @search="search" />
                 <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
                     && contextStore.context.value.contentSearch
