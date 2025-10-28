@@ -18,8 +18,8 @@ const showScore = contextStore.context.value.showProductRelevanceScore;
 
 const displayName = computed(() => {
     if (!contextStore.context.value.searchHighlight || !product.value.displayName)
-        return product.value.displayName;   
-    
+        return product.value.displayName;
+
     const highlight = product.value.highlight;
     const matchedOffsets = highlight?.offsets?.displayName;
 
@@ -28,15 +28,17 @@ const displayName = computed(() => {
 </script>
 
 <template>
-    <RouterLink :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
-                class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
+    <RouterLink
+        :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
+        class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200 shadow hover:shadow-lg">
         <div class="relative flex h-max-[275px] overflow-hidden justify-center">
-            <Image :entity="product" class="h-[275px]"/>
+            <Image :entity="product" class="h-[275px]" />
             <div class="absolute top-0 left-0 flex gap-1">
-                <Popover v-if="isPromotion" placement="bottom-start" class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3">
+                <Popover v-if="isPromotion" placement="bottom-start"
+                    class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3">
                     <span @click="(e) => e.preventDefault()">PROMOTED</span>
-                    <ExclamationCircleIcon class="w-5 h-5" @click="(e) => e.preventDefault()"/>
-    
+                    <ExclamationCircleIcon class="w-5 h-5" @click="(e) => e.preventDefault()" />
+
                     <template #content>
                         <div class="w-96">
                             <div class="flex flex-col">
@@ -45,7 +47,8 @@ const displayName = computed(() => {
                                 </div>
                                 <hr class="p-0 my-0">
                                 <div class="p-2">
-                                    This product is highlighted by our supplier as it could be relevant or interesting for you.
+                                    This product is highlighted by our supplier as it could be relevant or interesting
+                                    for you.
                                 </div>
                             </div>
                         </div>
@@ -57,13 +60,11 @@ const displayName = computed(() => {
                     class="rounded bg-red-200 px-2 py-0.5 text-center text-xs font-medium text-red-900 m-3">
                     ON SALE
                 </span>
-                <span
-                    v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
+                <span v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
                     SOLD OUT
                 </span>
-                <span
-                    v-if="product.variant && contextStore.context.value.showVariantsBadge"
+                <span v-if="product.variant && contextStore.context.value.showVariantsBadge"
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
                     VARIANTS AVAILABLE
                 </span>
@@ -72,7 +73,8 @@ const displayName = computed(() => {
         <div class="mt-2">
             <div class="text-left">
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
-                <span v-if="showScore && product.score?.relevance" class="float-right text-sm text-slate-500">Score: {{ product.score.relevance.toFixed(2) }}</span>
+                <span v-if="showScore && product.score?.relevance" class="float-right text-sm text-slate-500">Score: {{
+                    product.score.relevance.toFixed(2) }}</span>
                 <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
                     <span v-html="displayName"></span>
                 </h5>
@@ -80,7 +82,7 @@ const displayName = computed(() => {
             <div class="my-2 flex items-center justify-between">
                 <p>
                     <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">{{ $format(product.salesPrice)
-                    }}</span>
+                        }}</span>
                     <span
                         v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
                         class="text-slate-900 line-through">

@@ -1,7 +1,7 @@
 <template>
-    <div v-if="model.result?.data?.ImageUrl?.value" class="rounded shadow overflow-hidden mb-4 cursor-pointer hover:shadow-lg" @click="handleClick">
-        <!-- <img :src="model.data.ImageUrl.value"></img>  -->
-         <img :src="`/banner${bannerId}.png`">
+    <div v-if="model.result?.data?.ImageUrl?.value"
+        class="rounded shadow overflow-hidden mb-4 cursor-pointer hover:shadow-lg" @click="handleClick">
+        <img :src="model.result?.data.ImageUrl.value"></img>
     </div>
 </template>
 
@@ -13,8 +13,6 @@ import type { RetailMediaResultPlacementResultEntityDisplayAd } from '@relewise/
 const model = defineModel<RetailMediaResultPlacementResultEntityDisplayAd>({
     required: true
 });
-
-const bannerId = Math.floor(Math.random() * 4) + 1;
 
 async function handleClick() {
     const tracker = contextStore.getTracker();

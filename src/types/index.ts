@@ -2,6 +2,6 @@ import type { ProductResult, RetailMediaResultPlacementResultEntityDisplayAd } f
 
 export type ProductWithType = {
     isPromotion: boolean;
-    product: ProductResult;
-    displayAd: RetailMediaResultPlacementResultEntityDisplayAd;
+    product?: ProductResult | null | undefined;
+    displayAd?: RetailMediaResultPlacementResultEntityDisplayAd | null | undefined;
 }

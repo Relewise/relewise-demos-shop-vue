@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
@@ -18,17 +18,18 @@ enum Tabs {
     Content
 }
 
-const open = ref(false);	
+const open = ref(false);
 const searchTerm = ref<string>('');
 const productSearchResult = ref<ProductSearchResponse | null>(null);
 const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
 const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
+const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
-const page = ref(1);	
-const predictionsList = ref<SearchTermPredictionResult[]>([]);	
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });	
-const heroBanner = ref<DisplayAdResult>();	
+const page = ref(1);
+const predictionsList = ref<SearchTermPredictionResult[]>([]);
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
+const heroBanner = ref<DisplayAdResult>();
 const route = useRoute();
 
 let abortController = new AbortController();
@@ -46,32 +47,32 @@ watch(() => ({ ...route }), (value, oldValue) => {
     if (route.query.open === '1' && !open.value) {
         scrollTo({ top: 0 });
 
-        const searchParams = new URLSearchParams(window.location.search);	
-        searchParams.forEach((value, key) => {	
-            if (key === 'term') {	
-                searchTerm.value = value;	
-                return;	
-            }	
-            if (key === 'sort') {	
-                filters.value.sort = value;	
-                return;	
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.forEach((value, key) => {
+            if (key === 'term') {
+                searchTerm.value = value;
+                return;
             }
-            const existing = filters.value[key];	
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
+            if (key === 'sort') {
+                filters.value.sort = value;
+                return;
+            }
+            const existing = filters.value[key];
+            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
         });
 
         filters.value['open'] = '1';
 
-        search();	
-        return;	
-    } else if (value.query.open !== '1' && oldValue.query.open === '1') {	
-        close();	
-    }	
+        search();
+        return;
+    } else if (value.query.open !== '1' && oldValue.query.open === '1') {
+        close();
+    }
 });
 
-watch(breakpointService.active, () => {	
-    if (route.query.open === '1')	
-        search();	
+watch(breakpointService.active, () => {
+    if (route.query.open === '1')
+        search();
 });
 
 function showOrHide(show: boolean) {
@@ -121,9 +122,11 @@ async function search() {
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({displayName: true,
+            .setSelectedVariantProperties({
+                displayName: true,
                 pricing: true,
-                allData: true})
+                allData: true
+            })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .setExplodedVariants(contextStore.context.value.variantBasedSearchOverlay ? 5 : 1)
             .filters(f => {
@@ -156,12 +159,14 @@ async function search() {
             .setRetailMedia({
                 location: {
                     key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'RIGHT' }],
+                    placements: [{ key: 'RIGHT' }, { key: 'TOP' }, { key: 'HERO_BANNER' }],
                     variation: { key: variationName },
                 },
                 settings: {
                     selectedDisplayAdProperties: {
                         allData: true,
+                        clickedByUserInfo: false,
+                        displayName: false,
                     }
                 }
             })
@@ -270,8 +275,16 @@ async function search() {
 
             if (placement?.results) {
                 products.value = placement.results
-                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result, displayAd: x.promotedDisplayAd }) as ProductWithType)
                     .concat(products.value ?? []);
+            }
+        }
+
+        const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
+        if (rightPlacement && breakpointService.active.value === 'largeDesktop') {
+
+            if (rightPlacement?.results) {
+                rightSide.value = rightPlacement.results;
             }
         }
     }
@@ -292,60 +305,42 @@ watch(activeTab, () => {
 <template>
     <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
         <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
         </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
-        <input v-model="searchTerm"
-               type="text"
-               placeholder="Search..."
-               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-               @keyup="typeAHeadSearch()">
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
+        <input v-model="searchTerm" type="text" placeholder="Search..."
+            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+            @keyup="typeAHeadSearch()">
     </div>
 
     <Teleport to="#modal">
         <div v-if="open" id="search-result-overlay" class="modal">
             <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName" class="mb-6 flex border-b border-slate-200">
-                    <div
-                        :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName"
+                    class="mb-6 flex border-b border-slate-200">
+                    <div :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
                         @click="() => activeTab = Tabs.Products">
                         Products ({{ productSearchResult?.hits }})
                     </div>
-                    <div
-                        :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                    <div :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
                         @click="() => activeTab = Tabs.Content">
                         Content ({{ contentSearchResult?.hits }})
                     </div>
                 </div>
 
-                <ProductSearchOverlayResult 
-                    v-if="activeTab === Tabs.Products
-                        && productSearchResult" 
-                    v-model:sort="filters.sort!"
-                    v-model:page="page"
-                    :page-size="productPageSize"
-                    :term="filters.term ?? ''"
-                    :product-search-result="productSearchResult"
+                <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
+                    && productSearchResult" v-model:sort="filters.sort!" v-model:page="page"
+                    :page-size="productPageSize" :term="filters.term ?? ''" :product-search-result="productSearchResult"
                     :content-recommendation-result="contentRecommendationResult"
-                    :fallback-recommendations="fallbackRecommendations"
-                    :products="products"
-                    :predictions-list="predictionsList"
-                    :filters="filters"
-                    @search-for="searchFor"
-                    @search="search"/>
-                <ContentSearchOverlayResult 
-                    v-else-if="activeTab === Tabs.Content 
-                        && contextStore.context.value.contentSearch
-                        && contentSearchResult"
-                    v-model:sort="filters.sort!"
-                    v-model:page="page"
-                    :content-search-result="contentSearchResult"
-                    :page-size="contentPageSize"
-                    :term="filters.term ?? ''"
-                    :predictions-list="predictionsList"
-                    :filters="filters"
-                    @search-for="searchFor"
-                    @search="search"/>
+                    :fallback-recommendations="fallbackRecommendations" :products="products"
+                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
+                    :banner="productSearchResult.retailMedia?.placements?.HERO_BANNER?.results?.at(0)?.promotedDisplayAd"
+                    @search-for="searchFor" @search="search" />
+                <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
+                    && contextStore.context.value.contentSearch
+                    && contentSearchResult" v-model:sort="filters.sort!" v-model:page="page"
+                    :content-search-result="contentSearchResult" :page-size="contentPageSize" :term="filters.term ?? ''"
+                    :predictions-list="predictionsList" :filters="filters" @search-for="searchFor" @search="search" />
             </div>
         </div>
     </Teleport>
