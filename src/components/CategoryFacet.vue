@@ -5,28 +5,25 @@
                 {{ category.displayName ?? category.categoryId }}
             </span>
             <XMarkIcon class="ml-auto h-6 w-6 text-slate-600 cursor-pointer my-auto mr-2"
-                       @click="applyFacet('category', category.categoryId, true)"/>
+                @click="applyFacet('category', category.categoryId, true)" />
         </div>
     </div>
 
     <!-- Render category hierarchy options as filters or checklist -->
     <template v-if="options">
         <template v-if="selected && selected.length < categoryFilterThreshold">
-            <span v-for="(categoryLink, filterOptionIndex) in options"
-                  :key="filterOptionIndex"
-                  class="block cursor-pointer hover:!text-brand-500"
-                  @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
+            <span v-for="(categoryLink, filterOptionIndex) in options" :key="filterOptionIndex"
+                class="block cursor-pointer hover:!text-brand-500"
+                @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
                 {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
             </span>
         </template>
         <ul v-else>
             <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
                 <label class="flex items-center cursor-pointer w-full">
-                    <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
-                           type="checkbox"
-                           :value="option.category.categoryId"
-                           :checked="option.selected"
-                           @click="applyFacet('category', option.category.categoryId)">
+                    <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0" type="checkbox"
+                        :value="option.category.categoryId" :checked="option.selected"
+                        @click="applyFacet('category', option.category.categoryId)">
                     {{ option.category.displayName ?? option.category.categoryId }}
                     <span class="flex-grow"></span>
                     <span>{{ option.hits }}</span>
@@ -42,9 +39,10 @@ import contextStore from '@/stores/context.store';
 import type { CategoryHierarchyFacetResult, CategoryHierarchyFacetResultCategoryNode, FacetResult, ProductCategoryResult } from '@relewise/client';
 import { ref, toRefs, watch, type PropType } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
+import { sortCategories } from '@/helpers/sortCategories';
 
 const props = defineProps({
-    facet: { type: Object as PropType<FacetResult>, required: true},
+    facet: { type: Object as PropType<FacetResult>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
 });
 
@@ -61,7 +59,7 @@ watch(facet, () => {
     const selectedCategoryFilterIds = filters.value['category'];
 
     const categoryHeirarchyFacetResult = (facet.value as CategoryHierarchyFacetResult);
-            
+
     // Populate categories for rendering with display names
     selected.value = [];
     if (Array.isArray(selectedCategoryFilterIds)) {
@@ -73,7 +71,7 @@ watch(facet, () => {
 
     // If no categories are selected, show root categories as options
     if (selected.value.length === 0) {
-        options.value = categoryHeirarchyFacetResult.nodes;
+        options.value = sortCategories(categoryHeirarchyFacetResult.nodes);
     } else {
         // Determine the category to use as the root for filter options
         const rootCategoryId = selected.value[
@@ -82,10 +80,10 @@ watch(facet, () => {
 
         if (rootCategoryId) {
             const rootCategoryNode = findCategoryById(categoryHeirarchyFacetResult.nodes, rootCategoryId);
-            options.value = rootCategoryNode?.children ?? undefined;
+            options.value = sortCategories(rootCategoryNode?.children ?? []);
         }
     }
-    
+
 }, { immediate: true, deep: true });
 
 

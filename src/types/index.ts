@@ -1,6 +1,7 @@
-import type { ProductResult } from '@relewise/client';
+import type { ProductResult, RetailMediaResultPlacementResultEntityDisplayAd } from '@relewise/client';
 
 export type ProductWithType = {
     isPromotion: boolean;
-    product: ProductResult;
+    product?: ProductResult | null | undefined;
+    displayAd?: RetailMediaResultPlacementResultEntityDisplayAd | null | undefined;
 }
