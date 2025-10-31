@@ -70,7 +70,7 @@ const displayName = computed(() => {
                 </span>
             </div>
         </div>
-        <div class="mt-2">
+        <div class="mt-2 information">
             <div class="text-left">
                 <span v-if="product.brand" class="text-sm text-slate-500">{{ product.brand.displayName }}</span>
                 <span v-if="showScore && product.score?.relevance" class="float-right text-sm text-slate-500">Score: {{
@@ -93,3 +93,11 @@ const displayName = computed(() => {
         </div>
     </RouterLink>
 </template>
+
+<style scoped>
+.ad {
+    .information {
+        padding: 0 0.5rem;
+    }
+}
+</style>

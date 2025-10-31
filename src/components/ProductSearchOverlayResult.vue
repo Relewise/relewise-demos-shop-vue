@@ -108,9 +108,6 @@ function searchFor(term: string) {
                 </div>
             </div>
             <div class="w-full lg:w-4/5">
-                <!-- 
-                <DisplayAdHeroBanner v-if="banner" v-model="banner"></DisplayAdHeroBanner> -->
-
                 <div v-if="productSearchResult && productSearchResult?.redirects && productSearchResult.redirects.length > 0"
                     class="mb-3 p-3 bg-white">
                     <h2 class="text-xl font-semibold mb-2">
@@ -155,7 +152,7 @@ function searchFor(term: string) {
         <div v-if="rightSide" class="absolute h-[95%] top-[85px] -right-56 flex flex-col gap-2">
             <template v-for="(item, pIndex) in rightSide">
                 <ProductTile v-if="item.promotedProduct?.result" :key="pIndex" :product="item.promotedProduct?.result"
-                    :is-promotion="true" class="w-[200px] shadow" />
+                    :is-promotion="true" class="w-[200px] shadow ad" />
                 <DisplayAdTile v-else-if="item.promotedDisplayAd?.result" :key="'ad' + pIndex"
                     :display-ad="item.promotedDisplayAd" class="w-[200px]" />
             </template>
