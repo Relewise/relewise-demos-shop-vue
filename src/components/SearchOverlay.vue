@@ -278,7 +278,7 @@ async function search() {
         }
 
         const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
-        if (rightPlacement && breakpointService.active.value === 'largeDesktop') {
+        if (rightPlacement) {
 
             if (rightPlacement?.results) {
                 rightSide.value = rightPlacement.results;
