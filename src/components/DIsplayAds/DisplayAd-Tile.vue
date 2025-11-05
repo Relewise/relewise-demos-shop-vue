@@ -47,7 +47,7 @@ async function handleClick() {
 
     await tracker.trackDisplayAdClick({
         displayAdId: props.displayAd.result.displayAdId!,
-        campaignId: '512d82f6-8475-4098-b327-c9d3bbfca580',
+        campaignId: props.displayAd.campaignId,
         user: contextStore.user.value,
     });
 

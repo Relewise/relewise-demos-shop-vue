@@ -19,7 +19,7 @@ async function handleClick() {
 
     await tracker.trackDisplayAdClick({
         displayAdId: model.value.result.displayAdId!,
-        campaignId: '512d82f6-8475-4098-b327-c9d3bbfca580',
+        campaignId: model.value.campaignId,
         user: contextStore.user.value,
     });
     router.push(model.value.result.data?.Link?.value || '/');
