@@ -26,7 +26,6 @@ const isExternalUrl = (displayAd: RetailMediaResultPlacementResultEntityDisplayA
     }
 
     try {
-
         new URL(url);
         return true;
     } catch {

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="shadow rounded overflow-hidden hover:shadow-lg transition duration-200 cursor-pointer flex flex-col"
-            @click="handleClick">
+            @click="clicked">
             <div v-if="displayAd.result?.data?.ImageUrl?.value" class="w-full flex justify-center bg-gray-50">
                 <img :src="displayAd.result?.data.ImageUrl.value"></img>
             </div>
@@ -23,5 +23,9 @@ import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import type { RetailMediaResultPlacementResultEntityDisplayAd } from '@relewise/client';
 import { handleClick } from './handleClick';
 
-defineProps<{ displayAd: RetailMediaResultPlacementResultEntityDisplayAd }>();
+const props = defineProps<{ displayAd: RetailMediaResultPlacementResultEntityDisplayAd }>();
+
+const clicked = () => {
+    handleClick(props.displayAd);
+};
 </script>
