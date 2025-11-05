@@ -201,20 +201,15 @@ async function search() {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .setExplodedVariants(1)
-        .setRetailMedia({
-            location: {
+        .setRetailMedia(rm => rm
+            .setLocation({
                 key: 'PRODUCT_LISTING_PAGE',
-                placements: [{ key: 'TOP' }, { key: 'RIGHT' }, { key: 'HERO_BANNER' }],
+                placements: [{ key: 'RIGHT' }, { key: 'TOP' }, { key: 'HERO_BANNER' }],
                 variation: { key: variationName },
-            },
-            settings: {
-                selectedDisplayAdProperties: {
-                    allData: true,
-                    clickedByUserInfo: false,
-                    displayName: false,
-                }
-            }
-        })
+            })
+            .setSelectedDisplayAdProperties({
+                allData: true
+            }))
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             contextStore.userClassificationBasedFilters(f);

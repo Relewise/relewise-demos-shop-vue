@@ -2,7 +2,7 @@
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
@@ -29,7 +29,6 @@ const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
 const page = ref(1);
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
-const heroBanner = ref<DisplayAdResult>();
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -160,20 +159,15 @@ async function search() {
                 }
             })
             .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
-            .setRetailMedia({
-                location: {
+            .setRetailMedia(rm => rm
+                .setLocation({
                     key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'RIGHT' }, { key: 'HERO_BANNER' }],
+                    placements: [{ key: 'RIGHT' }, { key: 'TOP' }],
                     variation: { key: variationName },
-                },
-                settings: {
-                    selectedDisplayAdProperties: {
-                        allData: true,
-                        clickedByUserInfo: false,
-                        displayName: false,
-                    }
-                }
-            })
+                })
+                .setSelectedDisplayAdProperties({
+                    allData: true
+                }))
             .highlighting(h =>
                 h.enabled(contextStore.context.value.searchHighlight ?? false)
                     .setHighlightable({
@@ -256,7 +250,6 @@ async function search() {
         }
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
-        heroBanner.value = productSearchResult.value.retailMedia?.placements?.HERO_BANNER?.results![0]?.promotedDisplayAd?.result ?? undefined;
         if (productSearchResult.value.hits === 0) {
             const request = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
                 .setSelectedProductProperties(contextStore.selectedProductProperties)

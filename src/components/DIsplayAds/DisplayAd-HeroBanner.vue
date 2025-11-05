@@ -6,23 +6,10 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router';
-import contextStore from '@/stores/context.store';
 import type { RetailMediaResultPlacementResultEntityDisplayAd } from '@relewise/client';
+import { handleClick } from './handleClick';
 
 const model = defineModel<RetailMediaResultPlacementResultEntityDisplayAd>({
     required: true
 });
-
-async function handleClick() {
-    const tracker = contextStore.getTracker();
-
-    await tracker.trackDisplayAdClick({
-        displayAdId: model.value.result.displayAdId!,
-        campaignId: model.value.campaignId,
-        user: contextStore.user.value,
-    });
-    router.push(model.value.result.data?.Link?.value || '/');
-}
-
 </script>

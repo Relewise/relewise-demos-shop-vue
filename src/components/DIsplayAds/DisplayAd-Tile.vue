@@ -19,43 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router';
-import contextStore from '@/stores/context.store';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import type { RetailMediaResultPlacementResultEntityDisplayAd } from '@relewise/client';
-import { computed } from 'vue';
+import { handleClick } from './handleClick';
 
-const props = defineProps<{ displayAd: RetailMediaResultPlacementResultEntityDisplayAd }>();
-
-const isExternalUrl = computed(() => {
-    const url = props.displayAd.result.data?.Link?.value || '/';
-    if (!url || typeof url !== 'string') {
-        return false;
-    }
-
-    try {
-
-        new URL(url);
-        return true;
-    } catch {
-        return false;
-    }
-});
-
-async function handleClick() {
-    const tracker = contextStore.getTracker();
-
-    await tracker.trackDisplayAdClick({
-        displayAdId: props.displayAd.result.displayAdId!,
-        campaignId: props.displayAd.campaignId,
-        user: contextStore.user.value,
-    });
-
-    if (isExternalUrl.value) {
-        window.location.href = props.displayAd.result.data?.Link?.value;
-        return;
-    } else {
-        router.push(props.displayAd.result.data?.Link?.value || '/');
-    }
-}
+defineProps<{ displayAd: RetailMediaResultPlacementResultEntityDisplayAd }>();
 </script>
