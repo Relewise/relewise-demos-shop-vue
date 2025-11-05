@@ -31,12 +31,6 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
 const heroBanner = ref<DisplayAdResult>();
 const route = useRoute();
-const banner = computed(() => {
-    if (!productSearchResult.value?.retailMedia?.placements?.HERO_BANNER?.results)
-        return null;
-
-    return productSearchResult.value.retailMedia?.placements?.HERO_BANNER?.results[0]?.promotedDisplayAd;
-});
 let abortController = new AbortController();
 
 const productPageSize = 40;
@@ -169,7 +163,7 @@ async function search() {
             .setRetailMedia({
                 location: {
                     key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'RIGHT' }, { key: 'TOP' }, { key: 'HERO_BANNER' }],
+                    placements: [{ key: 'RIGHT' }, { key: 'HERO_BANNER' }],
                     variation: { key: variationName },
                 },
                 settings: {
@@ -343,7 +337,7 @@ watch(activeTab, () => {
                     :page-size="productPageSize" :term="filters.term ?? ''" :product-search-result="productSearchResult"
                     :content-recommendation-result="contentRecommendationResult"
                     :fallback-recommendations="fallbackRecommendations" :products="products"
-                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide" :banner="banner"
+                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
                     @search-for="searchFor" @search="search" />
                 <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
                     && contextStore.context.value.contentSearch

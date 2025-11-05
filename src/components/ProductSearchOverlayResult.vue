@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type ContentSearchResponse, type ProductRecommendationResponse, type ProductSearchResponse, type RetailMediaResultPlacementResultEntity, type RetailMediaResultPlacementResultEntityDisplayAd, type SearchTermPredictionResult } from '@relewise/client';
+import { type ContentSearchResponse, type ProductRecommendationResponse, type ProductSearchResponse, type RetailMediaResultPlacementResultEntity, type SearchTermPredictionResult } from '@relewise/client';
 import { computed, ref, toRefs, watch, type PropType } from 'vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
@@ -23,11 +23,9 @@ const props = defineProps({
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
     sort: { type: [String, Array] as PropType<string | string[]>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
-    banner: { type: Object as PropType<RetailMediaResultPlacementResultEntityDisplayAd>, required: false },
     predictionsList: { type: Array as PropType<SearchTermPredictionResult[]>, required: true },
 });
 
-const { banner } = toRefs(props);
 const route = useRoute();
 
 const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for']);
