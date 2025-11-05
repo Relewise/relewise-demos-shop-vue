@@ -62,7 +62,7 @@
         <div v-if="rightSide" class="absolute h-[95%] top-[128px] -right-56 flex flex-col gap-2">
             <template v-for="(item, pIndex) in rightSide.slice(0, 4)">
                 <ProductTile v-if="item.promotedProduct?.result" :key="pIndex" :product="item.promotedProduct?.result"
-                    :is-promotion="true" class="w-[200px] shadow p-1 ad" />
+                    :is-promotion="true" class="w-[200px] shadow ad" />
                 <DisplayAdTile v-else-if="item.promotedDisplayAd?.result" :key="'ad' + pIndex"
                     :display-ad="item.promotedDisplayAd" class="w-[200px]" />
             </template>

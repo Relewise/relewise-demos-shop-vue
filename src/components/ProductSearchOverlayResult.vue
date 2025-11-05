@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type ContentSearchResponse, type ProductRecommendationResponse, type ProductSearchResponse, type RetailMediaResultPlacementResultEntity, type SearchTermPredictionResult } from '@relewise/client';
-import { computed, ref, toRefs, watch, type PropType } from 'vue';
+import { computed, ref, watch, type PropType } from 'vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
 import { useRoute } from 'vue-router';
