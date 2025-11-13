@@ -103,7 +103,7 @@ function showOrHide(show: boolean) {
 
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
+        filters.value = { term: searchTerm.value, sort: '', open: '1' };
         search();
     }
 }
