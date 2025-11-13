@@ -42,12 +42,7 @@ function close() {
 }
 
 watch(() => ({ ...route }), (value, oldValue) => {
-    const nextQuery = new URLSearchParams(value.query as Record<string, string | string[]>).toString();
-    const prevQuery = oldValue ? new URLSearchParams(oldValue.query as Record<string, string | string[]>).toString() : '';
-    if (nextQuery === prevQuery) {
-        return;
-    }
-    if (route.query.open === '1' && !open.value) {
+    if (route.query.open === '1') {
         scrollTo({ top: 0 });
 
         const searchParams = new URLSearchParams(window.location.search);
@@ -61,7 +56,15 @@ watch(() => ({ ...route }), (value, oldValue) => {
                 return;
             }
             const existing = filters.value[key];
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
+            console.log('existing',existing);
+            if (!existing) {
+                filters.value[key] = value; 
+            } else if (Array.isArray(existing) && !existing.includes(value)) {
+                existing.push(value); 
+            } else if (!Array.isArray(existing) && existing !== value) {
+                filters.value[key] = [existing, value]; 
+            }
+
         });
 
         filters.value['open'] = '1';
@@ -70,33 +73,6 @@ watch(() => ({ ...route }), (value, oldValue) => {
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
         close();
-    } else if (route.query.open === '1' && open.value) {
-        scrollTo({ top: 0 });
-
-        const searchParams = new URLSearchParams(window.location.search);
-        searchParams.forEach((value, key) => {
-            if (key === 'term') {
-                searchTerm.value = value;
-                return;
-            }
-            if (key === 'sort') {
-                filters.value.sort = value;
-                return;
-            }
-            const existing = filters.value[key];
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
-        });
-
-        filters.value['open'] = '1';
-        const nextQueryString = new URLSearchParams(value.query as Record<string, string | string[]>).toString();
-        const currentFilterString = new URLSearchParams(filters.value as Record<string, string | string[]>).toString();
-
-        if (nextQueryString === currentFilterString) {
-            return;
-        }
-
-        search();
-        return;
     }
 });
 
@@ -128,7 +104,6 @@ function showOrHide(show: boolean) {
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
         filters.value['open'] = '1';
-
         search();
     }
 }
