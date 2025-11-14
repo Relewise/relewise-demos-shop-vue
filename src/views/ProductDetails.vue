@@ -121,7 +121,7 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
+import { DataValueFactory, ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
@@ -153,6 +153,11 @@ const details = computed(() => {
     var variantMaterial = product.value.variant?.data?.Material;
     if (variantMaterial) {
         productDetails.push(['Material', variantMaterial]);
+    }
+
+    const brand = product.value.brand?.displayName;
+    if (brand) {
+        productDetails.push(['Brand', DataValueFactory.string(brand)]);
     }
 
     return productDetails; 
