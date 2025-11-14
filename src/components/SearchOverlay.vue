@@ -46,27 +46,34 @@ watch(() => ({ ...route }), (value, oldValue) => {
         scrollTo({ top: 0 });
 
         const searchParams = new URLSearchParams(window.location.search);
+
+        // Build a new filters object from the current URL params so
+        // any previous/old filters are removed when the URL doesn't include them.
+        const newFilters: Record<string, string | string[]> = { term: '', sort: '' };
+
         searchParams.forEach((value, key) => {
             if (key === 'term') {
                 searchTerm.value = value;
+                newFilters.term = value;
                 return;
             }
             if (key === 'sort') {
-                filters.value.sort = value;
+                newFilters.sort = value;
                 return;
             }
-            const existing = filters.value[key];
-            if (!existing) {
-                filters.value[key] = [value];
-            } else if (Array.isArray(existing) && !existing.includes(value)) {
-                existing.push(value);
-            } else if (!Array.isArray(existing) && existing !== value) {
-                filters.value[key] = [existing, value];
-            }
 
+            const existing = newFilters[key];
+            if (!existing) {
+                newFilters[key] = [value];
+            } else if (Array.isArray(existing) && !existing.includes(value)) {
+                (existing as string[]).push(value);
+            } else if (!Array.isArray(existing) && existing !== value) {
+                newFilters[key] = [existing as string, value];
+            }
         });
 
-        filters.value['open'] = '1';
+        newFilters['open'] = '1';
+        filters.value = newFilters;
 
         search();
         return;
