@@ -57,7 +57,7 @@ watch(() => ({ ...route }), (value, oldValue) => {
             }
             const existing = filters.value[key];
             if (!existing) {
-                filters.value[key] = value; 
+                filters.value[key] = [value]; 
             } else if (Array.isArray(existing) && !existing.includes(value)) {
                 existing.push(value); 
             } else if (!Array.isArray(existing) && existing !== value) {
