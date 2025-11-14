@@ -57,11 +57,11 @@ watch(() => ({ ...route }), (value, oldValue) => {
             }
             const existing = filters.value[key];
             if (!existing) {
-                filters.value[key] = [value]; 
+                filters.value[key] = [value];
             } else if (Array.isArray(existing) && !existing.includes(value)) {
-                existing.push(value); 
+                existing.push(value);
             } else if (!Array.isArray(existing) && existing !== value) {
-                filters.value[key] = [existing, value]; 
+                filters.value[key] = [existing, value];
             }
 
         });
@@ -103,8 +103,18 @@ function showOrHide(show: boolean) {
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
         filters.value = { term: searchTerm.value, sort: '', open: '1' };
-        search();
+        persistInUrl();
     }
+}
+
+function searchFor(term: string) {
+    searchTerm.value = term;
+    typeAHeadSearch();
+}
+
+async function persistInUrl() {
+    const query = { ...filters.value };
+    await router.push({ path: route.path, query: query, replace: true });
 }
 
 async function search() {
@@ -243,9 +253,6 @@ async function search() {
     const response = await searcher.batch(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
 
-    const query = { ...filters.value };
-    await router.push({ path: route.path, query: query, replace: true });
-
     if (response && response.responses) {
         contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
@@ -293,11 +300,6 @@ async function search() {
     }
 }
 
-function searchFor(term: string) {
-    searchTerm.value = term;
-    search();
-}
-
 watch(activeTab, () => {
     page.value = 1;
     filters.value = { term: searchTerm.value, sort: '', open: '1' };
@@ -337,7 +339,7 @@ watch(activeTab, () => {
                     :content-recommendation-result="contentRecommendationResult"
                     :fallback-recommendations="fallbackRecommendations" :products="products"
                     :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    @search-for="searchFor" @search="search" />
+                    @search-for="searchFor" @search="persistInUrl" />
                 <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
                     && contextStore.context.value.contentSearch
                     && contentSearchResult" v-model:sort="filters.sort!" v-model:page="page"
