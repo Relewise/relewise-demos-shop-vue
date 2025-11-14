@@ -61,7 +61,7 @@ function searchFor(term: string) {
             <h2 v-if="term" class="text-xl lg:text-3xl">
                 Showing results for <span class="underline--yellow inline-block">{{ term }}</span>
             </h2>
-            <h2 v-if="route.query.brandName && !term" class="text-xl lg:text-3xl">
+            <h2 v-if="route.query.brandName" class="text-xl lg:text-3xl">
                 <span class="underline--yellow inline-block">{{ Array.isArray(route.query.brandName) ?
                     route.query.brandName.join('') : route.query.brandName }}</span>
             </h2>
