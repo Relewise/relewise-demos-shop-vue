@@ -28,7 +28,7 @@ const props = defineProps({
 
 const route = useRoute();
 
-const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for']);
+const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for', 'page-changed']);
 
 const sortValue = ref(props.sort);
 const pageValue = ref(props.page);
@@ -42,7 +42,7 @@ watch(sortValue, (newVal) => {
 
 watch(pageValue, (newVal) => {
     emit('update:page', newVal);
-    emit('search');
+    emit('page-changed');
 });
 
 function search() {

@@ -112,6 +112,10 @@ function searchFor(term: string) {
     typeAHeadSearch();
 }
 
+function pageChanged() {
+    search();
+}
+
 async function persistInUrl() {
     const query = { ...filters.value };
     await router.push({ path: route.path, query: query, replace: true });
@@ -339,12 +343,13 @@ watch(activeTab, () => {
                     :content-recommendation-result="contentRecommendationResult"
                     :fallback-recommendations="fallbackRecommendations" :products="products"
                     :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    @search-for="searchFor" @search="persistInUrl" />
+                    @search-for="searchFor" @search="persistInUrl" @page-changed="pageChanged" />
                 <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
                     && contextStore.context.value.contentSearch
                     && contentSearchResult" v-model:sort="filters.sort!" v-model:page="page"
                     :content-search-result="contentSearchResult" :page-size="contentPageSize" :term="filters.term ?? ''"
-                    :predictions-list="predictionsList" :filters="filters" @search-for="searchFor" @search="search" />
+                    :predictions-list="predictionsList" :filters="filters" @search-for="searchFor"
+                    @search="persistInUrl" @page-changed="pageChanged" />
             </div>
         </div>
     </Teleport>
