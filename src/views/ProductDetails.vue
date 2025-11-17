@@ -64,6 +64,17 @@
                         <dl class="mt-2 border border-solid border-slate-100 border-b-0">
                             <dt>Product Id</dt>
                             <dd>{{ product.productId }}</dd>
+                            <template v-if="product.brand">
+                                <dt>Brand</dt>
+                                <dd>
+                                <RouterLink
+                                    :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
+                                    class="text-black hover:underline"
+                                >
+                                    {{ product.brand.displayName }}
+                                </RouterLink>
+                                </dd>
+                            </template>
                             <template v-for="[ key, value ] in details" :key="key">
                                 <dt>
                                     {{ key }}
@@ -157,11 +168,6 @@ const details = computed(() => {
     var variantMaterial = product.value.variant?.data?.Material;
     if (variantMaterial) {
         productDetails.push(['Material', variantMaterial]);
-    }
-
-    const brand = product.value.brand?.displayName;
-    if (brand) {
-        productDetails.push(['Brand', DataValueFactory.string(brand)]);
     }
 
     return productDetails; 
