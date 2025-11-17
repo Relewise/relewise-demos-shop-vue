@@ -11,7 +11,7 @@
                 <div class="bg-white w-full xl:w-1/2">
                     <div>
                         <div v-if="product.brand">
-                            <RouterLink v-if="product.brand.id"
+                            <RouterLink
                                 :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName, }, }"
                                 class="text-slate-600 mb-4 text-lg inline-block hover:underline">
                                 {{ product.brand.displayName }}
