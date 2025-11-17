@@ -120,8 +120,10 @@ async function search() {
     const selectedCategoryFilterIds = filters.value['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
-    const brandId = route.query.brand;
-    const brandName = route.query.brandName;
+    const brandIdRaw = route.query.brand;
+    const brandNameRaw = route.query.brandName;
+    const brandId = Array.isArray(brandIdRaw) ? brandIdRaw[0] : brandIdRaw;
+    const brandName = Array.isArray(brandNameRaw) ? brandNameRaw[0] : brandNameRaw;
 
     const contentTerm = filters.value.term.length > 0
         ? filters.value.term
