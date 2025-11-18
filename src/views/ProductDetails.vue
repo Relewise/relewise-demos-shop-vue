@@ -11,7 +11,11 @@
                 <div class="bg-white w-full xl:w-1/2">
                     <div>
                         <div v-if="product.brand">
-                            <span class="text-slate-600 mb-4 text-lg">{{ product.brand.displayName }}</span>
+                            <RouterLink
+                                :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName, }, }"
+                                class="text-slate-600 mb-4 text-lg inline-block hover:underline">
+                                {{ product.brand.displayName }}
+                            </RouterLink>
                         </div>
                         <h1 class="text-4xl mb-4 font-semibold">
                             {{ product.displayName }}
@@ -60,6 +64,17 @@
                         <dl class="mt-2 border border-solid border-slate-100 border-b-0">
                             <dt>Product Id</dt>
                             <dd>{{ product.productId }}</dd>
+                            <template v-if="product.brand">
+                                <dt>Brand</dt>
+                                <dd>
+                                <RouterLink
+                                    :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
+                                    class="text-black hover:underline"
+                                >
+                                    {{ product.brand.displayName }}
+                                </RouterLink>
+                                </dd>
+                            </template>
                             <template v-for="[ key, value ] in details" :key="key">
                                 <dt>
                                     {{ key }}
@@ -121,7 +136,7 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
+import { DataValueFactory, ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
