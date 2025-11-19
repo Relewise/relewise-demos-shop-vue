@@ -306,6 +306,14 @@ class AppContext {
                         globalProductRecommendationFilters(builder);
                     },
                 },
+                userEngagement: {
+                    product: {
+                        favorite: true,
+                    },
+                    content: {
+                        sentiment: true,
+                    },
+                },
             }).useRecommendations();
     }
 }

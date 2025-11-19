@@ -1,6 +1,6 @@
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
-import type { ProductTemplateExtensions } from '@relewise/web-components';
+import type { FavoriteChangeDetail, ProductTemplateExtensions } from '@relewise/web-components';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
     let path = `/product/${product.productId}`;
@@ -8,6 +8,13 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
     if (product.variant?.variantId) {
         path += `/variant/${product.variant.variantId}`;
     }
+
+    const handleFavoriteChange = (event: CustomEvent<FavoriteChangeDetail>) => {
+        product.userEngagement = {
+            ...(product.userEngagement ?? {}),
+            isFavorite: event.detail.isFavorite,
+        };
+    };
 
     return html`
         <style>
@@ -139,6 +146,12 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
 
         </style>
         <a href="${path}" class="product-link">
+            <relewise-favorite-button
+                product-id="${product.productId ?? ''}"
+                .variantId=${product.variant?.variantId ?? null}
+                .favorite=${product.userEngagement?.isFavorite ?? false}
+                @relewise-favorite-change=${handleFavoriteChange}
+            ></relewise-favorite-button>
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
                 ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}

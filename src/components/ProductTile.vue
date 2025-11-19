@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ProductResult } from '@relewise/client';
+import type { FavoriteChangeDetail } from '@relewise/web-components';
 import { computed, toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
 import Popover from '@/components/Popover.vue';
@@ -25,6 +26,13 @@ const displayName = computed(() => {
 
     return highlightWithOffsets(product.value.displayName, matchedOffsets);
 });
+
+const handleFavoriteChange = (event: CustomEvent<FavoriteChangeDetail>) => {
+    product.value.userEngagement = {
+        ...(product.value.userEngagement ?? {}),
+        isFavorite: event.detail.isFavorite,
+    };
+};
 </script>
 
 <template>
@@ -68,6 +76,14 @@ const displayName = computed(() => {
                     class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3">
                     VARIANTS AVAILABLE
                 </span>
+            </div>
+            <div class="absolute top-0 right-0 m-3">
+                <relewise-favorite-button
+                    :product-id="product.productId ?? undefined"
+                    :variant-id="product.variant?.variantId ?? undefined"
+                    v-bind:favorite.prop="product.userEngagement?.isFavorite ?? false"
+                    @relewise-favorite-change="handleFavoriteChange"
+                ></relewise-favorite-button>
             </div>
         </div>
         <div class="mt-2 information">
