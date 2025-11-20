@@ -29,7 +29,6 @@ watch(sortValue, (newVal) => {
     emit('search');
 });
 
-
 watch(pageValue, (newVal) => {
     if (props.filters) {
         (props.filters as any).page = String(newVal);

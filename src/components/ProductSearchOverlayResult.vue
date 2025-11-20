@@ -11,6 +11,7 @@ import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
 import VariantBasedProductList from './VariantBasedProductList.vue';
 import DisplayAdTile from './DIsplayAds/DisplayAd-Tile.vue';
+import router from '@/router';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
@@ -39,9 +40,6 @@ watch(sortValue, (newVal) => {
     emit('update:sort', newVal);
     emit('search');
 });
-
-// when the child pagination changes, update filters.page (string) and push to URL
-import router from '@/router';
 
 watch(pageValue, (newVal) => {
     // update filters object with new page as string
