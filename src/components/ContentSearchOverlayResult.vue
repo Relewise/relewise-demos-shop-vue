@@ -6,31 +6,35 @@ import Pagination from '../components/Pagination.vue';
 import Facets from './Facets.vue';
 import { useRoute } from 'vue-router';
 import ContentTile from './ContentTile.vue';
+import router from '@/router';
 
 const props = defineProps({
     contentSearchResult: { type: Object as PropType<ContentSearchResponse>, required: true },
     pageSize: { type: Number, required: true },
-    page: { type: Number, required: true },
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
     sort: { type: [String, Array] as PropType<string | string[]>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     predictionsList: { type: Array as PropType<SearchTermPredictionResult[]>, required: true },
 });
 
-const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for', 'page-changed']);
+const emit = defineEmits(['search', 'update:sort', 'search-for']);
 const route = useRoute();
 
 const sortValue = ref(props.sort);
-const pageValue = ref(props.page);
+// derive numeric page value from filters.page
+const pageValue = ref(Number((props.filters && (props.filters as any).page) ?? 1));
 
 watch(sortValue, (newVal) => {
     emit('update:sort', newVal);
     emit('search');
 });
 
+
 watch(pageValue, (newVal) => {
-    emit('update:page', newVal);
-    emit('page-changed');
+    if (props.filters) {
+        (props.filters as any).page = String(newVal);
+        router.push({ path: route.path, query: { ...(props.filters as any) }, replace: true });
+    }
 });
 
 function search() {
@@ -70,8 +74,8 @@ function searchFor(term: string) {
             </div>
             <div class="w-full lg:w-4/5">
                 <div class="lg:flex lg:gap-6 items-end bg-white rounded mb-3">
-                    <span v-if="contentSearchResult.hits > 0">Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
-                        contentSearchResult?.hits < pageSize ? contentSearchResult?.hits : page * pageSize }} of {{
+                    <span v-if="contentSearchResult.hits > 0">Showing {{ pageValue * (pageSize) - (pageSize - 1) }} - {{
+                        contentSearchResult?.hits < pageSize ? contentSearchResult?.hits : pageValue * pageSize }} of {{
                             contentSearchResult?.hits }}</span>
                             <div class="hidden lg:block lg:flex-grow">
                             </div>

@@ -26,9 +26,9 @@ const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
-const page = ref(1);
+// page moved into filters below as filters.value.page (string)
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -109,7 +109,8 @@ function showOrHide(show: boolean) {
 
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
-        filters.value = { term: searchTerm.value, sort: '', open: '1' };
+        // reset page to 1 when doing a type-ahead search
+        filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
         persistInUrl();
     }
 }
@@ -117,10 +118,6 @@ function typeAHeadSearch() {
 function searchFor(term: string) {
     searchTerm.value = term;
     typeAHeadSearch();
-}
-
-function pageChanged() {
-    search();
 }
 
 async function persistInUrl() {
@@ -185,7 +182,7 @@ async function search() {
                     s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
-            .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
+            .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
             .setRetailMedia(rm => rm
                 .setLocation({
                     key: 'SEARCH_RESULTS_PAGE',
@@ -221,7 +218,7 @@ async function search() {
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
             .setTerm(contentTerm)
-            .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
+            .pagination(p => p.setPageSize(contentPageSize).setPage(Number(filters.value.page)))
             .facets(f => {
                 getFacets('ContentSearch', f, filters.value);
             })
@@ -312,8 +309,8 @@ async function search() {
 }
 
 watch(activeTab, () => {
-    page.value = 1;
-    filters.value = { term: searchTerm.value, sort: '', open: '1' };
+    // reset page when switching tabs
+    filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
 });
 
 </script>
@@ -345,18 +342,17 @@ watch(activeTab, () => {
                 </div>
 
                 <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
-                    && productSearchResult" v-model:sort="filters.sort!" v-model:page="page"
-                    :page-size="productPageSize" :term="filters.term ?? ''" :product-search-result="productSearchResult"
+                    && productSearchResult" v-model:sort="filters.sort!" :page-size="productPageSize"
+                    :term="filters.term ?? ''" :product-search-result="productSearchResult"
                     :content-recommendation-result="contentRecommendationResult"
                     :fallback-recommendations="fallbackRecommendations" :products="products"
                     :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    @search-for="searchFor" @search="persistInUrl" @page-changed="pageChanged" />
+                    @search-for="searchFor" @search="persistInUrl" />
                 <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
                     && contextStore.context.value.contentSearch
-                    && contentSearchResult" v-model:sort="filters.sort!" v-model:page="page"
-                    :content-search-result="contentSearchResult" :page-size="contentPageSize" :term="filters.term ?? ''"
-                    :predictions-list="predictionsList" :filters="filters" @search-for="searchFor"
-                    @search="persistInUrl" @page-changed="pageChanged" />
+                    && contentSearchResult" v-model:sort="filters.sort!" :content-search-result="contentSearchResult"
+                    :page-size="contentPageSize" :term="filters.term ?? ''" :predictions-list="predictionsList"
+                    :filters="filters" @search-for="searchFor" @search="persistInUrl" />
             </div>
         </div>
     </Teleport>
