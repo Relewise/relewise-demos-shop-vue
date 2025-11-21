@@ -11,6 +11,14 @@ class TrackingService {
         tracker.trackProductCategoryView({ idPath: [id], user: contextStore.user.value });
     }
 
+    public trackBrandView(id: string) {
+        if (!contextStore.tracking.value.enabled) return;
+
+        const tracker = contextStore.getTracker();
+
+        tracker.trackBrandView({ brandId: id, user: contextStore.user.value });
+    }
+
     public async trackProductView(id: string, variantId?: string) {
         if (!contextStore.tracking.value.enabled) return;
 

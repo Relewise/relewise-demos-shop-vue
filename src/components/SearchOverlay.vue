@@ -6,10 +6,11 @@ import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
+import trackingService from '@/services/tracking.service';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
-import { useRoute } from 'vue-router';
+import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 
@@ -26,6 +27,7 @@ const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
+const trackedBrandId = ref<string | null>(null);
 // page moved into filters below as filters.value.page (string)
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
@@ -98,6 +100,7 @@ function showOrHide(show: boolean) {
         contentSearchResult.value = null;
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
+        trackedBrandId.value = null;
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
 
@@ -145,11 +148,15 @@ async function search() {
     const selectedCategoryFilterIds = filters.value['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
+    const brandIdRaw = route.query.brand;
+    const brandNameRaw = route.query.brandName;
+    const brandId = Array.isArray(brandIdRaw) ? brandIdRaw[0] : brandIdRaw;
+    const brandName = Array.isArray(brandNameRaw) ? brandNameRaw[0] : brandNameRaw;
+
     const contentTerm = filters.value.term.length > 0
         ? filters.value.term
-        : (typeof route.query.brandName === 'string' ? route.query.brandName : null);
+        : (typeof brandName === 'string' ? brandName : null);
 
-    const brandId = route.query.brand;
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -173,7 +180,7 @@ async function search() {
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
+            .facets(f => getFacets(brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
             .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -266,6 +273,8 @@ async function search() {
     contextStore.assertApiCall(response);
 
     if (response && response.responses) {
+        trackBrandView(brandId, brandName);
+
         contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
         products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
@@ -316,6 +325,18 @@ watch(activeTab, () => {
     // reset page when switching tabs
     filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
 });
+
+function trackBrandView(
+    brand: LocationQueryValue | LocationQueryValue[] | undefined,
+    brandName: LocationQueryValue | LocationQueryValue[] | undefined,
+) {
+    if (!brandName || typeof brandName !== 'string') return;
+    if (!brand || typeof brand !== 'string') return;
+    if (trackedBrandId.value === brand) return;
+
+    trackingService.trackBrandView(brand);
+    trackedBrandId.value = brand;
+}
 
 </script>
 
