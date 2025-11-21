@@ -28,9 +28,9 @@ const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
 const trackedBrandId = ref<string | null>(null);
-const page = ref(1);
+// page moved into filters below as filters.value.page (string)
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -44,24 +44,42 @@ function close() {
 }
 
 watch(() => ({ ...route }), (value, oldValue) => {
-    if (route.query.open === '1' && !open.value) {
+    if (route.query.open === '1') {
         scrollTo({ top: 0 });
 
         const searchParams = new URLSearchParams(window.location.search);
+
+        // Build a new filters object from the current URL params so
+        // any previous/old filters are removed when the URL doesn't include them.
+        const newFilters: Record<string, string | string[]> = { term: '', sort: '', page: '1' };
+        searchTerm.value = "";
         searchParams.forEach((value, key) => {
             if (key === 'term') {
                 searchTerm.value = value;
+                newFilters.term = value;
                 return;
             }
             if (key === 'sort') {
-                filters.value.sort = value;
+                newFilters.sort = value;
                 return;
             }
-            const existing = filters.value[key];
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];
+            if (key === 'page') {
+                newFilters.page = value;
+                return;
+            }
+
+            const existing = newFilters[key];
+            if (!existing) {
+                newFilters[key] = [value];
+            } else if (Array.isArray(existing) && !existing.includes(value)) {
+                (existing as string[]).push(value);
+            } else if (!Array.isArray(existing) && existing !== value) {
+                newFilters[key] = [existing as string, value];
+            }
         });
 
-        filters.value['open'] = '1';
+        newFilters['open'] = '1';
+        filters.value = newFilters;
 
         search();
         return;
@@ -98,10 +116,20 @@ function showOrHide(show: boolean) {
 
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
-
-        search();
+        // reset page to 1 when doing a type-ahead search
+        filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
+        persistInUrl();
     }
+}
+
+function searchFor(term: string) {
+    searchTerm.value = term;
+    typeAHeadSearch();
+}
+
+async function persistInUrl() {
+    const query = { ...filters.value };
+    await router.push({ path: route.path, query: query, replace: true });
 }
 
 async function search() {
@@ -165,7 +193,7 @@ async function search() {
                     s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
-            .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
+            .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
             .setRetailMedia(rm => rm
                 .setLocation({
                     key: 'SEARCH_RESULTS_PAGE',
@@ -201,7 +229,7 @@ async function search() {
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
             .setTerm(contentTerm)
-            .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
+            .pagination(p => p.setPageSize(contentPageSize).setPage(Number(filters.value.page)))
             .facets(f => {
                 getFacets('ContentSearch', f, filters.value);
             })
@@ -243,9 +271,6 @@ async function search() {
     const searcher = contextStore.getSearcher();
     const response = await searcher.batch(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
-
-    const query = { ...filters.value };
-    await router.push({ path: route.path, query: query, replace: true });
 
     if (response && response.responses) {
         trackBrandView(brandId, brandName);
@@ -296,14 +321,9 @@ async function search() {
     }
 }
 
-function searchFor(term: string) {
-    searchTerm.value = term;
-    search();
-}
-
 watch(activeTab, () => {
-    page.value = 1;
-    filters.value = { term: searchTerm.value, sort: '', open: '1' };
+    // reset page when switching tabs
+    filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
 });
 
 function trackBrandView(
@@ -347,17 +367,17 @@ function trackBrandView(
                 </div>
 
                 <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
-                    && productSearchResult" v-model:sort="filters.sort!" v-model:page="page"
-                    :page-size="productPageSize" :term="filters.term ?? ''" :product-search-result="productSearchResult"
+                    && productSearchResult" v-model:sort="filters.sort!" :page-size="productPageSize"
+                    :term="filters.term ?? ''" :product-search-result="productSearchResult"
                     :content-recommendation-result="contentRecommendationResult"
                     :fallback-recommendations="fallbackRecommendations" :products="products"
                     :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    @search-for="searchFor" @search="search" />
+                    @search-for="searchFor" @search="persistInUrl" />
                 <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
                     && contextStore.context.value.contentSearch
-                    && contentSearchResult" v-model:sort="filters.sort!" v-model:page="page"
-                    :content-search-result="contentSearchResult" :page-size="contentPageSize" :term="filters.term ?? ''"
-                    :predictions-list="predictionsList" :filters="filters" @search-for="searchFor" @search="search" />
+                    && contentSearchResult" v-model:sort="filters.sort!" :content-search-result="contentSearchResult"
+                    :page-size="contentPageSize" :term="filters.term ?? ''" :predictions-list="predictionsList"
+                    :filters="filters" @search-for="searchFor" @search="persistInUrl" />
             </div>
         </div>
     </Teleport>

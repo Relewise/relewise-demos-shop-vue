@@ -11,6 +11,7 @@ import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
 import VariantBasedProductList from './VariantBasedProductList.vue';
 import DisplayAdTile from './DIsplayAds/DisplayAd-Tile.vue';
+import router from '@/router';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
@@ -19,7 +20,6 @@ const props = defineProps({
     rightSide: { type: Array as PropType<RetailMediaResultPlacementResultEntity[] | null>, required: true },
     contentRecommendationResult: { type: Object as PropType<ContentSearchResponse | null>, required: true },
     pageSize: { type: Number, required: true },
-    page: { type: Number, required: true },
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
     sort: { type: [String, Array] as PropType<string | string[]>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
@@ -28,10 +28,11 @@ const props = defineProps({
 
 const route = useRoute();
 
-const emit = defineEmits(['search', 'update:sort', 'update:page', 'search-for']);
+const emit = defineEmits(['search', 'update:sort', 'search-for']);
 
 const sortValue = ref(props.sort);
-const pageValue = ref(props.page);
+// derive local numeric page value from filters.page (filters holds page as string)
+const pageValue = ref(Number((props.filters && (props.filters as any).page) ?? 1));
 
 const contentResults = computed(() => props.contentRecommendationResult?.results?.slice(0, 10));
 
@@ -41,8 +42,12 @@ watch(sortValue, (newVal) => {
 });
 
 watch(pageValue, (newVal) => {
-    emit('update:page', newVal);
-    emit('search');
+    // update filters object with new page as string
+    if (props.filters) {
+        (props.filters as any).page = String(newVal);
+        // push to URL so page is reflected in query params
+        router.push({ path: route.path, query: { ...(props.filters as any) }, replace: true });
+    }
 });
 
 function search() {
@@ -67,8 +72,8 @@ function searchFor(term: string) {
             </h2>
 
             <span v-if="productSearchResult.hits > 0">
-                Showing {{ page * (pageSize) - (pageSize - 1) }} - {{
-                    productSearchResult?.hits < pageSize ? productSearchResult?.hits : page * pageSize }} of {{
+                Showing {{ pageValue * (pageSize) - (pageSize - 1) }} - {{
+                    productSearchResult?.hits < pageSize ? productSearchResult?.hits : pageValue * pageSize }} of {{
                     productSearchResult?.hits }} </span>
                     <div class="hidden lg:block lg:flex-grow">
                     </div>
