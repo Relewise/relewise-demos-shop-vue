@@ -77,7 +77,7 @@ const handleFavoriteChange = (event: CustomEvent<FavoriteChangeDetail>) => {
                     VARIANTS AVAILABLE
                 </span>
             </div>
-            <div class="absolute top-0 right-0 m-3">
+            <div class="absolute top-0 right-0 m-3 tile-favorite">
                 <relewise-favorite-button
                     :product-id="product.productId ?? undefined"
                     :variant-id="product.variant?.variantId ?? undefined"

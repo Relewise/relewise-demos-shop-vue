@@ -127,6 +127,7 @@ class AppContext {
                 adjusted: true,
                 relevance: true,
             },
+            userEngagement: true,
         } as SelectedProductPropertiesSettings;
     }
 
