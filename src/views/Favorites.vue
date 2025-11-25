@@ -21,6 +21,7 @@ import ProductTile from '@/components/ProductTile.vue';
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, userIsAnonymous, type ProductSearchResponse } from '@relewise/client';
 import { onMounted, ref, watch } from 'vue';
+import Pagination from '@/components/Pagination.vue';
 
 const results = ref<ProductSearchResponse>();
 const page = ref(1);
