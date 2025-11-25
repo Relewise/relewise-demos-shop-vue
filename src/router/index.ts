@@ -61,6 +61,11 @@ const router = createRouter({
             name: 'content',
             component: () => import('../views/ContentDetails.vue'),
         },
+        {
+            path: '/favorites',
+            name: 'favorites',
+            component: () => import('../views/Favorites.vue'),
+        },
     ],
 });
 
