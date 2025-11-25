@@ -1,20 +1,16 @@
 import { findImage } from '@/helpers/imageHelper';
+import contextStore from '@/stores/context.store';
 import type { ProductResult } from '@relewise/client';
-import type { FavoriteChangeDetail, ProductTemplateExtensions } from '@relewise/web-components';
+import type { ProductTemplateExtensions } from '@relewise/web-components';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
+    const user = contextStore.user.value
+    console.log(user);
     let path = `/product/${product.productId}`;
 
     if (product.variant?.variantId) {
         path += `/variant/${product.variant.variantId}`;
     }
-
-    const handleFavoriteChange = (event: CustomEvent<FavoriteChangeDetail>) => {
-        product.userEngagement = {
-            ...(product.userEngagement ?? {}),
-            isFavorite: event.detail.isFavorite,
-        };
-    };
 
     return html`
         <style>
@@ -148,19 +144,17 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 position: relative;
             }
 
-            relewise-favorite-button {
+            relewise-product-favorite-button {
                 --relewise-favorite-top: 1rem;
                 --relewise-favorite-right: 1rem;"
             }
 
         </style>
         <div class="product-card">
-            <relewise-favorite-button
-                product-id="${product.productId ?? ''}"
-                .variantId=${product.variant?.variantId ?? null}
-                .favorite=${product.userEngagement?.isFavorite ?? false}
-                @relewise-favorite-change=${handleFavoriteChange}
-            ></relewise-favorite-button>
+            <relewise-product-favorite-button
+                .product=${product}
+                .user=${user}
+            ></relewise-product-favorite-button>
             <a href="${path}" class="product-link">
                 <div class="image-container">
                     <img src="${findImage(product)}" class="image"/>
