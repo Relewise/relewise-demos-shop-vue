@@ -99,7 +99,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </template>
                         </Popover>
-                        <RouterLink to="/Favorites" class="relative flex flex-col items-center text-slate-600">
+                        <RouterLink to="/favorites" class="relative flex flex-col items-center text-slate-600">
                             <HeartIcon class="h-8 w-8" />
                             <span class="text-[9px] mt-1 font-bold">FAVORITES</span>
                             <span v-if="lineItemsCount > 0"
