@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
-    "@relewise/client": "^2.18.0",
-    "@relewise/web-components": "^1.17.1",
+    "@relewise/client": "^2.22.0",
+    "@relewise/web-components": "^1.19.0",
     "@vueform/slider": "^2.1.10",
     "@vueuse/core": "^13.9.0",
     "floating-vue": "^5.2.2",
