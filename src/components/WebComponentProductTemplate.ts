@@ -136,14 +136,6 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             .list-price {
                 text-decoration: line-through; 
             }
-
-            product-favorite-button {
-                position: absolute;
-                top: 0;
-                right: 0;
-                margin: 0.5rem;
-            }
-
         </style>
         <div class=product-wrapper>
             <a href="${path}" class="product-link">

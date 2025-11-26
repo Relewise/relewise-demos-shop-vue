@@ -50,5 +50,6 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     transition: transform 0.2s ease;
     top: var(--relewise-favorite-top, 0.5em);
     right: var(--relewise-favorite-right, 0.5em);
+    position: absolute;
 }
 </style>
