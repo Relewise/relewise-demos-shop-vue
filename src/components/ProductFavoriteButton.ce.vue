@@ -36,6 +36,10 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </template>
 
 <style scoped>
+.favorite-button {
+    z-index: var(--relewise-favorite-z-index, 10);
+}
+
 .fake-favorite-button {
     border: 0;
     background-color: var(--relewise-favorite-background, rgba(255, 255, 255, 0.9));
@@ -54,11 +58,12 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     position: absolute;
     top: var(--relewise-favorite-top, 0.5em);
     right: var(--relewise-favorite-right, 0.5em);
+    margin: 0.5em;
 }
 
 .favorite-button--floating :deep(relewise-product-favorite-button) {
     position: absolute;
-    z-index: var(--relewise-favorite-z-index, 2);
+    z-index: var(--relewise-favorite-z-index, 10);
     top: var(--relewise-favorite-top, 0.5em);
     right: var(--relewise-favorite-right, 0.5em);
 }

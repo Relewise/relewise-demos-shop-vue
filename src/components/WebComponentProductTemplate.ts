@@ -140,8 +140,8 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
         </style>
         <div class=product-wrapper>
             <a href="${path}" class="product-link">
+                <product-favorite-button floating .product=${product}></product-favorite-button>
                 <div class="image-container">
-                    <product-favorite-button floating .product=${product}></product-favorite-button>
                     <img src="${findImage(product)}" class="image"/>
                     ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
                     ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
