@@ -8,7 +8,7 @@
                     <Image :entity="product" class="!h-[300px] xl:!h-[600px] !w-auto"/>
                 </div>
 
-                <div class="bg-white w-full xl:w-1/2">
+                <div class="bg-white w-full xl:w-1/2 relative">
                     <div>
                         <div v-if="product.brand">
                             <RouterLink
@@ -25,6 +25,10 @@
                             <p class="text-slate-600 line-clamp-3">
                                 {{ product.data.description?.value ?? product.data.Description?.value }}
                             </p> 
+                        </div>
+
+                        <div class="absolute top-0 right-0 m-3">
+                            <product-favorite-button :product="product" />
                         </div>
                     </div>
                     <div v-if="product.allVariants">
