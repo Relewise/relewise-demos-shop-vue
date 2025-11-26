@@ -28,7 +28,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
             </template>
             <template #content>
                 <div class="favorite-popover-content">
-                    You need to be logged in or accept marketing cookies to favorite products.
+                    User engagement only tracks for non-anonymous user.
                 </div>
             </template>
         </Popover>
@@ -52,6 +52,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
+    margin: 0.5rem;
 }
 
 .favorite-button--floating {

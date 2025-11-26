@@ -52,7 +52,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
             </template>
             <template #content>
                 <div class="favorite-popover-content max-w-xs p-4 text-sm text-slate-700">
-                    You need to be logged in or accept marketing cookies to favorite products.
+                    Engagement tracking works only when the user is identified.
                 </div>
             </template>
         </Popover>

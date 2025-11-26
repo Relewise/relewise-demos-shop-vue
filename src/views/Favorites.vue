@@ -11,7 +11,7 @@
         </div>
 
         <div v-if="userIsAnonymous(contextStore.user.value)">
-            <p>You need to be logged in or accept marketing cookies to see your favorite products.</p>
+            <p>Engagement tracking works only when the user is identified.</p>
         </div>
     </div>
 </template>
