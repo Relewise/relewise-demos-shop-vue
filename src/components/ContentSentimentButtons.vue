@@ -23,7 +23,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
             :content.prop="content"
             :user.prop="user"
         />
-        <Popover v-else placement="bottom-end" :arrow="false" popper-class="favorite-popover">
+        <Popover v-else placement="right-end" :arrow="false" popper-class="favorite-popover">
             <template #default>
                 <div
                     class="fake-sentiment-button"
@@ -52,7 +52,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
             </template>
             <template #content>
                 <div class="favorite-popover-content max-w-xs p-4 text-sm text-slate-700">
-                    Engagement tracking works only when the user is identified.
+                    This feature requires a non-anonymous user.
                 </div>
             </template>
         </Popover>

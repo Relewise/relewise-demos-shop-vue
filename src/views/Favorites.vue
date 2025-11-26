@@ -2,7 +2,7 @@
     <div class="container mx-auto">
         <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">Your Favorites</h1>
 
-        <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3" v-if="results">
+        <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mt-3" v-if="results">
             <ProductTile v-for="(product, index) in results.results" :key="index" :product="product"></ProductTile>
         </div>
 
@@ -11,7 +11,7 @@
         </div>
 
         <div v-if="userIsAnonymous(contextStore.user.value)">
-            <p>Engagement tracking works only when the user is identified.</p>
+            <p>This feature requires a non-anonymous user.</p>
         </div>
     </div>
 </template>

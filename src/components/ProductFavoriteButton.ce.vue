@@ -18,7 +18,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 <template>
     <div class="favorite-button" :class="{ 'favorite-button--floating': props.floating }" @click.stop.prevent>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
-        <Popover v-else placement="right-end"  popper-class="favorite-popover" :arrow="false" :container="false">
+        <Popover v-else placement="bottom-end"  popper-class="favorite-popover">
             <template #default>
                 <button
                     class="fake-favorite-button"
@@ -28,7 +28,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
             </template>
             <template #content>
                 <div class="favorite-popover-content">
-                    User engagement only tracks for non-anonymous user.
+                    This feature requires a non-anonymous user.
                 </div>
             </template>
         </Popover>
@@ -61,15 +61,4 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     right: var(--relewise-favorite-right, 0.5em);
 }
 
-.favorite-popover-content {
-    max-width: 10rem;
-    padding: 1rem;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    color: #334155;
-    background: #fff;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    justify-self: self-end;
-}
 </style>
