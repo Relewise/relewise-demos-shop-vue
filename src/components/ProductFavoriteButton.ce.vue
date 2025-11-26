@@ -15,9 +15,9 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
 <template>
-    <div class="favorite-wrapper" @click.stop.prevent>
+    <div @click.stop.prevent>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
-        <Popover v-else placement="bottom-end" :arrow="false" popper-class="favorite-popover">
+        <Popover v-else placement="bottom-end"  popper-class="favorite-popover" :arrow="false" :container="false">
             <template #default>
                 <button
                     class="fake-favorite-button"
@@ -47,9 +47,22 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
-    top: var(--relewise-favorite-top, 0.5em);
-    right: var(--relewise-favorite-right, 0.5em);
     position: absolute;
     z-index: var(--relewise-favorite-z-index, 2);
+    top: var(--relewise-favorite-top, 0.5em);
+    right: var(--relewise-favorite-right, 0.5em);
+}
+
+
+
+.favorite-popover-content {
+    max-width: 10rem;
+    padding: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #334155;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
 }
 </style>

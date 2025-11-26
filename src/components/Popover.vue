@@ -1,9 +1,16 @@
 <template>
-    <VDropdown :placement="placement" :triggers="['click']">
+    <VDropdown
+        :placement="placement"
+        :triggers="['click']"
+        :container="container"
+        :arrow="arrow"
+        :distance="distance"
+        :popper-class="popperClass"
+    >
         <slot></slot>
-       
+
         <template #popper>
-            <slot name="content"/>
+            <slot name="content" />
         </template>
     </VDropdown>
 </template>
@@ -29,10 +36,16 @@ export type Placement = 'auto'
  | 'left-start'
  | 'left-end';
 
+type ContainerTarget = string | HTMLElement | false;
+
 const props = defineProps({
     placement: { type: String as PropType<Placement>, default: 'bottom-start' },
+    container: { type: [String, Boolean, Object] as PropType<ContainerTarget>, default: undefined },
+    arrow: { type: Boolean as PropType<boolean | undefined>, default: undefined },
+    distance: { type: Number as PropType<number | undefined>, default: undefined },
+    popperClass: { type: String as PropType<string | undefined>, default: undefined },
 });
-const { placement} = toRefs(props);
+const { placement, container, arrow, distance, popperClass } = toRefs(props);
 </script>
 
 <style lang="css">
