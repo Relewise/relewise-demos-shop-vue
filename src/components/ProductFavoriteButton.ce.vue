@@ -15,12 +15,12 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
 <template>
-    <div class="favorite-wrapper" @click.stop>
+    <div class="favorite-wrapper relative" @click.stop>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
         <Popover v-else placement="bottom-end" :distance="35" :arrow="false" popper-class="favorite-popover">
             <template #default>
                 <button
-                    class="favorite-trigger"
+                    class="favorite-trigger absolute top-2 right-2 z-10 text-slate-900 bg-white/90 p-[0.35em] rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.12)] inline-flex items-center justify-center"
                     type="button" @click.stop.prevent>
                     <svg id="svg-icon" class="favorite-icon" aria-hidden="true" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg" focusable="false" clip-rule="evenodd" fill-rule="evenodd"
@@ -33,7 +33,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
                 </button>
             </template>
             <template #content>
-                <div class="favorite-popover-content">
+                <div class="favorite-popover-content max-w-xs p-4 text-sm text-slate-700">
                     You need to be logged in or accept marketing cookies to favorite products.
                 </div>
             </template>

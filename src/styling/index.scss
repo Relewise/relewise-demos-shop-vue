@@ -189,6 +189,11 @@ h4 {
     min-height: 1500px;
 }
 
+// Popover styling for favorite button needs to be set globally
 .favorite-popover .v-popper__arrow-container {
   display: none !important;
+}
+
+.favorite-popover-content {
+    @apply max-w-xs p-4 text-sm text-slate-700;
 }

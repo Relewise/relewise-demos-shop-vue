@@ -10,6 +10,7 @@
   
 <script lang="ts" setup>
 import { type PropType, toRefs } from 'vue';
+import { Dropdown as VDropdown } from 'floating-vue';
 
 // Values taken from here: https://floating-vue.starpad.dev/api/#placement
 export type Placement = 'auto' 

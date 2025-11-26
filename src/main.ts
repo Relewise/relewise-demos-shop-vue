@@ -8,10 +8,7 @@ import notificationsStore from './stores/notifications.store';
 import { defineCustomElement } from 'vue'
 import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
 
-// Turn Vue component into a custom element
 const MyVueElement = defineCustomElement(ProductFavoriteButton)
-
-// Register the custom element globally
 customElements.define('product-favorite-button', MyVueElement)
 
 declare module 'vue' {
