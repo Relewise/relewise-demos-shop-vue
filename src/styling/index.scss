@@ -188,3 +188,7 @@ h4 {
 .entity-page {
     min-height: 1500px;
 }
+
+.favorite-popover .v-popper__arrow-container {
+  display: none !important;
+}
