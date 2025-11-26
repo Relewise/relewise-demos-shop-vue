@@ -69,7 +69,7 @@ const displayName = computed(() => {
                     VARIANTS AVAILABLE
                 </span>
             </div>
-            <div class="absolute top-0 right-0">
+            <div class="absolute top-0 right-0 m-3">
                 <product-favorite-button :product="product" />
             </div>
         </div>

@@ -17,16 +17,16 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 <template>
     <div class="favorite-wrapper" @click.stop>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
-        <Popover v-else placement="bottom-end" :distance="35" :arrow="false" popper-class="favorite-popover">
+        <Popover v-else placement="bottom-end" :arrow="false" popper-class="favorite-popover">
             <template #default>
                 <button
-                    class="favorite-trigger"
+                    class="fake-favorite-button"
                     type="button" @click.stop.prevent>
                     <relewise-heart-icon></relewise-heart-icon>
                 </button>
             </template>
             <template #content>
-                <div class="favorite-popover-content max-w-xs p-4 text-sm text-slate-700">
+                <div class="favorite-popover-content">
                     You need to be logged in or accept marketing cookies to favorite products.
                 </div>
             </template>
@@ -36,7 +36,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 
 <!-- web components styling -->
 <style scoped>
-.favorite-trigger {
+.fake-favorite-button {
     border: 0;
     background-color: var(--relewise-favorite-background, rgba(255, 255, 255, 0.9));
     padding: var(--relewise-favorite-padding, 0.35em);
@@ -48,5 +48,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
+    top: var(--relewise-favorite-top, 0.5em);
+    right: var(--relewise-favorite-right, 0.5em);
 }
 </style>
