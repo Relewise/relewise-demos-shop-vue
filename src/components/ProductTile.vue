@@ -6,7 +6,6 @@ import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
 import { highlightWithOffsets } from '@/helpers/highligther';
-import ProductFavoriteButton from '@/components/ProductFavoriteButton.ce.vue';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
@@ -71,7 +70,7 @@ const displayName = computed(() => {
                 </span>
             </div>
             <div class="absolute top-0 right-0">
-                <ProductFavoriteButton :product="product"/>
+                <product-favorite-button :product="product" />
             </div>
         </div>
         <div class="mt-2 information">
