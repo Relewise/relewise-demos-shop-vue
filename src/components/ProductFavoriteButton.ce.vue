@@ -58,14 +58,6 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     position: absolute;
     top: var(--relewise-favorite-top, 0.5em);
     right: var(--relewise-favorite-right, 0.5em);
-    margin: 0.5em;
-}
-
-.favorite-button--floating :deep(relewise-product-favorite-button) {
-    position: absolute;
-    z-index: var(--relewise-favorite-z-index, 10);
-    top: var(--relewise-favorite-top, 0.5em);
-    right: var(--relewise-favorite-right, 0.5em);
 }
 
 .favorite-popover-content {
