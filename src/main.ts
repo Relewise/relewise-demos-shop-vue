@@ -8,8 +8,8 @@ import notificationsStore from './stores/notifications.store';
 import { defineCustomElement } from 'vue'
 import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
 
-const MyVueElement = defineCustomElement(ProductFavoriteButton)
-customElements.define('product-favorite-button', MyVueElement)
+const FavoriteVueElement = defineCustomElement(ProductFavoriteButton)
+customElements.define('product-favorite-button', FavoriteVueElement)
 
 declare module 'vue' {
     interface ComponentCustomProperties {
