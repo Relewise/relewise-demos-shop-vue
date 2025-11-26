@@ -34,7 +34,6 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     </div>
 </template>
 
-<!-- web components styling -->
 <style scoped>
 .fake-favorite-button {
     border: 0;
