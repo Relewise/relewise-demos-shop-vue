@@ -60,5 +60,4 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     top: var(--relewise-favorite-top, 0.5em);
     right: var(--relewise-favorite-right, 0.5em);
 }
-
 </style>

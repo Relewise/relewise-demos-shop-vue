@@ -136,9 +136,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             .list-price {
                 text-decoration: line-through; 
             }
-            
         </style>
-        <div class=product-wrapper>
             <a href="${path}" class="product-link">
                 <product-favorite-button floating .product=${product}></product-favorite-button>
                 <div class="image-container">
@@ -147,20 +145,19 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                     ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
                 </div>
                 <div class="padding">
-                <div class="text-left">
-                    ${product.brand ? html`<span class="brand">${product.brand.displayName}</span>` : ''}
-                    <h5 class="display-name">
-                        ${product.displayName}
-                    </h5>
+                    <div class="text-left">
+                        ${product.brand ? html`<span class="brand">${product.brand.displayName}</span>` : ''}
+                        <h5 class="display-name">
+                            ${product.displayName}
+                        </h5>
+                    </div>
+                    <div class="price-container">
+                        <p>
+                            <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
+                            ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
+                        </p>
+                    </div>
                 </div>
-                <div class="price-container">
-                    <p>
-                        <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
-                        ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
-                    </p>
-                </div>
-            </div>
             </a>
-        </div>
     `;
 };
