@@ -1,9 +1,6 @@
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { ProductTemplateExtensions } from '@relewise/web-components';
-import { ensureProductFavoriteButtonElement } from '@/components/ProductFavoriteButtonElement';
-
-ensureProductFavoriteButtonElement();
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
     let path = `/product/${product.productId}`;
