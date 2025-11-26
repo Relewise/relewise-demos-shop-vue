@@ -31,7 +31,7 @@ const displayName = computed(() => {
     <RouterLink
         :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
         class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
-        <div class="relative flex h-max-[275px] overflow-hidden justify-center">
+        <div class="relative flex h-max-[275px] justify-center">
             <Image :entity="product" class="h-[275px]" />
             <div class="absolute top-0 left-0 flex gap-1">
                 <Popover v-if="isPromotion" placement="bottom-start"
