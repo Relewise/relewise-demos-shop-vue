@@ -17,42 +17,34 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
 <template>
-    <div class="sentiment-buttons" @click.stop>
+    <div class="sentiment-buttons" @click.stop.prevent>
         <relewise-content-sentiment-buttons
             v-if="!isAnonymous"
             :content.prop="content"
             :user.prop="user"
         />
-        <Popover v-else placement="bottom-end" :distance="35" :arrow="false" popper-class="favorite-popover">
+        <Popover v-else placement="bottom-end" :arrow="false" popper-class="favorite-popover">
             <template #default>
                 <div
-                    class="sentiment-buttons__fallback"
+                    class="fake-sentiment-button"
                     role="group"
                     aria-label="Content sentiment actions"
-                    aria-disabled="true"
-                    @click.stop.prevent
                 >
                     <button
                         type="button"
-                        class="sentiment-buttons__button"
-                        aria-disabled="true"
-                        tabindex="-1"
-                        @click.stop.prevent
+                        class="fake-sentiment-button__button"
                     >
                         <relewise-like-icon
-                            class="sentiment-buttons__icon"
+                            class="fake-sentiment-button__icon"
                             aria-hidden="true"
                         ></relewise-like-icon>
                     </button>
                     <button
                         type="button"
-                        class="sentiment-buttons__button"
-                        aria-disabled="true"
-                        tabindex="-1"
-                        @click.stop.prevent
+                        class="fake-sentiment-button__button"
                     >
                         <relewise-dislike-icon
-                            class="sentiment-buttons__icon"
+                            class="fake-sentiment-button__icon"
                             aria-hidden="true"
                         ></relewise-dislike-icon>
                     </button>
@@ -77,14 +69,14 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     width: 100%;
 }
 
-.sentiment-buttons__fallback {
+.fake-sentiment-button {
     display: flex;
     gap: var(--relewise-sentiment-button-gap, 0.5em);
     justify-content: flex-end;
     padding: var(--relewise-sentiment-padding, 0 0.5em 0.5em 0.5em);
 }
 
-.sentiment-buttons__button {
+.fake-sentiment-button__button {
     border: 0;
     border-radius: var(--relewise-sentiment-border-radius, 9999px);
     background-color: var(--relewise-sentiment-background, transparent);
@@ -93,17 +85,16 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: not-allowed;
-    opacity: 0.5;
+    cursor: pointer;
 }
 
-.sentiment-buttons__icon {
+.fake-sentiment-button__icon {
     width: var(--relewise-icon-width, 1rem);
     height: var(--relewise-icon-height, 1rem);
     fill: var(--relewise-icon-color, currentColor);
 }
 
-.sentiment-buttons__icon path {
+.fake-sentiment-button__icon path {
     stroke: var(--relewise-icon-color, currentColor);
 }
 </style>

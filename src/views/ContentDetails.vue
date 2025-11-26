@@ -11,6 +11,7 @@
 
                 <div class="bg-white xl:w-1/2">
                     <div>
+                        <ContentSentimentButtons :content="content" />
                         <h1 class="text-4xl mb-4 font-semibold">
                             {{ content.displayName }}
                         </h1>
@@ -53,6 +54,7 @@ import { globalProductRecommendationFilters } from '@/stores/globalProductFilter
 import ProductTile from '../components/ProductTile.vue';
 import trackingService from '@/services/tracking.service';
 import { findImage } from '@/helpers/imageHelper';
+import ContentSentimentButtons from '@/components/ContentSentimentButtons.vue';
 
 const contentId = ref<string>('');
 const content = ref<ContentResult | null | undefined>(null);
