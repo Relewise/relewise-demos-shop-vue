@@ -142,7 +142,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
 
         </style>
         <div class=product-wrapper>
-            <app-product-favorite-button .product=${product}></app-product-favorite-button>
+            <product-favorite-button .product=${product}></product-favorite-button>
             <a href="${path}" class="product-link">
                 <div class="image-container">
                     <img src="${findImage(product)}" class="image"/>
