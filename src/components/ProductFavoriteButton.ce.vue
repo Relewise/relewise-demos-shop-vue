@@ -17,11 +17,10 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 <template>
     <div class="favorite-wrapper" @click.stop>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
+
         <Popover v-else placement="bottom-end" :distance="35" :arrow="false" popper-class="favorite-popover">
             <template #default>
-                <button
-                    class="favorite-trigger"
-                    type="button" @click.stop.prevent>
+                <button class="favorite-trigger" type="button" @click.stop.prevent>
                     <relewise-heart-icon></relewise-heart-icon>
                 </button>
             </template>
@@ -48,5 +47,9 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
+
+    position: absolute;
+    top: var(--relewise-favorite-top, 0.5em);
+    right: var(--relewise-favorite-right, 0.5em);
 }
 </style>
