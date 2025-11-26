@@ -28,8 +28,6 @@ export type Placement = 'auto'
     | 'left-start'
     | 'left-end';
 
-type ContainerTarget = string | HTMLElement | false;
-
 const props = defineProps({
     placement: { type: String as PropType<Placement>, default: 'bottom-start' },
     arrow: { type: Boolean as PropType<boolean | undefined>, default: undefined },
