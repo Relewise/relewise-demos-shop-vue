@@ -6,7 +6,7 @@ import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
 import { highlightWithOffsets } from '@/helpers/highligther';
-import ProductFavoriteButton from '@/components/ProductFavoriteButton.vue';
+import ProductFavoriteButton from '@/components/ProductFavoriteButton.ce.vue';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },

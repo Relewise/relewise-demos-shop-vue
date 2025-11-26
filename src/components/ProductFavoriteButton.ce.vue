@@ -15,14 +15,14 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
 <template>
-    <div class="relative" @click.stop>
+    <div class="favorite-wrapper" @click.stop>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
         <Popover v-else placement="bottom-end" :distance="35" :arrow="false" popper-class="favorite-popover">
             <template #default>
                 <button
-                    class="absolute top-2 right-2 z-10 text-slate-900 bg-white/90 p-[0.35em] rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.12)] inline-flex items-center justify-center"
+                    class="favorite-trigger"
                     type="button" @click.stop.prevent>
-                    <svg id="svg-icon" class="h-4 w-4" aria-hidden="true" viewBox="0 0 24 24"
+                    <svg id="svg-icon" class="favorite-icon" aria-hidden="true" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg" focusable="false" clip-rule="evenodd" fill-rule="evenodd"
                         stroke-linejoin="round" stroke-miterlimit="2" stroke="currentColor" stroke-width="0.2"
                         width="1em" height="1em">
@@ -33,10 +33,29 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
                 </button>
             </template>
             <template #content>
-                <div class="max-w-xs p-4 text-sm text-slate-700">
+                <div class="favorite-popover-content">
                     You need to be logged in or accept marketing cookies to favorite products.
                 </div>
             </template>
         </Popover>
     </div>
 </template>
+<style scoped lang="postcss">
+.favorite-wrapper {
+    position: relative;
+}
+
+.favorite-trigger {
+    @apply absolute top-2 right-2 z-10 text-slate-900 bg-white/90 rounded-full inline-flex items-center justify-center;
+    padding: 0.35em;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.favorite-icon {
+    @apply h-4 w-4;
+}
+
+.favorite-popover-content {
+    @apply max-w-xs p-4 text-sm text-slate-700;
+}
+</style>

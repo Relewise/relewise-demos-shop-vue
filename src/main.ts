@@ -6,7 +6,7 @@ import formatting from './plugins/formatting';
 import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
 import { defineCustomElement } from 'vue'
-import ProductFavoriteButton from './components/ProductFavoriteButton.vue';
+import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
 
 // Turn Vue component into a custom element
 const MyVueElement = defineCustomElement(ProductFavoriteButton)
