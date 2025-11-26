@@ -1,6 +1,9 @@
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { ProductTemplateExtensions } from '@relewise/web-components';
+import { ensureProductFavoriteButtonElement } from '@/components/ProductFavoriteButtonElement';
+
+ensureProductFavoriteButtonElement();
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
     let path = `/product/${product.productId}`;
@@ -138,26 +141,29 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             }
 
         </style>
-        <a href="${path}" class="product-link">
-            <div class="image-container">
-                <img src="${findImage(product)}" class="image"/>
-                ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
-                ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
+        <div class=product-wrapper>
+            <app-product-favorite-button .product=${product}></app-product-favorite-button>
+            <a href="${path}" class="product-link">
+                <div class="image-container">
+                    <img src="${findImage(product)}" class="image"/>
+                    ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
+                    ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
+                </div>
+                <div class="padding">
+                <div class="text-left">
+                    ${product.brand ? html`<span class="brand">${product.brand.displayName}</span>` : ''}
+                    <h5 class="display-name">
+                        ${product.displayName}
+                    </h5>
+                </div>
+                <div class="price-container">
+                    <p>
+                        <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
+                        ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
+                    </p>
+                </div>
             </div>
-            <div class="padding">
-            <div class="text-left">
-                ${product.brand ? html`<span class="brand">${product.brand.displayName}</span>` : ''}
-                <h5 class="display-name">
-                    ${product.displayName}
-                </h5>
-            </div>
-            <div class="price-container">
-                <p>
-                    <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
-                    ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
-                </p>
-            </div>
+            </a>
         </div>
-        </a>
     `;
 };
