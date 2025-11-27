@@ -49,7 +49,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
-    margin: 0.5em;
+    margin: 0.6em;
 }
 
 .favorite-button--floating {
