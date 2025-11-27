@@ -59,8 +59,8 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 <style scoped>
 .fake-sentiment-button {
     display: flex;
-    gap: var(--relewise-sentiment-button-gap, 0.5em);
-    padding: var(--relewise-sentiment-padding, 0 0.5em 0.5em 0.5em);
+    gap: var(--relewise-sentiment-button-gap, 0.5rem);
+    padding: var(--relewise-sentiment-padding, 0 0.5rem 0.5rem 0.5rem);
     justify-content: flex-end;
 }
 
@@ -70,7 +70,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     background-color: var(--relewise-sentiment-background, transparent);
     color: inherit;
     cursor: pointer;
-    padding: var(--relewise-sentiment-button-padding, 0.35em);
+    padding: var(--relewise-sentiment-button-padding, 0.35rem);
     display: inline-flex;
     align-items: center;
     justify-content: center;
