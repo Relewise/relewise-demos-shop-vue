@@ -136,24 +136,15 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             .list-price {
                 text-decoration: line-through; 
             }
-
-            product-favorite-button {
-                position: absolute;
-                top: 0;
-                right: 0;
-                margin: 0.5rem;
-            }
-
         </style>
-        <div class=product-wrapper>
-            <a href="${path}" class="product-link">
-                <div class="image-container">
-                    <product-favorite-button .product=${product}></product-favorite-button>
-                    <img src="${findImage(product)}" class="image"/>
-                    ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
-                    ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
-                </div>
-                <div class="padding">
+        <a href="${path}" class="product-link">
+            <product-favorite-button floating .product=${product}></product-favorite-button>
+            <div class="image-container">
+                <img src="${findImage(product)}" class="image"/>
+                ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
+                ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
+            </div>
+            <div class="padding">
                 <div class="text-left">
                     ${product.brand ? html`<span class="brand">${product.brand.displayName}</span>` : ''}
                     <h5 class="display-name">
@@ -167,7 +158,6 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                     </p>
                 </div>
             </div>
-            </a>
-        </div>
+        </a>
     `;
 };
