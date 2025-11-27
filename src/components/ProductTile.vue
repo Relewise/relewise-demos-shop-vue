@@ -70,7 +70,7 @@ const displayName = computed(() => {
                 </span>
             </div>
             <div class="absolute top-0 right-0">
-                <product-favorite-button :product="product" />
+                <app-product-favorite-button :product="product" />
             </div>
         </div>
         <div class="mt-2 information">

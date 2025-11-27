@@ -9,7 +9,7 @@ import { defineCustomElement } from 'vue'
 import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
 
 const FavoriteVueElement = defineCustomElement(ProductFavoriteButton)
-customElements.define('product-favorite-button', FavoriteVueElement)
+customElements.define('app-product-favorite-button', FavoriteVueElement)
 
 declare module 'vue' {
     interface ComponentCustomProperties {

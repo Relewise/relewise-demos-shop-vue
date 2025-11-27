@@ -18,7 +18,7 @@
                                 {{ product.brand.displayName }}
                             </RouterLink>
 
-                            <product-favorite-button :product="product" />
+                            <app-product-favorite-button :product="product" />
                         </div>
 
                         <h1 class="text-4xl mb-4 font-semibold">
