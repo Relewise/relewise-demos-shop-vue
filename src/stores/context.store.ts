@@ -127,6 +127,7 @@ class AppContext {
                 adjusted: true,
                 relevance: true,
             },
+            userEngagement: true,
         } as SelectedProductPropertiesSettings;
     }
 
@@ -137,6 +138,7 @@ class AppContext {
             categoryPaths: true,
             pricing: true,
             dataKeys: ['ByLine', 'Body', 'Image', 'Summary'],
+            userEngagement: true,
         } as SelectedProductPropertiesSettings;
     }
 
@@ -306,6 +308,14 @@ class AppContext {
                         globalProductRecommendationFilters(builder);
                     },
                 },
+                userEngagement: {
+                    product: {
+                        favorite: true,
+                    },
+                    content: {
+                        sentiment: true,
+                    }
+                }
             }).useRecommendations();
     }
 }

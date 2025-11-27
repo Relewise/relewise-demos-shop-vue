@@ -188,3 +188,14 @@ h4 {
 .entity-page {
     min-height: 1500px;
 }
+
+.engagement-popover-content {
+    max-width: 10rem;
+    padding: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #334155;
+    background: #fff;
+    border-radius: 6px;
+    justify-self: self-end;
+}

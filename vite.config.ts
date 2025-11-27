@@ -13,8 +13,8 @@ export default defineConfig({
             {
                 template: {
                     compilerOptions: {
-                        // treat all <relewise-*> as custom elements
-                        isCustomElement: (tag) => tag.startsWith('relewise-'),
+                        // treat <relewise-*> and <app-*> as custom elements
+                        isCustomElement: (tag) => tag.startsWith('relewise-') || tag.startsWith('app-'),
                     }
                 }
             }

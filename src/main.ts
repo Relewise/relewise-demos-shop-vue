@@ -5,6 +5,11 @@ import './styling/index.scss';
 import formatting from './plugins/formatting';
 import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
+import { defineCustomElement } from 'vue'
+import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
+
+const FavoriteVueElement = defineCustomElement(ProductFavoriteButton)
+customElements.define('app-product-favorite-button', FavoriteVueElement)
 
 declare module 'vue' {
     interface ComponentCustomProperties {

@@ -54,7 +54,7 @@
                     </div>
 
                     <div class="py-3 flex justify-center mt-10">
-                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" @change="search" />
+                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" />
                     </div>
                 </div>
             </div>
@@ -186,6 +186,10 @@ init();
 watch(route, () => {
     if (route.query.open !== '1')
         init();
+});
+
+watch(page, async () => {
+    await search();
 });
 
 watch(breakpointService.active, () => {
