@@ -42,7 +42,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 .fake-favorite-button {
     border: 0;
     background-color: var(--relewise-favorite-background, rgba(255, 255, 255, 0.9));
-    padding: var(--relewise-favorite-padding, 0.35rem);
+    padding: var(--relewise-favorite-padding, 0.35em);
     color: inherit;
     cursor: pointer;
     border-radius: var(--relewise-favorite-border-radius, 9999px);
@@ -51,12 +51,12 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
-    margin: 0.5rem;
+    margin: 0.5em;
 }
 
 .favorite-button--floating {
     position: absolute;
-    top: var(--relewise-favorite-top, 0.5rem);
-    right: var(--relewise-favorite-right, 0.5rem);
+    top: var(--relewise-favorite-top, 0.5em);
+    right: var(--relewise-favorite-right, 0.5em);
 }
 </style>
