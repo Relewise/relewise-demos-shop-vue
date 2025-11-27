@@ -48,7 +48,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
                 </div>
             </template>
             <template #content>
-                <div class="favorite-popover-content max-w-xs p-4 text-sm text-slate-700">
+                <div class="engagement-popover-content max-w-xs p-4 text-sm text-slate-700">
                     This feature requires a non-anonymous user.
                 </div>
             </template>
