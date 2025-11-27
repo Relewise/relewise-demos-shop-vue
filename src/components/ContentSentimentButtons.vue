@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContentResult, User } from '@relewise/client';
+import type { ContentResult } from '@relewise/client';
 import { userIsAnonymous } from '@relewise/client';
 import { computed, toRefs, type PropType } from 'vue';
 import contextStore from '@/stores/context.store';
@@ -7,12 +7,9 @@ import Popover from '@/components/Popover.vue';
 
 const props = defineProps({
     content: { type: Object as PropType<ContentResult>, required: true },
-    user: { type: Object as PropType<User>, required: false },
 });
 
-const { content } = toRefs(props);
-const storeUser = contextStore.user;
-const user = computed(() => props.user ?? storeUser.value);
+const user = contextStore.user;
 const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
@@ -60,20 +57,11 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </template>
 
 <style scoped>
-.sentiment-buttons {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.sentiment-buttons :deep(relewise-content-sentiment-buttons) {
-    width: 100%;
-}
-
 .fake-sentiment-button {
     display: flex;
     gap: var(--relewise-sentiment-button-gap, 0.5em);
-    justify-content: flex-end;
     padding: var(--relewise-sentiment-padding, 0 0.5em 0.5em 0.5em);
+    justify-content: flex-end;
 }
 
 .fake-sentiment-button__button {
@@ -81,20 +69,11 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
     border-radius: var(--relewise-sentiment-border-radius, 9999px);
     background-color: var(--relewise-sentiment-background, transparent);
     color: inherit;
+    cursor: pointer;
     padding: var(--relewise-sentiment-button-padding, 0.35em);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-}
-
-.fake-sentiment-button__icon {
-    width: var(--relewise-icon-width, 1rem);
-    height: var(--relewise-icon-height, 1rem);
-    fill: var(--relewise-icon-color, currentColor);
-}
-
-.fake-sentiment-button__icon path {
-    stroke: var(--relewise-icon-color, currentColor);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 </style>

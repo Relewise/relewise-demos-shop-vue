@@ -7,7 +7,6 @@ import Popover from '@/components/Popover.vue';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
-    user: { type: Object as PropType<User>, required: false },
     floating: { type: Boolean, required: false, default: false },
 });
 
@@ -18,7 +17,7 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 <template>
     <div class="favorite-button" :class="{ 'favorite-button--floating': props.floating }" @click.stop.prevent>
         <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
-        <Popover v-else placement="bottom-end"  popper-class="favorite-popover">
+        <Popover v-else placement="bottom-end" popper-class="favorite-popover">
             <template #default>
                 <button
                     class="fake-favorite-button"
