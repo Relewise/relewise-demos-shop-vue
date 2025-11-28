@@ -1,7 +1,7 @@
 <template>
     <div class="image-container">
         <img v-if="!error"
-             class="object-cover"
+             class="object-cover w-full"
              :src="image"
              alt="product image"
              @error="error = true">
