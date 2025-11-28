@@ -242,8 +242,8 @@ function observeFeedItems() {
 
 async function recordDwell() {
     if (!feedId.value) return;
+
     // gather items currently visible, excluding those already dwelled
-    console.log('Recording dwell for visible items', Array.from(visibleItems.value));
     const keys = Array.from(visibleItems.value).filter(k => !dwelledItems.value.has(k));
     if (keys.length === 0) return;
 
