@@ -38,14 +38,12 @@
                     <template v-for="(group, index) in elements" :key="index" v-if="feedId">
                         <span v-for="ele in group.content">
                             <FeedContentTile :content="ele" class="rounded-lg p-2 shadow bg-white hover:scale-105"
-                                :feed-id="feedId"
-                                @click="trackClick('Content', ele.contentId!)" />
+                                :feed-id="feedId" @click="trackClick('Content', ele.contentId!)" />
                         </span>
 
                         <span v-for="ele in group.products">
                             <ProductTile :product="ele" class="rounded-lg shadow p-2 bg-white hover:scale-105"
-                                :feed-id="feedId"
-                                @click="trackClick('Product', ele.productId!)"/>
+                                :feed-id="feedId" @click="trackClick('Product', ele.productId!)" />
                         </span>
                     </template>
                 </div>
@@ -108,7 +106,7 @@ async function fetchNextItems(): Promise<void> {
 
     const builder = new FeedRecommendationNextItemsBuilder({ initializedFeedId: feedId.value });
 
-    const response = await recommender.recommendFeedRecommendationNextItems(builder.build());
+    const response = await recommender.recommendFeedNextItems(builder.build());
 
     if (response?.recommendations?.length === 0) {
         done.value = true;
@@ -119,40 +117,41 @@ async function fetchNextItems(): Promise<void> {
 }
 
 async function initialize(): Promise<void> {
-    const builder = new FeedRecommendationInitializationBuilder({ minimumPageSize: 10 }, contextStore.defaultSettings)
+    const builder = new FeedRecommendationInitializationBuilder(contextStore.defaultSettings, { minimumPageSize: 10 })
         .setSelectedContentProperties(contextStore.selectedContentProperties)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .allowProductsCurrentlyInCart()
-        .compositions([
-            {
-                count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 },
-                type: 'Product',
-                includeEmptyResults: false, // should default to false
-            },
-             {
-                count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 },
-                type: 'Content',
-                includeEmptyResults: false, // should default to false
-            },
-            // {
-            //     count: { lowerBoundInclusive: 5, upperBoundInclusive: 5 },
-            //     type: 'Content',
-            //     includeEmptyResults: false,
-            //     name: 'Blog Posts',
-            //     rotationLimit: 1,
-            //     filters: new FilterBuilder().addContentDataFilter("Tag", c => c.addEqualsCondition(DataValueFactory.string("blog"))).build()
-            // },
-            // {
-            //     count: { lowerBoundInclusive: 5, upperBoundInclusive: 5 },
-            //     type: 'Content',
-            //     includeEmptyResults: false,
-            //     name: 'Blog Posts',
-            //     rotationLimit: 1,
-            //     filters: new FilterBuilder().addContentDataFilter("Tag", c => c.addEqualsCondition(DataValueFactory.string("blog"))).build()
-            // },
-        ]);
+        .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
+        .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } });
 
-    const response = await recommender.recommendFeedRecommendationInitialization(builder.build());
+    // {
+    //     count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 },
+    //     type: 'Product',
+    //     includeEmptyResults: false, // should default to false
+    // },
+    // {
+    //     count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 },
+    //     type: 'Content',
+    //     includeEmptyResults: false, // should default to false
+    // },
+    // {
+    //     count: { lowerBoundInclusive: 5, upperBoundInclusive: 5 },
+    //     type: 'Content',
+    //     includeEmptyResults: false,
+    //     name: 'Blog Posts',
+    //     rotationLimit: 1,
+    //     filters: new FilterBuilder().addContentDataFilter("Tag", c => c.addEqualsCondition(DataValueFactory.string("blog"))).build()
+    // },
+    // {
+    //     count: { lowerBoundInclusive: 5, upperBoundInclusive: 5 },
+    //     type: 'Content',
+    //     includeEmptyResults: false,
+    //     name: 'Blog Posts',
+    //     rotationLimit: 1,
+    //     filters: new FilterBuilder().addContentDataFilter("Tag", c => c.addEqualsCondition(DataValueFactory.string("blog"))).build()
+    // },
+
+    const response = await recommender.recommendFeedInitialization(builder.build());
     feedId.value = response?.initializedFeedId;
     elements.value = response?.recommendations ?? [];
 }
@@ -196,7 +195,7 @@ async function loadMoreAndFill() {
 onMounted(async () => {
     await loadMoreAndFill()
     io = new IntersectionObserver(
-        (entries) => entries[0].isIntersecting && loadMoreAndFill(),
+        (entries) => entries[0]?.isIntersecting && loadMoreAndFill(),
         { root: null, rootMargin: `0px 0px ${preloadPx}px 0px`, threshold: 0 }
     )
     if (sentinel.value) io.observe(sentinel.value);
