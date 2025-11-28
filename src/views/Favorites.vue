@@ -20,7 +20,7 @@
     </template>
 
     <div v-if="userIsAnonymous(contextStore.user.value)">
-      <p>This feature requires a non-anonymous user. See documentation about <a target="_blank" href="https://docs.relewise.com/docs/tracking/user-engagement.html#user-engagement">user engagement</a></p>
+      <p>This feature requires a non-anonymous user. See documentation about <a target="_blank" href="https://docs.relewise.com/docs/tracking/user-engagement.html#user-engagement">user engagement.</a></p>
     </div>
   </div>
 </template>
