@@ -5,6 +5,7 @@ import Image from './Image.vue';
 import { findImage } from '@/helpers/imageHelper';
 import contextStore from '@/stores/context.store';
 import { highlightWithOffsets } from '@/helpers/highligther';
+import ContentSentimentButtons from '@/components/ContentSentimentButtons.vue';
 
 const props = defineProps({
     content: { type: Object as PropType<ContentResult>, required: true },
@@ -52,6 +53,9 @@ const displayName = computed(() => {
                 </h5>
                 <span v-if="showSummary" class="text-slate-700 flex-1 mt-1 overflow-hidden line-clamp-2"
                     v-html="summarySnippet"></span>
+                <div v-if="showSummary" class="mt-3 flex justify-end">
+                    <ContentSentimentButtons :content="content" />
+                </div>
             </div>
         </div>
     </RouterLink>

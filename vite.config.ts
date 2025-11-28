@@ -8,12 +8,27 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [vue(), vueJsx()],
+    plugins: [
+        vue(
+            {
+                template: {
+                    compilerOptions: {
+                        // treat <relewise-*> and <app-*> as custom elements
+                        isCustomElement: (tag) => tag.startsWith('relewise-') || tag.startsWith('app-'),
+                    }
+                }
+            }
+        ),
+        vueJsx()
+    ],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),
-    
-        },  
+        },
     },
-    base: undefined,  
+    server: {
+        port: 5173,
+        strictPort: true,
+    },
+    base: undefined,
 });

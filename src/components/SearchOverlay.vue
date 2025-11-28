@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
+import trackingService from '@/services/tracking.service';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
-import { useRoute } from 'vue-router';
+import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 
@@ -18,18 +19,19 @@ enum Tabs {
     Content
 }
 
-const open = ref(false);	
+const open = ref(false);
 const searchTerm = ref<string>('');
 const productSearchResult = ref<ProductSearchResponse | null>(null);
 const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
 const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
+const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
-const page = ref(1);	
-const predictionsList = ref<SearchTermPredictionResult[]>([]);	
-const filters = ref<Record<string, string | string[]>>({ term: '', sort: '' });	
+const trackedBrandId = ref<string | null>(null);
+// page moved into filters below as filters.value.page (string)
+const predictionsList = ref<SearchTermPredictionResult[]>([]);
+const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
-
 let abortController = new AbortController();
 
 const productPageSize = 40;
@@ -42,35 +44,53 @@ function close() {
 }
 
 watch(() => ({ ...route }), (value, oldValue) => {
-    if (route.query.open === '1' && !open.value) {
+    if (route.query.open === '1') {
         scrollTo({ top: 0 });
 
-        const searchParams = new URLSearchParams(window.location.search);	
-        searchParams.forEach((value, key) => {	
-            if (key === 'term') {	
-                searchTerm.value = value;	
-                return;	
-            }	
-            if (key === 'sort') {	
-                filters.value.sort = value;	
-                return;	
+        const searchParams = new URLSearchParams(window.location.search);
+
+        // Build a new filters object from the current URL params so
+        // any previous/old filters are removed when the URL doesn't include them.
+        const newFilters: Record<string, string | string[]> = { term: '', sort: '', page: '1' };
+        searchTerm.value = "";
+        searchParams.forEach((value, key) => {
+            if (key === 'term') {
+                searchTerm.value = value;
+                newFilters.term = value;
+                return;
             }
-            const existing = filters.value[key];	
-            existing && Array.isArray(existing) ? existing.push(value) : filters.value[key] = [value];	
+            if (key === 'sort') {
+                newFilters.sort = value;
+                return;
+            }
+            if (key === 'page') {
+                newFilters.page = value;
+                return;
+            }
+
+            const existing = newFilters[key];
+            if (!existing) {
+                newFilters[key] = [value];
+            } else if (Array.isArray(existing) && !existing.includes(value)) {
+                (existing as string[]).push(value);
+            } else if (!Array.isArray(existing) && existing !== value) {
+                newFilters[key] = [existing as string, value];
+            }
         });
 
-        filters.value['open'] = '1';
+        newFilters['open'] = '1';
+        filters.value = newFilters;
 
-        search();	
-        return;	
-    } else if (value.query.open !== '1' && oldValue.query.open === '1') {	
-        close();	
-    }	
+        search();
+        return;
+    } else if (value.query.open !== '1' && oldValue.query.open === '1') {
+        close();
+    }
 });
 
-watch(breakpointService.active, () => {	
-    if (route.query.open === '1')	
-        search();	
+watch(breakpointService.active, () => {
+    if (route.query.open === '1')
+        search();
 });
 
 function showOrHide(show: boolean) {
@@ -80,6 +100,7 @@ function showOrHide(show: boolean) {
         contentSearchResult.value = null;
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
+        trackedBrandId.value = null;
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
 
@@ -95,10 +116,20 @@ function showOrHide(show: boolean) {
 
 function typeAHeadSearch() {
     if (filters.value.term !== searchTerm.value) {
-        filters.value['open'] = '1';
-
-        search();
+        // reset page to 1 when doing a type-ahead search
+        filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
+        persistInUrl();
     }
+}
+
+function searchFor(term: string) {
+    searchTerm.value = term;
+    typeAHeadSearch();
+}
+
+async function persistInUrl() {
+    const query = { ...filters.value };
+    await router.push({ path: route.path, query: query, replace: true });
 }
 
 async function search() {
@@ -117,12 +148,23 @@ async function search() {
     const selectedCategoryFilterIds = filters.value['category'];
     const categoryFilterThreshold = contextStore.context.value.allowThirdLevelCategories ? 3 : 2;
 
+    const brandIdRaw = route.query.brand;
+    const brandNameRaw = route.query.brandName;
+    const brandId = Array.isArray(brandIdRaw) ? brandIdRaw[0] : brandIdRaw;
+    const brandName = Array.isArray(brandNameRaw) ? brandNameRaw[0] : brandNameRaw;
+
+    const contentTerm = filters.value.term.length > 0
+        ? filters.value.term
+        : (typeof brandName === 'string' ? brandName : null);
+
     const request = new SearchCollectionBuilder()
         .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({displayName: true,
+            .setSelectedVariantProperties({
+                displayName: true,
                 pricing: true,
-                allData: true})
+                allData: true
+            })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .setExplodedVariants(contextStore.context.value.variantBasedSearchOverlay ? 5 : 1)
             .filters(f => {
@@ -132,13 +174,13 @@ async function search() {
                     });
                 }
 
-                if (route.query.brandName && typeof route.query.brandName === 'string') {
-                    f.addBrandIdFilter(route.query.brandName);
+                if (brandId && typeof brandId === 'string') {
+                    f.addBrandIdFilter(brandId);
                 }
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .facets(f => getFacets(route.query.brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
+            .facets(f => getFacets(brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
             .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
@@ -151,14 +193,16 @@ async function search() {
                     s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
-            .pagination(p => p.setPageSize(productPageSize).setPage(page.value))
-            .setRetailMedia({
-                location: {
+            .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
+            .setRetailMedia(rm => rm
+                .setLocation({
                     key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'TOP' }],
+                    placements: [{ key: 'RIGHT' }, { key: 'TOP' }],
                     variation: { key: variationName },
-                },
-            })
+                })
+                .setSelectedDisplayAdProperties({
+                    allData: true
+                }))
             .highlighting(h =>
                 h.enabled(contextStore.context.value.searchHighlight ?? false)
                     .setHighlightable({
@@ -184,8 +228,8 @@ async function search() {
             .build())
         .addRequest(new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)
-            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .pagination(p => p.setPageSize(contentPageSize).setPage(page.value))
+            .setTerm(contentTerm)
+            .pagination(p => p.setPageSize(contentPageSize).setPage(Number(filters.value.page)))
             .facets(f => {
                 getFacets('ContentSearch', f, filters.value);
             })
@@ -228,10 +272,9 @@ async function search() {
     const response = await searcher.batch(request, { abortSignal: abortController.signal });
     contextStore.assertApiCall(response);
 
-    const query = { ...filters.value };
-    await router.push({ path: route.path, query: query, replace: true });
-
     if (response && response.responses) {
+        trackBrandView(brandId, brandName);
+
         contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
         products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
@@ -241,7 +284,6 @@ async function search() {
         }
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
-
         if (productSearchResult.value.hits === 0) {
             const request = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
                 .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -264,82 +306,78 @@ async function search() {
 
             if (placement?.results) {
                 products.value = placement.results
-                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result! }))
+                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result, displayAd: x.promotedDisplayAd }) as ProductWithType)
                     .concat(products.value ?? []);
+            }
+        }
+
+        const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
+        if (rightPlacement) {
+
+            if (rightPlacement?.results) {
+                rightSide.value = rightPlacement.results;
             }
         }
     }
 }
 
-function searchFor(term: string) {
-    searchTerm.value = term;
-    search();
-}
-
 watch(activeTab, () => {
-    page.value = 1;
-    filters.value = { term: searchTerm.value, sort: '', open: '1' };
+    // reset page when switching tabs
+    filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
 });
+
+function trackBrandView(
+    brand: LocationQueryValue | LocationQueryValue[] | undefined,
+    brandName: LocationQueryValue | LocationQueryValue[] | undefined,
+) {
+    if (!brandName || typeof brandName !== 'string') return;
+    if (!brand || typeof brand !== 'string') return;
+    if (trackedBrandId.value === brand) return;
+
+    trackingService.trackBrandView(brand);
+    trackedBrandId.value = brand;
+}
 
 </script>
 
 <template>
     <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
         <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600"/>
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
         </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close"/>
-        <input v-model="searchTerm"
-               type="text"
-               placeholder="Search..."
-               class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-               @keyup="typeAHeadSearch()">
+        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
+        <input v-model="searchTerm" type="text" placeholder="Search..."
+            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+            @keyup="typeAHeadSearch()">
     </div>
 
     <Teleport to="#modal">
         <div v-if="open" id="search-result-overlay" class="modal">
             <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName" class="mb-6 flex border-b border-slate-200">
-                    <div
-                        :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName"
+                    class="mb-6 flex border-b border-slate-200">
+                    <div :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
                         @click="() => activeTab = Tabs.Products">
                         Products ({{ productSearchResult?.hits }})
                     </div>
-                    <div
-                        :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                    <div :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
                         @click="() => activeTab = Tabs.Content">
                         Content ({{ contentSearchResult?.hits }})
                     </div>
                 </div>
 
-                <ProductSearchOverlayResult 
-                    v-if="activeTab === Tabs.Products
-                        && productSearchResult" 
-                    v-model:sort="filters.sort!"
-                    v-model:page="page"
-                    :page-size="productPageSize"
-                    :term="filters.term ?? ''"
-                    :product-search-result="productSearchResult"
+                <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
+                    && productSearchResult" v-model:sort="filters.sort!" :page-size="productPageSize"
+                    :term="filters.term ?? ''" :product-search-result="productSearchResult"
                     :content-recommendation-result="contentRecommendationResult"
-                    :fallback-recommendations="fallbackRecommendations"
-                    :products="products"
-                    :predictions-list="predictionsList"
-                    :filters="filters"
-                    @search-for="searchFor"
-                    @search="search"/>
-                <ContentSearchOverlayResult 
-                    v-else-if="activeTab === Tabs.Content 
-                        && contextStore.context.value.contentSearch
-                        && contentSearchResult"
-                    v-model:sort="filters.sort!"
-                    v-model:page="page"
-                    :content-search-result="contentSearchResult"
-                    :page-size="contentPageSize"
-                    :term="filters.term ?? ''"
-                    :predictions-list="predictionsList"
-                    :filters="filters"
-                    @search-for="searchFor"
-                    @search="search"/>
+                    :fallback-recommendations="fallbackRecommendations" :products="products"
+                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
+                    @search-for="searchFor" @search="persistInUrl" />
+                <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
+                    && contextStore.context.value.contentSearch
+                    && contentSearchResult" v-model:sort="filters.sort!" :content-search-result="contentSearchResult"
+                    :page-size="contentPageSize" :term="filters.term ?? ''" :predictions-list="predictionsList"
+                    :filters="filters" @search-for="searchFor" @search="persistInUrl" />
             </div>
         </div>
     </Teleport>
