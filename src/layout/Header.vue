@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </div>
                         </li>
-                        <li class="inline-flex relative pr-5">
+                        <li class="inline-flex relative pr-5" v-if="contextStore.context.value.shoppertainmentEnabled">
                             <RouterLink to="/feed"
                                 class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
                                 Shoppertainment

@@ -1,35 +1,8 @@
 <template>
-    <main class="pt-6 bg-neutral-100">
+    <main class="pt-6 bg-gradient grow">
         <div class="container mx-auto">
-            <h1 class="text-3xl font-semibold mb-4">Shoppertainment</h1>
+            <h1 class="text-3xl font-semibold mb-4 text-neutral-100">Shoppertainment</h1>
         </div>
-
-
-        <!-- <article v-for="(group, index) in elements" :key="index" class="mb-12">
-            <div class="" v-if="group.content">
-                <div class="mx-auto container">
-                    <h2 class="text-xl mb-2 font-semibold">{{ group.name }}</h2>
-
-                    <div class="grid grid-cols-5 gap-4 mb-4" v-if="group.content">
-                        <span v-for="ele in group.content">
-                            <FeedContentTile :content="ele" class="rounded-lg p-2 shadow"
-                                @click="trackClick('Content', ele.contentId!)" />
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="group.products" style="background-color: #e9effb;">
-                <div class="waves"></div>
-                <div class="container mx-auto grid grid-cols-5 gap-4 mb-4 rounded-lg" v-if="group.products">
-                    <span v-for="ele in group.products">
-                        <ProductTile :product="ele" class="rounded-lg shadow p-2 bg-white"
-                            @click="trackClick('Product', ele.productId!)" />
-                    </span>
-                </div>
-                <div class="reverse-waves"></div>
-            </div>
-        </article> -->
 
         <article class="mb-4">
             <div class="mx-auto container">
@@ -38,12 +11,12 @@
                     <template v-for="(group, index) in elements" :key="index" v-if="feedId">
                         <span v-for="ele in group.content">
                             <FeedContentTile :content="ele" class="rounded-lg p-2 shadow bg-white hover:scale-105"
-                                :feed-id="feedId" @click="trackClick('Content', ele.contentId!)" />
+                                @click="trackClick('Content', ele.contentId!)" />
                         </span>
 
                         <span v-for="ele in group.products">
                             <ProductTile :product="ele" class="rounded-lg shadow p-2 bg-white hover:scale-105"
-                                :feed-id="feedId" @click="trackClick('Product', ele.productId!)" />
+                                @click="trackClick('Product', ele.productId!)" />
                         </span>
                     </template>
                 </div>
@@ -66,7 +39,7 @@
 import FeedContentTile from '@/components/FeedContentTile.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import contextStore from '@/stores/context.store';
-import { FeedRecommendationInitializationBuilder, FeedRecommendationNextItemsBuilder, FilterBuilder, type FeedCompositionResult, type FeedItem } from '@relewise/client';
+import { FeedRecommendationInitializationBuilder, FeedRecommendationNextItemsBuilder, type FeedCompositionResult, type FeedItem } from '@relewise/client';
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
 
 const recommender = contextStore.getRecommender();
@@ -76,7 +49,7 @@ const done = ref(false);
 const sentinel = ref<HTMLElement | null>(null);
 let io: IntersectionObserver | null = null;
 
-const TOTAL = 25;
+const TOTAL = 40;
 
 const feedId = ref<string>();
 const elements = ref<FeedCompositionResult[]>([]);
@@ -89,16 +62,6 @@ function trackClick(type: "Product" | "Content", id: string) {
         : { contentId: id }
 
     contextStore.getTracker().trackFeedItemClick({ user: contextStore.user.value, feedId: feedId.value, item });
-}
-
-function trackPreview(type: "Product" | "Content", id: string) {
-    if (!feedId.value) return;
-
-    const item: FeedItem = type === 'Product'
-        ? { productAndVariantId: { productId: id } }
-        : { contentId: id }
-
-    contextStore.getTracker().trackFeedItemPreview({ user: contextStore.user.value, feedId: feedId.value, item: item });
 }
 
 async function fetchNextItems(): Promise<void> {
@@ -117,7 +80,7 @@ async function fetchNextItems(): Promise<void> {
 }
 
 async function initialize(): Promise<void> {
-    const builder = new FeedRecommendationInitializationBuilder(contextStore.defaultSettings, { minimumPageSize: 10 })
+    const builder = new FeedRecommendationInitializationBuilder(contextStore.defaultSettings, { minimumPageSize: 20 })
         .setSelectedContentProperties(contextStore.selectedContentProperties)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .allowProductsCurrentlyInCart()

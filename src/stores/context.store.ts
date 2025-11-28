@@ -28,6 +28,7 @@ export interface IDataset {
     variantBasedSearchOverlay?: boolean;
     contentSearch?: boolean;
     searchHighlight?: boolean;
+    shoppertainmentEnabled?: boolean;
 }
 
 export interface ITracking {

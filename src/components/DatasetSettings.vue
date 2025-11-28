@@ -13,9 +13,8 @@
                 </button>
                 <div class="flex-grow">
                     <label class="text-sm block">Select dataset</label>
-                    <select :value="context.datasetId"
-                            class="mb-6"
-                            @change="setDataset(($event.target as HTMLInputElement).value)">
+                    <select :value="context.datasetId" class="mb-6"
+                        @change="setDataset(($event.target as HTMLInputElement).value)">
                         <option v-for="dataset in datasets" :key="dataset.datasetId" :value="dataset.datasetId">
                             {{ dataset.displayName }} ({{ dataset.datasetId }})
                         </option>
@@ -46,17 +45,11 @@
         <label class="text-sm  block mt-6">API Key</label>
         <input v-model="context.apiKey" type="text" placeholder="Api key">
 
-        <ListValues label="Languages"
-                    :items="context.allLanguages"
-                    :single-item="context.language"
-                    input-placeholder="LanguageCode"
-                    new-item-placeholder="New Language"/>
+        <ListValues label="Languages" :items="context.allLanguages" :single-item="context.language"
+            input-placeholder="LanguageCode" new-item-placeholder="New Language" />
 
-        <ListValues label="Currencies"
-                    :items="context.allCurrencies"
-                    :single-item="context.currencyCode"
-                    input-placeholder="CurrencyCode"
-                    new-item-placeholder="New Currency"/>
+        <ListValues label="Currencies" :items="context.allCurrencies" :single-item="context.currencyCode"
+            input-placeholder="CurrencyCode" new-item-placeholder="New Currency" />
 
         <label class="text-sm block mt-6">Server url</label>
         <input v-model="context.serverUrl" type="text" placeholder="Server Url">
@@ -70,9 +63,8 @@
         <div class="pl-8 flex flex-col gap-6">
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.allowThirdLevelCategories"
-                           class="accent-brand-500 mr-3 h-5 w-5"
-                           type="checkbox">
+                    <input v-model="context.allowThirdLevelCategories" class="accent-brand-500 mr-3 h-5 w-5"
+                        type="checkbox">
                     Third level categories</label>
 
                 <p class="text-gray-500 text-sm mt-1">
@@ -95,21 +87,30 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.userClassificationFilters" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
-                    Hide products not available for the user's <code class="px-1">country</code> or <code class="px-1">channel</code> classification
+                    <input v-model="context.userClassificationFilters" class="accent-brand-500 mr-3 h-5 w-5"
+                        type="checkbox">
+                    Hide products not available for the user's <code class="px-1">country</code> or <code
+                        class="px-1">channel</code> classification
                 </label>
                 <p class="text-gray-500 text-sm mt-1">
-                    We base the filters on the product's <code>AvailableInMarkets</code> and <code>AvailableInChannels</code> data keys.
+                    We base the filters on the product's <code>AvailableInMarkets</code> and
+                    <code>AvailableInChannels</code>
+                    data keys.
                 </p>
             </div>
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.showProductRelevanceScore" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    <input v-model="context.showProductRelevanceScore" class="accent-brand-500 mr-3 h-5 w-5"
+                        type="checkbox">
                     Show Product Relevance Score in Search</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    This will show the product relevance score in search. This can be helpful when showcasing Quality Score Thresholds for Retail Media, as it allows you to see the score and it's therefore easier to set the correct threshold.
+                    This will show the product relevance score in search. This can be helpful when showcasing Quality
+                    Score
+                    Thresholds for Retail Media, as it allows you to see the score and it's therefore easier to set the
+                    correct
+                    threshold.
                 </p>
             </div>
 
@@ -119,7 +120,8 @@
                     Enable B2B recommendations</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    This will replace the recommendation on the cart page with popular products for category with id '3_5'.
+                    This will replace the recommendation on the cart page with popular products for category with id
+                    '3_5'.
                 </p>
             </div>
 
@@ -132,22 +134,23 @@
                     This will add a badge to product tiles when the product has variants available.
                 </p>
             </div>
-            
+
             <div>
                 <label class="flex mt-2 items-center">
                     <input v-model="context.similarProductsOnPdp" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
                     Similar products recommendation on PDP</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    This will replace the recommendation on the PDP with a similar products recommendation with a specific category id filter when the product is sold out.
+                    This will replace the recommendation on the PDP with a similar products recommendation with a
+                    specific
+                    category id filter when the product is sold out.
                 </p>
             </div>
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.variantBasedSearchOverlay"
-                           class="accent-brand-500 mr-3 h-5 w-5"
-                           type="checkbox">
+                    <input v-model="context.variantBasedSearchOverlay" class="accent-brand-500 mr-3 h-5 w-5"
+                        type="checkbox">
                     Turn on the variant-based search overlay</label>
 
                 <p class="text-gray-500 text-sm mt-1">
@@ -157,22 +160,31 @@
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.searchHighlight"
-                           class="accent-brand-500 mr-3 h-5 w-5"
-                           type="checkbox">
+                    <input v-model="context.searchHighlight" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
                     Search Highlight</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled, matched words in the display name of products & content in the search overlay will be highlighted.
+                    When this is enabled, matched words in the display name of products & content in the search overlay
+                    will be
+                    highlighted.
                 </p>
             </div>
 
             <div>
                 <label class="flex mt-2 items-center">
-                    <input v-model="context.contentSearch"
-                           class="accent-brand-500 mr-3 h-5 w-5"
-                           type="checkbox">
-                    Content Search</label>
+                    <input v-model="context.contentSearch" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
+                    Shoppertainment</label>
+
+                <p class="text-gray-500 text-sm mt-1">
+                    When this is enabled, the Shoppertainment link wil appear in the navigation.
+                </p>
+            </div>
+
+            <div>
+                <label class="flex mt-2 items-center">
+                    <input v-model="context.shoppertainmentEnabled" class="accent-brand-500 mr-3 h-5 w-5"
+                        type="checkbox">
+                    Shoppertainment</label>
 
                 <p class="text-gray-500 text-sm mt-1">
                     When this is enabled, content will be able to be searched for in the search overlay.
@@ -193,13 +205,21 @@
                 </label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    Automatically boosts specific products in search results and product listings based on UTM parameters in the URL:
+                    Automatically boosts specific products in search results and product listings based on UTM
+                    parameters in the
+                    URL:
                     <br><br>
-                    • When UTM value is <code>promoted</code>: Products with the Data Key "Promoted" as <code>true</code> will receive a 50% relevance boost
+                    • When UTM value is <code>promoted</code>: Products with the Data Key "Promoted" as
+                    <code>true</code> will
+                    receive a 50% relevance boost
                     <br>
-                    • For all other UTM values: Products with matching campaign IDs in Data Key <code>campaignIds</code> will receive a 50% relevance boost
+                    • For all other UTM values: Products with matching campaign IDs in Data Key <code>campaignIds</code>
+                    will
+                    receive a 50% relevance boost
                     <br><br>
-                    Supported UTM parameters: <code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>, <code>utm_term</code>, <code>utm_content</code>
+                    Supported UTM parameters: <code>utm_source</code>, <code>utm_medium</code>,
+                    <code>utm_campaign</code>,
+                    <code>utm_term</code>, <code>utm_content</code>
                 </p>
             </div>
         </div>
@@ -222,7 +242,7 @@
             <button class="" @click="save">
                 Save
             </button>
-            
+
             <span v-if="saved" class="ml-4 text-green-600">
                 Settings have been saved.
             </span>
