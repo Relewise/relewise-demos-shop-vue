@@ -32,7 +32,12 @@ const displayName = computed(() => {
         :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
         class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200">
         <div class="relative flex h-max-[275px] justify-center">
-            <Image :entity="product" class="h-[275px]" />
+            <div class="flex overflow-hidden relative justify-center">
+                <Image :entity="product" class="h-[275px]" />
+                <div class="absolute top-0 right-0">
+                    <app-product-favorite-button :product="product" />
+                </div>
+            </div>
             <div class="absolute top-0 left-0 flex gap-1">
                 <Popover v-if="isPromotion" placement="bottom-start"
                     class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3">
@@ -69,9 +74,7 @@ const displayName = computed(() => {
                     VARIANTS AVAILABLE
                 </span>
             </div>
-            <div class="absolute top-0 right-0">
-                <app-product-favorite-button :product="product" />
-            </div>
+
         </div>
         <div class="mt-2 information">
             <div class="text-left">
