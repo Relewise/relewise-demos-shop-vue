@@ -3,9 +3,9 @@
     <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">Your Favorites</h1>
 
     <template v-if="results">
-      <div v-if="results.hits === 0" class="mt-6 text-center">
+      <div v-if="results.hits === 0" class="mt-6">
         <p class="text-lg font-semibold">No favorites yet</p>
-        <p class="text-sm">Add products to your favorites to see them listed here.</p>
+        <p>Add products to your favorites to see them listed here. See documentation about <a target="_blank" href="https://docs.relewise.com/docs/tracking/user-engagement.html#user-engagement">user engagement.</a></p>
       </div>
 
       <template v-else>
@@ -20,7 +20,7 @@
     </template>
 
     <div v-if="userIsAnonymous(contextStore.user.value)">
-      <p>This feature requires a non-anonymous user.</p>
+      <p>This feature requires a non-anonymous user. See documentation about <a target="_blank" href="https://docs.relewise.com/docs/tracking/user-engagement.html#user-engagement">user engagement</a></p>
     </div>
   </div>
 </template>
