@@ -1,7 +1,7 @@
 <template>
     <main class="pt-6 grow px-2 xl:px-0">
         <div class="container mx-auto">
-            <h1 class="text-3xl font-semibold mb-4 text-neutral-100">Shoppertainment</h1>
+            <h1 class="text-3xl font-semibold mb-4 text-neutral-100">Shoppertainment: Adaptive Discovery</h1>
         </div>
 
         <article class="mb-4">
