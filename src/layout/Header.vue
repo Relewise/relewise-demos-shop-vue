@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ChevronDownIcon, HeartIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
-import { onClickOutside } from '@vueuse/core';
 import { ref, type PropType, onBeforeUnmount } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
@@ -15,9 +14,6 @@ defineProps({
     hasChildCategories: { type: Boolean, required: true },
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
 });
-
-const navigationmodal = ref<HTMLElement | null>(null);
-onClickOutside(navigationmodal, () => open.value = null);
 
 const open = ref<string | null>(null);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -130,7 +126,7 @@ onBeforeUnmount(() => {
                                 <ChevronDownIcon class="ml-2 mt-1 inline-block h-3 text-slade-500" />
                             </RouterLink>
                             <div v-if="open === category.id" to="#navigationmodal">
-                                <div ref="navigationmodal" class="navigationmodal"
+                                <div class="navigationmodal"
                                     @mouseover="handleMouseOver(category.id)">
                                     <div class="bg-white overflow-x-auto modalcontent pb-10">
                                         <div class="container mx-auto">
@@ -171,7 +167,7 @@ onBeforeUnmount(() => {
                             Categories
                         </div>
                         <div v-if="open === '1'" to="#navigationmodal">
-                            <div ref="navigationmodal" class="navigationmodal">
+                            <div class="navigationmodal">
                                 <div class="bg-white overflow-x-auto mb-5 modalcontent">
                                     <div class="container mx-auto">
                                         <ul class="text-base z-10 max-h-96 list-none grid grid-cols-4 mb-3">
