@@ -173,10 +173,10 @@
             <div>
                 <label class="flex mt-2 items-center">
                     <input v-model="context.contentSearch" class="accent-brand-500 mr-3 h-5 w-5" type="checkbox">
-                    Shoppertainment</label>
+                    Content Search</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled, the Shoppertainment link wil appear in the navigation.
+                    When this is enabled, content will be able to be searched for in the search overlay.
                 </p>
             </div>
 
@@ -187,7 +187,8 @@
                     Shoppertainment</label>
 
                 <p class="text-gray-500 text-sm mt-1">
-                    When this is enabled, content will be able to be searched for in the search overlay.
+                    <strong>Feature is in preview. This is not enabled on all datasets yet.</strong>
+                    When this is enabled, the Shoppertainment link wil appear in the navigation.
                 </p>
             </div>
 

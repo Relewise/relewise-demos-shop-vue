@@ -6,7 +6,7 @@
 
         <article class="mb-4">
             <div class="mx-auto container">
-
+                <div v-if="error" class="p-2 border border-red-500 rounded bg-white text-red-600">{{ error }}</div>
                 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <template v-for="(group, index) in elements" :key="index" v-if="feedId">
                         <span v-for="ele in group.content" :key="String(ele.contentId)" :data-feed-item-type="'Content'"
@@ -55,6 +55,7 @@ onUnmounted(() => {
 const loading = ref(false);
 const done = ref(false);
 const sentinel = ref<HTMLElement | null>(null);
+const error = ref<string | null>(null);
 let io: IntersectionObserver | null = null;
 let itemObserver: IntersectionObserver | null = null;
 const visibleItems = ref(new Set<string>());
@@ -104,9 +105,13 @@ async function initialize(): Promise<void> {
         .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
         .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } });
 
-    const response = await recommender.recommendFeedInitialization(builder.build());
-    feedId.value = response?.initializedFeedId;
-    elements.value = response?.recommendations ?? [];
+    try {
+        const response = await recommender.recommendFeedInitialization(builder.build());
+        feedId.value = response?.initializedFeedId;
+        elements.value = response?.recommendations ?? [];
+    } catch (err: any) {
+        error.value = err.message;
+    }
 }
 
 async function recommend() {
@@ -141,7 +146,7 @@ async function loadMoreAndFill() {
     await nextTick();
     // Ensure we observe any newly added feed-item elements
     observeFeedItems();
-    while (!loading.value && !done.value && sentinelInPreload()) {
+    while (!loading.value && !done.value && !error.value && sentinelInPreload()) {
         await recommend();
         await nextTick();
         // ensure new items also get observed
