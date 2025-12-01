@@ -104,33 +104,6 @@ async function initialize(): Promise<void> {
         .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
         .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } });
 
-    // {
-    //     count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 },
-    //     type: 'Product',
-    //     includeEmptyResults: false, // should default to false
-    // },
-    // {
-    //     count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 },
-    //     type: 'Content',
-    //     includeEmptyResults: false, // should default to false
-    // },
-    // {
-    //     count: { lowerBoundInclusive: 5, upperBoundInclusive: 5 },
-    //     type: 'Content',
-    //     includeEmptyResults: false,
-    //     name: 'Blog Posts',
-    //     rotationLimit: 1,
-    //     filters: new FilterBuilder().addContentDataFilter("Tag", c => c.addEqualsCondition(DataValueFactory.string("blog"))).build()
-    // },
-    // {
-    //     count: { lowerBoundInclusive: 5, upperBoundInclusive: 5 },
-    //     type: 'Content',
-    //     includeEmptyResults: false,
-    //     name: 'Blog Posts',
-    //     rotationLimit: 1,
-    //     filters: new FilterBuilder().addContentDataFilter("Tag", c => c.addEqualsCondition(DataValueFactory.string("blog"))).build()
-    // },
-
     const response = await recommender.recommendFeedInitialization(builder.build());
     feedId.value = response?.initializedFeedId;
     elements.value = response?.recommendations ?? [];
