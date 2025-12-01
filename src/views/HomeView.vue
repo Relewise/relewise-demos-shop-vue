@@ -19,7 +19,7 @@ async function recommend() {
 
     const recommender = contextStore.getRecommender();
 
-    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({brandViews: 2, productPurchases: 4, productViews: 2}).setNumberOfRecommendations(4).sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo()).build();
+    const popularBrandsRequest = new PopularBrandsRecommendationBuilder(contextStore.defaultSettings).setWeights({ brandViews: 2, productPurchases: 4, productViews: 2 }).setNumberOfRecommendations(4).sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo()).build();
     const brandResponse = await recommender.recommendPopularBrands(popularBrandsRequest);
     brands.value = brandResponse;
 }
@@ -27,9 +27,9 @@ async function recommend() {
 <template>
     <main class="pt-0 flex flex-col gap-20">
         <div class="flex flex-col">
-            <HeroBanner/>
+            <HeroBanner />
             <template v-if="isConfigured">
-                <PopularCategories class="pl-20 xl:hidden"/>
+                <PopularCategories class="pl-20 xl:hidden" />
             </template>
         </div>
 
@@ -39,8 +39,11 @@ async function recommend() {
                 <h2 class="text-3xl font-semibold mb-3 text-center">
                     Most popular products right now.
                 </h2>
-                <div class="w-full overflow-x-scroll pb-2">
-                    <relewise-popular-products class="flex flex-row gap-3" :displayed-at-location="defaultSettings.displayedAtLocation" :number-of-recommendations="contextStore.numberOfProductsToRecommend" :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"/>
+                <div class="w-full overflow-x-auto pb-2">
+                    <relewise-popular-products class="flex flex-row gap-3"
+                        :displayed-at-location="defaultSettings.displayedAtLocation"
+                        :number-of-recommendations="contextStore.numberOfProductsToRecommend"
+                        :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()" />
                 </div>
             </div>
             <div class="reverse-waves"></div>
@@ -52,25 +55,24 @@ async function recommend() {
             </h2>
 
             <div v-if="isConfigured" class="grid gap-3 grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 mt-3">
-                <RouterLink 
-                    v-for="(brand, index) in brands.recommendations" 
-                    :key="index" 
-                    :to="{ query: { brand: brand.id, open: '1', brandName: brand.displayName } }" 
-                    class="rounded text-slate-800 p-6"
-                    :class="`brand${6-index}`">
+                <RouterLink v-for="(brand, index) in brands.recommendations" :key="index"
+                    :to="{ query: { brand: brand.id, open: '1', brandName: brand.displayName } }"
+                    class="rounded text-slate-800 p-6" :class="`brand${6 - index}`">
                     <h3 class="text-3xl break-all">
                         {{ brand.displayName ?? brand.id }}
                     </h3>
 
-                    <button class="mt-4 bg-transparent border border-solid border-gray-800 rounded-lg text-gray-800 flex items-center gap-2">
-                        Shop now <ChevronRightIcon class="h-4"/>
+                    <button
+                        class="mt-4 bg-transparent border border-solid border-gray-800 rounded-lg text-gray-800 flex items-center gap-2">
+                        Shop now
+                        <ChevronRightIcon class="h-4" />
                     </button>
                 </RouterLink>
             </div>
         </div>
 
         <template v-if="isConfigured">
-            <OnSaleSlider/>
+            <OnSaleSlider />
         </template>
     </main>
 </template>
@@ -88,14 +90,15 @@ async function recommend() {
 
 .is-animated {
     animation: rotate 200s linear infinite;
-  }
+}
 
-  @keyframes rotate {
+@keyframes rotate {
     from {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-      transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
+}
 </style>
