@@ -1,5 +1,5 @@
 <template>
-    <main class="pt-6 bg-gradient grow">
+    <main class="pt-6 grow px-2 xl:px-0">
         <div class="container mx-auto">
             <h1 class="text-3xl font-semibold mb-4 text-neutral-100">Shoppertainment</h1>
         </div>
@@ -11,14 +11,12 @@
                     <template v-for="(group, index) in elements" :key="index" v-if="feedId">
                         <span v-for="ele in group.content" :key="String(ele.contentId)" :data-feed-item-type="'Content'"
                             :data-feed-item-id="ele.contentId" class="feed-item">
-                            <FeedContentTile :content="ele" class="rounded-lg p-2 shadow bg-white hover:scale-105"
-                                @click="trackClick('Content', ele.contentId!)" />
+                            <FeedContentTile :content="ele" @click="trackClick('Content', ele.contentId!)" />
                         </span>
 
                         <span v-for="ele in group.products" :key="String(ele.productId)"
                             :data-feed-item-type="'Product'" :data-feed-item-id="ele.productId" class="feed-item">
-                            <ProductTile :product="ele" class="rounded-lg shadow p-2 bg-white hover:scale-105"
-                                @click="trackClick('Product', ele.productId!)" />
+                            <ProductTile :product="ele" @click="trackClick('Product', ele.productId!)" />
                         </span>
                     </template>
                 </div>
@@ -26,10 +24,10 @@
 
         </article>
 
-        <div v-if="loading" class="py-6 text-center text-sm opacity-70">
+        <div v-if="loading" class="py-6 text-center text-sm text-neutral-100 opacity-70">
             Loading more…
         </div>
-        <div v-else-if="done" class="py-6 text-center text-sm opacity-70">
+        <div v-else-if="done" class="py-6 text-center text-sm text-neutral-100 opacity-70">
             You’re all caught up
         </div>
 
@@ -42,10 +40,17 @@ import FeedContentTile from '@/components/FeedContentTile.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import contextStore from '@/stores/context.store';
 import { FeedRecommendationInitializationBuilder, FeedRecommendationNextItemsBuilder, type FeedCompositionResult, type FeedItem } from '@relewise/client';
-import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
+import { onMounted, onBeforeUnmount, ref, nextTick, onUnmounted } from 'vue'
 import trackingService from '@/services/tracking.service';
 
 const recommender = contextStore.getRecommender();
+
+onMounted(() => {
+    document.getElementById('app')?.classList.add('bg-gradient');
+});
+onUnmounted(() => {
+    document.getElementById('app')?.classList.remove('bg-gradient');
+});
 
 const loading = ref(false);
 const done = ref(false);

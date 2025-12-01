@@ -1,6 +1,6 @@
 <template>
     <RouterLink :to="{ name: 'content', params: { id: content.contentId } }"
-        class="relative flex flex-col overflow-hidden text-slate-900 hover:!text-brand-500 transition duration-200 h-full">
+        class="relative flex flex-col overflow-hidden text-slate-900 bg-white hover:!text-brand-500 transition duration-200 h-full rounded-lg p-2 shadow hover:scale-105">
         <div class="gap-4 items-start h-full flex flex-col">
             <div v-if="findImage(content)" class="flex-shrink-0">
                 <Image :entity="content" />

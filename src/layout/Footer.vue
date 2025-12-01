@@ -11,9 +11,8 @@ defineProps({
 </script>
 
 <template>
+    <div class="waves-pink"></div>
     <footer class="!text-brand-500" style="background-color: #FFC1D7;">
-        <div class="waves"></div>
-
         <div class="container px-6 py-12 mx-auto">
             <div class="flex">
                 <div class="flex-grow">

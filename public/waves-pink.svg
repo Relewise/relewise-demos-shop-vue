@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="905"
+   height="88"
+   viewBox="0 0 905 88"
+   fill="none"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="waves-pink.svg"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.9454135"
+     inkscape:cx="223.18276"
+     inkscape:cy="6.3464293"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6" />
+  <path
+     d="m 455.74792,88.760863 v -13.19186 c -38.2137,0 -38.2137,-41.006421 -76.42738,-41.006421 -38.21369,0 -38.21369,41.006421 -76.42739,41.006421 -38.21371,0 -38.21371,-41.006421 -76.42739,-41.006421 -38.2137,-9.9e-5 -38.2137,41.006421 -76.42739,41.006321 -38.20365,0 -38.2137,-41.00642 -76.427399,-41.00642 -38.213687,0 -38.213687,41.00642 -76.4273805,41.00642 -38.2136945,0 -38.2136945,-41.00642 -76.4273915,-41.00642 v 54.19833 z"
+     fill="white"
+     id="path2"
+     style="fill:#ffc1d7;fill-opacity:1;stroke-width:0.995473" />
+  <path
+     d="m 453.74893,88.760853 -10e-4,-13.19185 c 38.2137,0 38.2137,-41.006421 76.42638,-41.00652 38.2127,0 38.21572,41.00642 76.42841,41.00642 38.2127,0 38.2127,-41.00642 76.42538,-41.00642 38.21368,0 38.2157,41.00642 76.42638,41.00642 38.20967,0 38.21572,-41.00642 76.4284,-41.00642 38.21269,0 38.2157,41.00642 76.42839,41.00642 38.21371,0 38.21571,-41.00642 76.42848,-41.00642 v 54.19832 z"
+     fill="white"
+     id="path4"
+     style="fill:#ffc1d7;fill-opacity:1;stroke-width:0.995473" />
+</svg>
