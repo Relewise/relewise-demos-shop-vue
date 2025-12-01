@@ -50,7 +50,7 @@ class TrackingService {
         }
     }
 
-    public async trackFeedItemsDwell(feedId: string | undefined, items: Array<{ productAndVariantId?: { productId: string }, contentId?: string, dwellDurationMs?: number }>, dwellTimeMs?: number) {
+    public async trackFeedItemsDwell(feedId: string, items: Array<{ productAndVariantId?: { productId: string }, contentId?: string, dwellDurationMs?: number }>, dwellTimeMs?: number) {
         if (!contextStore.tracking.value.enabled) return;
         if (!feedId) return;
 
