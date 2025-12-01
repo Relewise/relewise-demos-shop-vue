@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute top-[10px] right-[25px] w-1/6 z-[99999]">
+    <div class="fixed top-[10px] right-[25px] w-1/6 z-[99999]">
         <div v-for="(notification, index) in notifications" :key="index" class="w-full max-w-sm mx-auto my-2 overflow-hidden rounded shadow-sm">
             <div class="relative flex items-center justify-between px-2 py-2 font-semibold text-white bg-red-500 rounded-t">
                 <div class="relative flex items-center">
