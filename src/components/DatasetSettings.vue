@@ -274,6 +274,8 @@ async function init() {
         }
         else {
             contextStore.setDataset(settings.datasetId);
+            context.value.apiKey = settings.apiKey; // Make sure to update apiKey, so we have the newest permissions
+            contextStore.persistState();
         }
 
         const url = new URL(window.location.href);
