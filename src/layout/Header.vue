@@ -116,7 +116,8 @@ onBeforeUnmount(() => {
             </div>
             <nav class="hidden xl:block">
                 <ul class="flex w-full gap-2">
-                    <ul v-if="hasChildCategories" class="flex overflow-y-auto scrollable-element">
+                    <ul v-if="hasChildCategories || contextStore.context.value.shoppertainmentEnabled"
+                        class="flex overflow-y-auto scrollable-element">
                         <li v-for="category in mainCategories" :key="category.id ?? ''"
                             class="inline-flex relative pr-5">
                             <RouterLink :to="{ name: 'category', params: { id: category.id } }"
@@ -126,8 +127,7 @@ onBeforeUnmount(() => {
                                 <ChevronDownIcon class="ml-2 mt-1 inline-block h-3 text-slade-500" />
                             </RouterLink>
                             <div v-if="open === category.id" to="#navigationmodal">
-                                <div class="navigationmodal"
-                                    @mouseover="handleMouseOver(category.id)">
+                                <div class="navigationmodal" @mouseover="handleMouseOver(category.id)">
                                     <div class="bg-white overflow-x-auto modalcontent pb-10">
                                         <div class="container mx-auto">
                                             <h4 class="my-4 text-xl -mx-1">
