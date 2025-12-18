@@ -12,8 +12,9 @@
                 </h5>
                 <div class="grow"></div>
                 <div class="flex justify-between">
-                    <span class="text-sm text-neutral-500" v-if="content.data">{{ content.data['ByLine']?.value
-                    }}</span>
+                    <span class="text-sm text-neutral-500" v-if="content.data">
+                        {{ content.data['ByLine']?.value }}
+                    </span>
                     <span class="flex gap-3 text-neutral-400">
                         <ContentSentimentButtons :content="content" />
                     </span>
