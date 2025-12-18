@@ -18,7 +18,7 @@ const showScore = contextStore.context.value.showProductRelevanceScore;
 
 const displayName = computed(() => {
     if (!contextStore.context.value.searchHighlight || !product.value.displayName)
-        return product.value.displayName;
+        return product.value.displayName ?? product.value.productId;
 
     const highlight = product.value.highlight;
     const matchedOffsets = highlight?.offsets?.displayName;
