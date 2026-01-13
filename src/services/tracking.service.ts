@@ -1,6 +1,6 @@
 import type { ILineItem } from './basket.service';
 import contextStore from '../stores/context.store';
-import { UserFactory } from '@relewise/client';
+import { UserFactory, type FeedItem } from '@relewise/client';
 
 class TrackingService {
     public trackProductCategoryView(id: string) {
@@ -92,6 +92,13 @@ class TrackingService {
             user: contextStore.user.value,
             orderNumber: crypto.randomUUID(),
         });
+    }
+
+    public async trackFeedItemClick(feedId: string, item: FeedItem) {
+        if (!contextStore.tracking.value.enabled) return;
+
+        const tracker = contextStore.getTracker();
+        tracker.trackFeedItemClick({ user: contextStore.user.value, feedId: feedId, item });
     }
 
     private mapLineItems(lineItems: ILineItem[]) {

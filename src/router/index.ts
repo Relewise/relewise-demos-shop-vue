@@ -70,6 +70,16 @@ const router = createRouter({
             path: "/feed",
             name: "feed",
             component: () => import('../views/Feed.vue'),
+        },
+        {
+            path: "/product-feed/:id",
+            name: "product-feed",
+            component: () => import('../views/Feed.vue'),
+        },
+        {
+            path: "/content-feed/:id",
+            name: "content-feed",
+            component: () => import('../views/Feed.vue'),
         }
     ],
 });
