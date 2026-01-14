@@ -1,7 +1,8 @@
 <template>
     <main class="pt-6 grow px-2 xl:px-0">
         <div class="container mx-auto" v-if="!topProduct && !topContent">
-            <h1 class=" text-3xl font-semibold mb-4 underline--yellow inline-flex">Shoppertainment: Adaptive Discovery
+            <h1 class="text-2xl lg:text-3xl font-semibold mb-4 underline--yellow inline-flex">Shoppertainment: Adaptive
+                Discovery
             </h1>
         </div>
 
@@ -61,7 +62,7 @@
 
                         <span v-for="ele in group.products" :key="String(ele.productId)"
                             :data-feed-item-type="'Product'" :data-feed-item-id="ele.productId" class="feed-item"
-                            :class="group.name === 'Full' ? 'col-span-2' : ''">
+                            :class="group.name === 'Full' ? 'col-span-2 my-4 lg:my-0' : ''">
                             <ProductTile :product="ele" class="hover:!scale-[1.02]"
                                 @click.prevent=" router.push({ name: 'product-feed', params: { 'id': ele.productId } }); trackClick('Product', ele.productId!);" />
                         </span>
@@ -162,13 +163,14 @@ async function initialize(): Promise<void> {
             builder.seed({
                 productAndVariantIds: [{ productId: idParam }],
             });
-            // TODO Should this be a preview-tracking instead?
+
             trackingService.trackProductView(idParam);
         } else if (path.includes('/content-feed/') || path.includes('content-feed')) {
             topContent.value = await fetchContent(idParam);
             builder.seed({
                 contentIds: [idParam],
             });
+
             trackingService.trackContentView(idParam);
         }
     }
@@ -352,7 +354,6 @@ async function recordDwell() {
 <style lang="css" scoped>
 @media not all and (min-width: 640px) {
     .feed-item {
-        margin: 0 4px 0 4px;
 
         &:nth-child(even) {
             margin-top: 20px;
