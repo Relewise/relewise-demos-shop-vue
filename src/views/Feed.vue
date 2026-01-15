@@ -1,7 +1,7 @@
 <template>
     <main class="pt-6 grow px-2 xl:px-0">
         <div class="container mx-auto" v-if="!topProduct && !topContent">
-            <h1 class="text-2xl lg:text-3xl font-semibold mb-4 underline--yellow inline-flex">Shoppertainment: Adaptive
+            <h1 class="text-xl lg:text-3xl font-semibold mb-4 underline--yellow inline-flex">Shoppertainment: Adaptive
                 Discovery
             </h1>
         </div>
@@ -53,7 +53,7 @@
         <article class="mb-4">
             <div class="mx-auto container">
                 <div v-if="error" class="p-2 border border-red-500 rounded bg-white text-red-600">{{ error }}</div>
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4">
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4 relative">
                     <template v-for="(group, index) in elements" :key="index" v-if="feedId">
                         <span v-for="ele in group.content" :key="String(ele.contentId)" :data-feed-item-type="'Content'"
                             :data-feed-item-id="ele.contentId" class="feed-item">
@@ -62,7 +62,7 @@
 
                         <span v-for="ele in group.products" :key="String(ele.productId)"
                             :data-feed-item-type="'Product'" :data-feed-item-id="ele.productId" class="feed-item"
-                            :class="group.name === 'Full' ? 'col-span-2 my-4 lg:my-0' : ''">
+                            :class="group.name === 'Full' ? 'col-span-2 my-4 lg:my-0 full' : ''">
                             <ProductTile :product="ele" class="hover:!scale-[1.02]"
                                 @click.prevent=" router.push({ name: 'product-feed', params: { 'id': ele.productId } }); trackClick('Product', ele.productId!);" />
                         </span>
@@ -356,7 +356,7 @@ async function recordDwell() {
     .feed-item {
 
         &:nth-child(even) {
-            margin-top: 20px;
+            transform: translateY(1em);
         }
     }
 }
