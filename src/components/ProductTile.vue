@@ -82,7 +82,7 @@ const displayName = computed(() => {
                     <span v-html="displayName"></span>
                 </h5>
             </div>
-            <div class="my-2 flex items-center justify-between">
+            <div class="mt-2 flex items-center justify-between">
                 <p>
                     <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">
                         {{ $format(product.salesPrice) }}

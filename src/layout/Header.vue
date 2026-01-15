@@ -98,10 +98,6 @@ onBeforeUnmount(() => {
                         <RouterLink to="/favorites" class="relative flex flex-col items-center text-slate-600">
                             <HeartIcon class="h-8 w-8" />
                             <span class="text-[9px] mt-1 font-bold">FAVORITES</span>
-                            <span v-if="lineItemsCount > 0"
-                                class="absolute top-0 right-0 leading-none inline-flex items-center justify-center h-5 w-5 pb-0.5 bg-brand-700 rounded-full text-white font-bold text-[11px]">
-                                {{ lineItemsCount }}
-                            </span>
                         </RouterLink>
                         <RouterLink to="/cart" class="relative flex flex-col items-center text-slate-600">
                             <ShoppingBagIcon class="h-8 w-8" />

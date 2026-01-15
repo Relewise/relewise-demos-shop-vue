@@ -126,10 +126,13 @@ h4 {
 .brand2:hover,
 .brand3:hover,
 .brand4:hover,
-.brand5:hover,
 .brand6:hover {
     filter: brightness(1.1);
     /* Increase brightness to lighten the color */
+}
+
+.brand5:hover {
+    filter: brightness(1.03);
 }
 
 .waves {
