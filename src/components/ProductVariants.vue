@@ -1,13 +1,12 @@
 <template>
     <div class="flex flex-wrap mb-4 mt-4 gap-2">
-        <template v-for="variant in product.allVariants" :key="variant.variantId">
-            <RouterLink :to="{ name: 'variant', params: { id: product.productId, variant: variant.variantId } }"> 
-                <div 
-                    :class="[
-                        selectedVariantId === variant.variantId ? 'underline--yellow' : ''
-                    ]">
+        <template v-for="variant in product.allVariants" :key="variant.variantId ?? ''">
+            <RouterLink :to="{ name: 'variant', params: { id: product.productId, variant: variant.variantId } }">
+                <div :class="[
+                    selectedVariantId === variant.variantId ? 'underline--yellow' : ''
+                ]">
                     <div class="pb-2">
-                        <Image :entity="variant" class="!h-[50px] xl:!h-[100px] !w-auto"/>
+                        <Image :entity="variant" class="!h-[50px] xl:!h-[100px] !w-auto" />
                     </div>
                 </div>
             </RouterLink>
