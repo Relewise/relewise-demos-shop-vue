@@ -52,10 +52,12 @@ watch(() => ({ ...route }), (value, oldValue) => {
         // Build a new filters object from the current URL params so
         // any previous/old filters are removed when the URL doesn't include them.
         const newFilters: Record<string, string | string[]> = { term: '', sort: '', page: '1' };
-        searchTerm.value = "";
         searchParams.forEach((value, key) => {
             if (key === 'term') {
-                searchTerm.value = value;
+                if (oldValue.query.open !== '1') {
+                    searchTerm.value = value;
+                }
+
                 newFilters.term = value;
                 return;
             }
