@@ -89,8 +89,8 @@ import { RouterLink } from 'vue-router';
 import { findCategoryById } from '@/helpers/categoryHelper';
 import { addRelevanceModifiers } from '@/helpers/relevanceModifierHelper';
 import { getFacets } from '@/helpers/facetHelper';
-import DisplayAdHeroBanner from '@/components/DIsplayAds/DisplayAd-HeroBanner.vue';
-import DisplayAdTile from '@/components/DIsplayAds/DisplayAd-Tile.vue';
+import DisplayAdHeroBanner from '@/components/DisplayAds/DisplayAd-HeroBanner.vue';
+import DisplayAdTile from '@/components/DisplayAds/DisplayAd-Tile.vue';
 import { sortCategories } from '@/helpers/sortCategories';
 
 const products = ref<ProductWithType[] | null>(null);
