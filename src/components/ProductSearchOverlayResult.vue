@@ -10,7 +10,7 @@ import ProductTile from './ProductTile.vue';
 import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
 import VariantBasedProductList from './VariantBasedProductList.vue';
-import DisplayAdTile from './DIsplayAds/DisplayAd-Tile.vue';
+import DisplayAdTile from './DisplayAds/DisplayAd-Tile.vue';
 import router from '@/router';
 
 const props = defineProps({
