@@ -386,8 +386,6 @@ function trackBrandView(
 </template>
 
 <style scoped lang="scss">
-@reference "../styling/index.scss";
-
 $headerHeight: 109px;
 
 .modal {

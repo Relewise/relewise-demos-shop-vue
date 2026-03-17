@@ -91,8 +91,6 @@ async function getCategories(searcher: Searcher) {
 </template>
 
 <style lang="scss">
-@reference "./styling/index.scss";
-
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.5s ease-in-out;
 }

@@ -236,8 +236,6 @@ function addToBasket() {
 </script>
 
 <style lang="scss" scoped>
-@reference "../styling/index.scss";
-
 dl {
     display: grid;
     grid-template-columns: max-content auto;
