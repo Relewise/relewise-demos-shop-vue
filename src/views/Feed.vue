@@ -115,7 +115,7 @@ const hasScrolled = ref(false);
 const dwellTimeoutMs = 1500; // wait for 1.5s of no scrolling
 let lastScrollTime = 0;
 
-const TOTAL = 40;
+const TOTAL = 42;
 
 const feedId = ref<string>();
 const elements = ref<FeedCompositionResult[]>([]);
