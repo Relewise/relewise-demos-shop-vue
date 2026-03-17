@@ -14,7 +14,7 @@ defineProps({
     <div class="waves-pink"></div>
     <footer class="!text-brand-500" style="background-color: #FFC1D7;">
         <div class="container px-6 py-12 mx-auto">
-            <div class="flex">
+            <div class="flex flex-col lg:flex-row gap-8">
                 <div class="flex-grow">
                     <template v-if="hasChildCategories">
                         <div v-if="footer"
@@ -51,7 +51,7 @@ defineProps({
                 </div>
 
 
-                <div class="mt-8 mb-8 lg:m-0 lg:w-1/4">
+                <div class="mt-8 mb-8 lg:m-0 w-full lg:w-1/4">
                     <Newsletter />
                 </div>
             </div>

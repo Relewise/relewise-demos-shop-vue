@@ -119,11 +119,37 @@ const TOTAL = 40;
 
 const feedId = ref<string>();
 const elements = ref<FeedCompositionResult[]>([]);
+type FeedLayout = {
+    minimumPageSize: number;
+    leadProducts: number;
+    leadContent: number;
+    tailProducts: number;
+    tailContent: number;
+};
+const mobileFeedLayout: FeedLayout = { minimumPageSize: 11, leadProducts: 3, leadContent: 1, tailProducts: 4, tailContent: 2 };
+const desktopFeedLayouts: FeedLayout[] = [
+    { minimumPageSize: 14, leadProducts: 1, leadContent: 1, tailProducts: 9, tailContent: 2 },
+    { minimumPageSize: 14, leadProducts: 2, leadContent: 1, tailProducts: 8, tailContent: 2 },
+    { minimumPageSize: 14, leadProducts: 4, leadContent: 1, tailProducts: 6, tailContent: 2 },
+    { minimumPageSize: 14, leadProducts: 5, leadContent: 1, tailProducts: 5, tailContent: 2 },
+];
+let desktopLayoutIndex = Math.floor(Math.random() * desktopFeedLayouts.length);
 
 // Top seeded item details (if route contains an id for product-feed/:id or content-feed/:id)
 const topProduct = ref<ProductResult | null | undefined>(null);
 const topContent = ref<ContentResult | null | undefined>(null);
 const topButtonClass = ref('');
+
+function getFeedLayout(isMobile: boolean): FeedLayout {
+    if (isMobile) {
+        return mobileFeedLayout;
+    }
+
+    const layout = desktopFeedLayouts[desktopLayoutIndex % desktopFeedLayouts.length]!;
+    desktopLayoutIndex += 1;
+
+    return layout;
+}
 
 async function fetchNextItems(): Promise<void> {
     if (!feedId.value) return;
@@ -142,16 +168,18 @@ async function fetchNextItems(): Promise<void> {
 
 async function initialize(): Promise<void> {
     const isMobile = breakpointService.active.value === 'mobile';
+    const feedLayout = getFeedLayout(isMobile);
 
-    const builder = new FeedRecommendationInitializationBuilder(contextStore.defaultSettings, { minimumPageSize: isMobile ? 6 : 15 })
+    const builder = new FeedRecommendationInitializationBuilder(contextStore.defaultSettings, { minimumPageSize: feedLayout.minimumPageSize })
         .setSelectedContentProperties(contextStore.selectedContentProperties)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .allowProductsCurrentlyInCart()
-        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: isMobile ? 3 : 4, upperBoundInclusive: isMobile ? 3 : 4 } } })
-        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
+        // Each desktop preset totals 15 grid columns and never places Full after 4 mod 5 items.
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.leadProducts, upperBoundInclusive: feedLayout.leadProducts } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.leadContent, upperBoundInclusive: feedLayout.leadContent } } })
         .addComposition({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
-        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: isMobile ? 6 : 10 } } })
-        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 3 } } })
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.tailProducts, upperBoundInclusive: feedLayout.tailProducts } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.tailContent, upperBoundInclusive: feedLayout.tailContent } } })
 
     // If route contains an id for product-feed/:id or content-feed/:id, seed the initialization
     const idParam = route.params.id;
