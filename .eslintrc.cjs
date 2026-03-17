@@ -3,9 +3,6 @@ module.exports = {
     env: {
         node: true,
     },
-    plugins: [
-        'tailwindcss',
-    ],
     extends: [
         'eslint:recommended',
         'plugin:vue/vue3-recommended',
@@ -66,7 +63,6 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-use-before-define': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
-        'tailwindcss/no-custom-classname': 'off',
     },
     parserOptions: {
         parser: '@typescript-eslint/parser',
