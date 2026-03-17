@@ -147,11 +147,11 @@ async function initialize(): Promise<void> {
         .setSelectedContentProperties(contextStore.selectedContentProperties)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .allowProductsCurrentlyInCart()
-        .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: isMobile ? 3 : 4, upperBoundInclusive: isMobile ? 3 : 4 } } })
-        .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
-        .addCompostion({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
-        .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: isMobile ? 6 : 10 } } })
-        .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 3 } } })
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: isMobile ? 3 : 4, upperBoundInclusive: isMobile ? 3 : 4 } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
+        .addComposition({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: isMobile ? 6 : 10 } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: 1, upperBoundInclusive: 3 } } })
 
     // If route contains an id for product-feed/:id or content-feed/:id, seed the initialization
     const idParam = route.params.id;

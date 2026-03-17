@@ -58,7 +58,6 @@ function selectPage(page: number) {
 </script>
 
 <style scoped lang="scss">
-
 .item {
     @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-white font-semibold bg-slate-900 hover:bg-slate-800 w-48 justify-center;
 
