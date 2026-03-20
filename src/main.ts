@@ -5,11 +5,11 @@ import './styling/index.scss';
 import formatting from './plugins/formatting';
 import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
-import { defineCustomElement } from 'vue'
+import { defineCustomElement } from 'vue';
 import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
 
-const FavoriteVueElement = defineCustomElement(ProductFavoriteButton)
-customElements.define('app-product-favorite-button', FavoriteVueElement)
+const FavoriteVueElement = defineCustomElement(ProductFavoriteButton);
+customElements.define('app-product-favorite-button', FavoriteVueElement);
 
 declare module 'vue' {
     interface ComponentCustomProperties {
@@ -32,7 +32,7 @@ app.mount('#app');
 function addFetchInterceptor() {
     const { fetch: originalFetch } = window;
 
-    window.fetch = async (...args) => {
+    window.fetch = async(...args) => {
         const [resource, options] = args;
 
         const response = await originalFetch(resource, options);

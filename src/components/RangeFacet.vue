@@ -1,25 +1,29 @@
 <template>
-    <div v-if="filterKey">
-        <div class="w-full flex items-center justify-between mb-5 gap-2">
-            <input 
-                v-model="min" 
-                type="text" 
-                class="small"> - 
-            <input
-                v-model="max"
-                type="text"
-                class="small">
-        </div>
-        <div 
-            v-if="facet.available?.value"
-            class="px-1">
-            <Slider 
-                v-model="sliderModel"
-                :tooltips="false"
-                :max="facet.available?.value.upperBoundInclusive"
-                :min="facet.available?.value.lowerBoundInclusive"/>
-        </div>
+  <div v-if="filterKey">
+    <div class="w-full flex items-center justify-between mb-5 gap-2">
+      <input 
+        v-model="min" 
+        type="text" 
+        class="small"
+      > - 
+      <input
+        v-model="max"
+        type="text"
+        class="small"
+      >
     </div>
+    <div 
+      v-if="facet.available?.value"
+      class="px-1"
+    >
+      <Slider 
+        v-model="sliderModel"
+        :tooltips="false"
+        :max="facet.available?.value.upperBoundInclusive"
+        :min="facet.available?.value.lowerBoundInclusive"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

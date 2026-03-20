@@ -19,6 +19,7 @@ const hasChildCategories = ref(true);
 const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
 const breakpoint = computed(() => breakpointService.active.value);
+const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 
 init();
 
@@ -28,6 +29,13 @@ async function init() {
     if (params.has('share')) {
         query = { share: params.get('share') };
         await router.push({ path: '/app-settings', query: query });
+    }
+
+    if (!contextStore.hasActiveDataset.value) {
+        if (router.currentRoute.value.path !== '/app-settings') {
+            await router.push('/app-settings');
+        }
+        return;
     }
 
     if (contextStore.isConfigured) {
@@ -75,19 +83,30 @@ async function getCategories(searcher: Searcher) {
 </script>
 
 <template>
-    <ApiErrors/>
-    <Header :line-items-count="lineItemsCount"
-            :has-child-categories="hasChildCategories"
-            :main-categories="mainCategories"/>
+  <ApiErrors v-if="hasActiveDataset" />
+  <Header
+    v-if="hasActiveDataset"
+    :line-items-count="lineItemsCount"
+    :has-child-categories="hasChildCategories"
+    :main-categories="mainCategories"
+  />
 
-    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <RouterView/>
-    </div>
-    <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
+  <div
+    id="main-container"
+    class="w-full mx-auto pb-10 flex-grow relative"
+  >
+    <RouterView />
+  </div>
+  <Footer
+    v-if="hasActiveDataset"
+    :has-child-categories="hasChildCategories"
+    :main-categories="mainCategories"
+    :footer="footer"
+  />
 
-    <div class="fixed px-2 py-0.5 rounded bg-red-600 bottom-0 right-0 z-[10000] text-white text-xs font-mono uppercase">
-        {{ breakpoint }}
-    </div>
+  <div class="fixed px-2 py-0.5 rounded bg-red-600 bottom-0 right-0 z-[10000] text-white text-xs font-mono uppercase">
+    {{ breakpoint }}
+  </div>
 </template>
 
 <style lang="scss">

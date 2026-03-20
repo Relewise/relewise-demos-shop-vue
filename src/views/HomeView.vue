@@ -25,56 +25,73 @@ async function recommend() {
 }
 </script>
 <template>
-    <main class="pt-0 flex flex-col gap-20">
-        <div class="flex flex-col">
-            <HeroBanner />
-            <template v-if="isConfigured">
-                <PopularCategories class="pl-20 xl:hidden" />
-            </template>
+  <main class="pt-0 flex flex-col gap-20">
+    <div class="flex flex-col">
+      <HeroBanner />
+      <template v-if="isConfigured">
+        <PopularCategories class="pl-20 xl:hidden" />
+      </template>
+    </div>
+
+    <div
+      v-if="isConfigured"
+      class="scrollbar"
+      style="background-color: #e9effb;"
+    >
+      <div class="waves" />
+      <div class="container mx-auto py-10">
+        <h2 class="text-3xl font-semibold mb-3 text-center">
+          Most popular products right now.
+        </h2>
+        <div class="w-full overflow-x-auto pb-2">
+          <relewise-popular-products
+            class="flex flex-row gap-3"
+            :displayed-at-location="defaultSettings.displayedAtLocation"
+            :number-of-recommendations="contextStore.numberOfProductsToRecommend"
+            :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"
+          />
         </div>
+      </div>
+      <div class="reverse-waves" />
+    </div>
 
-        <div v-if="isConfigured" class="scrollbar" style="background-color: #e9effb;">
-            <div class="waves"></div>
-            <div class="container mx-auto py-10">
-                <h2 class="text-3xl font-semibold mb-3 text-center">
-                    Most popular products right now.
-                </h2>
-                <div class="w-full overflow-x-auto pb-2">
-                    <relewise-popular-products class="flex flex-row gap-3"
-                        :displayed-at-location="defaultSettings.displayedAtLocation"
-                        :number-of-recommendations="contextStore.numberOfProductsToRecommend"
-                        :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()" />
-                </div>
-            </div>
-            <div class="reverse-waves"></div>
-        </div>
+    <div
+      v-if="brands?.recommendations"
+      class="container mx-auto p-2 xl:p-0"
+    >
+      <h2 class="text-3xl font-semibold mb-3 text-center">
+        Shop our popular brands
+      </h2>
 
-        <div v-if="brands?.recommendations" class="container mx-auto p-2 xl:p-0">
-            <h2 class="text-3xl font-semibold mb-3 text-center">
-                Shop our popular brands
-            </h2>
+      <div
+        v-if="isConfigured"
+        class="grid gap-3 grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 mt-3"
+      >
+        <RouterLink
+          v-for="(brand, index) in brands.recommendations"
+          :key="index"
+          :to="{ query: { brand: brand.id, open: '1', brandName: brand.displayName } }"
+          class="rounded text-slate-800 p-6"
+          :class="`brand${6 - index}`"
+        >
+          <h3 class="text-3xl break-all">
+            {{ brand.displayName ?? brand.id }}
+          </h3>
 
-            <div v-if="isConfigured" class="grid gap-3 grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 mt-3">
-                <RouterLink v-for="(brand, index) in brands.recommendations" :key="index"
-                    :to="{ query: { brand: brand.id, open: '1', brandName: brand.displayName } }"
-                    class="rounded text-slate-800 p-6" :class="`brand${6 - index}`">
-                    <h3 class="text-3xl break-all">
-                        {{ brand.displayName ?? brand.id }}
-                    </h3>
+          <button
+            class="mt-4 bg-transparent border border-solid border-gray-800 rounded-lg text-gray-800 flex items-center gap-2"
+          >
+            Shop now
+            <ChevronRightIcon class="h-4" />
+          </button>
+        </RouterLink>
+      </div>
+    </div>
 
-                    <button
-                        class="mt-4 bg-transparent border border-solid border-gray-800 rounded-lg text-gray-800 flex items-center gap-2">
-                        Shop now
-                        <ChevronRightIcon class="h-4" />
-                    </button>
-                </RouterLink>
-            </div>
-        </div>
-
-        <template v-if="isConfigured">
-            <OnSaleSlider />
-        </template>
-    </main>
+    <template v-if="isConfigured">
+      <OnSaleSlider />
+    </template>
+  </main>
 </template>
 
 <style lang="scss">

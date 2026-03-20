@@ -1,36 +1,55 @@
 <template>
-    <div v-for="(category, selectedCategoryFilterOptionIndex) in selected" :key="selectedCategoryFilterOptionIndex">
-        <div v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold" class="bg-gray-100 flex my-1">
-            <span class="m-1">
-                {{ category.displayName ?? category.categoryId }}
-            </span>
-            <XMarkIcon class="ml-auto h-6 w-6 text-slate-600 cursor-pointer my-auto mr-2"
-                @click="applyFacet('category', category.categoryId, true)" />
-        </div>
+  <div
+    v-for="(category, selectedCategoryFilterOptionIndex) in selected"
+    :key="selectedCategoryFilterOptionIndex"
+  >
+    <div
+      v-if="selectedCategoryFilterOptionIndex < categoryFilterThreshold"
+      class="bg-gray-100 flex my-1"
+    >
+      <span class="m-1">
+        {{ category.displayName ?? category.categoryId }}
+      </span>
+      <XMarkIcon
+        class="ml-auto h-6 w-6 text-slate-600 cursor-pointer my-auto mr-2"
+        @click="applyFacet('category', category.categoryId, true)"
+      />
     </div>
+  </div>
 
-    <!-- Render category hierarchy options as filters or checklist -->
-    <template v-if="options">
-        <template v-if="selected && selected.length < categoryFilterThreshold">
-            <span v-for="(categoryLink, filterOptionIndex) in options" :key="filterOptionIndex"
-                class="block cursor-pointer hover:!text-brand-500"
-                @click.prevent="applyFacet('category', categoryLink.category.categoryId)">
-                {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
-            </span>
-        </template>
-        <ul v-else>
-            <li v-for="(option, oIndex) in options" :key="oIndex" class="flex pb-1.5">
-                <label class="flex items-center cursor-pointer w-full">
-                    <input class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0" type="checkbox"
-                        :value="option.category.categoryId" :checked="option.selected"
-                        @click="applyFacet('category', option.category.categoryId)">
-                    {{ option.category.displayName ?? option.category.categoryId }}
-                    <span class="flex-grow"></span>
-                    <span>{{ option.hits }}</span>
-                </label>
-            </li>
-        </ul>
+  <!-- Render category hierarchy options as filters or checklist -->
+  <template v-if="options">
+    <template v-if="selected && selected.length < categoryFilterThreshold">
+      <span
+        v-for="(categoryLink, filterOptionIndex) in options"
+        :key="filterOptionIndex"
+        class="block cursor-pointer hover:!text-brand-500"
+        @click.prevent="applyFacet('category', categoryLink.category.categoryId)"
+      >
+        {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
+      </span>
     </template>
+    <ul v-else>
+      <li
+        v-for="(option, oIndex) in options"
+        :key="oIndex"
+        class="flex pb-1.5"
+      >
+        <label class="flex items-center cursor-pointer w-full">
+          <input
+            class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
+            type="checkbox"
+            :value="option.category.categoryId"
+            :checked="option.selected"
+            @click="applyFacet('category', option.category.categoryId)"
+          >
+          {{ option.category.displayName ?? option.category.categoryId }}
+          <span class="flex-grow" />
+          <span>{{ option.hits }}</span>
+        </label>
+      </li>
+    </ul>
+  </template>
 </template>
 
 <script setup lang="ts">

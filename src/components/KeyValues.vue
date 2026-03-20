@@ -1,19 +1,37 @@
 <template>
-    <label class="text-sm block mt-6">{{ title }}</label>
-    <div class="flex flex-col gap-4">
-        <div v-for="(value, index) in internalValue" :key="index" class="flex gap-4">
-            <input v-model="value.key" type="text" placeholder="Key">
-            <input v-model="value.value" type="text" placeholder="Value">
-            <button class="bg-gray-500 text-white" @click="remove(index)">
-                Remove
-            </button>
-        </div>
-        <div>
-            <button class="outline" @click="addKeyValue">
-                Add new
-            </button>
-        </div>
+  <label class="text-sm block mt-6">{{ title }}</label>
+  <div class="flex flex-col gap-4">
+    <div
+      v-for="(value, index) in internalValue"
+      :key="index"
+      class="flex gap-4"
+    >
+      <input
+        v-model="value.key"
+        type="text"
+        placeholder="Key"
+      >
+      <input
+        v-model="value.value"
+        type="text"
+        placeholder="Value"
+      >
+      <button
+        class="bg-gray-500 text-white"
+        @click="remove(index)"
+      >
+        Remove
+      </button>
     </div>
+    <div>
+      <button
+        class="outline"
+        @click="addKeyValue"
+      >
+        Add new
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

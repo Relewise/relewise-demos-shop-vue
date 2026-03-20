@@ -1,34 +1,58 @@
 <template>
-    <div>
-        <label class="text-sm block mt-6">{{ label }}</label>
-        <template v-if="!internalItems && internalSingleItem">
-            <div class="flex mt-2 gap-2">
-                <input v-model="internalSingleItem" type="text" :placeholder="inputPlaceholder">
-                <button class="bg-gray-500 text-white" @click="removeItem(0)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <template v-else>
-            <div v-for="(_, index) in internalItems" :key="index" class="flex mt-2 gap-2">
-                <input v-model="internalItems[index]" type="text" :placeholder="inputPlaceholder">
-                <button class="bg-gray-500 text-white" @click="removeItem(index)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <div class="flex mt-2 gap-2">
-            <input v-model="newItem" type="text" :placeholder="newItemPlaceholder">
-            <button class="outline" @click="addItem">
-                Add
-            </button>
-        </div>
+  <div>
+    <label class="text-sm block mt-6">{{ label }}</label>
+    <template v-if="!internalItems && internalSingleItem">
+      <div class="flex mt-2 gap-2">
+        <input
+          v-model="internalSingleItem"
+          type="text"
+          :placeholder="inputPlaceholder"
+        >
+        <button
+          class="bg-gray-500 text-white"
+          @click="removeItem(0)"
+        >
+          Remove
+        </button>
+      </div>
+    </template>
+    <template v-else>
+      <div
+        v-for="(_, index) in internalItems"
+        :key="index"
+        class="flex mt-2 gap-2"
+      >
+        <input
+          v-model="internalItems[index]"
+          type="text"
+          :placeholder="inputPlaceholder"
+        >
+        <button
+          class="bg-gray-500 text-white"
+          @click="removeItem(index)"
+        >
+          Remove
+        </button>
+      </div>
+    </template>
+    <div class="flex mt-2 gap-2">
+      <input
+        v-model="newItem"
+        type="text"
+        :placeholder="newItemPlaceholder"
+      >
+      <button
+        class="outline"
+        @click="addItem"
+      >
+        Add
+      </button>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, toRefs } from 'vue';
-import contextStore from '@/stores/context.store';
 
 const props = defineProps({
     label: { type: String, required: true },
@@ -75,19 +99,16 @@ function addItem() {
 
     internalItems.value.push(newItem.value);
     newItem.value = '';
-    contextStore.persistState();
 }
 
 function removeItem(index: number) {
     if (!internalItems.value) {
         internalItems.value = [];
         internalSingleItem.value = '';
-        contextStore.persistState();
         return;
     }
 
     internalItems.value.splice(index, 1);
-    contextStore.persistState();
 }
 </script>
 

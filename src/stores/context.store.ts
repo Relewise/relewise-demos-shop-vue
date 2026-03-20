@@ -67,12 +67,29 @@ class AppContext {
                     dataset.allLanguages = [dataset.language];
                 }
             });
-            this.initializeWebComponents();
+            if (this.hasActiveDataset.value) {
+                this.initializeWebComponents();
+            }
         }
     }
 
+    public get hasActiveDataset() {
+        return computed(() => {
+            return this.state.datasets.length > 0
+                && this.state.selectedDatasetIndex >= 0
+                && this.state.selectedDatasetIndex < this.state.datasets.length
+                && !!this.state.datasets[this.state.selectedDatasetIndex];
+        });
+    }
+
     public get isConfigured() {
-        return computed(() => this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language);
+        return computed(() => {
+            if (!this.hasActiveDataset.value) {
+                return false;
+            }
+
+            return !!(this.context.value.datasetId && this.context.value.apiKey && this.context.value.currencyCode && this.context.value.language);
+        });
     }
 
     public get context() {
@@ -97,6 +114,10 @@ class AppContext {
 
     public get user() {
         return computed(() => {
+            if (!this.hasActiveDataset.value) {
+                return UserFactory.anonymous();
+            }
+
             this.ensureUsers();
 
             return this.context.value.users![this.context.value.selectedUserIndex!]!;
@@ -217,7 +238,9 @@ class AppContext {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
         basketService.clear();
         this.persistState();
-        this.initializeWebComponents();
+        if (this.hasActiveDataset.value) {
+            this.initializeWebComponents();
+        }
     }
 
     public deleteSelected() {
@@ -225,7 +248,9 @@ class AppContext {
 
         this.state.selectedDatasetIndex = 0;
 
-        this.initializeWebComponents();
+        if (this.hasActiveDataset.value) {
+            this.initializeWebComponents();
+        }
         this.persistState();
     }
 
@@ -315,8 +340,8 @@ class AppContext {
                     },
                     content: {
                         sentiment: true,
-                    }
-                }
+                    },
+                },
             }).useRecommendations();
     }
 }

@@ -1,19 +1,24 @@
 <template>
-    <div class="flex py-2 gap-2 mt-2 items-center">
-        <template v-for="(el, index) in nav" :key="el.name">
-            <component :is="index === nav.length - 1 ? 'span' : 'RouterLink'" 
-                       :to="el.route"
-                       :class="index === nav.length - 1 ? 'text-slate-500' : 'text-slate-700 whitespace-nowrap hover:underline cursor-pointer flex items-center'">
-                <template v-if="el.name === 'Home'">
-                    <HomeIcon class="h-[18px] w-[18px]"/>
-                </template> 
-                <template v-else>
-                    {{ el.name }}
-                </template>
-            </component>
-            <span v-if="index !== nav.length - 1"><ChevronRightIcon class="h-[10px] w-[10px] mt-0.5"/></span>
+  <div class="flex py-2 gap-2 mt-2 items-center">
+    <template
+      v-for="(el, index) in nav"
+      :key="el.name"
+    >
+      <component
+        :is="index === nav.length - 1 ? 'span' : 'RouterLink'" 
+        :to="el.route"
+        :class="index === nav.length - 1 ? 'text-slate-500' : 'text-slate-700 whitespace-nowrap hover:underline cursor-pointer flex items-center'"
+      >
+        <template v-if="el.name === 'Home'">
+          <HomeIcon class="h-[18px] w-[18px]" />
+        </template> 
+        <template v-else>
+          {{ el.name }}
         </template>
-    </div>
+      </component>
+      <span v-if="index !== nav.length - 1"><ChevronRightIcon class="h-[10px] w-[10px] mt-0.5" /></span>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
