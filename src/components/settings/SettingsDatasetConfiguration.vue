@@ -75,7 +75,7 @@
       <div class="mt-8 grid gap-5">
         <div class="grid gap-5 md:grid-cols-2">
           <div>
-            <label class="text-sm block">Default language</label>
+            <label class="text-sm block">Language</label>
             <input
               v-model="dataset.language"
               type="text"
@@ -84,7 +84,7 @@
           </div>
 
           <div>
-            <label class="text-sm block">Default currency</label>
+            <label class="text-sm block">Currency</label>
             <input
               v-model="dataset.currencyCode"
               type="text"
@@ -167,30 +167,14 @@
         </div>
       </div>
     </section>
-
-    <div class="xl:col-span-2 flex items-center gap-3 px-2 text-sm">
-      <span
-        v-if="status === 'saving'"
-        class="text-slate-500"
-      >Saving...</span>
-      <span
-        v-else-if="status === 'saved'"
-        class="text-green-600"
-      >Saved</span>
-      <span
-        v-else-if="status === 'error'"
-        class="text-red-600"
-      >Could not save. Dataset id, API key, language, and currency are required.</span>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import ListValues from '@/components/ListValues.vue';
 import contextStore from '@/stores/context.store';
+import notificationsStore from '@/stores/notifications.store';
 import { computed, ref, watch } from 'vue';
-
-type Status = 'idle' | 'saving' | 'saved' | 'error';
 
 type DatasetBooleanKey =
     | 'allowThirdLevelCategories'
@@ -207,9 +191,10 @@ type DatasetBooleanKey =
 
 const dataset = computed(() => contextStore.context.value);
 const datasets = computed(() => contextStore.datasets.value);
-const status = ref<Status>('idle');
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
-let statusTimer: ReturnType<typeof setTimeout> | undefined;
+let lastSavedNotificationAt = 0;
+let isApplyingAutosave = false;
+let lastPersistedSnapshot = '';
 
 const featureFields: Array<{ key: DatasetBooleanKey; label: string; description: string }> = [
     {
@@ -280,6 +265,9 @@ const enabledFeatureCount = computed(() => {
 watch(
     dataset,
     () => {
+        if (isApplyingAutosave) {
+            return;
+        }
         queueSave();
     },
     { deep: true },
@@ -290,43 +278,71 @@ function queueSave() {
         return;
     }
 
-    status.value = 'saving';
     clearTimeout(saveTimer);
-    clearTimeout(statusTimer);
 
     saveTimer = setTimeout(() => {
         const normalizedLanguages = uniqueValues([dataset.value.language, ...(dataset.value.allLanguages ?? [])]);
         const normalizedCurrencies = uniqueValues([dataset.value.currencyCode, ...(dataset.value.allCurrencies ?? [])]);
+        const nextSnapshot = JSON.stringify({
+            ...dataset.value,
+            displayName: dataset.value.displayName?.trim() ?? '',
+            datasetId: dataset.value.datasetId.trim(),
+            apiKey: dataset.value.apiKey.trim(),
+            language: dataset.value.language.trim(),
+            currencyCode: dataset.value.currencyCode.trim(),
+            serverUrl: dataset.value.serverUrl?.trim() ?? '',
+            allLanguages: normalizedLanguages,
+            allCurrencies: normalizedCurrencies,
+        });
 
-        dataset.value.displayName = dataset.value.displayName?.trim() ?? '';
-        dataset.value.datasetId = dataset.value.datasetId.trim();
-        dataset.value.apiKey = dataset.value.apiKey.trim();
-        dataset.value.language = dataset.value.language.trim();
-        dataset.value.currencyCode = dataset.value.currencyCode.trim();
-        dataset.value.serverUrl = dataset.value.serverUrl?.trim() ?? '';
-        dataset.value.allLanguages = normalizedLanguages;
-        dataset.value.allCurrencies = normalizedCurrencies;
-
-        if (!dataset.value.datasetId || !dataset.value.apiKey || !dataset.value.language || !dataset.value.currencyCode) {
-            status.value = 'error';
+        if (nextSnapshot === lastPersistedSnapshot) {
             return;
         }
 
-        const duplicateDatasetIds = datasets.value.filter((entry) => entry.datasetId === dataset.value.datasetId);
-        if (duplicateDatasetIds.length > 1) {
-            status.value = 'error';
-            return;
-        }
+        isApplyingAutosave = true;
+        try {
+            dataset.value.displayName = dataset.value.displayName?.trim() ?? '';
+            dataset.value.datasetId = dataset.value.datasetId.trim();
+            dataset.value.apiKey = dataset.value.apiKey.trim();
+            dataset.value.language = dataset.value.language.trim();
+            dataset.value.currencyCode = dataset.value.currencyCode.trim();
+            dataset.value.serverUrl = dataset.value.serverUrl?.trim() ?? '';
+            dataset.value.allLanguages = normalizedLanguages;
+            dataset.value.allCurrencies = normalizedCurrencies;
 
-        contextStore.persistState();
-        status.value = 'saved';
-        statusTimer = setTimeout(() => {
-            status.value = 'idle';
-        }, 2000);
+            if (!dataset.value.datasetId || !dataset.value.apiKey || !dataset.value.language || !dataset.value.currencyCode) {
+                return;
+            }
+
+            const duplicateDatasetIds = datasets.value.filter((entry) => entry.datasetId === dataset.value.datasetId);
+            if (duplicateDatasetIds.length > 1) {
+                return;
+            }
+
+            contextStore.persistState();
+            lastPersistedSnapshot = nextSnapshot;
+        } finally {
+            isApplyingAutosave = false;
+        }
+        pushSavedNotification();
     }, 500);
 }
 
 function uniqueValues(values: string[]) {
     return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
+
+function pushSavedNotification() {
+    const now = Date.now();
+    if (now - lastSavedNotificationAt < 2000) {
+        return;
+    }
+
+    lastSavedNotificationAt = now;
+    notificationsStore.push({ title: 'Settings saved', text: 'Dataset configuration was saved.' });
+}
+
+lastPersistedSnapshot = JSON.stringify(dataset.value ? {
+    ...dataset.value,
+} : {});
 </script>

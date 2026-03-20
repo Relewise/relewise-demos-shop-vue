@@ -83,15 +83,33 @@ onBeforeUnmount(() => {
           <div class="flex items-center gap-6">
             <Popover placement="bottom-end">
               <div
-                class="flex items-center gap-4 leading-none rounded-lg bg-slate-100 px-4 py-2 cursor-pointer hover:bg-slate-200 text-slate-800 hidden xl:flex"
+                class="hidden cursor-pointer items-center gap-4 rounded-lg bg-slate-100 px-4 py-3 text-slate-800 hover:bg-slate-200 xl:flex"
               >
-                <div>
-                  <div class="font-medium text-sm">
-                    {{ contextStore.context.value.displayName }}
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="max-w-[12rem] truncate font-medium text-sm"
+                      :title="contextStore.context.value.displayName || ''"
+                    >
+                      {{ contextStore.context.value.displayName }}
+                    </div>
+                    <span class="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                      {{ contextStore.context.value.language }} / {{ contextStore.context.value.currencyCode }}
+                    </span>
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"
+                      :class="contextStore.tracking.value.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'"
+                    >
+                      <span
+                        class="mr-1.5 inline-block h-1.5 w-1.5 rounded-full"
+                        :class="contextStore.tracking.value.enabled ? 'bg-emerald-500' : 'bg-slate-400'"
+                      />
+                      {{ contextStore.tracking.value.enabled ? 'Tracking on' : 'Tracking off' }}
+                    </span>
                   </div>
                   <div
                     v-if="contextStore.context.value.users && contextStore.context.value.selectedUserIndex !== undefined"
-                    class="text-xs"
+                    class="mt-1 text-xs"
                   >
                     User: {{
                       displayUser(contextStore.context.value.users[contextStore.context.value.selectedUserIndex])

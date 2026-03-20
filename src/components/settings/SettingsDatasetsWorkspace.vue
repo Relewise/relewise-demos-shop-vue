@@ -84,64 +84,6 @@
     </section>
 
     <section class="space-y-6">
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-          Active dataset
-        </p>
-        <template v-if="activeDataset">
-          <h3 class="mt-2 text-2xl text-slate-900">
-            {{ activeDataset.displayName || 'Unnamed dataset' }}
-          </h3>
-          <dl class="mt-6 space-y-4 text-sm text-slate-600">
-            <div class="flex items-center justify-between gap-4">
-              <dt>Dataset ID</dt>
-              <dd class="font-mono text-slate-900">
-                {{ activeDataset.datasetId || 'Missing' }}
-              </dd>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <dt>Server URL</dt>
-              <dd class="truncate text-slate-900">
-                {{ activeDataset.serverUrl || 'Default server' }}
-              </dd>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <dt>Locales</dt>
-              <dd class="text-slate-900">
-                {{ activeDataset.allLanguages?.length ?? 0 }} languages, {{ activeDataset.allCurrencies?.length ?? 0 }} currencies
-              </dd>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <dt>Features enabled</dt>
-              <dd class="text-slate-900">
-                {{ enabledFeatureCount }}
-              </dd>
-            </div>
-          </dl>
-
-          <button
-            class="mt-6 w-full bg-red-600 hover:bg-red-700"
-            :disabled="datasets.length < 2"
-            @click="deleteDataset"
-          >
-            Delete active dataset
-          </button>
-          <p
-            v-if="datasets.length < 2"
-            class="mt-2 text-xs text-slate-500"
-          >
-            Keep at least one dataset configured.
-          </p>
-        </template>
-
-        <p
-          v-else
-          class="mt-4 text-sm text-slate-600"
-        >
-          Select a dataset to review its summary.
-        </p>
-      </div>
-
       <div
         v-if="isCreating"
         class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
@@ -191,9 +133,18 @@
             >
           </div>
 
+          <div>
+            <label class="text-sm block">Server URL</label>
+            <input
+              v-model="draft.serverUrl"
+              type="text"
+              placeholder="Server Url"
+            >
+          </div>
+
           <div class="grid gap-5 md:grid-cols-2">
             <div>
-              <label class="text-sm block">Default language</label>
+              <label class="text-sm block">Language</label>
               <input
                 v-model="draft.language"
                 type="text"
@@ -202,22 +153,13 @@
             </div>
 
             <div>
-              <label class="text-sm block">Default currency</label>
+              <label class="text-sm block">Currency</label>
               <input
                 v-model="draft.currencyCode"
                 type="text"
                 placeholder="USD"
               >
             </div>
-          </div>
-
-          <div>
-            <label class="text-sm block">Server URL</label>
-            <input
-              v-model="draft.serverUrl"
-              type="text"
-              placeholder="Server Url"
-            >
           </div>
         </div>
 
@@ -261,32 +203,11 @@ const emit = defineEmits<{
 }>();
 
 const datasets = computed(() => contextStore.datasets.value);
-const activeDataset = computed(() => contextStore.context.value);
 const activeDatasetId = computed(() => activeDataset.value?.datasetId ?? '');
 const created = ref(false);
 const isCreating = ref(false);
 const validationErrors = ref<string[]>([]);
-
-const enabledFeatureCount = computed(() => {
-    const dataset = activeDataset.value;
-    if (!dataset) {
-        return 0;
-    }
-
-    return [
-        dataset.allowThirdLevelCategories,
-        dataset.hideSoldOutProducts,
-        dataset.userClassificationFilters,
-        dataset.showProductRelevanceScore,
-        dataset.B2bRecommendations,
-        dataset.showVariantsBadge,
-        dataset.similarProductsOnPdp,
-        dataset.variantBasedSearchOverlay,
-        dataset.contentSearch,
-        dataset.searchHighlight,
-        dataset.shoppertainmentEnabled,
-    ].filter(Boolean).length;
-});
+const activeDataset = computed(() => contextStore.context.value);
 
 const draft = ref<DatasetDraft>(createEmptyDraft());
 
@@ -400,10 +321,6 @@ function selectDataset(datasetId: string) {
 }
 
 function deleteDataset() {
-    if (datasets.value.length < 2) {
-        return;
-    }
-
     const confirmed = confirm('Delete active dataset?');
     if (!confirmed) {
         return;

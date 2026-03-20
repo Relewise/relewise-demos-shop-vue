@@ -48,7 +48,7 @@ export interface IAppErrorContext {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [{ datasetId: '', apiKey: '', language: '', allLanguages: [], currencyCode: '', allCurrencies: [], users: [UserFactory.anonymous()], selectedUserIndex: 0, companies: [] }], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
 
     public static numberOfProductsToRecommend = 8;
@@ -225,8 +225,7 @@ class AppContext {
     }
 
     public addDataset(newDataset: IDataset) {
-        if (!localStorage.getItem(this.localStorageName) || (this.state.datasets.length === 1 && !this.isConfigured)) {
-            // when first coming here via share link we want to remove the default created dataset
+        if (!localStorage.getItem(this.localStorageName)) {
             this.state.datasets = [];
         }
 

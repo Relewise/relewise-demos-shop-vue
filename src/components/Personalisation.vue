@@ -281,32 +281,16 @@
         {{ error }}
       </li>
     </ul>
-
-    <div class="px-2 text-sm">
-      <span
-        v-if="status === 'saving'"
-        class="text-slate-500"
-      >Saving...</span>
-      <span
-        v-else-if="status === 'saved'"
-        class="text-green-600"
-      >Saved</span>
-      <span
-        v-else-if="status === 'error'"
-        class="text-red-600"
-      >Could not save. Resolve the validation errors first.</span>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import contextStore from '@/stores/context.store';
+import notificationsStore from '@/stores/notifications.store';
 import { displayUser } from '@/helpers/userHelper';
 import { DataValueFactory, UserFactory, type Company, type DataValue } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
-
-type Status = 'idle' | 'saving' | 'saved' | 'error';
 
 const tracking = contextStore.tracking;
 const dataset = computed(() => contextStore.context.value);
@@ -320,10 +304,11 @@ const classifications = ref<KeyValue[]>([]);
 const identifiers = ref<KeyValue[]>([]);
 const data = ref<KeyValue[]>([]);
 const errors = ref<string[]>([]);
-const status = ref<Status>('idle');
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
-let statusTimer: ReturnType<typeof setTimeout> | undefined;
+let lastSavedNotificationAt = 0;
+let isApplyingAutosave = false;
+let lastPersistedSnapshot = '';
 
 const activeCompany = computed<Company | undefined>(() => {
     if (!selectedCompanyId.value) {
@@ -378,6 +363,9 @@ watch(
 watch(
     [tracking, dataset, classifications, identifiers, data],
     () => {
+        if (isApplyingAutosave) {
+            return;
+        }
         queueSave();
     },
     { deep: true },
@@ -385,28 +373,48 @@ watch(
 
 function queueSave() {
     errors.value = [];
-    status.value = 'saving';
     clearTimeout(saveTimer);
-    clearTimeout(statusTimer);
 
     saveTimer = setTimeout(() => {
         if (!validateBeforePersist()) {
-            status.value = 'error';
             return;
         }
 
-        activeUser.value.classifications = keyValueArrayToRecord(classifications.value);
-        activeUser.value.identifiers = keyValueArrayToRecord(identifiers.value);
-        activeUser.value.data = data.value.reduce((acc, entry) => {
+        const nextClassifications = keyValueArrayToRecord(classifications.value);
+        const nextIdentifiers = keyValueArrayToRecord(identifiers.value);
+        const nextData = data.value.reduce((acc, entry) => {
             acc[entry.key] = DataValueFactory.string(entry.value ?? '');
             return acc;
         }, {} as Record<string, DataValue>);
+        const nextSnapshot = JSON.stringify({
+            trackingEnabled: tracking.value.enabled,
+            users: users.value,
+            companies: companies.value,
+            selectedUserIndex: selectedUserIndex.value,
+            activeUser: {
+                ...activeUser.value,
+                classifications: nextClassifications,
+                identifiers: nextIdentifiers,
+                data: nextData,
+            },
+        });
 
-        contextStore.persistState();
-        status.value = 'saved';
-        statusTimer = setTimeout(() => {
-            status.value = 'idle';
-        }, 2000);
+        if (nextSnapshot === lastPersistedSnapshot) {
+            return;
+        }
+
+        isApplyingAutosave = true;
+        try {
+            activeUser.value.classifications = nextClassifications;
+            activeUser.value.identifiers = nextIdentifiers;
+            activeUser.value.data = nextData;
+
+            contextStore.persistState();
+            lastPersistedSnapshot = nextSnapshot;
+        } finally {
+            isApplyingAutosave = false;
+        }
+        pushSavedNotification();
     }, 500);
 }
 
@@ -529,4 +537,22 @@ function deleteCompany() {
     });
     selectedCompanyId.value = dataset.value.companies?.[0]?.id ?? '';
 }
+
+function pushSavedNotification() {
+    const now = Date.now();
+    if (now - lastSavedNotificationAt < 2000) {
+        return;
+    }
+
+    lastSavedNotificationAt = now;
+    notificationsStore.push({ title: 'Settings saved', text: 'Personalization settings were saved.' });
+}
+
+lastPersistedSnapshot = JSON.stringify({
+    trackingEnabled: tracking.value.enabled,
+    users: users.value,
+    companies: companies.value,
+    selectedUserIndex: selectedUserIndex.value,
+    activeUser: activeUser.value,
+});
 </script>

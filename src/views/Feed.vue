@@ -234,11 +234,11 @@ async function initialize(): Promise<void> {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .allowProductsCurrentlyInCart()
         // Each desktop preset totals 15 grid columns and never places Full after 4 mod 5 items.
-        .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.leadProducts, upperBoundInclusive: feedLayout.leadProducts } } })
-        .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.leadContent, upperBoundInclusive: feedLayout.leadContent } } })
-        .addCompostion({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
-        .addCompostion({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.tailProducts, upperBoundInclusive: feedLayout.tailProducts } } })
-        .addCompostion({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.tailContent, upperBoundInclusive: feedLayout.tailContent } } });
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.leadProducts, upperBoundInclusive: feedLayout.leadProducts } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.leadContent, upperBoundInclusive: feedLayout.leadContent } } })
+        .addComposition({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.tailProducts, upperBoundInclusive: feedLayout.tailProducts } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.tailContent, upperBoundInclusive: feedLayout.tailContent } } });
 
     // If route contains an id for product-feed/:id or content-feed/:id, seed the initialization
     const idParam = route.params.id;
