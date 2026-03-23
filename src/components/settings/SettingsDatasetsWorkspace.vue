@@ -1,16 +1,19 @@
 <template>
-  <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+  <div class="space-y-6">
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex items-start justify-between gap-4">
+      <div
+        v-if="datasets.length > 0"
+        class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
+      >
         <div>
           <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Datasets
           </p>
           <h2 class="mt-2 text-3xl text-slate-900">
-            Manage configured datasets
+            Manage datasets
           </h2>
           <p class="mt-2 text-sm text-slate-600">
-            Select the active dataset, review key details, and remove datasets you no longer need.
+            Select the active dataset for the shop, configure any dataset, or share and remove them individually.
           </p>
         </div>
 
@@ -18,25 +21,25 @@
           class="shrink-0"
           @click="startCreatingDataset"
         >
-          New dataset
+          Add new dataset
         </button>
       </div>
 
       <div
         v-if="datasets.length === 0"
-        class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center"
+        class="py-14 text-center"
       >
-        <h3 class="text-2xl text-slate-900">
+        <h2 class="text-3xl text-slate-900">
           No datasets configured
-        </h3>
-        <p class="mt-2 text-sm text-slate-600">
-          Create a dataset to configure the demo shop and unlock personalization settings.
+        </h2>
+        <p class="mx-auto mt-3 max-w-xl text-sm text-slate-600">
+          Create a dataset to start configuring the demo shop.
         </p>
         <button
-          class="mt-6"
+          class="mt-8"
           @click="startCreatingDataset"
         >
-          Create your first dataset
+          Add new dataset
         </button>
       </div>
 
@@ -44,20 +47,18 @@
         v-else
         class="mt-8 space-y-4"
       >
-        <button
+        <article
           v-for="dataset in datasets"
-          :key="dataset.datasetId || dataset.displayName || 'dataset'"
-          type="button"
-          class="w-full rounded-2xl border p-5 text-left transition"
-          :class="dataset.datasetId === activeDatasetId
-            ? 'border-brand-500 bg-brand-50 shadow-sm'
-            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'"
-          @click="selectDataset(dataset.datasetId)"
+          :key="dataset.datasetId"
+          class="rounded-2xl border border-slate-200 bg-slate-50 p-5"
         >
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-3">
-                <h3 class="text-xl text-slate-900">
+          <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-3">
+                <h3
+                  class="max-w-full truncate text-2xl text-slate-900"
+                  :title="dataset.displayName || 'Unnamed dataset'"
+                >
                   {{ dataset.displayName || 'Unnamed dataset' }}
                 </h3>
                 <span
@@ -67,34 +68,77 @@
                   Active
                 </span>
               </div>
-              <p class="mt-2 font-mono text-sm text-slate-500">
-                {{ dataset.datasetId || 'Missing dataset id' }}
-              </p>
+
+              <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                <span class="rounded-full bg-white px-3 py-1 font-mono text-xs text-slate-700">
+                  {{ dataset.datasetId || 'Missing dataset id' }}
+                </span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  {{ dataset.language || 'No language' }} / {{ dataset.currencyCode || 'No currency' }}
+                </span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs text-slate-600">
+                  {{ dataset.users?.length ?? 0 }} users
+                </span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs text-slate-600">
+                  {{ dataset.companies?.length ?? 0 }} companies
+                </span>
+              </div>
             </div>
 
-            <div class="text-right text-sm text-slate-500">
-              <p>{{ dataset.language || 'No language' }} / {{ dataset.currencyCode || 'No currency' }}</p>
-              <p class="mt-1">
-                {{ dataset.users?.length ?? 0 }} users, {{ dataset.companies?.length ?? 0 }} companies
-              </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                class="outline"
+                @click="configureDataset(dataset.datasetId)"
+              >
+                Configure dataset
+              </button>
+              <button
+                class="outline"
+                :disabled="dataset.datasetId === activeDatasetId"
+                :class="dataset.datasetId === activeDatasetId ? 'cursor-not-allowed opacity-60' : ''"
+                @click="selectDataset(dataset.datasetId)"
+              >
+                {{ dataset.datasetId === activeDatasetId ? 'Selected' : 'Select dataset' }}
+              </button>
+              <button
+                class="outline"
+                @click="shareDataset(dataset)"
+              >
+                Share dataset
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                title="Remove dataset"
+                @click="removeDataset(dataset)"
+              >
+                <TrashIcon class="h-5 w-5" />
+              </button>
             </div>
           </div>
-        </button>
+        </article>
       </div>
     </section>
 
-    <section class="space-y-6">
-      <div
-        v-if="isCreating"
-        class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-      >
+    <SettingsDatasetConfiguration
+      v-if="configuredDataset"
+      :dataset="configuredDataset"
+      @close="configuredDatasetRef = null"
+    />
+
+    <div
+      v-if="isCreating"
+      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+      @click.self="cancelCreatingDataset"
+    >
+      <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl">
         <div class="flex items-start justify-between gap-4">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
               New dataset
             </p>
-            <h3 class="mt-2 text-2xl text-slate-900">
-              Create dataset
+            <h3 class="mt-2 text-3xl text-slate-900">
+              Add dataset
             </h3>
           </div>
           <button
@@ -177,39 +221,51 @@
 
         <div class="mt-6 flex items-center gap-3">
           <button @click="createDataset">
-            Create dataset
+            Add dataset
           </button>
-          <span
-            v-if="created"
-            class="text-sm text-green-600"
-          >
-            Dataset created.
-          </span>
         </div>
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import SettingsDatasetConfiguration from '@/components/settings/SettingsDatasetConfiguration.vue';
 import contextStore, { type IDataset } from '@/stores/context.store';
+import notificationsStore from '@/stores/notifications.store';
+import { TrashIcon } from '@heroicons/vue/24/outline';
 import { UserFactory } from '@relewise/client';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 type DatasetDraft = IDataset;
 
-const emit = defineEmits<{
-    datasetSelected: [];
-}>();
-
 const datasets = computed(() => contextStore.datasets.value);
-const activeDatasetId = computed(() => activeDataset.value?.datasetId ?? '');
-const created = ref(false);
+const activeDatasetId = computed(() => contextStore.context.value?.datasetId ?? '');
+const configuredDatasetRef = ref<IDataset | null>(null);
 const isCreating = ref(false);
 const validationErrors = ref<string[]>([]);
-const activeDataset = computed(() => contextStore.context.value);
-
 const draft = ref<DatasetDraft>(createEmptyDraft());
+
+const configuredDataset = computed(() => {
+    if (!configuredDatasetRef.value) {
+        return undefined;
+    }
+
+    return datasets.value.find((dataset) => dataset === configuredDatasetRef.value);
+});
+
+watch(datasets, (nextDatasets) => {
+    if (!nextDatasets.length) {
+        configuredDatasetRef.value = null;
+        return;
+    }
+
+    if (configuredDatasetRef.value && nextDatasets.some((dataset) => dataset === configuredDatasetRef.value)) {
+        return;
+    }
+
+    configuredDatasetRef.value = null;
+}, { deep: true });
 
 function createEmptyDraft(): DatasetDraft {
     return {
@@ -221,7 +277,7 @@ function createEmptyDraft(): DatasetDraft {
         currencyCode: '',
         allCurrencies: [],
         serverUrl: '',
-        users: [UserFactory.anonymous()],
+        users: [createDefaultUser()],
         companies: [],
         selectedUserIndex: 0,
         allowThirdLevelCategories: false,
@@ -239,6 +295,12 @@ function createEmptyDraft(): DatasetDraft {
     };
 }
 
+function createDefaultUser() {
+    const user = UserFactory.anonymous();
+    user.temporaryId = crypto.randomUUID();
+    return user;
+}
+
 function normalizeDataset(dataset: DatasetDraft): IDataset {
     const language = dataset.language.trim();
     const currencyCode = dataset.currencyCode.trim();
@@ -253,7 +315,7 @@ function normalizeDataset(dataset: DatasetDraft): IDataset {
         serverUrl: dataset.serverUrl?.trim() ?? '',
         allLanguages: uniqueValues([language, ...(dataset.allLanguages ?? [])]),
         allCurrencies: uniqueValues([currencyCode, ...(dataset.allCurrencies ?? [])]),
-        users: dataset.users?.length ? dataset.users : [UserFactory.anonymous()],
+        users: dataset.users?.length ? dataset.users : [createDefaultUser()],
         companies: dataset.companies ?? [],
         selectedUserIndex: 0,
     };
@@ -288,10 +350,10 @@ function createDataset() {
         validationErrors.value.push('An API key is required.');
     }
     if (!draft.value.language.trim()) {
-        validationErrors.value.push('A default language is required.');
+        validationErrors.value.push('A language is required.');
     }
     if (!draft.value.currencyCode.trim()) {
-        validationErrors.value.push('A default currency is required.');
+        validationErrors.value.push('A currency is required.');
     }
     if (datasets.value.some((dataset) => dataset.datasetId === draft.value.datasetId.trim())) {
         validationErrors.value.push('Dataset id must be unique.');
@@ -301,32 +363,41 @@ function createDataset() {
         return;
     }
 
-    contextStore.addDataset(normalizeDataset(draft.value));
-    created.value = true;
+    const newDataset = normalizeDataset(draft.value);
+    contextStore.addDataset(newDataset);
+    configuredDatasetRef.value = contextStore.datasets.value.find((dataset) => dataset.datasetId === newDataset.datasetId) ?? null;
     isCreating.value = false;
-    emit('datasetSelected');
-    setTimeout(() => {
-        created.value = false;
-    }, 3000);
+    notificationsStore.push({ title: 'Dataset added', text: `${newDataset.displayName || newDataset.datasetId} was created.` });
+}
+
+function configureDataset(datasetId: string) {
+    configuredDatasetRef.value = datasets.value.find((dataset) => dataset.datasetId === datasetId) ?? null;
 }
 
 function selectDataset(datasetId: string) {
-    if (!datasetId || datasetId === activeDatasetId.value) {
-        return;
-    }
-
     contextStore.setDataset(datasetId);
-    emit('datasetSelected');
+    notificationsStore.push({ title: 'Dataset selected', text: 'The active dataset was updated.' });
     window.location.reload();
 }
 
-function deleteDataset() {
-    const confirmed = confirm('Delete active dataset?');
+function shareDataset(dataset: IDataset) {
+    const shareUrl = new URL('/app-settings', window.location.origin);
+    shareUrl.searchParams.set('share', btoa(JSON.stringify(dataset)));
+    navigator.clipboard.writeText(shareUrl.toString());
+    notificationsStore.push({ title: 'Share link copied', text: `A share link for ${dataset.displayName || dataset.datasetId} was copied.` });
+}
+
+function removeDataset(dataset: IDataset) {
+    const confirmed = confirm(`Remove dataset "${dataset.displayName || dataset.datasetId}"?`);
     if (!confirmed) {
         return;
     }
 
-    contextStore.deleteSelected();
-    emit('datasetSelected');
+    if (configuredDatasetRef.value === dataset) {
+        configuredDatasetRef.value = null;
+    }
+
+    contextStore.deleteDatasetById(dataset.datasetId);
+    notificationsStore.push({ title: 'Dataset removed', text: `${dataset.displayName || dataset.datasetId} was removed.` });
 }
 </script>

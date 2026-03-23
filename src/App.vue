@@ -83,9 +83,8 @@ async function getCategories(searcher: Searcher) {
 </script>
 
 <template>
-  <ApiErrors v-if="hasActiveDataset" />
+  <ApiErrors />
   <Header
-    v-if="hasActiveDataset"
     :line-items-count="lineItemsCount"
     :has-child-categories="hasChildCategories"
     :main-categories="mainCategories"

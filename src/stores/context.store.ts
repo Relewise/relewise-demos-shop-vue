@@ -253,6 +253,31 @@ class AppContext {
         this.persistState();
     }
 
+    public deleteDatasetById(datasetId: string) {
+        const datasetIndex = this.state.datasets.findIndex(dataset => dataset.datasetId === datasetId);
+        if (datasetIndex < 0) {
+            return;
+        }
+
+        this.state.datasets.splice(datasetIndex, 1);
+
+        if (this.state.datasets.length === 0) {
+            this.state.selectedDatasetIndex = 0;
+            this.persistState();
+            return;
+        }
+
+        if (this.state.selectedDatasetIndex > datasetIndex) {
+            this.state.selectedDatasetIndex -= 1;
+        }
+        else if (this.state.selectedDatasetIndex >= this.state.datasets.length || this.state.selectedDatasetIndex === datasetIndex) {
+            this.state.selectedDatasetIndex = 0;
+        }
+
+        this.initializeWebComponents();
+        this.persistState();
+    }
+
     public setUser(user: User) {
         this.ensureUsers();
 

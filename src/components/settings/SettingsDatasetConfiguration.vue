@@ -1,181 +1,186 @@
 <template>
-  <div
-    v-if="dataset"
-    class="grid gap-6 xl:grid-cols-2"
-  >
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-        Basics
-      </p>
-      <h2 class="mt-2 text-3xl text-slate-900">
-        Dataset configuration
-      </h2>
-      <p class="mt-2 text-sm text-slate-600">
-        Changes save automatically for the active dataset.
-      </p>
-
-      <div class="mt-8 grid gap-5">
-        <div>
-          <label class="text-sm block">Name</label>
-          <input
-            v-model="dataset.displayName"
-            type="text"
-            placeholder="Name"
-          >
-        </div>
-
-        <div>
-          <label class="text-sm block">Dataset Id</label>
-          <input
-            v-model="dataset.datasetId"
-            type="text"
-            placeholder="Dataset id"
-          >
-        </div>
-      </div>
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-        Connection
-      </p>
-      <h3 class="mt-2 text-2xl text-slate-900">
-        API access
-      </h3>
-
-      <div class="mt-8 grid gap-5">
-        <div>
-          <label class="text-sm block">API Key</label>
-          <input
-            v-model="dataset.apiKey"
-            type="text"
-            placeholder="Api key"
-          >
-        </div>
-
-        <div>
-          <label class="text-sm block">Server URL</label>
-          <input
-            v-model="dataset.serverUrl"
-            type="text"
-            placeholder="Server Url"
-          >
-        </div>
-      </div>
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-        Locales
-      </p>
-      <h3 class="mt-2 text-2xl text-slate-900">
-        Languages and currencies
-      </h3>
-
-      <div class="mt-8 grid gap-5">
-        <div class="grid gap-5 md:grid-cols-2">
-          <div>
-            <label class="text-sm block">Language</label>
-            <input
-              v-model="dataset.language"
-              type="text"
-              placeholder="LanguageCode"
-            >
-          </div>
-
-          <div>
-            <label class="text-sm block">Currency</label>
-            <input
-              v-model="dataset.currencyCode"
-              type="text"
-              placeholder="CurrencyCode"
-            >
-          </div>
-        </div>
-
-        <ListValues
-          label="Languages"
-          :items="dataset.allLanguages"
-          :single-item="dataset.language"
-          input-placeholder="LanguageCode"
-          new-item-placeholder="New Language"
-        />
-
-        <ListValues
-          label="Currencies"
-          :items="dataset.allCurrencies"
-          :single-item="dataset.currencyCode"
-          input-placeholder="CurrencyCode"
-          new-item-placeholder="New Currency"
-        />
-      </div>
-    </section>
-
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Features
-          </p>
-          <h3 class="mt-2 text-2xl text-slate-900">
-            Demo behavior
-          </h3>
-        </div>
-        <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
-          {{ enabledFeatureCount }} enabled
-        </span>
-      </div>
-
-      <div class="mt-8 space-y-6">
-        <div
-          v-for="feature in featureFields"
-          :key="feature.key"
-          class="rounded-xl border border-slate-200 p-4"
+  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div class="min-w-0">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Configure dataset
+        </p>
+        <h2
+          class="mt-2 truncate text-3xl text-slate-900"
+          :title="editableDataset.displayName || editableDataset.datasetId"
         >
-          <label class="flex items-start gap-3">
-            <input
-              v-model="dataset[feature.key]"
-              class="mt-1 h-5 w-5 accent-brand-500"
-              type="checkbox"
-            >
-            <span>
-              <span class="block font-semibold text-slate-900">{{ feature.label }}</span>
-              <span class="mt-1 block text-sm text-slate-600">{{ feature.description }}</span>
-            </span>
-          </label>
-        </div>
-
-        <div class="rounded-xl border border-slate-200 p-4">
-          <label class="text-sm block">Recommendations lookback in minutes</label>
-          <input
-            v-model.number="dataset.recommendationsMinutesAgo"
-            class="mt-2"
-            type="text"
-          >
-          <p class="mt-2 text-sm text-slate-600">
-            Default is 20160 minutes, equivalent to 14 days.
-          </p>
-        </div>
-
-        <div class="rounded-xl border border-slate-200 p-4">
-          <h4 class="font-semibold text-slate-900">
-            UTM-based Product Boosting
-          </h4>
-          <p class="mt-2 text-sm text-slate-600">
-            Search and listing results are boosted based on supported UTM parameters. This is descriptive only and does not require local configuration.
-          </p>
-        </div>
+          {{ editableDataset.displayName || editableDataset.datasetId }}
+        </h2>
+        <p class="mt-2 text-sm text-slate-600">
+          Update connection details, dataset configuration, and personalization data for this dataset.
+        </p>
       </div>
-    </section>
-  </div>
+
+      <button
+        class="outline shrink-0"
+        @click="$emit('close')"
+      >
+        Close
+      </button>
+    </div>
+
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        type="button"
+        class="rounded-full border px-5 py-2 text-sm font-semibold transition"
+        :class="activeTab === tab.id
+          ? 'border-brand-500 bg-brand-500 text-white'
+          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'"
+        @click="activeTab = tab.id"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <div
+      v-if="activeTab === 'overview'"
+      class="mt-8 grid gap-6 xl:grid-cols-2"
+    >
+      <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Overview
+        </p>
+        <div class="mt-6 grid gap-5">
+          <div>
+            <label class="text-sm block">Name</label>
+            <input
+              v-model="editableDataset.displayName"
+              type="text"
+              placeholder="Name"
+            >
+          </div>
+
+          <div>
+            <label class="text-sm block">Dataset Id</label>
+            <input
+              v-model="editableDataset.datasetId"
+              type="text"
+              placeholder="Dataset Id"
+            >
+          </div>
+
+          <div>
+            <label class="text-sm block">API Key</label>
+            <input
+              v-model="editableDataset.apiKey"
+              type="text"
+              placeholder="API Key"
+            >
+          </div>
+
+          <div>
+            <label class="text-sm block">Server URL</label>
+            <input
+              v-model="editableDataset.serverUrl"
+              type="text"
+              placeholder="Server URL"
+            >
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      v-else-if="activeTab === 'configuration'"
+      class="mt-8 grid gap-6 xl:grid-cols-2"
+    >
+      <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Locales
+        </p>
+        <h3 class="mt-2 text-2xl text-slate-900">
+          Languages and currencies
+        </h3>
+
+        <ListValues
+          v-model:items="editableDataset.allLanguages"
+          v-model:single-item="editableDataset.language"
+          label="Languages"
+          new-item-placeholder="Add language"
+        />
+
+        <ListValues
+          v-model:items="editableDataset.allCurrencies"
+          v-model:single-item="editableDataset.currencyCode"
+          label="Currencies"
+          new-item-placeholder="Add currency"
+        />
+      </section>
+
+      <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Features
+            </p>
+            <h3 class="mt-2 text-2xl text-slate-900">
+              Demo behavior
+            </h3>
+          </div>
+          <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-600">
+            {{ enabledFeatureCount }} enabled
+          </span>
+        </div>
+
+        <div class="mt-8 space-y-4">
+          <div
+            v-for="feature in featureFields"
+            :key="feature.key"
+            class="rounded-xl border border-slate-200 bg-white p-4"
+          >
+            <label class="flex items-start gap-3">
+              <input
+                v-model="editableDataset[feature.key]"
+                class="mt-1 h-5 w-5 accent-brand-500"
+                type="checkbox"
+              >
+              <span>
+                <span class="block font-semibold text-slate-900">{{ feature.label }}</span>
+                <span class="mt-1 block text-sm text-slate-600">{{ feature.description }}</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-4">
+            <label class="text-sm block">Recommendations lookback in minutes</label>
+            <input
+              v-model.number="editableDataset.recommendationsMinutesAgo"
+              class="mt-2"
+              type="text"
+            >
+            <p class="mt-2 text-sm text-slate-600">
+              Default is 20160 minutes, equivalent to 14 days.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      v-else
+      class="mt-8"
+    >
+      <Personalisation :dataset="editableDataset" />
+    </div>
+  </section>
 </template>
 
 <script lang="ts" setup>
+ 
 import ListValues from '@/components/ListValues.vue';
-import contextStore from '@/stores/context.store';
+import Personalisation from '@/components/Personalisation.vue';
+import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 import { computed, ref, watch } from 'vue';
 
+type TabId = 'overview' | 'configuration' | 'personalization';
 type DatasetBooleanKey =
     | 'allowThirdLevelCategories'
     | 'hideSoldOutProducts'
@@ -189,12 +194,24 @@ type DatasetBooleanKey =
     | 'contentSearch'
     | 'shoppertainmentEnabled';
 
-const dataset = computed(() => contextStore.context.value);
-const datasets = computed(() => contextStore.datasets.value);
+const props = defineProps<{
+    dataset: IDataset;
+}>();
+
+defineEmits(['close']);
+const editableDataset = props.dataset;
+
+const tabs: Array<{ id: TabId; label: string }> = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'configuration', label: 'Configuration' },
+    { id: 'personalization', label: 'Personalization' },
+];
+
+const activeTab = ref<TabId>('overview');
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let lastSavedNotificationAt = 0;
 let isApplyingAutosave = false;
-let lastPersistedSnapshot = '';
+let lastPersistedSnapshot = JSON.stringify(editableDataset);
 
 const featureFields: Array<{ key: DatasetBooleanKey; label: string; description: string }> = [
     {
@@ -255,42 +272,35 @@ const featureFields: Array<{ key: DatasetBooleanKey; label: string; description:
 ];
 
 const enabledFeatureCount = computed(() => {
-    if (!dataset.value) {
-        return 0;
-    }
-
-    return featureFields.filter((feature) => dataset.value[feature.key]).length;
+    return featureFields.filter((feature) => editableDataset[feature.key]).length;
 });
 
 watch(
-    dataset,
+    () => props.dataset,
     () => {
         if (isApplyingAutosave) {
             return;
         }
+
         queueSave();
     },
     { deep: true },
 );
 
 function queueSave() {
-    if (!dataset.value) {
-        return;
-    }
-
     clearTimeout(saveTimer);
 
     saveTimer = setTimeout(() => {
-        const normalizedLanguages = uniqueValues([dataset.value.language, ...(dataset.value.allLanguages ?? [])]);
-        const normalizedCurrencies = uniqueValues([dataset.value.currencyCode, ...(dataset.value.allCurrencies ?? [])]);
+        const normalizedLanguages = uniqueValues([editableDataset.language, ...(editableDataset.allLanguages ?? [])]);
+        const normalizedCurrencies = uniqueValues([editableDataset.currencyCode, ...(editableDataset.allCurrencies ?? [])]);
         const nextSnapshot = JSON.stringify({
-            ...dataset.value,
-            displayName: dataset.value.displayName?.trim() ?? '',
-            datasetId: dataset.value.datasetId.trim(),
-            apiKey: dataset.value.apiKey.trim(),
-            language: dataset.value.language.trim(),
-            currencyCode: dataset.value.currencyCode.trim(),
-            serverUrl: dataset.value.serverUrl?.trim() ?? '',
+            ...editableDataset,
+            displayName: editableDataset.displayName?.trim() ?? '',
+            datasetId: editableDataset.datasetId.trim(),
+            apiKey: editableDataset.apiKey.trim(),
+            serverUrl: editableDataset.serverUrl?.trim() ?? '',
+            language: editableDataset.language.trim(),
+            currencyCode: editableDataset.currencyCode.trim(),
             allLanguages: normalizedLanguages,
             allCurrencies: normalizedCurrencies,
         });
@@ -301,31 +311,39 @@ function queueSave() {
 
         isApplyingAutosave = true;
         try {
-            dataset.value.displayName = dataset.value.displayName?.trim() ?? '';
-            dataset.value.datasetId = dataset.value.datasetId.trim();
-            dataset.value.apiKey = dataset.value.apiKey.trim();
-            dataset.value.language = dataset.value.language.trim();
-            dataset.value.currencyCode = dataset.value.currencyCode.trim();
-            dataset.value.serverUrl = dataset.value.serverUrl?.trim() ?? '';
-            dataset.value.allLanguages = normalizedLanguages;
-            dataset.value.allCurrencies = normalizedCurrencies;
+            editableDataset.displayName = editableDataset.displayName?.trim() ?? '';
+            editableDataset.datasetId = editableDataset.datasetId.trim();
+            editableDataset.apiKey = editableDataset.apiKey.trim();
+            editableDataset.serverUrl = editableDataset.serverUrl?.trim() ?? '';
+            editableDataset.language = editableDataset.language.trim();
+            editableDataset.currencyCode = editableDataset.currencyCode.trim();
+            editableDataset.allLanguages = normalizedLanguages;
+            editableDataset.allCurrencies = normalizedCurrencies;
 
-            if (!dataset.value.datasetId || !dataset.value.apiKey || !dataset.value.language || !dataset.value.currencyCode) {
+            if (!editableDataset.language) {
+                editableDataset.language = editableDataset.allLanguages[0] ?? '';
+            }
+            if (!editableDataset.currencyCode) {
+                editableDataset.currencyCode = editableDataset.allCurrencies[0] ?? '';
+            }
+
+            if (!editableDataset.datasetId || !editableDataset.apiKey || !editableDataset.language || !editableDataset.currencyCode) {
                 return;
             }
 
-            const duplicateDatasetIds = datasets.value.filter((entry) => entry.datasetId === dataset.value.datasetId);
+            const duplicateDatasetIds = contextStore.datasets.value.filter((entry) => entry.datasetId === editableDataset.datasetId);
             if (duplicateDatasetIds.length > 1) {
                 return;
             }
 
             contextStore.persistState();
-            lastPersistedSnapshot = nextSnapshot;
+            lastPersistedSnapshot = JSON.stringify(editableDataset);
         } finally {
             isApplyingAutosave = false;
         }
+
         pushSavedNotification();
-    }, 500);
+    }, 400);
 }
 
 function uniqueValues(values: string[]) {
@@ -339,10 +357,6 @@ function pushSavedNotification() {
     }
 
     lastSavedNotificationAt = now;
-    notificationsStore.push({ title: 'Settings saved', text: 'Dataset configuration was saved.' });
+    notificationsStore.push({ title: 'Settings saved', text: 'Dataset settings were saved.' });
 }
-
-lastPersistedSnapshot = JSON.stringify(dataset.value ? {
-    ...dataset.value,
-} : {});
 </script>

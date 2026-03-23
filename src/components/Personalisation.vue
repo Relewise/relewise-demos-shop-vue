@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
         Tracking
       </p>
@@ -8,10 +8,10 @@
         Behavioral tracking
       </h2>
       <p class="mt-2 text-sm text-slate-600">
-        Toggle tracking for the current demo context. Changes save automatically.
+        Toggle whether the demo tracks user behavior.
       </p>
 
-      <label class="mt-8 flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+      <label class="mt-8 flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
         <input
           v-model="tracking.enabled"
           class="h-5 w-5 accent-brand-500"
@@ -26,207 +26,71 @@
       </label>
     </section>
 
-    <div class="grid gap-6 xl:grid-cols-2">
-      <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Users
+    <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Users
+          </p>
+          <h2 class="mt-2 text-3xl text-slate-900">
+            User profiles
+          </h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Manage users for this dataset. Authenticated id, temporary id, and email must remain unique when set.
+          </p>
+        </div>
+        <button @click="addUser">
+          Add user
+        </button>
+      </div>
+
+      <div
+        v-if="users.length === 0"
+        class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600"
+      >
+        No users created yet.
+      </div>
+
+      <div
+        v-else
+        class="mt-8 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]"
+      >
+        <div class="space-y-3">
+          <button
+            v-for="(userOption, index) in users"
+            :key="userKey(userOption, index)"
+            type="button"
+            class="w-full rounded-2xl border p-4 text-left transition"
+            :class="index === selectedUserIndex
+              ? 'border-brand-500 bg-brand-50'
+              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'"
+            @click="selectUser(index)"
+          >
+            <p class="font-semibold text-slate-900">
+              {{ displayUser(userOption) }}
             </p>
-            <h2 class="mt-2 text-3xl text-slate-900">
-              User profiles
-            </h2>
-            <p class="mt-2 text-sm text-slate-600">
-              Manage the users available for the selected dataset.
+            <p class="mt-1 truncate font-mono text-xs text-slate-500">
+              {{ userOption.authenticatedId || userOption.temporaryId || userOption.email || 'Unnamed user' }}
             </p>
-          </div>
-          <button @click="addUser">
-            New user
           </button>
         </div>
 
-        <div class="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div class="space-y-3">
-            <button
-              v-for="(userOption, index) in users"
-              :key="index"
-              type="button"
-              class="w-full rounded-2xl border p-4 text-left transition"
-              :class="index === selectedUserIndex
-                ? 'border-brand-500 bg-brand-50'
-                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-              @click="selectUser(index)"
-            >
-              <p class="font-semibold text-slate-900">
-                {{ displayUser(userOption) }}
-              </p>
-              <p class="mt-1 truncate font-mono text-xs text-slate-500">
-                {{ userOption.authenticatedId || userOption.temporaryId || 'Anonymous user' }}
-              </p>
-            </button>
-          </div>
-
-          <div
-            v-if="activeUser"
-            class="space-y-5"
-          >
-            <div class="grid gap-5 md:grid-cols-2">
-              <div>
-                <label class="text-sm block">Temporary Id</label>
-                <div class="mt-1 flex gap-2">
-                  <input
-                    v-model="activeUser.temporaryId"
-                    type="text"
-                    placeholder="Temporary Id"
-                  >
-                  <button
-                    class="outline shrink-0"
-                    @click="generateUserId('temporary')"
-                  >
-                    Generate
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label class="text-sm block">Authenticated Id</label>
-                <div class="mt-1 flex gap-2">
-                  <input
-                    v-model="activeUser.authenticatedId"
-                    type="text"
-                    placeholder="Authenticated Id"
-                  >
-                  <button
-                    class="outline shrink-0"
-                    @click="generateUserId('authenticated')"
-                  >
-                    Generate
-                  </button>
-                </div>
-              </div>
-            </div>
-
+        <div
+          v-if="activeUser"
+          class="space-y-5 rounded-2xl border border-slate-200 bg-white p-5"
+        >
+          <div class="grid gap-5 md:grid-cols-2">
             <div>
-              <label class="text-sm block">Email</label>
-              <input
-                v-model="activeUser.email"
-                class="mt-1"
-                type="text"
-                placeholder="Email"
-              >
-            </div>
-
-            <div>
-              <label class="text-sm block">Company</label>
-              <select
-                :value="activeUser.company?.id ?? ''"
-                class="mt-1"
-                :disabled="companies.length === 0"
-                @change="setUserCompany(($event.target as HTMLInputElement).value)"
-              >
-                <option value="">
-                  {{ companies.length > 0 ? 'No company assigned' : 'No companies exist' }}
-                </option>
-                <option
-                  v-for="companyOption in companies"
-                  :key="companyOption.id"
-                  :value="companyOption.id"
-                >
-                  {{ companyOption.id }}
-                </option>
-              </select>
-            </div>
-
-            <KeyValues
-              v-model="classifications"
-              title="Classifications"
-            />
-            <KeyValues
-              v-model="identifiers"
-              title="Identifiers"
-            />
-            <KeyValues
-              v-model="data"
-              title="Data"
-            />
-
-            <div class="flex items-center justify-between gap-4">
-              <p class="text-sm text-slate-500">
-                Autosaves when all key/value pairs are complete.
-              </p>
-              <button
-                class="bg-red-600 hover:bg-red-700"
-                :disabled="users.length < 2"
-                @click="deleteUser"
-              >
-                Delete user
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Companies
-            </p>
-            <h2 class="mt-2 text-3xl text-slate-900">
-              Company profiles
-            </h2>
-            <p class="mt-2 text-sm text-slate-600">
-              Manage companies and their parent-child relationships.
-            </p>
-          </div>
-          <button @click="addCompany">
-            New company
-          </button>
-        </div>
-
-        <div class="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div class="space-y-3">
-            <button
-              v-for="companyOption in companies"
-              :key="companyOption.id"
-              type="button"
-              class="w-full rounded-2xl border p-4 text-left transition"
-              :class="companyOption.id === selectedCompanyId
-                ? 'border-brand-500 bg-brand-50'
-                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'"
-              @click="selectCompany(companyOption.id)"
-            >
-              <p class="font-semibold text-slate-900">
-                {{ companyOption.id }}
-              </p>
-              <p class="mt-1 text-xs text-slate-500">
-                {{ companyOption.parent?.id ? `Parent: ${companyOption.parent.id}` : 'No parent company' }}
-              </p>
-            </button>
-
-            <div
-              v-if="companies.length === 0"
-              class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600"
-            >
-              No companies created yet.
-            </div>
-          </div>
-
-          <div
-            v-if="activeCompany"
-            class="space-y-5"
-          >
-            <div>
-              <label class="text-sm block">Company Id</label>
+              <label class="text-sm block">Temporary Id</label>
               <div class="mt-1 flex gap-2">
                 <input
-                  v-model="activeCompany.id"
+                  v-model="activeUser.temporaryId"
                   type="text"
-                  placeholder="Company Id"
+                  placeholder="Temporary Id"
                 >
                 <button
                   class="outline shrink-0"
-                  @click="generateCompanyId"
+                  @click="generateUserId('temporary')"
                 >
                   Generate
                 </button>
@@ -234,41 +98,181 @@
             </div>
 
             <div>
-              <label class="text-sm block">Parent company</label>
-              <select
-                :value="activeCompany.parent?.id ?? ''"
-                class="mt-1"
-                :disabled="companies.length < 2"
-                @change="setParentCompany(($event.target as HTMLInputElement).value)"
-              >
-                <option value="">
-                  {{ companies.length > 1 ? 'No parent company' : 'No other companies' }}
-                </option>
-                <option
-                  v-for="companyOption in availableParentCompanies"
-                  :key="companyOption.id"
-                  :value="companyOption.id"
+              <label class="text-sm block">Authenticated Id</label>
+              <div class="mt-1 flex gap-2">
+                <input
+                  v-model="activeUser.authenticatedId"
+                  type="text"
+                  placeholder="Authenticated Id"
                 >
-                  {{ companyOption.id }}
-                </option>
-              </select>
+                <button
+                  class="outline shrink-0"
+                  @click="generateUserId('authenticated')"
+                >
+                  Generate
+                </button>
+              </div>
             </div>
+          </div>
 
-            <div class="flex items-center justify-between gap-4">
-              <p class="text-sm text-slate-500">
-                Company ids must be unique.
-              </p>
-              <button
-                class="bg-red-600 hover:bg-red-700"
-                @click="deleteCompany"
+          <div>
+            <label class="text-sm block">Email</label>
+            <input
+              v-model="activeUser.email"
+              class="mt-1"
+              type="text"
+              placeholder="Email"
+            >
+          </div>
+
+          <div>
+            <label class="text-sm block">Company</label>
+            <select
+              :value="activeUser.company?.id ?? ''"
+              class="mt-1"
+              :disabled="companies.length === 0"
+              @change="setUserCompany(($event.target as HTMLInputElement).value)"
+            >
+              <option value="">
+                {{ companies.length > 0 ? 'No company assigned' : 'No companies exist' }}
+              </option>
+              <option
+                v-for="companyOption in companies"
+                :key="companyOption.id"
+                :value="companyOption.id"
               >
-                Delete company
+                {{ companyOption.id }}
+              </option>
+            </select>
+          </div>
+
+          <KeyValues
+            v-model="classifications"
+            title="Classifications"
+          />
+          <KeyValues
+            v-model="identifiers"
+            title="Identifiers"
+          />
+          <KeyValues
+            v-model="data"
+            title="Data"
+          />
+
+          <div class="flex items-center justify-end">
+            <button
+              class="bg-red-600 hover:bg-red-700"
+              @click="deleteUser"
+            >
+              Remove user
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Companies
+          </p>
+          <h2 class="mt-2 text-3xl text-slate-900">
+            Company profiles
+          </h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Manage companies for this dataset. Company ids must remain unique.
+          </p>
+        </div>
+        <button @click="addCompany">
+          Add company
+        </button>
+      </div>
+
+      <div
+        v-if="companies.length === 0"
+        class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600"
+      >
+        No companies created yet.
+      </div>
+
+      <div
+        v-else
+        class="mt-8 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]"
+      >
+        <div class="space-y-3">
+          <button
+            v-for="companyOption in companies"
+            :key="companyOption.id"
+            type="button"
+            class="w-full rounded-2xl border p-4 text-left transition"
+            :class="companyOption.id === selectedCompanyId
+              ? 'border-brand-500 bg-brand-50'
+              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'"
+            @click="selectCompany(companyOption.id)"
+          >
+            <p class="font-semibold text-slate-900">
+              {{ companyOption.id }}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">
+              {{ companyOption.parent?.id ? `Parent: ${companyOption.parent.id}` : 'No parent company' }}
+            </p>
+          </button>
+        </div>
+
+        <div
+          v-if="activeCompany"
+          class="space-y-5 rounded-2xl border border-slate-200 bg-white p-5"
+        >
+          <div>
+            <label class="text-sm block">Company Id</label>
+            <div class="mt-1 flex gap-2">
+              <input
+                v-model="activeCompany.id"
+                type="text"
+                placeholder="Company Id"
+              >
+              <button
+                class="outline shrink-0"
+                @click="generateCompanyId"
+              >
+                Generate
               </button>
             </div>
           </div>
+
+          <div>
+            <label class="text-sm block">Parent company</label>
+            <select
+              :value="activeCompany.parent?.id ?? ''"
+              class="mt-1"
+              :disabled="availableParentCompanies.length === 0"
+              @change="setParentCompany(($event.target as HTMLInputElement).value)"
+            >
+              <option value="">
+                {{ availableParentCompanies.length > 0 ? 'No parent company' : 'No other companies' }}
+              </option>
+              <option
+                v-for="companyOption in availableParentCompanies"
+                :key="companyOption.id"
+                :value="companyOption.id"
+              >
+                {{ companyOption.id }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-end">
+            <button
+              class="bg-red-600 hover:bg-red-700"
+              @click="deleteCompany"
+            >
+              Remove company
+            </button>
+          </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
 
     <ul
       v-if="errors.length > 0"
@@ -285,31 +289,25 @@
 </template>
 
 <script lang="ts" setup>
+/* eslint-disable vue/no-mutating-props */
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
-import contextStore from '@/stores/context.store';
+import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 import { displayUser } from '@/helpers/userHelper';
-import { DataValueFactory, UserFactory, type Company, type DataValue } from '@relewise/client';
+import { DataValueFactory, UserFactory, type Company, type DataValue, type User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
+const props = defineProps<{
+    dataset: IDataset;
+}>();
+
 const tracking = contextStore.tracking;
-const dataset = computed(() => contextStore.context.value);
-const activeUser = computed(() => contextStore.user.value);
-const users = computed(() => dataset.value.users ?? []);
-const companies = computed(() => dataset.value.companies ?? []);
-const selectedUserIndex = computed(() => dataset.value.selectedUserIndex ?? 0);
+const users = computed(() => props.dataset.users ?? []);
+const companies = computed(() => props.dataset.companies ?? []);
+const selectedUserIndex = computed(() => props.dataset.selectedUserIndex ?? 0);
 const selectedCompanyId = ref(companies.value[0]?.id ?? '');
 
-const classifications = ref<KeyValue[]>([]);
-const identifiers = ref<KeyValue[]>([]);
-const data = ref<KeyValue[]>([]);
-const errors = ref<string[]>([]);
-
-let saveTimer: ReturnType<typeof setTimeout> | undefined;
-let lastSavedNotificationAt = 0;
-let isApplyingAutosave = false;
-let lastPersistedSnapshot = '';
-
+const activeUser = computed<User | undefined>(() => users.value[selectedUserIndex.value]);
 const activeCompany = computed<Company | undefined>(() => {
     if (!selectedCompanyId.value) {
         return companies.value[0];
@@ -326,12 +324,27 @@ const availableParentCompanies = computed(() => {
     return companies.value.filter((company) => company.id !== activeCompany.value?.id);
 });
 
+const classifications = ref<KeyValue[]>([]);
+const identifiers = ref<KeyValue[]>([]);
+const data = ref<KeyValue[]>([]);
+const errors = ref<string[]>([]);
+
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let lastSavedNotificationAt = 0;
+let isApplyingAutosave = false;
+let lastPersistedSnapshot = JSON.stringify({
+    trackingEnabled: tracking.value.enabled,
+    users: users.value,
+    companies: companies.value,
+    selectedUserIndex: selectedUserIndex.value,
+});
+
 watch(
     activeUser,
-    () => {
-        classifications.value = Object.keys(activeUser.value.classifications ?? {}).map((key) => ({ key, value: activeUser.value.classifications![key] ?? null }));
-        identifiers.value = Object.keys(activeUser.value.identifiers ?? {}).map((key) => ({ key, value: activeUser.value.identifiers![key] ?? null }));
-        data.value = Object.keys(activeUser.value.data ?? {}).map((key) => ({ key, value: activeUser.value.data?.[key]?.type === 'String' ? String(activeUser.value.data[key].value) : null }));
+    (nextUser) => {
+        classifications.value = Object.keys(nextUser?.classifications ?? {}).map((key) => ({ key, value: nextUser?.classifications?.[key] ?? null }));
+        identifiers.value = Object.keys(nextUser?.identifiers ?? {}).map((key) => ({ key, value: nextUser?.identifiers?.[key] ?? null }));
+        data.value = Object.keys(nextUser?.data ?? {}).map((key) => ({ key, value: nextUser?.data?.[key]?.type === 'String' ? String(nextUser.data[key].value) : null }));
     },
     { immediate: true },
 );
@@ -352,20 +365,12 @@ watch(
 );
 
 watch(
-    () => activeCompany.value?.id,
-    (nextId, previousId) => {
-        if (previousId && selectedCompanyId.value === previousId && nextId) {
-            selectedCompanyId.value = nextId;
-        }
-    },
-);
-
-watch(
-    [tracking, dataset, classifications, identifiers, data],
+    [tracking, users, companies, classifications, identifiers, data, selectedUserIndex],
     () => {
         if (isApplyingAutosave) {
             return;
         }
+
         queueSave();
     },
     { deep: true },
@@ -376,6 +381,24 @@ function queueSave() {
     clearTimeout(saveTimer);
 
     saveTimer = setTimeout(() => {
+        if (!activeUser.value) {
+            const nextSnapshot = JSON.stringify({
+                trackingEnabled: tracking.value.enabled,
+                users: users.value,
+                companies: companies.value,
+                selectedUserIndex: selectedUserIndex.value,
+            });
+
+            if (nextSnapshot === lastPersistedSnapshot) {
+                return;
+            }
+
+            contextStore.persistState();
+            lastPersistedSnapshot = nextSnapshot;
+            pushSavedNotification();
+            return;
+        }
+
         if (!validateBeforePersist()) {
             return;
         }
@@ -388,15 +411,11 @@ function queueSave() {
         }, {} as Record<string, DataValue>);
         const nextSnapshot = JSON.stringify({
             trackingEnabled: tracking.value.enabled,
-            users: users.value,
+            users: users.value.map((user, index) => index === selectedUserIndex.value
+                ? { ...user, classifications: nextClassifications, identifiers: nextIdentifiers, data: nextData }
+                : user),
             companies: companies.value,
             selectedUserIndex: selectedUserIndex.value,
-            activeUser: {
-                ...activeUser.value,
-                classifications: nextClassifications,
-                identifiers: nextIdentifiers,
-                data: nextData,
-            },
         });
 
         if (nextSnapshot === lastPersistedSnapshot) {
@@ -408,14 +427,16 @@ function queueSave() {
             activeUser.value.classifications = nextClassifications;
             activeUser.value.identifiers = nextIdentifiers;
             activeUser.value.data = nextData;
+            props.dataset.selectedUserIndex = selectedUserIndex.value;
 
             contextStore.persistState();
             lastPersistedSnapshot = nextSnapshot;
         } finally {
             isApplyingAutosave = false;
         }
+
         pushSavedNotification();
-    }, 500);
+    }, 400);
 }
 
 function validateBeforePersist() {
@@ -427,6 +448,21 @@ function validateBeforePersist() {
     }
     if (data.value.some((entry) => !entry.key || !entry.value)) {
         errors.value.push('Every data value must include both a key and value.');
+    }
+
+    const temporaryIds = users.value.map((user) => user.temporaryId?.trim()).filter(Boolean);
+    if (new Set(temporaryIds).size !== temporaryIds.length) {
+        errors.value.push('Temporary ids must be unique.');
+    }
+
+    const authenticatedIds = users.value.map((user) => user.authenticatedId?.trim()).filter(Boolean);
+    if (new Set(authenticatedIds).size !== authenticatedIds.length) {
+        errors.value.push('Authenticated ids must be unique.');
+    }
+
+    const emails = users.value.map((user) => user.email?.trim().toLowerCase()).filter(Boolean);
+    if (new Set(emails).size !== emails.length) {
+        errors.value.push('User emails must be unique.');
     }
 
     const invalidCompanies = companies.value.filter((company) => !company.id?.trim());
@@ -449,35 +485,40 @@ function keyValueArrayToRecord(items: KeyValue[]) {
     }, {} as Record<string, string | null>);
 }
 
-function selectUser(index: number) {
-    const selectedUser = users.value[index];
-    if (!selectedUser) {
-        return;
-    }
+function createUser() {
+    const user = UserFactory.anonymous();
+    user.temporaryId = crypto.randomUUID();
+    return user;
+}
 
-    contextStore.setUser(selectedUser);
+function selectUser(index: number) {
+    props.dataset.selectedUserIndex = index;
 }
 
 function addUser() {
-    const user = UserFactory.anonymous();
-    dataset.value.users = [...users.value, user];
-    contextStore.setUser(user);
+    props.dataset.users = [...users.value, createUser()];
+    props.dataset.selectedUserIndex = props.dataset.users.length - 1;
 }
 
 function deleteUser() {
-    if (users.value.length < 2) {
+    if (!activeUser.value) {
         return;
     }
 
-    const confirmed = confirm('Delete selected user?');
+    const confirmed = confirm('Remove selected user?');
     if (!confirmed) {
         return;
     }
 
-    contextStore.deleteSelectedUser();
+    props.dataset.users = users.value.filter((_, index) => index !== selectedUserIndex.value);
+    props.dataset.selectedUserIndex = Math.max(0, Math.min(selectedUserIndex.value, props.dataset.users.length - 1));
 }
 
 function generateUserId(type: 'temporary' | 'authenticated') {
+    if (!activeUser.value) {
+        return;
+    }
+
     const id = crypto.randomUUID();
     if (type === 'temporary') {
         activeUser.value.temporaryId = id;
@@ -488,13 +529,17 @@ function generateUserId(type: 'temporary' | 'authenticated') {
 }
 
 function setUserCompany(companyId: string) {
+    if (!activeUser.value) {
+        return;
+    }
+
     activeUser.value.company = companies.value.find((company) => company.id === companyId);
 }
 
 function addCompany() {
-    const newCompany = { id: `company-${crypto.randomUUID().slice(0, 8)}` };
-    dataset.value.companies = [...companies.value, newCompany];
-    selectedCompanyId.value = newCompany.id;
+    const nextCompany = { id: `company-${crypto.randomUUID().slice(0, 8)}` };
+    props.dataset.companies = [...companies.value, nextCompany];
+    selectedCompanyId.value = nextCompany.id;
 }
 
 function selectCompany(companyId: string) {
@@ -523,19 +568,23 @@ function deleteCompany() {
         return;
     }
 
-    const confirmed = confirm('Delete selected company?');
+    const confirmed = confirm('Remove selected company?');
     if (!confirmed) {
         return;
     }
 
     const deletedCompanyId = activeCompany.value.id;
-    dataset.value.companies = companies.value.filter((company) => company.id !== deletedCompanyId);
+    props.dataset.companies = companies.value.filter((company) => company.id !== deletedCompanyId);
     users.value.forEach((user) => {
         if (user.company?.id === deletedCompanyId) {
             user.company = undefined;
         }
     });
-    selectedCompanyId.value = dataset.value.companies?.[0]?.id ?? '';
+    selectedCompanyId.value = props.dataset.companies?.[0]?.id ?? '';
+}
+
+function userKey(user: User, index: number) {
+    return user.authenticatedId || user.temporaryId || user.email || `user-${index}`;
 }
 
 function pushSavedNotification() {
@@ -547,12 +596,4 @@ function pushSavedNotification() {
     lastSavedNotificationAt = now;
     notificationsStore.push({ title: 'Settings saved', text: 'Personalization settings were saved.' });
 }
-
-lastPersistedSnapshot = JSON.stringify({
-    trackingEnabled: tracking.value.enabled,
-    users: users.value,
-    companies: companies.value,
-    selectedUserIndex: selectedUserIndex.value,
-    activeUser: activeUser.value,
-});
 </script>

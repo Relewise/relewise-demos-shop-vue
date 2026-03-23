@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ChevronDownIcon, HeartIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
-import { ref, type PropType, onBeforeUnmount } from 'vue';
+import { ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { ref, type PropType, onBeforeUnmount, computed } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
@@ -16,6 +16,7 @@ defineProps({
 });
 
 const open = ref<string | null>(null);
+const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const handleMouseOver = (categoryId: string) => {
@@ -59,7 +60,7 @@ onBeforeUnmount(() => {
   >
     <div class="container mx-auto px-2 xl:p-0">
       <div
-        class="grid xl:flex gap-2 xl:gap-8 py-2"
+        class="flex items-center gap-2 py-2"
         @mouseover="handleMouseLeave"
       >
         <div class="flex items-center">
@@ -76,12 +77,34 @@ onBeforeUnmount(() => {
             >
           </RouterLink>
         </div>
-        <div class="ml-0 flex gap-2 flex-grow">
-          <div class="xl:items-center flex-grow">
+        <div class="ml-0 flex min-w-0 flex-1 items-center gap-2">
+          <div
+            v-if="hasActiveDataset"
+            class="min-w-0 flex-1 xl:items-center"
+          >
             <SearchOverlay />
           </div>
-          <div class="flex items-center gap-6">
-            <Popover placement="bottom-end">
+          <div
+            v-else
+            class="relative inline-flex flex-1 overflow-hidden rounded-full"
+          >
+            <span class="flex items-center bg-slate-100 rounded-none px-3">
+              <MagnifyingGlassIcon class="h-6 w-6 text-slate-400" />
+            </span>
+            <input
+              type="text"
+              placeholder="Search..."
+              disabled
+              class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 !text-slate-400 cursor-not-allowed focus:!border-slate-100 focus:!ring-0"
+            >
+          </div>
+        </div>
+        <div class="ml-auto flex items-center gap-6">
+          <div class="shrink-0">
+            <Popover
+              v-if="hasActiveDataset"
+              placement="bottom-end"
+            >
               <div
                 class="hidden cursor-pointer items-center gap-4 rounded-lg bg-slate-100 px-4 py-3 text-slate-800 hover:bg-slate-200 xl:flex"
               >
@@ -130,33 +153,50 @@ onBeforeUnmount(() => {
                 </div>
               </template>
             </Popover>
-            <RouterLink
-              to="/favorites"
-              class="relative flex flex-col items-center text-slate-600"
+            <div
+              v-else
+              class="hidden xl:flex items-center rounded-lg bg-slate-100 px-4 py-3 text-slate-500 opacity-75 cursor-not-allowed"
             >
-              <HeartIcon class="h-8 w-8" />
-              <span class="text-[9px] mt-1 font-bold">FAVORITES</span>
-            </RouterLink>
-            <RouterLink
-              to="/cart"
-              class="relative flex flex-col items-center text-slate-600"
-            >
-              <ShoppingBagIcon class="h-8 w-8" />
-              <span class="text-[9px] mt-1 font-bold">CART</span>
-              <span
-                v-if="lineItemsCount > 0"
-                class="absolute top-0 right-0 leading-none inline-flex items-center justify-center h-5 w-5 pb-0.5 bg-brand-700 rounded-full text-white font-bold text-[11px]"
-              >
-                {{ lineItemsCount }}
-              </span>
-            </RouterLink>
+              <div class="min-w-0">
+                <div class="font-medium text-sm">
+                  No dataset configured
+                </div>
+                <div class="mt-1 text-xs text-slate-500">
+                  Configure in App Settings
+                </div>
+              </div>
+            </div>
           </div>
+          <component
+            :is="hasActiveDataset ? 'RouterLink' : 'div'"
+            :to="hasActiveDataset ? '/favorites' : undefined"
+            class="relative flex flex-col items-center"
+            :class="hasActiveDataset ? 'text-slate-600' : 'text-slate-300 cursor-not-allowed'"
+          >
+            <HeartIcon class="h-8 w-8" />
+            <span class="text-[9px] mt-1 font-bold">FAVORITES</span>
+          </component>
+          <component
+            :is="hasActiveDataset ? 'RouterLink' : 'div'"
+            :to="hasActiveDataset ? '/cart' : undefined"
+            class="relative flex flex-col items-center"
+            :class="hasActiveDataset ? 'text-slate-600' : 'text-slate-300 cursor-not-allowed'"
+          >
+            <ShoppingBagIcon class="h-8 w-8" />
+            <span class="text-[9px] mt-1 font-bold">CART</span>
+            <span
+              v-if="hasActiveDataset && lineItemsCount > 0"
+              class="absolute top-0 right-0 leading-none inline-flex items-center justify-center h-5 w-5 pb-0.5 bg-brand-700 rounded-full text-white font-bold text-[11px]"
+            >
+              {{ lineItemsCount }}
+            </span>
+          </component>
         </div>
       </div>
       <nav class="hidden xl:block">
         <ul class="flex w-full gap-2">
           <ul
-            v-if="hasChildCategories || contextStore.context.value.shoppertainmentEnabled"
+            v-if="hasActiveDataset && (hasChildCategories || contextStore.context.value.shoppertainmentEnabled)"
             class="flex overflow-y-auto scrollable-element"
           >
             <li
@@ -230,7 +270,7 @@ onBeforeUnmount(() => {
               </RouterLink>
             </li>
           </ul>
-          <ul v-else-if="mainCategories.length > 0">
+          <ul v-else-if="hasActiveDataset && mainCategories.length > 0">
             <div
               class="font-semibold uppercase py-3 leading-none text-lg text-slate-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
               @mouseover="handleMouseOver('1')"
@@ -271,6 +311,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </ul>
+          <li v-else />
           <li class="flex-grow" />
         </ul>
       </nav>

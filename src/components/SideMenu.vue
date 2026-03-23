@@ -73,7 +73,7 @@ const { mainCategories } = toRefs(props);
           </div>
         </li>
         <li
-          v-if="contextStore.context.value.shoppertainmentEnabled"
+          v-if="contextStore.hasActiveDataset.value && contextStore.context.value.shoppertainmentEnabled"
           class="inline-flex relative pr-5"
         >
           <RouterLink to="/feed">
