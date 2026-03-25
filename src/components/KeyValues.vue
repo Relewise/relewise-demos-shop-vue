@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-6">
+  <div>
     <label class="block text-sm">{{ title }}</label>
     <div class="mt-3 flex flex-col gap-3">
       <div
@@ -24,7 +24,10 @@
           :disabled="!canRemoveRow(index)"
           @click="remove(index)"
         >
-          <TrashIcon class="h-4 w-4" />
+          <TrashIcon
+            class="shrink-0"
+            style="width: 1.25rem; height: 1.25rem;"
+          />
         </button>
       </div>
     </div>

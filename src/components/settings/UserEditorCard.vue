@@ -68,6 +68,7 @@
     <div
       v-if="isExpanded"
       class="px-6 py-6"
+      @click.stop
     >
       <div class="grid gap-5 xl:grid-cols-3">
         <div>
@@ -82,7 +83,7 @@
             <button
               type="button"
               class="shrink-0 !bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
-              @click="generateUserId('authenticated')"
+              @click.stop="generateUserId('authenticated')"
             >
               Generate
             </button>
@@ -101,7 +102,7 @@
             <button
               type="button"
               class="shrink-0 !bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
-              @click="generateUserId('temporary')"
+              @click.stop="generateUserId('temporary')"
             >
               Generate
             </button>
@@ -119,40 +120,46 @@
         </div>
       </div>
 
-      <KeyValues
-        v-model="identifiers"
-        title="Identifiers"
-      />
+      <div class="mt-6 grid gap-6 xl:grid-cols-2">
+        <KeyValues
+          v-model="identifiers"
+          title="Identifiers"
+        />
 
-      <div class="mt-6">
-        <label class="text-sm block">Company</label>
-        <select
-          :value="user.company?.id ?? ''"
-          class="mt-1"
-          :disabled="companies.length === 0"
-          @change="setUserCompany(($event.target as HTMLInputElement).value)"
-        >
-          <option value="">
-            {{ companies.length > 0 ? 'No company assigned' : 'No companies exist' }}
-          </option>
-          <option
-            v-for="companyOption in companies"
-            :key="companyOption.id"
-            :value="companyOption.id"
+        <div>
+          <label class="block text-sm">Company</label>
+          <select
+            :value="user.company?.id ?? ''"
+            class="mt-3"
+            :disabled="companies.length === 0"
+            @change="setUserCompany(($event.target as HTMLInputElement).value)"
           >
-            {{ companyOption.id }}
-          </option>
-        </select>
+            <option value="">
+              {{ companies.length > 0 ? 'No company assigned' : 'No companies exist' }}
+            </option>
+            <option
+              v-for="companyOption in companies"
+              :key="companyOption.id"
+              :value="companyOption.id"
+            >
+              {{ companyOption.id }}
+            </option>
+          </select>
+        </div>
       </div>
 
-      <KeyValues
-        v-model="classifications"
-        title="Classifications"
-      />
-      <KeyValues
-        v-model="data"
-        title="Data"
-      />
+      <div class="mt-6 border-t border-slate-200 pt-6" />
+
+      <div class="grid gap-6 xl:grid-cols-2">
+        <KeyValues
+          v-model="classifications"
+          title="Classifications"
+        />
+        <KeyValues
+          v-model="data"
+          title="Data"
+        />
+      </div>
     </div>
   </article>
 </template>
