@@ -11,11 +11,13 @@
           v-model="row.key"
           type="text"
           placeholder="Key"
+          @input="handleRowInput"
         >
         <input
           v-model="row.value"
           type="text"
           placeholder="Value"
+          @input="handleRowInput"
         >
         <button
           type="button"
@@ -53,7 +55,7 @@ const rows = ref<KeyValue[]>([]);
 watch(
     () => props.modelValue,
     (nextValue) => {
-        const nextRows = ensureTrailingEmpty(nextValue);
+        const nextRows = toEditableRows(nextValue);
         if (serializeRows(nextRows) !== serializeRows(rows.value)) {
             rows.value = nextRows;
         }
@@ -61,37 +63,32 @@ watch(
     { immediate: true, deep: true },
 );
 
-watch(
-    rows,
-    (nextRows) => {
-        const normalizedRows = ensureTrailingEmpty(nextRows);
-        if (serializeRows(normalizedRows) !== serializeRows(nextRows)) {
-            rows.value = normalizedRows;
-            return;
+function reconcileRows() {
+    for (let index = rows.value.length - 2; index >= 0; index -= 1) {
+        if (!isPopulated(rows.value[index])) {
+            rows.value.splice(index, 1);
         }
+    }
 
-        const emittedValue = toModelValue(normalizedRows);
-        if (serializeRows(emittedValue) !== serializeRows(props.modelValue)) {
-            emit('update:modelValue', emittedValue);
-        }
-    },
-    { deep: true },
-);
+    if (rows.value.length === 0) {
+        rows.value.push(createEmptyRow());
+        return;
+    }
 
-function remove(index: number) {
-    rows.value.splice(index, 1);
+    const lastRow = rows.value[rows.value.length - 1];
+    if (isPopulated(lastRow)) {
+        rows.value.push(createEmptyRow());
+    }
 }
 
-function canRemoveRow(index: number) {
-    const populatedRows = rows.value.filter((row) => isPopulated(row));
-    return isPopulated(rows.value[index]) && populatedRows.length > 0;
+function createEmptyRow(): KeyValue {
+    return {
+        key: '',
+        value: '',
+    };
 }
 
-function isPopulated(row: KeyValue | undefined) {
-    return Boolean(row?.key?.trim() || row?.value?.trim());
-}
-
-function ensureTrailingEmpty(items: KeyValue[]) {
+function toEditableRows(items: KeyValue[]) {
     const populatedRows = items
         .filter((item) => isPopulated(item))
         .map((item) => ({
@@ -99,7 +96,24 @@ function ensureTrailingEmpty(items: KeyValue[]) {
             value: item.value ?? '',
         }));
 
-    return [...populatedRows, { key: '', value: '' }];
+    return [...populatedRows, createEmptyRow()];
+}
+
+function remove(index: number) {
+    rows.value.splice(index, 1);
+    if (rows.value.length === 0) {
+        rows.value.push(createEmptyRow());
+    }
+
+    syncRows();
+}
+
+function canRemoveRow(index: number) {
+    return isPopulated(rows.value[index]);
+}
+
+function isPopulated(row: KeyValue | undefined) {
+    return Boolean(row?.key?.trim() || row?.value?.trim());
 }
 
 function toModelValue(items: KeyValue[]) {
@@ -109,6 +123,19 @@ function toModelValue(items: KeyValue[]) {
             key: item.key,
             value: item.value ?? '',
         }));
+}
+
+function handleRowInput() {
+    syncRows();
+}
+
+function syncRows() {
+    reconcileRows();
+
+    const emittedValue = toModelValue(rows.value);
+    if (serializeRows(emittedValue) !== serializeRows(props.modelValue)) {
+        emit('update:modelValue', emittedValue);
+    }
 }
 
 function serializeRows(items: KeyValue[]) {

@@ -91,6 +91,16 @@
         </div>
 
         <div>
+          <label class="text-sm block">Email</label>
+          <input
+            v-model="email"
+            class="mt-1"
+            type="text"
+            placeholder="Email"
+          >
+        </div>
+
+        <div>
           <label class="text-sm block">Temporary ID</label>
           <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-100 bg-slate-100 px-4 py-2.5 shadow-sm focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-200">
             <input
@@ -107,16 +117,6 @@
               Generate
             </button>
           </div>
-        </div>
-
-        <div>
-          <label class="text-sm block">Email</label>
-          <input
-            v-model="email"
-            class="mt-1"
-            type="text"
-            placeholder="Email"
-          >
         </div>
       </div>
 
