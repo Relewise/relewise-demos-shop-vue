@@ -62,7 +62,17 @@
               <input
                 v-model="editableDataset.displayName"
                 type="text"
+                class="lp-ignore-field"
+                name="rw-display-name"
                 placeholder="Name"
+                autocomplete="new-password"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                data-form-type="other"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-bwignore="true"
               >
             </div>
 
@@ -71,19 +81,45 @@
               <input
                 v-model="editableDataset.datasetId"
                 type="text"
+                class="lp-ignore-field disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                name="dataset-id"
                 placeholder="Dataset ID"
                 disabled
-                class="disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                data-form-type="other"
+                data-lpignore="true"
               >
             </div>
 
             <div>
               <label class="text-sm block">API Key</label>
-              <input
-                v-model="editableDataset.apiKey"
-                type="text"
-                placeholder="API Key"
-              >
+              <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-100 bg-slate-100 px-4 py-2.5 shadow-sm focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-200">
+                <input
+                  v-model="editableDataset.apiKey"
+                  type="text"
+                  class="lp-ignore-field !mt-0 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus:!ring-0"
+                  name="dataset-api-key"
+                  placeholder="API Key"
+                  :class="isApiKeyVisible ? '' : 'masked-secret'"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  autocorrect="off"
+                  spellcheck="false"
+                  data-form-type="other"
+                  data-lpignore="true"
+                >
+                <button
+                  type="button"
+                  class="shrink-0 !bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
+                  :aria-label="isApiKeyVisible ? 'Hide API key' : 'Show API key'"
+                  @click="isApiKeyVisible = !isApiKeyVisible"
+                >
+                  {{ isApiKeyVisible ? 'Hide' : 'Show' }}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -259,6 +295,7 @@ const openSections = ref({
     personalization: true,
 });
 const lastSavedSnapshot = ref('');
+const isApiKeyVisible = ref(false);
 
 const featureFields: Array<{ key: DatasetBooleanKey; label: string; description: string }> = [
     {
@@ -334,6 +371,7 @@ watch(
         editableDataset.value = cloneDataset(nextDataset);
         trackingEnabled.value = contextStore.tracking.value.enabled;
         errors.value = [];
+        isApiKeyVisible.value = false;
         lastSavedSnapshot.value = createSnapshot(nextDataset, trackingEnabled.value);
     },
     { immediate: true, deep: true },
@@ -503,3 +541,10 @@ function hasInvalidDataRecord(record?: Record<string, DataValue>) {
     return Object.entries(record).some(([key, value]) => !key || !value?.value);
 }
 </script>
+
+<style scoped>
+.masked-secret {
+    -webkit-text-security: disc;
+    text-security: disc;
+}
+</style>

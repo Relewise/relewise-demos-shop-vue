@@ -26,6 +26,23 @@ input[type="text"] {
     }
 }
 
+div[data-lastpass-icon-root],
+div[data-lastpass-root],
+div[id^="__lpform_"],
+iframe[id^="__lpform_"],
+iframe[name^="__lpform_"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+}
+
 button {
     @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded shadow-sm;
 
