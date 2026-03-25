@@ -95,11 +95,6 @@ async function recommend() {
 </template>
 
 <style lang="scss">
-.cover {
-    background-image: url('/17580.jpg');
-    height: 500px;
-}
-
 .bg-gradient {
     background: rgb(55, 100, 228);
     background: radial-gradient(circle, rgb(55, 100, 228) 0%, rgb(15, 41, 115) 81%);

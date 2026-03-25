@@ -46,10 +46,15 @@ export interface IAppErrorContext {
     apiKeyError: boolean;
 }
 
+interface IActiveContextState {
+    revision: number;
+}
+
 class AppContext {
     private readonly localStorageName = 'shopContext';
     private state = reactive<IAppContext>({ datasets: [], selectedDatasetIndex: 0, tracking: { enabled: false } });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
+    private activeContextState = reactive<IActiveContextState>({ revision: 0 });
 
     public static numberOfProductsToRecommend = 8;
 
@@ -110,6 +115,10 @@ class AppContext {
 
     public get datasetIdError() {
         return computed(() => this.errorState.datasetIdError);
+    }
+
+    public get activeContextRevision() {
+        return computed(() => this.activeContextState.revision);
     }
 
     public get user() {
@@ -235,11 +244,7 @@ class AppContext {
 
     public setDataset(datasetId: string) {
         this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
-        basketService.clear();
-        this.persistState();
-        if (this.hasActiveDataset.value) {
-            this.initializeWebComponents();
-        }
+        this.refreshActiveContext({ clearBasket: true });
     }
 
     public deleteSelected() {
@@ -247,10 +252,7 @@ class AppContext {
 
         this.state.selectedDatasetIndex = 0;
 
-        if (this.hasActiveDataset.value) {
-            this.initializeWebComponents();
-        }
-        this.persistState();
+        this.refreshActiveContext();
     }
 
     public deleteDatasetById(datasetId: string) {
@@ -263,7 +265,7 @@ class AppContext {
 
         if (this.state.datasets.length === 0) {
             this.state.selectedDatasetIndex = 0;
-            this.persistState();
+            this.refreshActiveContext();
             return;
         }
 
@@ -274,8 +276,7 @@ class AppContext {
             this.state.selectedDatasetIndex = 0;
         }
 
-        this.initializeWebComponents();
-        this.persistState();
+        this.refreshActiveContext();
     }
 
     public setUser(user: User) {
@@ -297,6 +298,20 @@ class AppContext {
 
         this.initializeWebComponents();
         this.persistState();
+    }
+
+    public refreshActiveContext({ clearBasket = false }: { clearBasket?: boolean } = {}) {
+        if (clearBasket) {
+            basketService.clear();
+        }
+
+        this.persistState();
+
+        if (this.hasActiveDataset.value) {
+            this.initializeWebComponents();
+        }
+
+        this.activeContextState.revision += 1;
     }
 
     private ensureUsers() {

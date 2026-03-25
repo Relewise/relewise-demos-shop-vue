@@ -10,7 +10,6 @@ const datasets = contextStore.datasets;
 
 function setDataset(datasetId: string) {
     contextStore.setDataset(datasetId);
-    window.location.reload();
 }
 
 function setUser(userToSet: User) {
@@ -30,9 +29,8 @@ function changeCurrency(currency: string) {
     context.value.currencyCode = currency;
 }
 
-function persistStateAndReload() {
-    contextStore.persistState();
-    window.location.reload();
+function applyContextChanges() {
+    contextStore.refreshActiveContext();
 }
 </script>
 
@@ -160,7 +158,7 @@ function persistStateAndReload() {
         </RouterLink>
         <button
           class="ml-auto"
-          @click="persistStateAndReload"
+          @click="applyContextChanges"
         >
           Apply
         </button>

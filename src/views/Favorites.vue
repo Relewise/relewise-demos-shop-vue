@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto">
+  <div class="container mx-auto p-2 xl:p-0">
+    <Breadcrumb :items="[{ name: 'Favorites', route: { name: 'favorites' } }]" />
     <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
       Your Favorites
     </h1>
@@ -52,6 +53,7 @@
 
 
 <script setup lang="ts">
+import Breadcrumb from '@/components/Breadcrumb.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, userIsAnonymous, type ProductSearchResponse } from '@relewise/client';

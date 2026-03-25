@@ -1,30 +1,55 @@
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <section class="overflow-hidden rounded-[2rem] bg-gradient p-[1px] shadow-lg">
-      <div class="rounded-[calc(2rem-1px)] bg-slate-950/85 px-6 py-8 text-white backdrop-blur md:px-8">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-brand-100">
-          Demo Shop
-        </p>
-        <h1 class="mt-3 text-4xl md:text-5xl">
-          App settings
-        </h1>
-        <p class="mt-3 max-w-2xl text-sm text-slate-300 md:text-base">
-          Manage datasets, configure each dataset, and maintain personalization data in one place.
-        </p>
-      </div>
-    </section>
+  <div class="container mx-auto p-2 xl:p-0">
+    <Breadcrumb :items="breadcrumbItems" />
 
-    <div class="mt-8">
-      <SettingsDatasetsWorkspace />
+    <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
+      {{ selectedDataset ? selectedDataset.displayName || selectedDataset.datasetId : 'App Settings' }}
+    </h1>
+
+    <div class="mb-8">
+      <div v-if="selectedDataset">
+        <SettingsDatasetConfiguration :dataset="selectedDataset" />
+      </div>
+      <div v-else-if="datasetIdParam">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-slate-600">
+            The requested dataset could not be found.
+          </p>
+        </div>
+      </div>
+      <div v-else>
+        <SettingsDatasetsWorkspace />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import router from '@/router';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import Breadcrumb from '@/components/Breadcrumb.vue';
+import { decodeSharePayload } from '@/helpers/shareEncoding';
 import SettingsDatasetsWorkspace from '@/components/settings/SettingsDatasetsWorkspace.vue';
+import SettingsDatasetConfiguration from '@/components/settings/SettingsDatasetConfiguration.vue';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
+
+const route = useRoute();
+const datasetIdParam = computed(() => typeof route.params.datasetId === 'string' ? route.params.datasetId : '');
+const selectedDataset = computed(() => datasetIdParam.value
+    ? contextStore.datasets.value.find((dataset) => dataset.datasetId === datasetIdParam.value)
+    : undefined);
+const breadcrumbItems = computed(() => {
+    if (!selectedDataset.value) {
+        return [{ name: 'App Settings', route: { name: 'settings' } }];
+    }
+
+    return [
+        { name: 'App Settings', route: { name: 'settings' } },
+        { name: selectedDataset.value.displayName || selectedDataset.value.datasetId, route: { name: 'settings-dataset', params: { datasetId: selectedDataset.value.datasetId } } },
+    ];
+});
 
 void init();
 
@@ -36,7 +61,7 @@ async function init() {
 
     let settings: IDataset;
     try {
-        settings = JSON.parse(atob(params.get('share')!)) as IDataset;
+        settings = JSON.parse(decodeSharePayload(params.get('share')!)) as IDataset;
     } catch {
         notificationsStore.push({ title: 'Invalid share link', text: 'The shared dataset could not be imported.' });
         return;

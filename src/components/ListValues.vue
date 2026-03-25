@@ -15,7 +15,7 @@
           <span class="truncate text-sm font-medium text-slate-900">{{ item }}</span>
           <span
             v-if="singleItem === item"
-            class="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-700"
+            class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-700"
           >
             Active
           </span>

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
+import contextStore from '@/stores/context.store';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
         {
             path: '/app-settings',
             name: 'settings',
+            component: () => import('../views/Settings.vue'),
+        },
+        {
+            path: '/app-settings/:datasetId',
+            name: 'settings-dataset',
             component: () => import('../views/Settings.vue'),
         },
         {
@@ -82,6 +88,15 @@ const router = createRouter({
             component: () => import('../views/Feed.vue'),
         },
     ],
+});
+
+router.beforeEach((to) => {
+    if (!contextStore.hasActiveDataset.value && to.path !== '/app-settings') {
+        return {
+            path: '/app-settings',
+            query: to.query,
+        };
+    }
 });
 
 export default router;

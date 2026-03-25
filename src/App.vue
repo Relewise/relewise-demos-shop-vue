@@ -3,7 +3,7 @@ import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import basketService from './services/basket.service';
 import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
@@ -20,8 +20,15 @@ const router = useRouter();
 const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
 const breakpoint = computed(() => breakpointService.active.value);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
+const activeContextRevision = computed(() => contextStore.activeContextRevision.value);
+const routeViewKey = computed(() => activeContextRevision.value.toString());
+let categoryLoadToken = 0;
 
 init();
+
+watch(activeContextRevision, async() => {
+    await refreshActiveContext();
+}, { immediate: true });
 
 async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -38,12 +45,6 @@ async function init() {
         return;
     }
 
-    if (contextStore.isConfigured) {
-        const searcher = contextStore.getSearcher();
-
-        getCategories(searcher);
-    }
-
     if (params.has('datasetId')) {
         const datasetId = params.get('datasetId');
         
@@ -52,8 +53,7 @@ async function init() {
         history.replaceState(null, '', url);
 
         if (datasetId && contextStore.datasets.value.some(x => x.datasetId === datasetId)) {
-            contextStore.setDataset(datasetId); 
-            window.location.reload();
+            contextStore.setDataset(datasetId);
         }
         else {
             notificationsStore.push({ title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
@@ -62,13 +62,37 @@ async function init() {
     }
 }
 
-async function getCategories(searcher: Searcher) {
+async function refreshActiveContext() {
+    categoryLoadToken += 1;
+    const loadToken = categoryLoadToken;
+
+    if (!contextStore.hasActiveDataset.value || !contextStore.isConfigured.value) {
+        clearNavigation();
+        return;
+    }
+
+    try {
+        await getCategories(contextStore.getSearcher(), loadToken);
+    } catch {
+        if (loadToken !== categoryLoadToken) {
+            return;
+        }
+
+        clearNavigation();
+    }
+}
+
+async function getCategories(searcher: Searcher, loadToken: number) {
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .pagination(p => p.setPageSize(0))
         .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true }))
         .build();
 
     const response = await searcher.searchProducts(request);
+
+    if (loadToken !== categoryLoadToken) {
+        return;
+    }
 
     const categoryFacet = response?.facets?.items![0] as CategoryHierarchyFacetResult;
     const navigation: NavigationItem[] = categoryFacet.nodes
@@ -79,6 +103,12 @@ async function getCategories(searcher: Searcher) {
     hasChildCategories.value = navigation.some(x => x.children.length > 0);
     mainCategories.value = navigation;
     footer.value = navigation.slice(0, 4);
+}
+
+function clearNavigation() {
+    hasChildCategories.value = false;
+    mainCategories.value = [];
+    footer.value = [];
 }
 </script>
 
@@ -94,7 +124,7 @@ async function getCategories(searcher: Searcher) {
     id="main-container"
     class="w-full mx-auto pb-10 flex-grow relative"
   >
-    <RouterView />
+    <RouterView :key="routeViewKey" />
   </div>
   <Footer
     v-if="hasActiveDataset"
@@ -116,13 +146,11 @@ async function getCategories(searcher: Searcher) {
   opacity: 0;
 }
 
-$headerHeight: 106px;
-
 .navigationmodal {
     @apply bg-white overflow-hidden border-t border-solid border-slate-100;
     position: fixed;
     z-index: 1000;
-    top: $headerHeight; // height of header
+    top: var(--header-height, 106px);
     left: 0;
     width: 100%;
 
@@ -132,7 +160,7 @@ $headerHeight: 106px;
         z-index: 1;
         left: 0;
         width: 100%;
-        height: calc(100% - $headerHeight);
+        height: calc(100% - var(--header-height, 106px));
     }
 
     .modalcontent {

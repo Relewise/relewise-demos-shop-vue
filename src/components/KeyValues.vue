@@ -17,10 +17,12 @@
         placeholder="Value"
       >
       <button
-        class="bg-gray-500 text-white"
+        type="button"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+        title="Remove row"
         @click="remove(index)"
       >
-        Remove
+        <TrashIcon class="h-4 w-4" />
       </button>
     </div>
     <div>
@@ -35,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { TrashIcon } from '@heroicons/vue/24/outline';
 import { toRefs } from 'vue';
 import { computed, type PropType } from 'vue';
 

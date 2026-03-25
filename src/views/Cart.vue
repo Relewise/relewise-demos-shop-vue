@@ -1,10 +1,11 @@
 <template>
   <div
     id="cart-page"
-    class="container mx-auto mt-6 p-2 xl:p-0 min-h-[60vh]"
+    class="container mx-auto p-2 xl:p-0 min-h-[60vh]"
   >
-    <h1 class="mb-8 text-4xl font-semibold">
-      <span class="underline--yellow inline-block">Cart</span><span class="text-brand1">.</span>
+    <Breadcrumb :items="[{ name: 'Cart', route: { name: 'cart' } }]" />
+    <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
+      Cart
     </h1>
     <div
       v-if="isEmpty"
@@ -148,6 +149,7 @@
 </template>
 
 <script lang="ts" setup>
+import Breadcrumb from '@/components/Breadcrumb.vue';
 import ProductTile from '../components/ProductTile.vue';
 import { ref } from 'vue';
 import { PopularProductsBuilder, type ProductRecommendationResponse, PurchasedWithMultipleProductsBuilder } from '@relewise/client';

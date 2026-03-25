@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
-import { ref, type PropType, onBeforeUnmount, computed } from 'vue';
+import { ref, type PropType, onBeforeUnmount, computed, onMounted } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
@@ -17,7 +17,10 @@ defineProps({
 
 const open = ref<string | null>(null);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
+const headerElement = ref<HTMLElement | null>(null);
+const headerHeight = ref(106);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+let headerResizeObserver: ResizeObserver | null = null;
 
 const handleMouseOver = (categoryId: string) => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
@@ -50,12 +53,31 @@ const handleMouseLeave = () => {
 
 onBeforeUnmount(() => {
     if (hoverTimeout) clearTimeout(hoverTimeout);
+    headerResizeObserver?.disconnect();
+});
+
+onMounted(() => {
+    if (!headerElement.value) {
+        return;
+    }
+
+    const updateHeaderHeight = () => {
+        headerHeight.value = Math.ceil(headerElement.value?.getBoundingClientRect().height ?? 106);
+    };
+
+    updateHeaderHeight();
+    headerResizeObserver = new ResizeObserver(() => {
+        updateHeaderHeight();
+    });
+    headerResizeObserver.observe(headerElement.value);
 });
 </script>
 
 <template>
   <header
+    ref="headerElement"
     class="border-b border-solid border-slate-100 bg-white"
+    :style="{ '--header-height': `${headerHeight}px` }"
     @mouseleave="handleMouseLeave"
   >
     <div class="container mx-auto px-2 xl:p-0">
