@@ -400,6 +400,37 @@ class AppContext {
         this.persistState();
     }
 
+    public applySessionContext({
+        datasetId,
+        language,
+        currencyCode,
+        selectedUserIndex,
+        selectedCompanyId,
+    }: {
+        datasetId: string;
+        language: string;
+        currencyCode: string;
+        selectedUserIndex?: number;
+        selectedCompanyId?: string;
+    }) {
+        const currentDatasetId = this.hasActiveDataset.value ? this.context.value.datasetId : '';
+        const currentUserIndex = this.selectedUserIndex.value;
+        const shouldClearBasket = datasetId !== currentDatasetId || selectedUserIndex !== currentUserIndex;
+        const nextDatasetIndex = this.state.datasets.findIndex((dataset) => dataset.datasetId === datasetId);
+
+        if (nextDatasetIndex < 0) {
+            return;
+        }
+
+        this.state.selectedDatasetIndex = nextDatasetIndex;
+        this.state.selectedLanguage = language || undefined;
+        this.state.selectedCurrencyCode = currencyCode || undefined;
+        this.state.selectedUserIndex = selectedUserIndex;
+        this.state.selectedCompanyId = selectedCompanyId || undefined;
+
+        this.refreshActiveContext({ clearBasket: shouldClearBasket });
+    }
+
     public setLanguage(language: string) {
         this.state.selectedLanguage = language || undefined;
     }
@@ -506,10 +537,23 @@ class AppContext {
             return;
         }
 
-        this.state.selectedLanguage = this.context.value.allLanguages?.[0] ?? undefined;
-        this.state.selectedCurrencyCode = this.context.value.allCurrencies?.[0] ?? undefined;
-        this.state.selectedUserIndex = undefined;
-        this.state.selectedCompanyId = undefined;
+        const availableLanguages = this.context.value.allLanguages ?? [];
+        const availableCurrencies = this.context.value.allCurrencies ?? [];
+        const availableUsers = this.context.value.users ?? [];
+        const availableCompanies = this.context.value.companies ?? [];
+
+        if (availableLanguages.length === 0) {
+            console.error(`Dataset "${this.context.value.datasetId}" has no configured languages.`);
+        }
+
+        if (availableCurrencies.length === 0) {
+            console.error(`Dataset "${this.context.value.datasetId}" has no configured currencies.`);
+        }
+
+        this.state.selectedLanguage = availableLanguages[0] ?? undefined;
+        this.state.selectedCurrencyCode = availableCurrencies[0] ?? undefined;
+        this.state.selectedUserIndex = availableUsers.length > 0 ? 0 : undefined;
+        this.state.selectedCompanyId = availableCompanies[0]?.id || undefined;
     }
 
     private clearSessionSelections() {
@@ -527,11 +571,17 @@ class AppContext {
 
         const availableLanguages = this.context.value.allLanguages ?? [];
         if (!this.state.selectedLanguage || !availableLanguages.includes(this.state.selectedLanguage)) {
+            if (availableLanguages.length === 0) {
+                console.error(`Dataset "${this.context.value.datasetId}" has no configured languages.`);
+            }
             this.state.selectedLanguage = availableLanguages[0] ?? undefined;
         }
 
         const availableCurrencies = this.context.value.allCurrencies ?? [];
         if (!this.state.selectedCurrencyCode || !availableCurrencies.includes(this.state.selectedCurrencyCode)) {
+            if (availableCurrencies.length === 0) {
+                console.error(`Dataset "${this.context.value.datasetId}" has no configured currencies.`);
+            }
             this.state.selectedCurrencyCode = availableCurrencies[0] ?? undefined;
         }
 

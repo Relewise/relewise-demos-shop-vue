@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { BuildingOffice2Icon, ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { ref, type PropType, onBeforeUnmount, computed, onMounted } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
@@ -8,6 +8,7 @@ import Popover from '@/components/Popover.vue';
 import ContextSwitcher from '@/components/ContextSwitcher.vue';
 import contextStore from '@/stores/context.store';
 import { displayUser } from '@/helpers/userHelper';
+import type { Company, User } from '@relewise/client';
 
 defineProps({
     lineItemsCount: { type: Number, required: true },
@@ -27,6 +28,20 @@ const activeUserLabel = computed(() => {
 
     return displayUser(users[selectedUserIndex]) || '(None)';
 });
+const activeUser = computed(() => {
+    const users = contextStore.context.value?.users ?? [];
+    const selectedUserIndex = contextStore.selectedUserIndex.value;
+
+    if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
+        return undefined;
+    }
+
+    return users[selectedUserIndex];
+});
+const activeUserDetails = computed(() => formatUserDetails(activeUser.value));
+const hasConfiguredCompanies = computed(() => (contextStore.context.value?.companies?.length ?? 0) > 0);
+const activeCompanyLabel = computed(() => contextStore.selectedCompany.value?.id || '(None)');
+const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.selectedCompany.value));
 const headerElement = ref<HTMLElement | null>(null);
 const headerHeight = ref(106);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -81,6 +96,66 @@ onMounted(() => {
     });
     headerResizeObserver.observe(headerElement.value);
 });
+
+function formatUserDetails(user: User | undefined) {
+    if (!user) {
+        return 'No user selected.';
+    }
+
+    const details: string[] = [];
+
+    if (user.authenticatedId) {
+        details.push(`Authenticated ID: ${user.authenticatedId}`);
+    }
+
+    if (user.email) {
+        details.push(`Email: ${user.email}`);
+    }
+
+    if (user.temporaryId) {
+        details.push(`Temporary ID: ${user.temporaryId}`);
+    }
+
+    for (const [key, value] of Object.entries(user.identifiers ?? {})) {
+        if (key && value) {
+            details.push(`${key}: ${value}`);
+        }
+    }
+
+    for (const [key, value] of Object.entries(user.classifications ?? {})) {
+        if (key && value) {
+            details.push(`Classification ${key}: ${value}`);
+        }
+    }
+
+    for (const [key, value] of Object.entries(user.data ?? {})) {
+        if (key && value?.value) {
+            details.push(`Data ${key}: ${String(value.value)}`);
+        }
+    }
+
+    return details.length > 0 ? details.join('\n') : 'Anonymous user';
+}
+
+function formatCompanyDetails(company: Company | undefined) {
+    if (!company) {
+        return 'No company selected.';
+    }
+
+    const details: string[] = [`Company ID: ${company.id}`];
+
+    if (company.parent?.id) {
+        details.push(`Parent: ${company.parent.id}`);
+    }
+
+    for (const [key, value] of Object.entries(company.data ?? {})) {
+        if (key && value?.value) {
+            details.push(`Data ${key}: ${String(value.value)}`);
+        }
+    }
+
+    return details.join('\n');
+}
 </script>
 
 <template>
@@ -163,7 +238,23 @@ onMounted(() => {
                     </span>
                   </div>
                   <div class="mt-1 text-xs">
-                    User: {{ activeUserLabel }}
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600"
+                        :title="activeUserDetails"
+                      >
+                        <UserCircleIcon class="h-3.5 w-3.5 shrink-0" />
+                        <span class="max-w-[10rem] truncate">User: {{ activeUserLabel }}</span>
+                      </span>
+                      <span
+                        v-if="hasConfiguredCompanies"
+                        class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600"
+                        :title="activeCompanyDetails"
+                      >
+                        <BuildingOffice2Icon class="h-3.5 w-3.5 shrink-0" />
+                        <span class="max-w-[10rem] truncate">Company: {{ activeCompanyLabel }}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <ChevronDownIcon class="h-4" />
