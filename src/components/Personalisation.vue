@@ -26,15 +26,19 @@
         v-else
         class="mt-8 space-y-4"
       >
-        <UserEditorCard
+        <div
           v-for="(userOption, index) in users"
           :key="index"
-          :expanded="expandedUserIndexes.includes(index)"
-          :is-active="props.dataset.datasetId === activeDatasetId && index === activeUserIndex"
-          :user="userOption"
-          @remove="deleteUser(index)"
-          @toggle-expand="toggleUserExpanded(index)"
-        />
+          :ref="(element) => setUserCardRef(element, index)"
+        >
+          <UserEditorCard
+            :expanded="expandedUserIndexes.includes(index)"
+            :is-active="props.dataset.datasetId === activeDatasetId && index === activeUserIndex"
+            :user="userOption"
+            @remove="deleteUser(index)"
+            @toggle-expand="toggleUserExpanded(index)"
+          />
+        </div>
       </div>
     </section>
 
@@ -64,16 +68,20 @@
         v-else
         class="mt-8 space-y-4"
       >
-        <CompanyEditorCard
+        <div
           v-for="(companyOption, index) in companies"
           :key="companyOption.id || index"
-          :companies="companies"
-          :company="companyOption"
-          :expanded="expandedCompanyIndexes.includes(index)"
-          :is-active="props.dataset.datasetId === activeDatasetId && companyOption.id === activeContextCompanyId"
-          @remove="deleteCompany(index)"
-          @toggle-expand="toggleCompanyExpanded(index)"
-        />
+          :ref="(element) => setCompanyCardRef(element, index)"
+        >
+          <CompanyEditorCard
+            :companies="companies"
+            :company="companyOption"
+            :expanded="expandedCompanyIndexes.includes(index)"
+            :is-active="props.dataset.datasetId === activeDatasetId && companyOption.id === activeContextCompanyId"
+            @remove="deleteCompany(index)"
+            @toggle-expand="toggleCompanyExpanded(index)"
+          />
+        </div>
       </div>
     </section>
 
@@ -102,7 +110,7 @@ import CompanyEditorCard from '@/components/settings/CompanyEditorCard.vue';
 import UserEditorCard from '@/components/settings/UserEditorCard.vue';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { UserFactory, type Company, type User } from '@relewise/client';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const props = defineProps<{
     dataset: IDataset;
@@ -113,6 +121,8 @@ const activeDatasetId = computed(() => contextStore.context.value?.datasetId ?? 
 const activeUserIndex = computed(() => contextStore.selectedUserIndex.value);
 const expandedUserIndexes = ref<number[]>([]);
 const expandedCompanyIndexes = ref<number[]>([]);
+const userCardRefs = ref<Array<HTMLElement | null>>([]);
+const companyCardRefs = ref<Array<HTMLElement | null>>([]);
 const userPendingRemovalIndex = ref<number | null>(null);
 const companyPendingRemovalIndex = ref<number | null>(null);
 const activeContextCompanyId = computed(() => contextStore.selectedCompanyId.value);
@@ -156,6 +166,7 @@ const removeCompanyDialogDescription = computed(() => {
 watch(
     users,
     (nextUsers) => {
+        userCardRefs.value.length = nextUsers.length;
         expandedUserIndexes.value = expandedUserIndexes.value
             .filter((index) => index >= 0 && index < nextUsers.length);
 
@@ -169,6 +180,7 @@ watch(
 watch(
     companies,
     (nextCompanies) => {
+        companyCardRefs.value.length = nextCompanies.length;
         expandedCompanyIndexes.value = expandedCompanyIndexes.value
             .filter((index) => index >= 0 && index < nextCompanies.length);
 
@@ -183,9 +195,11 @@ function createUser() {
     return UserFactory.anonymous();
 }
 
-function addUser() {
+async function addUser() {
     props.dataset.users = [...users.value, createUser()];
-    expandedUserIndexes.value = [...new Set([...expandedUserIndexes.value, props.dataset.users.length - 1])];
+    const newIndex = props.dataset.users.length - 1;
+    expandedUserIndexes.value = [newIndex];
+    await scrollToCard(userCardRefs.value[newIndex]);
 }
 
 function deleteUser(index: number) {
@@ -205,10 +219,12 @@ function confirmRemoveUser() {
     userPendingRemovalIndex.value = null;
 }
 
-function addCompany() {
+async function addCompany() {
     const nextCompany = { id: `company-${crypto.randomUUID().slice(0, 8)}` };
     props.dataset.companies = [...companies.value, nextCompany];
-    expandedCompanyIndexes.value = [...new Set([...expandedCompanyIndexes.value, props.dataset.companies.length - 1])];
+    const newIndex = props.dataset.companies.length - 1;
+    expandedCompanyIndexes.value = [newIndex];
+    await scrollToCard(companyCardRefs.value[newIndex]);
 }
 
 function deleteCompany(index: number) {
@@ -283,5 +299,41 @@ function isBlankCompany(company: Company | undefined) {
     return !company.id?.trim()
         && !company.parent?.id?.trim()
         && Object.keys(company.data ?? {}).length === 0;
+}
+
+function setUserCardRef(element: Element | { $el?: Element } | null, index: number) {
+    userCardRefs.value[index] = resolveElement(element);
+}
+
+function setCompanyCardRef(element: Element | { $el?: Element } | null, index: number) {
+    companyCardRefs.value[index] = resolveElement(element);
+}
+
+async function scrollToCard(element: HTMLElement | null | undefined) {
+    await nextTick();
+
+    const target = element;
+    if (!target) {
+        return;
+    }
+
+    requestAnimationFrame(() => {
+        target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
+    });
+}
+
+function resolveElement(element: Element | { $el?: Element } | null) {
+    if (!element) {
+        return null;
+    }
+
+    if ('$el' in element) {
+        return (element.$el as HTMLElement | null) ?? null;
+    }
+
+    return element as HTMLElement;
 }
 </script>
