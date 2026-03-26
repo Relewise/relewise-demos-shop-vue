@@ -267,7 +267,7 @@ import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import type { DataValue } from '@relewise/client';
-import { computed, ref, toRaw, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 type DatasetBooleanKey =
     | 'allowThirdLevelCategories'
@@ -472,7 +472,7 @@ function createSnapshot(dataset: IDataset, tracking: boolean) {
 }
 
 function cloneDataset(dataset: IDataset): IDataset {
-    return structuredClone(toRaw(dataset));
+    return JSON.parse(JSON.stringify(dataset)) as IDataset;
 }
 
 function uniqueValues(values: string[], { uppercase = false }: { uppercase?: boolean } = {}) {

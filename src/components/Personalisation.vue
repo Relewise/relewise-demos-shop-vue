@@ -28,7 +28,7 @@
       >
         <UserEditorCard
           v-for="(userOption, index) in users"
-          :key="userKey(userOption, index)"
+          :key="index"
           :companies="companies"
           :is-active="index === selectedUserIndex"
           :user="userOption"

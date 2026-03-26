@@ -12,7 +12,7 @@
       >
         <span class="flex flex-wrap items-center gap-2">
           <h3 class="truncate text-xl text-slate-900">
-            {{ displayUser(user) }}
+            {{ headline }}
           </h3>
           <span
             v-if="isActive"
@@ -21,8 +21,17 @@
             Active
           </span>
         </span>
-        <span class="mt-2 block truncate text-sm text-slate-500">
-          {{ user.authenticatedId || user.temporaryId || user.email || 'No identifiers added yet' }}
+        <span
+          v-if="summaryBadges.length > 0"
+          class="mt-3 flex flex-wrap items-center gap-2"
+        >
+          <span
+            v-for="badge in summaryBadges"
+            :key="badge"
+            class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200"
+          >
+            {{ badge }}
+          </span>
         </span>
       </button>
 
@@ -71,24 +80,14 @@
       @click.stop
     >
       <div class="grid gap-5 xl:grid-cols-3">
-        <div>
-          <label class="text-sm block">Authenticated ID</label>
-          <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-100 bg-slate-100 px-4 py-2.5 shadow-sm focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-200">
-            <input
-              v-model="authenticatedId"
-              type="text"
-              placeholder="Authenticated ID"
-              class="!mt-0 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus:!ring-0"
-            >
-            <button
-              type="button"
-              class="shrink-0 !bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
-              @click.stop="generateUserId('authenticated')"
-            >
-              Generate
-            </button>
-          </div>
-        </div>
+        <InlineActionInput
+          :model-value="authenticatedId"
+          label="Authenticated ID"
+          placeholder="Authenticated ID"
+          :action-label="authenticatedIdActionLabel"
+          action-prefix="auth-"
+          @update:model-value="setAuthenticatedId"
+        />
 
         <div>
           <label class="text-sm block">Email</label>
@@ -100,24 +99,14 @@
           >
         </div>
 
-        <div>
-          <label class="text-sm block">Temporary ID</label>
-          <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-100 bg-slate-100 px-4 py-2.5 shadow-sm focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-200">
-            <input
-              v-model="temporaryId"
-              type="text"
-              placeholder="Temporary ID"
-              class="!mt-0 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus:!ring-0"
-            >
-            <button
-              type="button"
-              class="shrink-0 !bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
-              @click.stop="generateUserId('temporary')"
-            >
-              Generate
-            </button>
-          </div>
-        </div>
+        <InlineActionInput
+          :model-value="temporaryId"
+          label="Temporary ID"
+          placeholder="Temporary ID"
+          :action-label="temporaryIdActionLabel"
+          action-prefix="temp-"
+          @update:model-value="setTemporaryId"
+        />
       </div>
 
       <div class="mt-6 grid gap-6 xl:grid-cols-2">
@@ -166,11 +155,11 @@
 
 <script lang="ts" setup>
 /* eslint-disable vue/no-mutating-props */
+import InlineActionInput from '@/components/InlineActionInput.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
-import { displayUser } from '@/helpers/userHelper';
 import { ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { DataValueFactory, type Company, type DataValue, type User } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     companies: Company[];
@@ -191,6 +180,79 @@ const authenticatedId = ref('');
 const email = ref('');
 const isExpanded = ref(false);
 
+const firstIdentifier = computed(() => {
+    return identifiers.value.find((entry) => entry.key?.trim() || entry.value?.trim());
+});
+
+const firstClassificationBadges = computed(() => {
+    return classifications.value
+        .filter((entry) => entry.key?.trim() || entry.value?.trim())
+        .slice(0, 2)
+        .map((entry) => formatBadgeValue(entry.key, entry.value));
+});
+
+const headlineSource = computed<'authenticated' | 'identifier' | 'email' | 'temporary' | 'anonymous'>(() => {
+    if (authenticatedId.value.trim()) {
+        return 'authenticated';
+    }
+
+    if (firstIdentifier.value) {
+        return 'identifier';
+    }
+
+    if (email.value.trim()) {
+        return 'email';
+    }
+
+    if (temporaryId.value.trim()) {
+        return 'temporary';
+    }
+
+    return 'anonymous';
+});
+
+const headline = computed(() => {
+    switch (headlineSource.value) {
+        case 'authenticated':
+            return authenticatedId.value.trim();
+        case 'identifier':
+            return formatBadgeValue(firstIdentifier.value?.key, firstIdentifier.value?.value);
+        case 'email':
+            return email.value.trim();
+        case 'temporary':
+            return temporaryId.value.trim();
+        default:
+            return 'Anonymous user';
+    }
+});
+
+const authenticatedIdActionLabel = computed(() => authenticatedId.value.trim() ? 'Regenerate' : 'Generate');
+const temporaryIdActionLabel = computed(() => temporaryId.value.trim() ? 'Regenerate' : 'Generate');
+
+const summaryBadges = computed(() => {
+    const badges: string[] = [];
+
+    if (props.user.company?.id) {
+        badges.push(`Company: ${props.user.company.id}`);
+    }
+
+    badges.push(...firstClassificationBadges.value.map((value) => `Classification: ${value}`));
+
+    if (headlineSource.value !== 'identifier' && firstIdentifier.value) {
+        badges.push(`Identifier: ${formatBadgeValue(firstIdentifier.value.key, firstIdentifier.value.value)}`);
+    } else if (headlineSource.value !== 'email' && email.value.trim()) {
+        badges.push(`Email: ${email.value.trim()}`);
+    } else if (headlineSource.value !== 'temporary' && temporaryId.value.trim()) {
+        badges.push(`Temporary ID: ${temporaryId.value.trim()}`);
+    }
+
+    if (badges.length === 0 && headlineSource.value === 'anonymous') {
+        badges.push('Anonymous');
+    }
+
+    return badges;
+});
+
 watch(
     () => props.user,
     (nextUser) => {
@@ -201,7 +263,7 @@ watch(
         identifiers.value = Object.keys(nextUser?.identifiers ?? {}).map((key) => ({ key, value: nextUser?.identifiers?.[key] ?? null }));
         data.value = Object.keys(nextUser?.data ?? {}).map((key) => ({ key, value: nextUser?.data?.[key]?.type === 'String' ? String(nextUser.data[key].value) : null }));
     },
-    { immediate: true, deep: true },
+    { immediate: true },
 );
 
 watch(
@@ -231,17 +293,27 @@ function syncUserMetadata() {
     }, {} as Record<string, DataValue>);
 }
 
-function generateUserId(type: 'temporary' | 'authenticated') {
-    const id = crypto.randomUUID();
-    if (type === 'temporary') {
-        temporaryId.value = id;
-        return;
-    }
-
-    authenticatedId.value = id;
-}
-
 function setUserCompany(companyId: string) {
     props.user.company = props.companies.find((company) => company.id === companyId);
 }
+
+function setAuthenticatedId(value: string) {
+    authenticatedId.value = value;
+}
+
+function setTemporaryId(value: string) {
+    temporaryId.value = value;
+}
+
+function formatBadgeValue(key?: string | null, value?: string | null) {
+    const trimmedKey = key?.trim() ?? '';
+    const trimmedValue = value?.trim() ?? '';
+
+    if (trimmedKey && trimmedValue) {
+        return `${trimmedKey}: ${trimmedValue}`;
+    }
+
+    return trimmedValue || trimmedKey;
+}
+
 </script>
