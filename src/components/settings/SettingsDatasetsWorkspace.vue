@@ -75,7 +75,10 @@
                   {{ dataset.datasetId || 'Missing dataset ID' }}
                 </span>
                 <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  {{ dataset.language || 'No language' }} / {{ dataset.currencyCode || 'No currency' }}
+                  {{ formatCount(dataset.allLanguages?.length ?? 0, 'language') }}
+                </span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  {{ formatCount(dataset.allCurrencies?.length ?? 0, 'currency', 'currencies') }}
                 </span>
                 <span class="rounded-full bg-white px-3 py-1 text-xs text-slate-600">
                   {{ formatCount(dataset.users?.length ?? 0, 'user') }}
@@ -245,7 +248,10 @@ import notificationsStore from '@/stores/notifications.store';
 import { CheckCircleIcon, LinkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
-type DatasetDraft = IDataset;
+type DatasetDraft = IDataset & {
+    currencyCode: string;
+    language: string;
+};
 
 const datasets = computed(() => contextStore.datasets.value);
 const activeDatasetId = computed(() => contextStore.context.value?.datasetId ?? '');
@@ -290,7 +296,6 @@ function createEmptyDraft(): DatasetDraft {
         serverUrl: '',
         users: [],
         companies: [],
-        selectedUserIndex: undefined,
         allowThirdLevelCategories: false,
         hideSoldOutProducts: false,
         userClassificationFilters: false,
@@ -308,26 +313,45 @@ function createEmptyDraft(): DatasetDraft {
 
 function normalizeDataset(dataset: DatasetDraft): IDataset {
     const language = dataset.language.trim();
-    const currencyCode = dataset.currencyCode.trim();
+    const currencyCode = dataset.currencyCode.trim().toUpperCase();
 
     return {
-        ...dataset,
         displayName: dataset.displayName?.trim() ?? '',
         datasetId: dataset.datasetId.trim(),
         apiKey: dataset.apiKey.trim(),
-        language,
-        currencyCode,
         serverUrl: dataset.serverUrl?.trim() ?? '',
         allLanguages: uniqueValues([language, ...(dataset.allLanguages ?? [])]),
-        allCurrencies: uniqueValues([currencyCode, ...(dataset.allCurrencies ?? [])]),
+        allCurrencies: uniqueValues([currencyCode, ...(dataset.allCurrencies ?? [])], { uppercase: true }),
         users: dataset.users ?? [],
         companies: dataset.companies ?? [],
-        selectedUserIndex: dataset.users?.length ? (dataset.selectedUserIndex ?? 0) : undefined,
+        allowThirdLevelCategories: dataset.allowThirdLevelCategories,
+        hideSoldOutProducts: dataset.hideSoldOutProducts,
+        userClassificationFilters: dataset.userClassificationFilters,
+        recommendationsMinutesAgo: dataset.recommendationsMinutesAgo,
+        showProductRelevanceScore: dataset.showProductRelevanceScore,
+        B2bRecommendations: dataset.B2bRecommendations,
+        showVariantsBadge: dataset.showVariantsBadge,
+        similarProductsOnPdp: dataset.similarProductsOnPdp,
+        variantBasedSearchOverlay: dataset.variantBasedSearchOverlay,
+        contentSearch: dataset.contentSearch,
+        searchHighlight: dataset.searchHighlight,
+        shoppertainmentEnabled: dataset.shoppertainmentEnabled,
     };
 }
 
-function uniqueValues(values: string[]) {
-    return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+function uniqueValues(values: string[], { uppercase = false }: { uppercase?: boolean } = {}) {
+    const normalized: string[] = [];
+
+    for (const value of values) {
+        const trimmedValue = uppercase ? value.trim().toUpperCase() : value.trim();
+        if (!trimmedValue || normalized.some((existingValue) => existingValue.toLowerCase() === trimmedValue.toLowerCase())) {
+            continue;
+        }
+
+        normalized.push(trimmedValue);
+    }
+
+    return normalized;
 }
 
 function formatCount(count: number, singularLabel: string, pluralLabel = `${singularLabel}s`) {

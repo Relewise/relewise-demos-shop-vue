@@ -6,7 +6,10 @@
       {{ selectedDataset ? selectedDataset.displayName || selectedDataset.datasetId : 'App Settings' }}
     </h1>
 
-    <div class="mb-8">
+    <div
+      :key="settingsViewKey"
+      class="mb-8"
+    >
       <div v-if="selectedDataset">
         <SettingsDatasetConfiguration :dataset="selectedDataset" />
       </div>
@@ -32,11 +35,12 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import { decodeSharePayload } from '@/helpers/shareEncoding';
 import SettingsDatasetsWorkspace from '@/components/settings/SettingsDatasetsWorkspace.vue';
 import SettingsDatasetConfiguration from '@/components/settings/SettingsDatasetConfiguration.vue';
-import contextStore, { type IDataset } from '@/stores/context.store';
+import contextStore, { sanitizeDatasetConfiguration, type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 
 const route = useRoute();
 const datasetIdParam = computed(() => typeof route.params.datasetId === 'string' ? route.params.datasetId : '');
+const settingsViewKey = computed(() => datasetIdParam.value || 'datasets-list');
 const selectedDataset = computed(() => datasetIdParam.value
     ? contextStore.datasets.value.find((dataset) => dataset.datasetId === datasetIdParam.value)
     : undefined);
@@ -72,7 +76,7 @@ async function init() {
     } else {
         const dataset = contextStore.datasets.value.find((entry) => entry.datasetId === settings.datasetId);
         if (dataset) {
-            Object.assign(dataset, settings);
+            Object.assign(dataset, sanitizeDatasetConfiguration(settings as IDataset & { language?: string; currencyCode?: string; selectedUserIndex?: number }));
         }
         contextStore.setDataset(settings.datasetId);
     }

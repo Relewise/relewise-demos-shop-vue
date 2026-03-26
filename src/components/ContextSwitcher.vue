@@ -4,13 +4,13 @@ import contextStore from '@/stores/context.store';
 import { displayUserOption } from '@/helpers/userHelper';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 
-const user = contextStore.user;
 const context = contextStore.context;
 const datasets = contextStore.datasets;
 const hasUsers = computed(() => (context.value.users?.length ?? 0) > 0);
+const hasCompanies = computed(() => (context.value.companies?.length ?? 0) > 0);
 const selectedUserOption = computed(() => {
     const users = context.value.users ?? [];
-    const selectedUserIndex = context.value.selectedUserIndex;
+    const selectedUserIndex = contextStore.selectedUserIndex.value;
 
     if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
         return '';
@@ -18,12 +18,18 @@ const selectedUserOption = computed(() => {
 
     return String(selectedUserIndex);
 });
+const selectedCompanyOption = computed(() => contextStore.selectedCompanyId.value || '');
 
 function setDataset(datasetId: string) {
     contextStore.setDataset(datasetId);
 }
 
 function setUser(selectedIndex: string) {
+    if (!selectedIndex) {
+        contextStore.setUserSelection(undefined);
+        return;
+    }
+
     const nextUser = context.value.users?.[Number(selectedIndex)];
     if (!nextUser) {
         return;
@@ -32,17 +38,16 @@ function setUser(selectedIndex: string) {
     contextStore.setUser(nextUser);
 }
 
-function setUserCompany(companyToSet: string) {
-    const selectedCompany = context.value.companies?.find(x => x.id === companyToSet);
-    user.value.company = selectedCompany;
+function setCompany(companyToSet: string) {
+    contextStore.setCompany(companyToSet);
 }
 
 function changeLanguage(language: string) {
-    context.value.language = language;
+    contextStore.setLanguage(language);
 }
 
 function changeCurrency(currency: string) {
-    context.value.currencyCode = currency;
+    contextStore.setCurrency(currency);
 }
 
 function applyContextChanges() {
@@ -77,7 +82,7 @@ function applyContextChanges() {
           <label class="text-sm block">Language</label>
           <select
             name="Language"
-            :value="context.language"
+            :value="contextStore.language.value"
             class="w-full"
             @change="changeLanguage(($event.target as HTMLInputElement).value)"
           >
@@ -86,14 +91,14 @@ function applyContextChanges() {
                 v-for="(language, index) in context.allLanguages"
                 :key="index"
                 :value="language"
-                :selected="context.language == language"
+                :selected="contextStore.language.value == language"
               >
                 {{ language }} 
               </option>
             </template>
             <template v-else>
-              <option :value="context.language">
-                {{ context.language }}
+              <option :value="contextStore.language.value">
+                {{ contextStore.language.value }}
               </option>
             </template>
           </select>
@@ -102,7 +107,7 @@ function applyContextChanges() {
           <label class="text-sm block">Currency</label>
           <select
             name="Currency"
-            :value="context.currencyCode"
+            :value="contextStore.currencyCode.value"
             class="w-full"
             @change="changeCurrency(($event.target as HTMLInputElement).value)"
           >
@@ -111,14 +116,14 @@ function applyContextChanges() {
                 v-for="(currencyCode, index) in context.allCurrencies"
                 :key="index"
                 :value="currencyCode"
-                :selected="context.currencyCode == currencyCode"
+                :selected="contextStore.currencyCode.value == currencyCode"
               >
                 {{ currencyCode }} 
               </option>
             </template>
             <template v-else>
-              <option :value="context.currencyCode">
-                {{ context.currencyCode }}
+              <option :value="contextStore.currencyCode.value">
+                {{ contextStore.currencyCode.value }}
               </option>
             </template>
           </select>
@@ -127,12 +132,11 @@ function applyContextChanges() {
       <div class="flex-grow">
         <label class="text-sm block">User</label>
         <select
-          :disabled="!hasUsers || context.users?.length === 1"
+          :disabled="!hasUsers"
           :value="selectedUserOption"
           @change="setUser(($event.target as HTMLInputElement).value)"
         >
           <option
-            v-if="!hasUsers"
             value=""
           >
             (None)
@@ -147,17 +151,17 @@ function applyContextChanges() {
         </select>
       </div>
       <div
-        v-if="hasUsers && (context.companies?.length ?? 0) > 0"
+        v-if="hasCompanies"
         class="flex-grow"
       >
         <label class="text-sm block">Company</label>
         <select
-          :value="user.company?.id"
+          :value="selectedCompanyOption"
           :disabled="!context.companies || context.companies.length < 1"
-          @change="setUserCompany(($event.target as HTMLInputElement).value)"
+          @change="setCompany(($event.target as HTMLInputElement).value)"
         >
           <option value="">
-            {{ context.companies && context.companies.length > 0 ? "No company assigned" : "No companies exist" }}
+            {{ context.companies && context.companies.length > 0 ? "(None)" : "No companies exist" }}
           </option>
           <option
             v-for="(userCompanyOption, index) in context.companies"

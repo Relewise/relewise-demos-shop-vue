@@ -248,10 +248,10 @@
 import DismissibleBadgeInput from '@/components/DismissibleBadgeInput.vue';
 import Personalisation from '@/components/Personalisation.vue';
 import SecretInput from '@/components/SecretInput.vue';
-import contextStore, { type IDataset } from '@/stores/context.store';
+import contextStore, { sanitizeDatasetConfiguration, type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
-import type { DataValue } from '@relewise/client';
+import type { Company, DataValue } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
 type DatasetBooleanKey =
@@ -366,16 +366,10 @@ function toggleSection(section: keyof typeof openSections.value) {
 
 function setLanguages(nextLanguages: string[]) {
     editableDataset.value.allLanguages = uniqueValues(nextLanguages);
-    if (!editableDataset.value.allLanguages.includes(editableDataset.value.language)) {
-        editableDataset.value.language = editableDataset.value.allLanguages[0] ?? '';
-    }
 }
 
 function setCurrencies(nextCurrencies: string[]) {
     editableDataset.value.allCurrencies = uniqueValues(nextCurrencies, { uppercase: true });
-    if (!editableDataset.value.allCurrencies.includes(editableDataset.value.currencyCode)) {
-        editableDataset.value.currencyCode = editableDataset.value.allCurrencies[0] ?? '';
-    }
 }
 
 function saveChanges() {
@@ -392,11 +386,11 @@ function saveChanges() {
     if (!normalizedDataset.apiKey) {
         errors.value.push('An API key is required.');
     }
-    if (!normalizedDataset.language) {
-        errors.value.push('A language is required.');
+    if (normalizedDataset.allLanguages.length === 0) {
+        errors.value.push('At least one language is required.');
     }
-    if (!normalizedDataset.currencyCode) {
-        errors.value.push('A currency is required.');
+    if (normalizedDataset.allCurrencies.length === 0) {
+        errors.value.push('At least one currency is required.');
     }
 
     const duplicateDatasetIds = contextStore.datasets.value.filter((entry) => entry.datasetId === normalizedDataset.datasetId && entry !== props.dataset);
@@ -426,25 +420,17 @@ function saveChanges() {
 }
 
 function normalizeDataset(dataset: IDataset): IDataset {
-    const normalizedLanguages = uniqueValues([dataset.language, ...(dataset.allLanguages ?? [])]);
-    const normalizedCurrencies = uniqueValues([dataset.currencyCode, ...(dataset.allCurrencies ?? [])], { uppercase: true });
-    const language = dataset.language.trim() || (normalizedLanguages[0] ?? '');
-    const currencyCode = dataset.currencyCode.trim().toUpperCase() || (normalizedCurrencies[0] ?? '');
-
-    return {
+    return sanitizeDatasetConfiguration({
         ...cloneDataset(dataset),
         displayName: dataset.displayName?.trim() ?? '',
         datasetId: dataset.datasetId.trim(),
         apiKey: dataset.apiKey.trim(),
         serverUrl: dataset.serverUrl?.trim() ?? '',
-        language,
-        currencyCode,
-        allLanguages: uniqueValues([language, ...normalizedLanguages]),
-        allCurrencies: uniqueValues([currencyCode, ...normalizedCurrencies], { uppercase: true }),
-        users: dataset.users?.length ? dataset.users : [],
+        allLanguages: uniqueValues(dataset.allLanguages ?? []),
+        allCurrencies: uniqueValues(dataset.allCurrencies ?? [], { uppercase: true }),
+        users: dataset.users ?? [],
         companies: dataset.companies ?? [],
-        selectedUserIndex: dataset.users?.length ? (dataset.selectedUserIndex ?? 0) : undefined,
-    };
+    });
 }
 
 function createSnapshot(dataset: IDataset, tracking: boolean) {
@@ -506,6 +492,51 @@ function validatePersonalisation(dataset: IDataset) {
     if (new Set(companyIds).size !== companyIds.length) {
         errors.value.push('Company IDs must be unique.');
     }
+
+    const invalidCompanyData = companies.some((company) => hasInvalidDataRecord(company.data));
+    if (invalidCompanyData) {
+        errors.value.push('All company data values must include both a key and value.');
+    }
+
+    const companiesById = new Map(
+        companies
+            .filter((company) => company.id?.trim())
+            .map((company) => [company.id.trim(), company] as const),
+    );
+
+    const hasUnknownParentReference = companies.some((company) => {
+        const parentId = company.parent?.id?.trim();
+        if (!parentId) {
+            return false;
+        }
+
+        return !companiesById.has(parentId);
+    });
+
+    if (hasUnknownParentReference) {
+        errors.value.push('Each parent company must reference another company in the dataset.');
+    }
+
+    const hasParentAndChildren = companies.some((company) => {
+        const companyId = company.id?.trim();
+        if (!companyId || !company.parent?.id?.trim()) {
+            return false;
+        }
+
+        return companies.some((candidate) => candidate.parent?.id?.trim() === companyId);
+    });
+
+    if (hasParentAndChildren) {
+        errors.value.push('A company with child companies cannot also have a parent company.');
+    }
+
+    if (hasCompanyHierarchyCycle(companiesById)) {
+        errors.value.push('Company hierarchy cannot contain cycles.');
+    }
+
+    if (hasCompanyHierarchyDeeperThanTwoLevels(companiesById)) {
+        errors.value.push('Company hierarchy can only be 2 levels deep.');
+    }
 }
 
 function hasInvalidRecord(record?: Record<string, string | null>) {
@@ -522,5 +553,44 @@ function hasInvalidDataRecord(record?: Record<string, DataValue>) {
     }
 
     return Object.entries(record).some(([key, value]) => !key || !value?.value);
+}
+
+function hasCompanyHierarchyCycle(companiesById: Map<string, Company>) {
+    for (const companyId of companiesById.keys()) {
+        const visited = new Set<string>();
+        let currentCompanyId: string | undefined = companyId;
+
+        while (currentCompanyId) {
+            if (visited.has(currentCompanyId)) {
+                return true;
+            }
+
+            visited.add(currentCompanyId);
+            currentCompanyId = companiesById.get(currentCompanyId)?.parent?.id?.trim();
+        }
+    }
+
+    return false;
+}
+
+function hasCompanyHierarchyDeeperThanTwoLevels(companiesById: Map<string, Company>) {
+    for (const companyId of companiesById.keys()) {
+        let depth = 0;
+        let currentCompanyId = companiesById.get(companyId)?.parent?.id?.trim();
+        const visited = new Set<string>();
+
+        while (currentCompanyId && !visited.has(currentCompanyId)) {
+            visited.add(currentCompanyId);
+            depth += 1;
+
+            if (depth > 1) {
+                return true;
+            }
+
+            currentCompanyId = companiesById.get(currentCompanyId)?.parent?.id?.trim();
+        }
+    }
+
+    return false;
 }
 </script>

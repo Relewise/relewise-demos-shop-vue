@@ -105,27 +105,7 @@
           v-model="identifiers"
           title="Identifiers"
         />
-
-        <div>
-          <label class="block text-sm">Company</label>
-          <select
-            :value="user.company?.id ?? ''"
-            class="mt-3"
-            :disabled="companies.length === 0"
-            @change="setUserCompany(($event.target as HTMLInputElement).value)"
-          >
-            <option value="">
-              {{ companies.length > 0 ? 'No company assigned' : 'No companies exist' }}
-            </option>
-            <option
-              v-for="companyOption in companies"
-              :key="companyOption.id"
-              :value="companyOption.id"
-            >
-              {{ companyOption.id }}
-            </option>
-          </select>
-        </div>
+        <div class="hidden xl:block" />
       </div>
 
       <div class="mt-6 border-t border-slate-200 pt-6" />
@@ -149,11 +129,10 @@
 import InlineActionInput from '@/components/InlineActionInput.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import { ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
-import { DataValueFactory, type Company, type DataValue, type User } from '@relewise/client';
+import { DataValueFactory, type DataValue, type User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
-    companies: Company[];
     expanded: boolean;
     isActive: boolean;
     user: User;
@@ -236,10 +215,6 @@ const summaryBadges = computed(() => {
 
     badges.push(...identifierValues.value);
 
-    if (props.user.company?.id) {
-        badges.push(`Company: ${props.user.company.id}`);
-    }
-
     return badges;
 });
 
@@ -281,10 +256,6 @@ function syncUserMetadata() {
         acc[entry.key] = DataValueFactory.string(entry.value ?? '');
         return acc;
     }, {} as Record<string, DataValue>);
-}
-
-function setUserCompany(companyId: string) {
-    props.user.company = props.companies.find((company) => company.id === companyId);
 }
 
 function setAuthenticatedId(value: string) {

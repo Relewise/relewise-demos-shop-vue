@@ -19,7 +19,7 @@ const open = ref<string | null>(null);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 const activeUserLabel = computed(() => {
     const users = contextStore.context.value?.users ?? [];
-    const selectedUserIndex = contextStore.context.value?.selectedUserIndex;
+    const selectedUserIndex = contextStore.selectedUserIndex.value;
 
     if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
         return '(None)';
@@ -149,7 +149,7 @@ onMounted(() => {
                       {{ contextStore.context.value.displayName }}
                     </div>
                     <span class="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                      {{ contextStore.context.value.language }} / {{ contextStore.context.value.currencyCode }}
+                      {{ contextStore.language.value }} / {{ contextStore.currencyCode.value }}
                     </span>
                     <span
                       class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"

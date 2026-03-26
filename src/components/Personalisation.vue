@@ -29,9 +29,8 @@
         <UserEditorCard
           v-for="(userOption, index) in users"
           :key="index"
-          :companies="companies"
           :expanded="expandedUserIndexes.includes(index)"
-          :is-active="index === selectedUserIndex"
+          :is-active="props.dataset.datasetId === activeDatasetId && index === activeUserIndex"
           :user="userOption"
           @remove="deleteUser(index)"
           @toggle-expand="toggleUserExpanded(index)"
@@ -63,81 +62,18 @@
 
       <div
         v-else
-        class="mt-8 grid gap-6 xl:grid-cols-[0.8fr_1.2fr]"
+        class="mt-8 space-y-4"
       >
-        <div class="space-y-3">
-          <button
-            v-for="companyOption in companies"
-            :key="companyOption.id"
-            type="button"
-            class="w-full rounded-2xl border p-4 text-left transition"
-            :class="companyOption.id === selectedCompanyId
-              ? 'border-slate-900 bg-slate-50 shadow-sm'
-              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'"
-            @click="selectCompany(companyOption.id)"
-          >
-            <p class="font-semibold text-slate-900">
-              {{ companyOption.id }}
-            </p>
-            <p class="mt-1 text-xs text-slate-500">
-              {{ companyOption.parent?.id ? `Parent: ${companyOption.parent.id}` : 'No parent company' }}
-            </p>
-          </button>
-        </div>
-
-        <div
-          v-if="activeCompany"
-          class="space-y-5 rounded-2xl border border-slate-200 bg-white p-5"
-        >
-          <div>
-            <label class="text-sm block">Company ID</label>
-            <div class="mt-1 flex gap-2">
-              <input
-                v-model="activeCompany.id"
-                type="text"
-                placeholder="Company ID"
-              >
-              <button
-                class="outline shrink-0"
-                @click="generateCompanyId"
-              >
-                Generate
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label class="text-sm block">Parent company</label>
-            <select
-              :value="activeCompany.parent?.id ?? ''"
-              class="mt-1"
-              :disabled="availableParentCompanies.length === 0"
-              @change="setParentCompany(($event.target as HTMLInputElement).value)"
-            >
-              <option value="">
-                {{ availableParentCompanies.length > 0 ? 'No parent company' : 'No other companies' }}
-              </option>
-              <option
-                v-for="companyOption in availableParentCompanies"
-                :key="companyOption.id"
-                :value="companyOption.id"
-              >
-                {{ companyOption.id }}
-              </option>
-            </select>
-          </div>
-
-          <div class="flex items-center justify-end">
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-              @click="deleteCompany"
-            >
-              <TrashIcon class="h-4 w-4 shrink-0" />
-              Remove company
-            </button>
-          </div>
-        </div>
+        <CompanyEditorCard
+          v-for="(companyOption, index) in companies"
+          :key="companyOption.id || index"
+          :companies="companies"
+          :company="companyOption"
+          :expanded="expandedCompanyIndexes.includes(index)"
+          :is-active="props.dataset.datasetId === activeDatasetId && companyOption.id === activeContextCompanyId"
+          @remove="deleteCompany(index)"
+          @toggle-expand="toggleCompanyExpanded(index)"
+        />
       </div>
     </section>
 
@@ -162,9 +98,9 @@
 <script lang="ts" setup>
 /* eslint-disable vue/no-mutating-props */
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+import CompanyEditorCard from '@/components/settings/CompanyEditorCard.vue';
 import UserEditorCard from '@/components/settings/UserEditorCard.vue';
-import { type IDataset } from '@/stores/context.store';
-import { TrashIcon } from '@heroicons/vue/24/outline';
+import contextStore, { type IDataset } from '@/stores/context.store';
 import { UserFactory, type Company, type User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
@@ -173,26 +109,13 @@ const props = defineProps<{
 }>();
 const users = computed(() => props.dataset.users ?? []);
 const companies = computed(() => props.dataset.companies ?? []);
-const selectedUserIndex = computed(() => props.dataset.selectedUserIndex);
-const selectedCompanyId = ref(companies.value[0]?.id ?? '');
+const activeDatasetId = computed(() => contextStore.context.value?.datasetId ?? '');
+const activeUserIndex = computed(() => contextStore.selectedUserIndex.value);
 const expandedUserIndexes = ref<number[]>([]);
+const expandedCompanyIndexes = ref<number[]>([]);
 const userPendingRemovalIndex = ref<number | null>(null);
-const companyPendingRemovalId = ref<string | null>(null);
-const activeCompany = computed<Company | undefined>(() => {
-    if (!selectedCompanyId.value) {
-        return companies.value[0];
-    }
-
-    return companies.value.find((company) => company.id === selectedCompanyId.value);
-});
-
-const availableParentCompanies = computed(() => {
-    if (!activeCompany.value) {
-        return [];
-    }
-
-    return companies.value.filter((company) => company.id !== activeCompany.value?.id);
-});
+const companyPendingRemovalIndex = ref<number | null>(null);
+const activeContextCompanyId = computed(() => contextStore.selectedCompanyId.value);
 
 const isRemoveUserDialogOpen = computed({
     get: () => userPendingRemovalIndex.value !== null,
@@ -213,20 +136,21 @@ const removeUserDialogDescription = computed(() => {
 });
 
 const isRemoveCompanyDialogOpen = computed({
-    get: () => !!companyPendingRemovalId.value,
+    get: () => companyPendingRemovalIndex.value !== null,
     set: (value: boolean) => {
         if (!value) {
-            companyPendingRemovalId.value = null;
+            companyPendingRemovalIndex.value = null;
         }
     },
 });
 
 const removeCompanyDialogDescription = computed(() => {
-    if (!companyPendingRemovalId.value) {
+    if (companyPendingRemovalIndex.value === null) {
         return '';
     }
 
-    return `Remove "${companyPendingRemovalId.value}" from this dataset? Users assigned to it will lose their company assignment.`;
+    const company = companies.value[companyPendingRemovalIndex.value];
+    return `Remove "${company?.id || `company-${companyPendingRemovalIndex.value + 1}`}" from this dataset? This cannot be undone.`;
 });
 
 watch(
@@ -245,13 +169,11 @@ watch(
 watch(
     companies,
     (nextCompanies) => {
-        if (!nextCompanies.length) {
-            selectedCompanyId.value = '';
-            return;
-        }
+        expandedCompanyIndexes.value = expandedCompanyIndexes.value
+            .filter((index) => index >= 0 && index < nextCompanies.length);
 
-        if (!nextCompanies.some((company) => company.id === selectedCompanyId.value)) {
-            selectedCompanyId.value = nextCompanies[0]!.id;
+        if (nextCompanies.length === 1 && isBlankCompany(nextCompanies[0])) {
+            expandedCompanyIndexes.value = [0];
         }
     },
     { immediate: true, deep: true },
@@ -277,15 +199,6 @@ function confirmRemoveUser() {
 
     const index = userPendingRemovalIndex.value;
     props.dataset.users = users.value.filter((_, userIndex) => userIndex !== index);
-    if (props.dataset.users.length === 0) {
-        props.dataset.selectedUserIndex = undefined;
-    }
-    else if (selectedUserIndex.value === undefined) {
-        props.dataset.selectedUserIndex = 0;
-    }
-    else {
-        props.dataset.selectedUserIndex = Math.max(0, Math.min(selectedUserIndex.value, props.dataset.users.length - 1));
-    }
     expandedUserIndexes.value = expandedUserIndexes.value
         .filter((expandedIndex) => expandedIndex !== index)
         .map((expandedIndex) => expandedIndex > index ? expandedIndex - 1 : expandedIndex);
@@ -295,52 +208,36 @@ function confirmRemoveUser() {
 function addCompany() {
     const nextCompany = { id: `company-${crypto.randomUUID().slice(0, 8)}` };
     props.dataset.companies = [...companies.value, nextCompany];
-    selectedCompanyId.value = nextCompany.id;
+    expandedCompanyIndexes.value = [...new Set([...expandedCompanyIndexes.value, props.dataset.companies.length - 1])];
 }
 
-function selectCompany(companyId: string) {
-    selectedCompanyId.value = companyId;
-}
-
-function generateCompanyId() {
-    if (!activeCompany.value) {
-        return;
-    }
-
-    activeCompany.value.id = `company-${crypto.randomUUID().slice(0, 8)}`;
-    selectedCompanyId.value = activeCompany.value.id;
-}
-
-function setParentCompany(companyId: string) {
-    if (!activeCompany.value) {
-        return;
-    }
-
-    activeCompany.value.parent = companies.value.find((company) => company.id === companyId);
-}
-
-function deleteCompany() {
-    if (!activeCompany.value) {
-        return;
-    }
-
-    companyPendingRemovalId.value = activeCompany.value.id;
+function deleteCompany(index: number) {
+    companyPendingRemovalIndex.value = index;
 }
 
 function confirmRemoveCompany() {
-    if (!companyPendingRemovalId.value) {
+    if (companyPendingRemovalIndex.value === null) {
         return;
     }
 
-    const deletedCompanyId = companyPendingRemovalId.value;
-    props.dataset.companies = companies.value.filter((company) => company.id !== deletedCompanyId);
-    users.value.forEach((user) => {
-        if (user.company?.id === deletedCompanyId) {
-            user.company = undefined;
-        }
-    });
-    selectedCompanyId.value = props.dataset.companies?.[0]?.id ?? '';
-    companyPendingRemovalId.value = null;
+    const index = companyPendingRemovalIndex.value;
+    const companyToRemove = companies.value[index];
+    const companyIdToRemove = companyToRemove?.id?.trim();
+
+    props.dataset.companies = companies.value
+        .filter((_, companyIndex) => companyIndex !== index)
+        .map((company) => {
+            if (companyIdToRemove && company.parent?.id === companyIdToRemove) {
+                company.parent = undefined;
+            }
+
+            return company;
+        });
+
+    expandedCompanyIndexes.value = expandedCompanyIndexes.value
+        .filter((expandedIndex) => expandedIndex !== index)
+        .map((expandedIndex) => expandedIndex > index ? expandedIndex - 1 : expandedIndex);
+    companyPendingRemovalIndex.value = null;
 }
 
 function userKey(user: User, index: number) {
@@ -356,6 +253,15 @@ function toggleUserExpanded(index: number) {
     expandedUserIndexes.value = [...expandedUserIndexes.value, index];
 }
 
+function toggleCompanyExpanded(index: number) {
+    if (expandedCompanyIndexes.value.includes(index)) {
+        expandedCompanyIndexes.value = expandedCompanyIndexes.value.filter((expandedIndex) => expandedIndex !== index);
+        return;
+    }
+
+    expandedCompanyIndexes.value = [...expandedCompanyIndexes.value, index];
+}
+
 function isBlankAnonymousUser(user: User | undefined) {
     if (!user) {
         return false;
@@ -364,9 +270,18 @@ function isBlankAnonymousUser(user: User | undefined) {
     return !user.authenticatedId
         && !user.email
         && !user.temporaryId
-        && !user.company?.id
         && Object.keys(user.identifiers ?? {}).length === 0
         && Object.keys(user.classifications ?? {}).length === 0
         && Object.keys(user.data ?? {}).length === 0;
+}
+
+function isBlankCompany(company: Company | undefined) {
+    if (!company) {
+        return false;
+    }
+
+    return !company.id?.trim()
+        && !company.parent?.id?.trim()
+        && Object.keys(company.data ?? {}).length === 0;
 }
 </script>
