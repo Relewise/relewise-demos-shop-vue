@@ -10,7 +10,7 @@
             Datasets
           </h2>
           <p class="mt-2 text-sm text-slate-600">
-            Click a dataset row to make it active. Use the actions on each row to configure, share, or remove it.
+            Click a dataset row to open its settings. Use the actions on each row to set the active dataset, share, or remove it.
           </p>
         </div>
 
@@ -51,7 +51,7 @@
           :class="dataset.datasetId === activeDatasetId
             ? 'border-brand-500 bg-brand-50'
             : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'"
-          @click="selectDataset(dataset.datasetId)"
+          @click="configureDataset(dataset.datasetId)"
         >
           <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div class="min-w-0">
@@ -89,12 +89,15 @@
             <div class="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
-                title="Configure dataset"
-                aria-label="Configure dataset"
-                @click.stop="configureDataset(dataset.datasetId)"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border transition"
+                :class="dataset.datasetId === activeDatasetId
+                  ? 'cursor-default border-brand-200 bg-brand-100 text-brand-600'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700'"
+                :title="dataset.datasetId === activeDatasetId ? 'Active dataset' : 'Set as active'"
+                :aria-label="dataset.datasetId === activeDatasetId ? 'Active dataset' : 'Set as active'"
+                @click.stop="selectDataset(dataset.datasetId)"
               >
-                <Cog6ToothIcon
+                <CheckCircleIcon
                   class="shrink-0"
                   style="width: 1.25rem; height: 1.25rem;"
                 />
@@ -162,11 +165,14 @@
 
           <div>
             <label class="text-sm block">API Key</label>
-            <input
+            <SecretInput
               v-model="draft.apiKey"
-              type="text"
+              name="new-dataset-api-key"
               placeholder="API Key"
-            >
+              :reveal-on-change-key="isCreating ? 'create-dataset' : 'closed'"
+              show-label="Show API key"
+              hide-label="Hide API key"
+            />
           </div>
 
           <div>
@@ -219,15 +225,24 @@
       </div>
     </div>
   </div>
+
+  <ConfirmationDialog
+    v-model="isRemoveDialogOpen"
+    title="Remove dataset"
+    :description="removeDialogDescription"
+    confirm-label="Remove dataset"
+    @confirm="confirmRemoveDataset"
+  />
 </template>
 
 <script lang="ts" setup>
+import SecretInput from '@/components/SecretInput.vue';
+import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import router from '@/router';
 import { encodeSharePayload } from '@/helpers/shareEncoding';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
-import { Cog6ToothIcon, LinkIcon, TrashIcon } from '@heroicons/vue/24/outline';
-import { UserFactory } from '@relewise/client';
+import { CheckCircleIcon, LinkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 type DatasetDraft = IDataset;
@@ -235,6 +250,7 @@ type DatasetDraft = IDataset;
 const datasets = computed(() => contextStore.datasets.value);
 const activeDatasetId = computed(() => contextStore.context.value?.datasetId ?? '');
 const isCreating = ref(false);
+const datasetPendingRemoval = ref<IDataset | null>(null);
 const validationErrors = ref<string[]>([]);
 const draft = ref<DatasetDraft>(createEmptyDraft());
 const nameInput = ref<HTMLInputElement | null>(null);
@@ -272,9 +288,9 @@ function createEmptyDraft(): DatasetDraft {
         currencyCode: '',
         allCurrencies: [],
         serverUrl: '',
-        users: [createDefaultUser()],
+        users: [],
         companies: [],
-        selectedUserIndex: 0,
+        selectedUserIndex: undefined,
         allowThirdLevelCategories: false,
         hideSoldOutProducts: false,
         userClassificationFilters: false,
@@ -288,12 +304,6 @@ function createEmptyDraft(): DatasetDraft {
         searchHighlight: false,
         shoppertainmentEnabled: false,
     };
-}
-
-function createDefaultUser() {
-    const user = UserFactory.anonymous();
-    user.temporaryId = crypto.randomUUID();
-    return user;
 }
 
 function normalizeDataset(dataset: DatasetDraft): IDataset {
@@ -310,9 +320,9 @@ function normalizeDataset(dataset: DatasetDraft): IDataset {
         serverUrl: dataset.serverUrl?.trim() ?? '',
         allLanguages: uniqueValues([language, ...(dataset.allLanguages ?? [])]),
         allCurrencies: uniqueValues([currencyCode, ...(dataset.allCurrencies ?? [])]),
-        users: dataset.users?.length ? dataset.users : [createDefaultUser()],
+        users: dataset.users ?? [],
         companies: dataset.companies ?? [],
-        selectedUserIndex: 0,
+        selectedUserIndex: dataset.users?.length ? (dataset.selectedUserIndex ?? 0) : undefined,
     };
 }
 
@@ -368,6 +378,24 @@ function createDataset() {
     notificationsStore.push({ title: 'Dataset added', text: `${newDataset.displayName || newDataset.datasetId} was added.` });
 }
 
+const isRemoveDialogOpen = computed({
+    get: () => !!datasetPendingRemoval.value,
+    set: (value: boolean) => {
+        if (!value) {
+            datasetPendingRemoval.value = null;
+        }
+    },
+});
+
+const removeDialogDescription = computed(() => {
+    const dataset = datasetPendingRemoval.value;
+    if (!dataset) {
+        return '';
+    }
+
+    return `Remove "${dataset.displayName || dataset.datasetId}" from the demo shop? This cannot be undone.`;
+});
+
 function configureDataset(datasetId: string) {
     void router.push({ name: 'settings-dataset', params: { datasetId } });
 }
@@ -389,12 +417,17 @@ function shareDataset(dataset: IDataset) {
 }
 
 function removeDataset(dataset: IDataset) {
-    const confirmed = confirm(`Remove dataset "${dataset.displayName || dataset.datasetId}"?`);
-    if (!confirmed) {
+    datasetPendingRemoval.value = dataset;
+}
+
+function confirmRemoveDataset() {
+    const dataset = datasetPendingRemoval.value;
+    if (!dataset) {
         return;
     }
 
     contextStore.deleteDatasetById(dataset.datasetId);
     notificationsStore.push({ title: 'Dataset removed', text: `${dataset.displayName || dataset.datasetId} was removed.` });
+    datasetPendingRemoval.value = null;
 }
 </script>

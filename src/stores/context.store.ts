@@ -127,9 +127,13 @@ class AppContext {
                 return UserFactory.anonymous();
             }
 
-            this.ensureUsers();
+            const users = this.context.value.users ?? [];
+            const selectedUserIndex = this.context.value.selectedUserIndex;
+            if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
+                return UserFactory.anonymous();
+            }
 
-            return this.context.value.users![this.context.value.selectedUserIndex!]!;
+            return users[selectedUserIndex] ?? UserFactory.anonymous();
         });
     }
 
@@ -280,9 +284,17 @@ class AppContext {
     }
 
     public setUser(user: User) {
-        this.ensureUsers();
+        const users = this.context.value.users ?? [];
+        if (!users.length) {
+            return;
+        }
 
-        this.context.value.selectedUserIndex = this.context.value.users!.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
+        const selectedUserIndex = users.map(e => JSON.stringify(e)).indexOf(JSON.stringify(user));
+        if (selectedUserIndex < 0) {
+            return;
+        }
+
+        this.context.value.selectedUserIndex = selectedUserIndex;
         basketService.clear();
         this.persistState();
     }
@@ -294,7 +306,7 @@ class AppContext {
 
         this.context.value.users.splice(this.context.value.selectedUserIndex, 1);
 
-        this.context.value.selectedUserIndex = 0;
+        this.context.value.selectedUserIndex = this.context.value.users.length > 0 ? 0 : undefined;
 
         this.initializeWebComponents();
         this.persistState();
@@ -313,17 +325,6 @@ class AppContext {
 
         this.activeContextState.revision += 1;
     }
-
-    private ensureUsers() {
-        if (!this.context.value.users || this.context.value.users.length === 0) {
-            this.context.value.users = [UserFactory.anonymous()];
-        }
-
-        if (!this.context.value.selectedUserIndex) {
-            this.context.value.selectedUserIndex = 0;
-        }
-    }
-
     public deleteCompanyById(id: string) {
         this.context.value.companies = this.context.value.companies?.filter(x => x.id !== id);
         this.persistState();

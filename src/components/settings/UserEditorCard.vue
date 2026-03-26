@@ -2,13 +2,13 @@
   <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     <div
       class="flex flex-col gap-4 bg-slate-50 px-6 py-4 md:flex-row md:items-start md:justify-between"
-      :class="isExpanded ? 'border-b border-slate-200' : ''"
+      :class="expanded ? 'border-b border-slate-200' : ''"
     >
       <button
         type="button"
         class="min-w-0 flex-1 !bg-transparent !px-0 !py-0 !text-left !text-slate-900 !shadow-none hover:!bg-transparent"
-        :aria-label="isExpanded ? 'Collapse user details' : 'Expand user details'"
-        @click="isExpanded = !isExpanded"
+        :aria-label="expanded ? 'Collapse user details' : 'Expand user details'"
+        @click="$emit('toggleExpand')"
       >
         <span class="flex flex-wrap items-center gap-2">
           <h3 class="truncate text-xl text-slate-900">
@@ -37,15 +37,6 @@
 
       <div class="flex items-center gap-2 md:pl-4">
         <button
-          v-if="!isActive"
-          type="button"
-          class="outline !px-3"
-          @click.stop="$emit('setActive')"
-        >
-          Set active
-        </button>
-
-        <button
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
           title="Remove user"
@@ -61,13 +52,13 @@
         <button
           type="button"
           class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
-          :title="isExpanded ? 'Collapse user details' : 'Expand user details'"
-          :aria-label="isExpanded ? 'Collapse user details' : 'Expand user details'"
-          @click.stop="isExpanded = !isExpanded"
+          :title="expanded ? 'Collapse user details' : 'Expand user details'"
+          :aria-label="expanded ? 'Collapse user details' : 'Expand user details'"
+          @click.stop="$emit('toggleExpand')"
         >
           <ChevronDownIcon
             class="shrink-0 transition"
-            :class="isExpanded ? 'rotate-180' : ''"
+            :class="expanded ? 'rotate-180' : ''"
             style="width: 1.25rem; height: 1.25rem;"
           />
         </button>
@@ -75,7 +66,7 @@
     </div>
 
     <div
-      v-if="isExpanded"
+      v-if="expanded"
       class="px-6 py-6"
       @click.stop
     >
@@ -163,13 +154,14 @@ import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     companies: Company[];
+    expanded: boolean;
     isActive: boolean;
     user: User;
 }>();
 
 defineEmits<{
     remove: [];
-    setActive: [];
+    toggleExpand: [];
 }>();
 
 const classifications = ref<KeyValue[]>([]);
@@ -178,30 +170,28 @@ const data = ref<KeyValue[]>([]);
 const temporaryId = ref('');
 const authenticatedId = ref('');
 const email = ref('');
-const isExpanded = ref(false);
 
 const firstIdentifier = computed(() => {
     return identifiers.value.find((entry) => entry.key?.trim() || entry.value?.trim());
 });
 
-const firstClassificationBadges = computed(() => {
-    return classifications.value
+const identifierValues = computed(() => {
+    return identifiers.value
         .filter((entry) => entry.key?.trim() || entry.value?.trim())
-        .slice(0, 2)
         .map((entry) => formatBadgeValue(entry.key, entry.value));
 });
 
-const headlineSource = computed<'authenticated' | 'identifier' | 'email' | 'temporary' | 'anonymous'>(() => {
+const headlineSource = computed<'authenticated' | 'email' | 'identifier' | 'temporary' | 'anonymous'>(() => {
     if (authenticatedId.value.trim()) {
         return 'authenticated';
     }
 
-    if (firstIdentifier.value) {
-        return 'identifier';
-    }
-
     if (email.value.trim()) {
         return 'email';
+    }
+
+    if (identifierValues.value.length > 0) {
+        return 'identifier';
     }
 
     if (temporaryId.value.trim()) {
@@ -215,10 +205,10 @@ const headline = computed(() => {
     switch (headlineSource.value) {
         case 'authenticated':
             return authenticatedId.value.trim();
-        case 'identifier':
-            return formatBadgeValue(firstIdentifier.value?.key, firstIdentifier.value?.value);
         case 'email':
             return email.value.trim();
+        case 'identifier':
+            return identifierValues.value.join(', ');
         case 'temporary':
             return temporaryId.value.trim();
         default:
@@ -232,22 +222,22 @@ const temporaryIdActionLabel = computed(() => temporaryId.value.trim() ? 'Regene
 const summaryBadges = computed(() => {
     const badges: string[] = [];
 
-    if (props.user.company?.id) {
-        badges.push(`Company: ${props.user.company.id}`);
+    if (authenticatedId.value.trim()) {
+        badges.push(`Authenticated ID: ${authenticatedId.value.trim()}`);
     }
 
-    badges.push(...firstClassificationBadges.value.map((value) => `Classification: ${value}`));
-
-    if (headlineSource.value !== 'identifier' && firstIdentifier.value) {
-        badges.push(`Identifier: ${formatBadgeValue(firstIdentifier.value.key, firstIdentifier.value.value)}`);
-    } else if (headlineSource.value !== 'email' && email.value.trim()) {
+    if (email.value.trim()) {
         badges.push(`Email: ${email.value.trim()}`);
-    } else if (headlineSource.value !== 'temporary' && temporaryId.value.trim()) {
+    }
+
+    if (temporaryId.value.trim()) {
         badges.push(`Temporary ID: ${temporaryId.value.trim()}`);
     }
 
-    if (badges.length === 0 && headlineSource.value === 'anonymous') {
-        badges.push('Anonymous');
+    badges.push(...identifierValues.value);
+
+    if (props.user.company?.id) {
+        badges.push(`Company: ${props.user.company.id}`);
     }
 
     return badges;

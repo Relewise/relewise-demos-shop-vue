@@ -1,19 +1,35 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import contextStore from '@/stores/context.store';
-import { displayUser } from '@/helpers/userHelper';
-import type { User } from '@relewise/client';
+import { displayUserOption } from '@/helpers/userHelper';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 
 const user = contextStore.user;
 const context = contextStore.context;
 const datasets = contextStore.datasets;
+const hasUsers = computed(() => (context.value.users?.length ?? 0) > 0);
+const selectedUserOption = computed(() => {
+    const users = context.value.users ?? [];
+    const selectedUserIndex = context.value.selectedUserIndex;
+
+    if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
+        return '';
+    }
+
+    return String(selectedUserIndex);
+});
 
 function setDataset(datasetId: string) {
     contextStore.setDataset(datasetId);
 }
 
-function setUser(userToSet: User) {
-    contextStore.setUser(userToSet);
+function setUser(selectedIndex: string) {
+    const nextUser = context.value.users?.[Number(selectedIndex)];
+    if (!nextUser) {
+        return;
+    }
+
+    contextStore.setUser(nextUser);
 }
 
 function setUserCompany(companyToSet: string) {
@@ -111,21 +127,27 @@ function applyContextChanges() {
       <div class="flex-grow">
         <label class="text-sm block">User</label>
         <select
-          :disabled="context.users?.length === 1"
-          :value="JSON.stringify(user)"
-          @change="setUser((JSON.parse(($event.target as HTMLInputElement).value) as User))"
+          :disabled="!hasUsers || context.users?.length === 1"
+          :value="selectedUserOption"
+          @change="setUser(($event.target as HTMLInputElement).value)"
         >
+          <option
+            v-if="!hasUsers"
+            value=""
+          >
+            (None)
+          </option>
           <option
             v-for="(userOption, index) in context.users"
             :key="index"
-            :value="JSON.stringify(userOption)"
+            :value="String(index)"
           >
-            {{ displayUser(userOption) }}
+            {{ displayUserOption(userOption, index) }}
           </option>
         </select>
       </div>
       <div
-        v-if="context.companies?.length ?? 0 > 0"
+        v-if="hasUsers && (context.companies?.length ?? 0) > 0"
         class="flex-grow"
       >
         <label class="text-sm block">Company</label>

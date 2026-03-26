@@ -96,30 +96,14 @@
 
             <div>
               <label class="text-sm block">API Key</label>
-              <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-100 bg-slate-100 px-4 py-2.5 shadow-sm focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-200">
-                <input
-                  v-model="editableDataset.apiKey"
-                  type="text"
-                  class="lp-ignore-field !mt-0 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus:!ring-0"
-                  name="dataset-api-key"
-                  placeholder="API Key"
-                  :class="isApiKeyVisible ? '' : 'masked-secret'"
-                  autocomplete="off"
-                  autocapitalize="off"
-                  autocorrect="off"
-                  spellcheck="false"
-                  data-form-type="other"
-                  data-lpignore="true"
-                >
-                <button
-                  type="button"
-                  class="shrink-0 !bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
-                  :aria-label="isApiKeyVisible ? 'Hide API key' : 'Show API key'"
-                  @click="isApiKeyVisible = !isApiKeyVisible"
-                >
-                  {{ isApiKeyVisible ? 'Hide' : 'Show' }}
-                </button>
-              </div>
+              <SecretInput
+                v-model="editableDataset.apiKey"
+                name="dataset-api-key"
+                placeholder="API Key"
+                :reveal-on-change-key="props.dataset.datasetId"
+                show-label="Show API key"
+                hide-label="Hide API key"
+              />
             </div>
 
             <div>
@@ -263,6 +247,7 @@
 /* eslint-disable vue/no-mutating-props */
 import DismissibleBadgeInput from '@/components/DismissibleBadgeInput.vue';
 import Personalisation from '@/components/Personalisation.vue';
+import SecretInput from '@/components/SecretInput.vue';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
@@ -295,7 +280,6 @@ const openSections = ref({
     personalization: true,
 });
 const lastSavedSnapshot = ref('');
-const isApiKeyVisible = ref(false);
 
 const featureFields: Array<{ key: DatasetBooleanKey; label: string; description: string }> = [
     {
@@ -371,7 +355,6 @@ watch(
         editableDataset.value = cloneDataset(nextDataset);
         trackingEnabled.value = contextStore.tracking.value.enabled;
         errors.value = [];
-        isApiKeyVisible.value = false;
         lastSavedSnapshot.value = createSnapshot(nextDataset, trackingEnabled.value);
     },
     { immediate: true, deep: true },
@@ -460,7 +443,7 @@ function normalizeDataset(dataset: IDataset): IDataset {
         allCurrencies: uniqueValues([currencyCode, ...normalizedCurrencies], { uppercase: true }),
         users: dataset.users?.length ? dataset.users : [],
         companies: dataset.companies ?? [],
-        selectedUserIndex: dataset.selectedUserIndex ?? 0,
+        selectedUserIndex: dataset.users?.length ? (dataset.selectedUserIndex ?? 0) : undefined,
     };
 }
 
@@ -541,10 +524,3 @@ function hasInvalidDataRecord(record?: Record<string, DataValue>) {
     return Object.entries(record).some(([key, value]) => !key || !value?.value);
 }
 </script>
-
-<style scoped>
-.masked-secret {
-    -webkit-text-security: disc;
-    text-security: disc;
-}
-</style>

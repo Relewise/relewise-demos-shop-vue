@@ -17,6 +17,16 @@ defineProps({
 
 const open = ref<string | null>(null);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
+const activeUserLabel = computed(() => {
+    const users = contextStore.context.value?.users ?? [];
+    const selectedUserIndex = contextStore.context.value?.selectedUserIndex;
+
+    if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
+        return '(None)';
+    }
+
+    return displayUser(users[selectedUserIndex]) || '(None)';
+});
 const headerElement = ref<HTMLElement | null>(null);
 const headerHeight = ref(106);
 let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -152,19 +162,8 @@ onMounted(() => {
                       {{ contextStore.tracking.value.enabled ? 'Tracking on' : 'Tracking off' }}
                     </span>
                   </div>
-                  <div
-                    v-if="contextStore.context.value.users && contextStore.context.value.selectedUserIndex !== undefined"
-                    class="mt-1 text-xs"
-                  >
-                    User: {{
-                      displayUser(contextStore.context.value.users[contextStore.context.value.selectedUserIndex])
-                    }}
-                  </div>
-                  <div
-                    v-else
-                    class="text-xs"
-                  >
-                    User: Unknown
+                  <div class="mt-1 text-xs">
+                    User: {{ activeUserLabel }}
                   </div>
                 </div>
                 <ChevronDownIcon class="h-4" />
