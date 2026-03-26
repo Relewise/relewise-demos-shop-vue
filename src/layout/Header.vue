@@ -228,7 +228,7 @@ function formatCompanyDetails(company: Company | undefined) {
                     </span>
                     <span
                       class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"
-                      :class="contextStore.tracking.value.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'"
+                      :class="contextStore.tracking.value.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-slate-600'"
                     >
                       <span
                         class="mr-1.5 inline-block h-1.5 w-1.5 rounded-full"
