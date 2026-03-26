@@ -7,6 +7,7 @@
         type="text"
         :placeholder="placeholder"
         class="!mt-0 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus:!ring-0"
+        @blur="$emit('blur')"
       >
       <button
         type="button"
@@ -33,6 +34,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     action: [];
+    blur: [];
     'update:modelValue': [value: string];
 }>();
 

@@ -78,6 +78,8 @@
           :action-label="companyIdActionLabel"
           action-prefix="company-"
           @update:model-value="setCompanyId"
+          @action="commitCompanyIdChange"
+          @blur="commitCompanyIdChange"
         />
 
         <div>
@@ -117,6 +119,7 @@
 /* eslint-disable vue/no-mutating-props */
 import InlineActionInput from '@/components/InlineActionInput.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
+import contextStore from '@/stores/context.store';
 import { ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { DataValueFactory, type Company, type DataValue } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
@@ -139,7 +142,7 @@ const data = ref<KeyValue[]>([]);
 
 const companyIdActionLabel = computed(() => companyId.value.trim() ? 'Regenerate' : 'Generate');
 const hasChildCompanies = computed(() => {
-    const currentCompanyId = companyId.value.trim();
+    const currentCompanyId = props.company.id?.trim();
     if (!currentCompanyId) {
         return false;
     }
@@ -153,7 +156,7 @@ const availableParentCompanies = computed(() => {
     }
 
     return props.companies.filter((company) => {
-        if (company.id === companyId.value.trim()) {
+        if (company.id === props.company.id?.trim()) {
             return false;
         }
 
@@ -202,6 +205,20 @@ watch(
 );
 
 watch(
+    () => props.company.id,
+    (nextCompanyId) => {
+        companyId.value = nextCompanyId ?? '';
+    },
+);
+
+watch(
+    () => props.company.parent?.id,
+    (nextParentCompanyId) => {
+        parentCompanyId.value = nextParentCompanyId ?? '';
+    },
+);
+
+watch(
     [companyId, parentCompanyId, data],
     () => {
         syncCompanyMetadata();
@@ -210,7 +227,6 @@ watch(
 );
 
 function syncCompanyMetadata() {
-    props.company.id = companyId.value;
     props.company.parent = props.companies.find((company) => company.id === parentCompanyId.value);
     props.company.data = data.value.reduce((acc, entry) => {
         acc[entry.key] = DataValueFactory.string(entry.value ?? '');
@@ -224,5 +240,28 @@ function setCompanyId(value: string) {
 
 function setParentCompany(value: string) {
     parentCompanyId.value = value;
+}
+
+function commitCompanyIdChange() {
+    const previousCompanyId = props.company.id?.trim() ?? '';
+    const nextCompanyId = companyId.value.trim();
+
+    if (previousCompanyId === nextCompanyId) {
+        return;
+    }
+
+    props.company.id = nextCompanyId;
+
+    props.companies.forEach((company) => {
+        if (company === props.company || company.parent?.id !== previousCompanyId) {
+            return;
+        }
+
+        company.parent = nextCompanyId ? props.company : undefined;
+    });
+
+    if (props.isActive && contextStore.selectedCompanyId.value === previousCompanyId) {
+        contextStore.setCompany(nextCompanyId);
+    }
 }
 </script>
