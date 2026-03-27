@@ -242,6 +242,7 @@
 import SecretInput from '@/components/SecretInput.vue';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import router from '@/router';
+import { validateDatasetCoreFields } from '@/helpers/datasetValidation';
 import { encodeSharePayload } from '@/helpers/shareEncoding';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
@@ -293,6 +294,7 @@ function createEmptyDraft(): DatasetDraft {
         allLanguages: [],
         currencyCode: '',
         allCurrencies: [],
+        trackingEnabled: false,
         serverUrl: '',
         users: [],
         companies: [],
@@ -322,6 +324,7 @@ function normalizeDataset(dataset: DatasetDraft): IDataset {
         serverUrl: dataset.serverUrl?.trim() ?? '',
         allLanguages: uniqueValues([language, ...(dataset.allLanguages ?? [])]),
         allCurrencies: uniqueValues([currencyCode, ...(dataset.allCurrencies ?? [])], { uppercase: true }),
+        trackingEnabled: dataset.trackingEnabled ?? false,
         users: dataset.users ?? [],
         companies: dataset.companies ?? [],
         allowThirdLevelCategories: dataset.allowThirdLevelCategories,
@@ -371,17 +374,8 @@ function cancelCreatingDataset() {
 }
 
 function createDataset() {
-    validationErrors.value = [];
+    validationErrors.value = validateDatasetCoreFields(draft.value);
 
-    if (!draft.value.displayName?.trim()) {
-        validationErrors.value.push('A dataset name is required.');
-    }
-    if (!draft.value.datasetId.trim()) {
-        validationErrors.value.push('A dataset ID is required.');
-    }
-    if (!draft.value.apiKey.trim()) {
-        validationErrors.value.push('An API key is required.');
-    }
     if (!draft.value.language.trim()) {
         validationErrors.value.push('A language is required.');
     }

@@ -17,11 +17,41 @@ export function sanitizeUsers(users?: User[]) {
     return (users ?? []).map(sanitizeUser);
 }
 
-export function buildContextUser(user: User | undefined, company: Company | undefined) {
+function buildRuntimeCompany(company: Company | undefined, companies: Company[]) {
+    if (!company) {
+        return undefined;
+    }
+
+    const normalizedCompany: Company = {
+        ...company,
+        id: company.id?.trim() ?? '',
+        data: company.data ? { ...company.data } : undefined,
+    };
+
+    const parentId = company.parent?.id?.trim();
+    if (!parentId) {
+        normalizedCompany.parent = undefined;
+        return normalizedCompany;
+    }
+
+    const parentCompany = companies.find((candidate) => candidate.id === parentId);
+    normalizedCompany.parent = parentCompany
+        ? {
+            ...parentCompany,
+            id: parentCompany.id?.trim() ?? '',
+            data: parentCompany.data ? { ...parentCompany.data } : undefined,
+            parent: undefined,
+        } as Company
+        : { id: parentId } as Company;
+
+    return normalizedCompany;
+}
+
+export function buildContextUser(user: User | undefined, company: Company | undefined, companies: Company[] = []) {
     const baseUser = user ? sanitizeUser(user) : {};
 
     return {
         ...baseUser,
-        company,
+        company: buildRuntimeCompany(company, companies),
     } as User;
 }

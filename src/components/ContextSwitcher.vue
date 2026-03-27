@@ -14,6 +14,16 @@ const draftSelectedCompanyOption = ref('');
 const draftDataset = computed(() => {
     return datasets.value.find((dataset) => dataset.datasetId === draftDatasetId.value);
 });
+const configureDemoRoute = computed(() => {
+    if (!contextStore.hasActiveDataset.value) {
+        return { name: 'settings' as const };
+    }
+
+    return {
+        name: 'settings-dataset' as const,
+        params: { datasetId: contextStore.context.value.datasetId },
+    };
+});
 
 const hasUsers = computed(() => (draftDataset.value?.users?.length ?? 0) > 0);
 const hasCompanies = computed(() => (draftDataset.value?.companies?.length ?? 0) > 0);
@@ -198,7 +208,7 @@ function applyContextChanges() {
       <div class="flex items-center justify-between">
         <RouterLink
           v-close-popper
-          to="/app-settings"
+          :to="configureDemoRoute"
           class="mr-auto inline-flex w-fit items-center whitespace-nowrap text-slate-600 hover:text-brand-500"
         >
           <div class="flex items-center justify-center">

@@ -12,6 +12,7 @@ export interface IDataset {
     displayName?: string | null;
     allLanguages: string[];
     allCurrencies: string[];
+    trackingEnabled?: boolean;
     serverUrl?: string;
     users?: User[];
     companies?: Company[];
@@ -29,12 +30,7 @@ export interface IDataset {
     shoppertainmentEnabled?: boolean;
 }
 
-export interface ITracking {
-    enabled: boolean;
-}
-
 export interface IAppContext {
-    tracking: ITracking;
     selectedDatasetIndex: number;
     selectedLanguage?: string;
     selectedCurrencyCode?: string;
@@ -56,6 +52,12 @@ type LegacyDataset = IDataset & {
     language?: string;
     currencyCode?: string;
     selectedUserIndex?: number;
+};
+
+type LegacyStoredContext = IAppContext & {
+    tracking?: {
+        enabled?: boolean;
+    };
 };
 
 function uniqueValues(values: Array<string | undefined | null>, { uppercase = false }: { uppercase?: boolean } = {}) {
@@ -92,6 +94,7 @@ export function sanitizeDatasetConfiguration(dataset: LegacyDataset): IDataset {
         serverUrl: dataset.serverUrl?.trim() ?? '',
         users: sanitizeUsers(dataset.users),
         companies: sanitizeCompanies(dataset.companies),
+        trackingEnabled: dataset.trackingEnabled ?? false,
         allowThirdLevelCategories: dataset.allowThirdLevelCategories,
         hideSoldOutProducts: dataset.hideSoldOutProducts,
         userClassificationFilters: dataset.userClassificationFilters,
@@ -109,7 +112,7 @@ export function sanitizeDatasetConfiguration(dataset: LegacyDataset): IDataset {
 
 class AppContext {
     private readonly localStorageName = 'shopContext';
-    private state = reactive<IAppContext>({ datasets: [], selectedDatasetIndex: 0, tracking: { enabled: false } });
+    private state = reactive<IAppContext>({ datasets: [], selectedDatasetIndex: 0 });
     private errorState = reactive<IAppErrorContext>({ datasetIdError: false, apiKeyError: false });
     private activeContextState = reactive<IActiveContextState>({ revision: 0 });
 
@@ -119,8 +122,15 @@ class AppContext {
         const storedContext = localStorage.getItem(this.localStorageName);
 
         if (storedContext) {
-            Object.assign(this.state, JSON.parse(storedContext));
+            const parsedContext = JSON.parse(storedContext) as LegacyStoredContext;
+            Object.assign(this.state, parsedContext);
+            const legacyTrackingEnabled = parsedContext.tracking?.enabled ?? false;
             this.state.datasets = this.state.datasets.map((dataset) => sanitizeDatasetConfiguration(dataset as LegacyDataset));
+            this.state.datasets.forEach((dataset) => {
+                if (dataset.trackingEnabled === undefined) {
+                    dataset.trackingEnabled = legacyTrackingEnabled;
+                }
+            });
             this.normalizeSessionSelections();
             if (this.hasActiveDataset.value) {
                 this.initializeWebComponents();
@@ -179,7 +189,9 @@ class AppContext {
     }
 
     public get tracking() {
-        return computed(() => this.state.tracking);
+        return computed(() => ({
+            enabled: this.hasActiveDataset.value ? (this.context.value.trackingEnabled ?? false) : false,
+        }));
     }
 
     public get apiKeyError() {
@@ -204,10 +216,10 @@ class AppContext {
             const selectedUserIndex = this.selectedUserIndex.value;
             const selectedCompany = this.selectedCompany.value;
             if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
-                return buildContextUser(UserFactory.anonymous(), selectedCompany);
+                return buildContextUser(UserFactory.anonymous(), selectedCompany, this.context.value.companies ?? []);
             }
 
-            return buildContextUser(users[selectedUserIndex], selectedCompany);
+            return buildContextUser(users[selectedUserIndex], selectedCompany, this.context.value.companies ?? []);
         });
     }
 

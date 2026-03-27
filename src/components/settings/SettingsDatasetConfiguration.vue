@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section class="sticky top-3 z-30 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p class="text-sm text-slate-600">
@@ -248,6 +248,7 @@
 import DismissibleBadgeInput from '@/components/DismissibleBadgeInput.vue';
 import Personalisation from '@/components/Personalisation.vue';
 import SecretInput from '@/components/SecretInput.vue';
+import { validateDatasetCoreFields } from '@/helpers/datasetValidation';
 import contextStore, { sanitizeDatasetConfiguration, type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
@@ -272,7 +273,7 @@ const props = defineProps<{
 }>();
 
 const editableDataset = ref<IDataset>(cloneDataset(props.dataset));
-const trackingEnabled = ref(contextStore.tracking.value.enabled);
+const trackingEnabled = ref(props.dataset.trackingEnabled ?? false);
 const errors = ref<string[]>([]);
 const openSections = ref({
     general: true,
@@ -353,7 +354,7 @@ watch(
     () => props.dataset,
     (nextDataset) => {
         editableDataset.value = cloneDataset(nextDataset);
-        trackingEnabled.value = contextStore.tracking.value.enabled;
+        trackingEnabled.value = nextDataset.trackingEnabled ?? false;
         errors.value = [];
         lastSavedSnapshot.value = createSnapshot(nextDataset, trackingEnabled.value);
     },
@@ -377,15 +378,8 @@ function saveChanges() {
 
     const normalizedDataset = normalizeDataset(editableDataset.value);
 
-    if (!normalizedDataset.displayName?.trim()) {
-        errors.value.push('A dataset name is required.');
-    }
-    if (!normalizedDataset.datasetId) {
-        errors.value.push('A dataset ID is required.');
-    }
-    if (!normalizedDataset.apiKey) {
-        errors.value.push('An API key is required.');
-    }
+    errors.value.push(...validateDatasetCoreFields(normalizedDataset));
+
     if (normalizedDataset.allLanguages.length === 0) {
         errors.value.push('At least one language is required.');
     }
@@ -405,8 +399,9 @@ function saveChanges() {
     }
 
     Object.assign(props.dataset, normalizedDataset);
+    props.dataset.trackingEnabled = trackingEnabled.value;
     editableDataset.value = cloneDataset(normalizedDataset);
-    contextStore.tracking.value.enabled = trackingEnabled.value;
+    editableDataset.value.trackingEnabled = trackingEnabled.value;
 
     if (contextStore.hasActiveDataset.value && contextStore.context.value === props.dataset) {
         contextStore.refreshActiveContext();
@@ -428,6 +423,7 @@ function normalizeDataset(dataset: IDataset): IDataset {
         serverUrl: dataset.serverUrl?.trim() ?? '',
         allLanguages: uniqueValues(dataset.allLanguages ?? []),
         allCurrencies: uniqueValues(dataset.allCurrencies ?? [], { uppercase: true }),
+        trackingEnabled: dataset.trackingEnabled ?? false,
         users: dataset.users ?? [],
         companies: dataset.companies ?? [],
     });
