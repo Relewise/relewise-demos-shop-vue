@@ -2,8 +2,17 @@
   <div class="container mx-auto p-2 xl:p-0">
     <Breadcrumb :items="breadcrumbItems" />
 
-    <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
-      {{ selectedDataset ? selectedDataset.displayName || selectedDataset.datasetId : 'App Settings' }}
+    <h1
+      v-if="!selectedDataset"
+      class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block"
+    >
+      App Settings
+    </h1>
+    <h1
+      v-else
+      class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block"
+    >
+      {{ selectedDataset.displayName || selectedDataset.datasetId }}
     </h1>
 
     <div

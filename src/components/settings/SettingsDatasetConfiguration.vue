@@ -1,6 +1,12 @@
 <template>
   <div class="space-y-6">
-    <section class="sticky top-3 z-30 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section
+      ref="saveBarElement"
+      class="sticky top-3 z-30 rounded-2xl border p-6 transition-all duration-200"
+      :class="isSaveBarPinned
+        ? 'border-slate-300 bg-white/95 shadow-xl ring-1 ring-slate-200 backdrop-blur'
+        : 'border-slate-200 bg-white shadow-sm'"
+    >
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p class="text-sm text-slate-600">
@@ -253,7 +259,7 @@ import contextStore, { sanitizeDatasetConfiguration, type IDataset } from '@/sto
 import notificationsStore from '@/stores/notifications.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import type { Company, DataValue } from '@relewise/client';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 type DatasetBooleanKey =
     | 'allowThirdLevelCategories'
@@ -275,6 +281,8 @@ const props = defineProps<{
 const editableDataset = ref<IDataset>(cloneDataset(props.dataset));
 const trackingEnabled = ref(props.dataset.trackingEnabled ?? false);
 const errors = ref<string[]>([]);
+const saveBarElement = ref<HTMLElement | null>(null);
+const isSaveBarPinned = ref(false);
 const openSections = ref({
     general: true,
     features: false,
@@ -361,8 +369,28 @@ watch(
     { immediate: true, deep: true },
 );
 
+onMounted(() => {
+    updateSaveBarPinnedState();
+    window.addEventListener('scroll', updateSaveBarPinnedState, { passive: true });
+    window.addEventListener('resize', updateSaveBarPinnedState);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', updateSaveBarPinnedState);
+    window.removeEventListener('resize', updateSaveBarPinnedState);
+});
+
 function toggleSection(section: keyof typeof openSections.value) {
     openSections.value[section] = !openSections.value[section];
+}
+
+function updateSaveBarPinnedState() {
+    if (!saveBarElement.value) {
+        isSaveBarPinned.value = false;
+        return;
+    }
+
+    isSaveBarPinned.value = saveBarElement.value.getBoundingClientRect().top <= 12;
 }
 
 function setLanguages(nextLanguages: string[]) {
