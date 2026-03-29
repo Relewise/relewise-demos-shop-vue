@@ -56,7 +56,9 @@ function addNetworkInterceptors() {
 
             return response;
         } catch (error) {
-            notifyNetworkError(typeof resource === 'string' ? resource : resource instanceof URL ? resource.toString() : undefined);
+            if (!isAbortedRequest(error)) {
+                notifyNetworkError(typeof resource === 'string' ? resource : resource instanceof URL ? resource.toString() : undefined);
+            }
             throw error;
         }
     };
@@ -88,6 +90,22 @@ function notifyNetworkError(resource?: string) {
             ? `A request to ${requestTarget} failed before the app received a response. This is often caused by CORS, DNS, or connectivity issues.`
             : 'A request failed before the app received a response. This is often caused by CORS, DNS, or connectivity issues.',
     });
+}
+
+function isAbortedRequest(error: unknown) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+        return true;
+    }
+
+    if (typeof error !== 'object' || error === null) {
+        return false;
+    }
+
+    const abortLikeError = error as { name?: unknown; code?: unknown; message?: unknown };
+
+    return abortLikeError.name === 'AbortError'
+        || abortLikeError.code === 'ABORT_ERR'
+        || (typeof abortLikeError.message === 'string' && abortLikeError.message.toLowerCase().includes('aborted'));
 }
 
 function extractRequestTarget(resource?: string) {
