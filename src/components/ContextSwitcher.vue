@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createSessionSelectionsForDataset } from '@/helpers/contextSession';
 import { computed, ref, watch } from 'vue';
 import contextStore from '@/stores/context.store';
 import { displayUserOption } from '@/helpers/userHelper';
@@ -48,10 +49,11 @@ watch(
             return;
         }
 
-        draftLanguage.value = nextDataset.allLanguages?.[0] ?? '';
-        draftCurrencyCode.value = nextDataset.allCurrencies?.[0] ?? '';
-        draftSelectedUserOption.value = nextDataset.users?.length ? '0' : '';
-        draftSelectedCompanyOption.value = nextDataset.companies?.[0]?.id ?? '';
+        const nextSelections = createSessionSelectionsForDataset(nextDataset);
+        draftLanguage.value = nextSelections.selectedLanguage ?? '';
+        draftCurrencyCode.value = nextSelections.selectedCurrencyCode ?? '';
+        draftSelectedUserOption.value = nextSelections.selectedUserIndex === undefined ? '' : String(nextSelections.selectedUserIndex);
+        draftSelectedCompanyOption.value = nextSelections.selectedCompanyId ?? '';
     },
 );
 

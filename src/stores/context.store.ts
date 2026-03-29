@@ -1,10 +1,12 @@
-import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
-import { Searcher, type Settings, Recommender, type SelectedProductPropertiesSettings, Tracker, type User, type Company, UserFactory, type SelectedCategoryPropertiesSettings, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
-import { initializeRelewiseUI } from '@relewise/web-components';
+import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, type Company, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
-import { buildContextUser, sanitizeUsers } from '@/helpers/userContext';
+import { buildContextUser } from '@/helpers/userContext';
+import { createRecommenderForDataset, createSearcherForDataset, createTrackerForDataset, initializeWebComponentsForDataset } from '@/helpers/contextApi';
+import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSessionSelectionsForDataset, type SessionSelections } from '@/helpers/contextSession';
+import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
+import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
 
 export interface IDataset {
     datasetId: string;
@@ -48,68 +50,6 @@ interface IActiveContextState {
     revision: number;
 }
 
-type LegacyDataset = IDataset & {
-    language?: string;
-    currencyCode?: string;
-    selectedUserIndex?: number;
-};
-
-type LegacyStoredContext = IAppContext & {
-    tracking?: {
-        enabled?: boolean;
-    };
-};
-
-function uniqueValues(values: Array<string | undefined | null>, { uppercase = false }: { uppercase?: boolean } = {}) {
-    const normalized: string[] = [];
-
-    for (const value of values) {
-        const trimmedValue = uppercase ? value?.trim().toUpperCase() ?? '' : value?.trim() ?? '';
-        if (!trimmedValue || normalized.some((existingValue) => existingValue.toLowerCase() === trimmedValue.toLowerCase())) {
-            continue;
-        }
-
-        normalized.push(trimmedValue);
-    }
-
-    return normalized;
-}
-
-function sanitizeCompanies(companies?: Company[]) {
-    return (companies ?? []).map((company) => ({
-        ...company,
-        id: company.id?.trim() ?? '',
-        parent: company.parent?.id?.trim() ? { id: company.parent.id.trim() } as Company : undefined,
-        data: company.data ? { ...company.data } : undefined,
-    }));
-}
-
-export function sanitizeDatasetConfiguration(dataset: LegacyDataset): IDataset {
-    return {
-        datasetId: dataset.datasetId?.trim() ?? '',
-        apiKey: dataset.apiKey?.trim() ?? '',
-        displayName: dataset.displayName?.trim() ?? '',
-        allLanguages: uniqueValues([...(dataset.allLanguages ?? []), dataset.language]),
-        allCurrencies: uniqueValues([...(dataset.allCurrencies ?? []), dataset.currencyCode], { uppercase: true }),
-        serverUrl: dataset.serverUrl?.trim() ?? '',
-        users: sanitizeUsers(dataset.users),
-        companies: sanitizeCompanies(dataset.companies),
-        trackingEnabled: dataset.trackingEnabled ?? false,
-        allowThirdLevelCategories: dataset.allowThirdLevelCategories,
-        hideSoldOutProducts: dataset.hideSoldOutProducts,
-        userClassificationFilters: dataset.userClassificationFilters,
-        recommendationsMinutesAgo: dataset.recommendationsMinutesAgo,
-        showProductRelevanceScore: dataset.showProductRelevanceScore,
-        B2bRecommendations: dataset.B2bRecommendations,
-        showVariantsBadge: dataset.showVariantsBadge,
-        similarProductsOnPdp: dataset.similarProductsOnPdp,
-        variantBasedSearchOverlay: dataset.variantBasedSearchOverlay,
-        contentSearch: dataset.contentSearch,
-        searchHighlight: dataset.searchHighlight,
-        shoppertainmentEnabled: dataset.shoppertainmentEnabled,
-    };
-}
-
 class AppContext {
     private readonly localStorageName = 'shopContext';
     private state = reactive<IAppContext>({ datasets: [], selectedDatasetIndex: 0 });
@@ -119,18 +59,10 @@ class AppContext {
     public static numberOfProductsToRecommend = 8;
 
     constructor() {
-        const storedContext = localStorage.getItem(this.localStorageName);
+        const storedContext = loadStoredContext(this.localStorageName);
 
         if (storedContext) {
-            const parsedContext = JSON.parse(storedContext) as LegacyStoredContext;
-            Object.assign(this.state, parsedContext);
-            const legacyTrackingEnabled = parsedContext.tracking?.enabled ?? false;
-            this.state.datasets = this.state.datasets.map((dataset) => sanitizeDatasetConfiguration(dataset as LegacyDataset));
-            this.state.datasets.forEach((dataset) => {
-                if (dataset.trackingEnabled === undefined) {
-                    dataset.trackingEnabled = legacyTrackingEnabled;
-                }
-            });
+            Object.assign(this.state, storedContext);
             this.normalizeSessionSelections();
             if (this.hasActiveDataset.value) {
                 this.initializeWebComponents();
@@ -238,10 +170,6 @@ class AppContext {
     }
 
     public get defaultSettings(): Settings {
-        if (this.state.selectedDatasetIndex < -1) {
-            throw new Error('Missing language or currencycode');
-        }
-
         return {
             language: this.language.value,
             currency: this.currencyCode.value,
@@ -289,41 +217,33 @@ class AppContext {
     }
 
     public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
-        if (!this.user.value.classifications || !this.context.value.userClassificationFilters)
+        if (!this.user.value.classifications || !this.context.value.userClassificationFilters) {
             return;
+        }
 
-        const country = this.user.value.classifications['country'];
+        const country = this.user.value.classifications.country;
         if (country) {
             filterBuilder.addProductDataFilter('AvailableInMarkets',
                 (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(country)));
         }
 
-        const channel = this.user.value.classifications['channel'];
+        const channel = this.user.value.classifications.channel;
         if (channel) {
             filterBuilder.addProductDataFilter('AvailableInChannels',
                 (c: ConditionBuilder) => c.addContainsCondition(DataValueFactory.string(channel)));
         }
     }
 
-    public getSearcher(): Searcher {
-        if (!this.context.value.apiKey || !this.context.value.datasetId) {
-            throw new Error('Missing apiKey or datasetId');
-        }
-        return new Searcher(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
+    public getSearcher() {
+        return createSearcherForDataset(this.context.value);
     }
 
-    public getRecommender(): Recommender {
-        if (!this.context.value.apiKey || !this.context.value.datasetId) {
-            throw new Error('Missing apiKey or datasetId');
-        }
-        return new Recommender(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
+    public getRecommender() {
+        return createRecommenderForDataset(this.context.value);
     }
 
-    public getTracker(): Tracker {
-        if (!this.context.value.apiKey || !this.context.value.datasetId) {
-            throw new Error('Missing apiKey or datasetId');
-        }
-        return new Tracker(this.context.value.datasetId, this.context.value.apiKey, { serverUrl: this.context.value.serverUrl });
+    public getTracker() {
+        return createTrackerForDataset(this.context.value);
     }
 
     public getRecommendationsSinceMinutesAgo(): number {
@@ -334,12 +254,10 @@ class AppContext {
         this.errorState.apiKeyError = false;
         this.errorState.datasetIdError = false;
 
-        localStorage.setItem(this.localStorageName, JSON.stringify({
+        persistStoredContext(this.localStorageName, {
             ...this.state,
-            datasets: this.state.datasets.map((dataset) => ({
-                ...sanitizeDatasetConfiguration(dataset as LegacyDataset),
-            })),
-        }));
+            datasets: this.state.datasets.map((dataset) => normalizeDatasetConfiguration(dataset)),
+        });
     }
 
     public addDataset(newDataset: IDataset) {
@@ -347,12 +265,12 @@ class AppContext {
             this.state.datasets = [];
         }
 
-        this.state.datasets.push(sanitizeDatasetConfiguration(newDataset as LegacyDataset));
+        this.state.datasets.push(normalizeDatasetConfiguration(newDataset));
         this.setDataset(newDataset.datasetId);
     }
 
     public setDataset(datasetId: string) {
-        this.state.selectedDatasetIndex = this.state.datasets.map(e => e.datasetId).indexOf(datasetId);
+        this.state.selectedDatasetIndex = this.state.datasets.map((entry) => entry.datasetId).indexOf(datasetId);
         this.resetSessionSelectionsForActiveDataset();
         this.refreshActiveContext({ clearBasket: true });
     }
@@ -367,7 +285,7 @@ class AppContext {
     }
 
     public deleteDatasetById(datasetId: string) {
-        const datasetIndex = this.state.datasets.findIndex(dataset => dataset.datasetId === datasetId);
+        const datasetIndex = this.state.datasets.findIndex((dataset) => dataset.datasetId === datasetId);
         if (datasetIndex < 0) {
             return;
         }
@@ -435,10 +353,12 @@ class AppContext {
         }
 
         this.state.selectedDatasetIndex = nextDatasetIndex;
-        this.state.selectedLanguage = language || undefined;
-        this.state.selectedCurrencyCode = currencyCode || undefined;
-        this.state.selectedUserIndex = selectedUserIndex;
-        this.state.selectedCompanyId = selectedCompanyId || undefined;
+        this.setSessionSelections({
+            selectedLanguage: language || undefined,
+            selectedCurrencyCode: currencyCode || undefined,
+            selectedUserIndex,
+            selectedCompanyId: selectedCompanyId || undefined,
+        });
 
         this.refreshActiveContext({ clearBasket: shouldClearBasket });
     }
@@ -482,8 +402,9 @@ class AppContext {
 
         this.activeContextState.revision += 1;
     }
+
     public deleteCompanyById(id: string) {
-        this.context.value.companies = this.context.value.companies?.filter(x => x.id !== id);
+        this.context.value.companies = this.context.value.companies?.filter((company) => company.id !== id);
         this.normalizeSessionSelections();
         this.persistState();
     }
@@ -504,108 +425,40 @@ class AppContext {
     }
 
     public initializeWebComponents() {
-        initializeRelewiseUI(
-            {
-                contextSettings: {
-                    getUser: () => {
-                        return this.user.value;
-                    },
-                    language: this.language.value,
-                    currency: this.currencyCode.value,
-                },
-                datasetId: this.context.value.datasetId,
-                apiKey: this.context.value.apiKey,
-                clientOptions: {
-                    serverUrl: this.context.value.serverUrl,
-                },
-                selectedPropertiesSettings: {
-                    product: this.selectedProductProperties,
-                    variant: { allData: true },
-                },
-                templates: {
-                    product: (product, extentions) => {
-                        return WebComponentProductTemplate(product, extentions);
-                    },
-                },
-                filters: {
-                    product(builder) {
-                        globalProductRecommendationFilters(builder);
-                    },
-                },
-                userEngagement: {
-                    product: {
-                        favorite: true,
-                    },
-                    content: {
-                        sentiment: true,
-                    },
-                },
-            }).useRecommendations();
+        initializeWebComponentsForDataset({
+            dataset: this.context.value,
+            language: this.language.value,
+            currencyCode: this.currencyCode.value,
+            user: this.user.value,
+            selectedProductProperties: this.selectedProductProperties,
+        });
     }
 
     private resetSessionSelectionsForActiveDataset() {
-        if (!this.hasActiveDataset.value) {
-            this.clearSessionSelections();
-            return;
-        }
-
-        const availableLanguages = this.context.value.allLanguages ?? [];
-        const availableCurrencies = this.context.value.allCurrencies ?? [];
-        const availableUsers = this.context.value.users ?? [];
-        const availableCompanies = this.context.value.companies ?? [];
-
-        if (availableLanguages.length === 0) {
-            console.error(`Dataset "${this.context.value.datasetId}" has no configured languages.`);
-        }
-
-        if (availableCurrencies.length === 0) {
-            console.error(`Dataset "${this.context.value.datasetId}" has no configured currencies.`);
-        }
-
-        this.state.selectedLanguage = availableLanguages[0] ?? undefined;
-        this.state.selectedCurrencyCode = availableCurrencies[0] ?? undefined;
-        this.state.selectedUserIndex = availableUsers.length > 0 ? 0 : undefined;
-        this.state.selectedCompanyId = availableCompanies[0]?.id || undefined;
-    }
-
-    private clearSessionSelections() {
-        this.state.selectedLanguage = undefined;
-        this.state.selectedCurrencyCode = undefined;
-        this.state.selectedUserIndex = undefined;
-        this.state.selectedCompanyId = undefined;
+        this.setSessionSelections(createSessionSelectionsForDataset(this.hasActiveDataset.value ? this.context.value : undefined));
     }
 
     private normalizeSessionSelections() {
-        if (!this.hasActiveDataset.value) {
-            this.clearSessionSelections();
-            return;
-        }
+        this.setSessionSelections(
+            normalizeSessionSelectionsForDataset(this.hasActiveDataset.value ? this.context.value : undefined, this.currentSessionSelections),
+        );
+    }
 
-        const availableLanguages = this.context.value.allLanguages ?? [];
-        if (!this.state.selectedLanguage || !availableLanguages.includes(this.state.selectedLanguage)) {
-            if (availableLanguages.length === 0) {
-                console.error(`Dataset "${this.context.value.datasetId}" has no configured languages.`);
-            }
-            this.state.selectedLanguage = availableLanguages[0] ?? undefined;
-        }
+    private get currentSessionSelections(): SessionSelections {
+        return {
+            selectedLanguage: this.state.selectedLanguage,
+            selectedCurrencyCode: this.state.selectedCurrencyCode,
+            selectedUserIndex: this.state.selectedUserIndex,
+            selectedCompanyId: this.state.selectedCompanyId,
+        };
+    }
 
-        const availableCurrencies = this.context.value.allCurrencies ?? [];
-        if (!this.state.selectedCurrencyCode || !availableCurrencies.includes(this.state.selectedCurrencyCode)) {
-            if (availableCurrencies.length === 0) {
-                console.error(`Dataset "${this.context.value.datasetId}" has no configured currencies.`);
-            }
-            this.state.selectedCurrencyCode = availableCurrencies[0] ?? undefined;
-        }
-
-        const users = this.context.value.users ?? [];
-        if (this.state.selectedUserIndex === undefined || this.state.selectedUserIndex < 0 || this.state.selectedUserIndex >= users.length) {
-            this.state.selectedUserIndex = undefined;
-        }
-
-        const companies = this.context.value.companies ?? [];
-        if (!this.state.selectedCompanyId || !companies.some((company) => company.id === this.state.selectedCompanyId)) {
-            this.state.selectedCompanyId = undefined;
-        }
+    private setSessionSelections(selections: SessionSelections) {
+        const nextSelections = selections ?? clearSessionSelections();
+        this.state.selectedLanguage = nextSelections.selectedLanguage;
+        this.state.selectedCurrencyCode = nextSelections.selectedCurrencyCode;
+        this.state.selectedUserIndex = nextSelections.selectedUserIndex;
+        this.state.selectedCompanyId = nextSelections.selectedCompanyId;
     }
 }
 

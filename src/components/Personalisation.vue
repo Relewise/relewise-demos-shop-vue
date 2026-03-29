@@ -1,19 +1,14 @@
 <template>
   <div class="space-y-6">
-    <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 class="text-2xl font-semibold text-slate-900">
-            Users
-          </h2>
-          <p class="mt-2 text-sm text-slate-600">
-            Manage users for this dataset. Authenticated id, temporary id, and email must remain unique when set.
-          </p>
-        </div>
+    <SettingsPanel
+      title="Users"
+      description="Manage users for this dataset. Authenticated id, temporary id, and email must remain unique when set."
+    >
+      <template #actions>
         <button @click="addUser">
           Add user
         </button>
-      </div>
+      </template>
 
       <div
         v-if="users.length === 0"
@@ -40,22 +35,17 @@
           />
         </div>
       </div>
-    </section>
+    </SettingsPanel>
 
-    <section class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 class="text-2xl font-semibold text-slate-900">
-            Companies
-          </h2>
-          <p class="mt-2 text-sm text-slate-600">
-            Manage companies for this dataset. Company ids must remain unique.
-          </p>
-        </div>
+    <SettingsPanel
+      title="Companies"
+      description="Manage companies for this dataset. Company ids must remain unique."
+    >
+      <template #actions>
         <button @click="addCompany">
           Add company
         </button>
-      </div>
+      </template>
 
       <div
         v-if="companies.length === 0"
@@ -83,7 +73,7 @@
           />
         </div>
       </div>
-    </section>
+    </SettingsPanel>
 
     <ConfirmationDialog
       v-model="isRemoveUserDialogOpen"
@@ -106,6 +96,7 @@
 <script lang="ts" setup>
 /* eslint-disable vue/no-mutating-props */
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import CompanyEditorCard from '@/components/settings/CompanyEditorCard.vue';
 import UserEditorCard from '@/components/settings/UserEditorCard.vue';
 import contextStore, { type IDataset } from '@/stores/context.store';

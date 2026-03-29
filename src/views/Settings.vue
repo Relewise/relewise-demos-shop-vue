@@ -41,10 +41,11 @@ import router from '@/router';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Breadcrumb from '@/components/Breadcrumb.vue';
+import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import { decodeSharePayload } from '@/helpers/shareEncoding';
 import SettingsDatasetsWorkspace from '@/components/settings/SettingsDatasetsWorkspace.vue';
 import SettingsDatasetConfiguration from '@/components/settings/SettingsDatasetConfiguration.vue';
-import contextStore, { sanitizeDatasetConfiguration, type IDataset } from '@/stores/context.store';
+import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 
 const route = useRoute();
@@ -85,7 +86,7 @@ async function init() {
     } else {
         const dataset = contextStore.datasets.value.find((entry) => entry.datasetId === settings.datasetId);
         if (dataset) {
-            Object.assign(dataset, sanitizeDatasetConfiguration(settings as IDataset & { language?: string; currencyCode?: string; selectedUserIndex?: number }));
+            Object.assign(dataset, normalizeDatasetConfiguration(settings));
         }
         contextStore.setDataset(settings.datasetId);
     }

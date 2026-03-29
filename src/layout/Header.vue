@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { BuildingOffice2Icon, ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
-import { ref, type PropType, onBeforeUnmount, computed, onMounted } from 'vue';
+import { computed, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
 import ContextSwitcher from '@/components/ContextSwitcher.vue';
 import contextStore from '@/stores/context.store';
-import { displayUser } from '@/helpers/userHelper';
-import type { Company, User } from '@relewise/client';
+import { formatCompanyDetails, formatUserDetails, getSelectedUser, getSelectedUserLabel } from '@/helpers/contextSummary';
+import { useHeaderInteraction } from '@/composables/useHeaderInteraction';
 
 defineProps({
     lineItemsCount: { type: Number, required: true },
@@ -16,146 +16,19 @@ defineProps({
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
 });
 
-const open = ref<string | null>(null);
+const { open, headerElement, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
+const currentUsers = computed(() => contextStore.context.value?.users ?? []);
 const activeUserLabel = computed(() => {
-    const users = contextStore.context.value?.users ?? [];
-    const selectedUserIndex = contextStore.selectedUserIndex.value;
-
-    if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
-        return '(None)';
-    }
-
-    return displayUser(users[selectedUserIndex]) || '(None)';
+    return getSelectedUserLabel(currentUsers.value, contextStore.selectedUserIndex.value);
 });
 const activeUser = computed(() => {
-    const users = contextStore.context.value?.users ?? [];
-    const selectedUserIndex = contextStore.selectedUserIndex.value;
-
-    if (selectedUserIndex === undefined || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
-        return undefined;
-    }
-
-    return users[selectedUserIndex];
+    return getSelectedUser(currentUsers.value, contextStore.selectedUserIndex.value);
 });
 const activeUserDetails = computed(() => formatUserDetails(activeUser.value));
 const hasConfiguredCompanies = computed(() => (contextStore.context.value?.companies?.length ?? 0) > 0);
 const activeCompanyLabel = computed(() => contextStore.selectedCompany.value?.id || '(None)');
 const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.selectedCompany.value));
-const headerElement = ref<HTMLElement | null>(null);
-const headerHeight = ref(106);
-let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
-let headerResizeObserver: ResizeObserver | null = null;
-
-const handleMouseOver = (categoryId: string) => {
-    if (hoverTimeout) clearTimeout(hoverTimeout);
-    hoverTimeout = setTimeout(() => {
-        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-        document.body.classList.add('overflow-hidden');
-
-        if (!document.body.style.marginRight) {
-            document.body.style.marginRight = `${scrollbarWidth}px`;
-        }
-
-        open.value = categoryId;
-    }, 250);
-};
-
-const handleMouseLeave = () => {
-    if (hoverTimeout) clearTimeout(hoverTimeout);
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const isSearchOverlayOpen = searchParams.get('open') === '1' ? true : false;
-
-    if (!isSearchOverlayOpen) {
-        document.body.classList.remove('overflow-hidden');
-        document.body.style.marginRight = ''; // Reset margin
-    }
-
-    open.value = null;
-};
-
-onBeforeUnmount(() => {
-    if (hoverTimeout) clearTimeout(hoverTimeout);
-    headerResizeObserver?.disconnect();
-});
-
-onMounted(() => {
-    if (!headerElement.value) {
-        return;
-    }
-
-    const updateHeaderHeight = () => {
-        headerHeight.value = Math.ceil(headerElement.value?.getBoundingClientRect().height ?? 106);
-    };
-
-    updateHeaderHeight();
-    headerResizeObserver = new ResizeObserver(() => {
-        updateHeaderHeight();
-    });
-    headerResizeObserver.observe(headerElement.value);
-});
-
-function formatUserDetails(user: User | undefined) {
-    if (!user) {
-        return 'No user selected.';
-    }
-
-    const details: string[] = [];
-
-    if (user.authenticatedId) {
-        details.push(`Authenticated ID: ${user.authenticatedId}`);
-    }
-
-    if (user.email) {
-        details.push(`Email: ${user.email}`);
-    }
-
-    if (user.temporaryId) {
-        details.push(`Temporary ID: ${user.temporaryId}`);
-    }
-
-    for (const [key, value] of Object.entries(user.identifiers ?? {})) {
-        if (key && value) {
-            details.push(`${key}: ${value}`);
-        }
-    }
-
-    for (const [key, value] of Object.entries(user.classifications ?? {})) {
-        if (key && value) {
-            details.push(`Classification ${key}: ${value}`);
-        }
-    }
-
-    for (const [key, value] of Object.entries(user.data ?? {})) {
-        if (key && value?.value) {
-            details.push(`Data ${key}: ${String(value.value)}`);
-        }
-    }
-
-    return details.length > 0 ? details.join('\n') : 'Anonymous user';
-}
-
-function formatCompanyDetails(company: Company | undefined) {
-    if (!company) {
-        return 'No company selected.';
-    }
-
-    const details: string[] = [`Company ID: ${company.id}`];
-
-    if (company.parent?.id) {
-        details.push(`Parent: ${company.parent.id}`);
-    }
-
-    for (const [key, value] of Object.entries(company.data ?? {})) {
-        if (key && value?.value) {
-            details.push(`Data ${key}: ${String(value.value)}`);
-        }
-    }
-
-    return details.join('\n');
-}
 </script>
 
 <template>

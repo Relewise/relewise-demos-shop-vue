@@ -1,39 +1,27 @@
 <template>
   <div>
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div
+    <SettingsPanel
+      :title="datasets.length > 0 ? 'Datasets' : 'No datasets configured'"
+      :description="datasets.length > 0
+        ? 'Click a dataset row to open its settings. Use the actions on each row to set the active dataset, share, or remove it.'
+        : 'Add a dataset to start configuring the demo shop.'"
+      :content-class="datasets.length > 0 ? 'mt-8' : 'mt-0'"
+    >
+      <template
         v-if="datasets.length > 0"
-        class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
+        #actions
       >
-        <div>
-          <h2 class="text-3xl text-slate-900">
-            Datasets
-          </h2>
-          <p class="mt-2 text-sm text-slate-600">
-            Click a dataset row to open its settings. Use the actions on each row to set the active dataset, share, or remove it.
-          </p>
-        </div>
-
-        <button
-          class="shrink-0"
-          @click="startCreatingDataset"
-        >
+        <button @click="startCreatingDataset">
           Add new dataset
         </button>
-      </div>
+      </template>
 
       <div
         v-if="datasets.length === 0"
         class="py-14 text-center"
       >
-        <h2 class="text-3xl text-slate-900">
-          No datasets configured
-        </h2>
-        <p class="mx-auto mt-3 max-w-xl text-sm text-slate-600">
-          Add a dataset to start configuring the demo shop.
-        </p>
         <button
-          class="mt-8"
+          class="mt-2"
           @click="startCreatingDataset"
         >
           Add new dataset
@@ -132,7 +120,7 @@
           </div>
         </article>
       </div>
-    </section>
+    </SettingsPanel>
 
     <div
       v-if="isCreating"
@@ -147,27 +135,24 @@
         </div>
 
         <div class="mt-6 grid gap-5">
-          <div>
-            <label class="text-sm block">Name</label>
+          <SettingsField label="Name">
             <input
               ref="nameInput"
               v-model="draft.displayName"
               type="text"
               placeholder="Name"
             >
-          </div>
+          </SettingsField>
 
-          <div>
-            <label class="text-sm block">Dataset ID</label>
+          <SettingsField label="Dataset ID">
             <input
               v-model="draft.datasetId"
               type="text"
               placeholder="Dataset ID"
             >
-          </div>
+          </SettingsField>
 
-          <div>
-            <label class="text-sm block">API Key</label>
+          <SettingsField label="API Key">
             <SecretInput
               v-model="draft.apiKey"
               name="new-dataset-api-key"
@@ -176,35 +161,32 @@
               show-label="Show API key"
               hide-label="Hide API key"
             />
-          </div>
+          </SettingsField>
 
-          <div>
-            <label class="text-sm block">Server URL</label>
+          <SettingsField label="Server URL">
             <input
               v-model="draft.serverUrl"
               type="text"
               placeholder="Server URL"
             >
-          </div>
+          </SettingsField>
 
           <div class="grid gap-5 md:grid-cols-2">
-            <div>
-              <label class="text-sm block">Language</label>
+            <SettingsField label="Language">
               <input
                 v-model="draft.language"
                 type="text"
                 placeholder="en"
               >
-            </div>
+            </SettingsField>
 
-            <div>
-              <label class="text-sm block">Currency</label>
+            <SettingsField label="Currency">
               <input
                 v-model="draft.currencyCode"
                 type="text"
                 placeholder="EUR"
               >
-            </div>
+            </SettingsField>
           </div>
         </div>
 
@@ -241,6 +223,9 @@
 <script lang="ts" setup>
 import SecretInput from '@/components/SecretInput.vue';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
+import SettingsField from '@/components/settings/SettingsField.vue';
+import SettingsPanel from '@/components/settings/SettingsPanel.vue';
+import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import router from '@/router';
 import { validateDatasetCoreFields } from '@/helpers/datasetValidation';
 import { encodeSharePayload } from '@/helpers/shareEncoding';
@@ -314,47 +299,7 @@ function createEmptyDraft(): DatasetDraft {
 }
 
 function normalizeDataset(dataset: DatasetDraft): IDataset {
-    const language = dataset.language.trim();
-    const currencyCode = dataset.currencyCode.trim().toUpperCase();
-
-    return {
-        displayName: dataset.displayName?.trim() ?? '',
-        datasetId: dataset.datasetId.trim(),
-        apiKey: dataset.apiKey.trim(),
-        serverUrl: dataset.serverUrl?.trim() ?? '',
-        allLanguages: uniqueValues([language, ...(dataset.allLanguages ?? [])]),
-        allCurrencies: uniqueValues([currencyCode, ...(dataset.allCurrencies ?? [])], { uppercase: true }),
-        trackingEnabled: dataset.trackingEnabled ?? false,
-        users: dataset.users ?? [],
-        companies: dataset.companies ?? [],
-        allowThirdLevelCategories: dataset.allowThirdLevelCategories,
-        hideSoldOutProducts: dataset.hideSoldOutProducts,
-        userClassificationFilters: dataset.userClassificationFilters,
-        recommendationsMinutesAgo: dataset.recommendationsMinutesAgo,
-        showProductRelevanceScore: dataset.showProductRelevanceScore,
-        B2bRecommendations: dataset.B2bRecommendations,
-        showVariantsBadge: dataset.showVariantsBadge,
-        similarProductsOnPdp: dataset.similarProductsOnPdp,
-        variantBasedSearchOverlay: dataset.variantBasedSearchOverlay,
-        contentSearch: dataset.contentSearch,
-        searchHighlight: dataset.searchHighlight,
-        shoppertainmentEnabled: dataset.shoppertainmentEnabled,
-    };
-}
-
-function uniqueValues(values: string[], { uppercase = false }: { uppercase?: boolean } = {}) {
-    const normalized: string[] = [];
-
-    for (const value of values) {
-        const trimmedValue = uppercase ? value.trim().toUpperCase() : value.trim();
-        if (!trimmedValue || normalized.some((existingValue) => existingValue.toLowerCase() === trimmedValue.toLowerCase())) {
-            continue;
-        }
-
-        normalized.push(trimmedValue);
-    }
-
-    return normalized;
+    return normalizeDatasetConfiguration(dataset);
 }
 
 function formatCount(count: number, singularLabel: string, pluralLabel = `${singularLabel}s`) {
