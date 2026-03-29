@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <SettingsPanel
       title="Users"
-      description="Manage users for this dataset. Authenticated id, temporary id, and email must remain unique when set."
+      description="Manage the users available in this dataset."
     >
       <template #actions>
         <button @click="addUser">

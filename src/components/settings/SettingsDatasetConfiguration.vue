@@ -6,14 +6,10 @@
       :pinned="isSaveBarPinned"
     >
       <template #content>
-        <p class="text-sm text-slate-600">
-          Review and update the dataset configuration, then save when you are ready.
-        </p>
         <p
-          v-if="isDirty"
-          class="mt-2 text-sm font-semibold text-amber-700"
+          :class="isDirty ? 'text-sm font-semibold text-amber-700' : 'text-sm text-slate-600'"
         >
-          You have unsaved changes.
+          {{ isDirty ? 'You have unsaved changes.' : 'No unsaved changes.' }}
         </p>
       </template>
 
@@ -112,7 +108,7 @@
                 <div>
                   <span class="block font-semibold text-slate-900">Tracking enabled</span>
                   <span class="mt-1 block text-sm text-slate-600">
-                    When enabled, interactions are tracked to Relewise for personalized experiences.
+                    Enables tracking of user behavior in the demo shop.
                   </span>
                 </div>
 
