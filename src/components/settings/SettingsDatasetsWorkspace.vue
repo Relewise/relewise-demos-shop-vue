@@ -338,7 +338,7 @@ function createDataset() {
     const newDataset = normalizeDataset(draft.value);
     contextStore.addDataset(newDataset);
     isCreating.value = false;
-    notificationsStore.push({ title: 'Dataset added', text: `${newDataset.displayName || newDataset.datasetId} was added.` });
+    notificationsStore.push({ type: 'success', title: 'Dataset added', text: `${newDataset.displayName || newDataset.datasetId} was added.` });
 }
 
 const isRemoveDialogOpen = computed({
@@ -369,14 +369,14 @@ function selectDataset(datasetId: string) {
     }
 
     contextStore.setDataset(datasetId);
-    notificationsStore.push({ title: 'Dataset selected', text: 'The active dataset was updated.' });
+    notificationsStore.push({ type: 'success', title: 'Dataset selected', text: 'The active dataset was updated.' });
 }
 
 function shareDataset(dataset: IDataset) {
     const shareUrl = new URL('/app-settings', window.location.origin);
     shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(dataset)));
     navigator.clipboard.writeText(shareUrl.toString());
-    notificationsStore.push({ title: 'Share link copied', text: `The share link for ${dataset.displayName || dataset.datasetId} was copied to your clipboard.` });
+    notificationsStore.push({ type: 'success', title: 'Share link copied', text: `The share link for ${dataset.displayName || dataset.datasetId} was copied to your clipboard.` });
 }
 
 function removeDataset(dataset: IDataset) {
@@ -390,7 +390,7 @@ function confirmRemoveDataset() {
     }
 
     contextStore.deleteDatasetById(dataset.datasetId);
-    notificationsStore.push({ title: 'Dataset removed', text: `${dataset.displayName || dataset.datasetId} was removed.` });
+    notificationsStore.push({ type: 'success', title: 'Dataset removed', text: `${dataset.displayName || dataset.datasetId} was removed.` });
     datasetPendingRemoval.value = null;
 }
 </script>

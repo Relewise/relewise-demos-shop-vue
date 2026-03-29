@@ -77,7 +77,7 @@ async function init() {
     try {
         settings = JSON.parse(decodeSharePayload(params.get('share')!)) as IDataset;
     } catch {
-        notificationsStore.push({ title: 'Invalid share link', text: 'The shared dataset could not be imported.' });
+        notificationsStore.push({ type: 'error', title: 'Invalid share link', text: 'The shared dataset could not be imported.' });
         return;
     }
 
@@ -97,7 +97,7 @@ async function init() {
     url.searchParams.delete('share');
     history.replaceState(null, '', url);
 
-    notificationsStore.push({ title: 'Dataset imported', text: `${settings.displayName || settings.datasetId} was added.` });
+    notificationsStore.push({ type: 'success', title: 'Dataset imported', text: `${settings.displayName || settings.datasetId} was added.` });
     await router.replace('/app-settings');
 }
 </script>

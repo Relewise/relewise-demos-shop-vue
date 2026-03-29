@@ -89,7 +89,7 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
         }
 
         lastSavedSnapshot.value = createDatasetSnapshot(originalDataset, trackingEnabled.value);
-        notificationsStore.push({ title: 'Settings saved', text: 'Dataset settings were saved.' });
+        notificationsStore.push({ type: 'success', title: 'Settings saved', text: 'Dataset settings were saved.' });
     }
 
     return {

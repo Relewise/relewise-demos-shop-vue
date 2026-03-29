@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import './styling/index.scss';
+import 'vue-sonner/style.css';
 import formatting from './plugins/formatting';
 import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
@@ -50,7 +51,7 @@ function addNetworkInterceptors() {
                     text = 'There was an unexpected error on your dataset. Contact Relewise for help.';
                 }
 
-                notificationsStore.push({ title: `An error occurred (${response.status.toString()})`, text: text });
+                notificationsStore.push({ type: 'error', title: `An error occurred (${response.status.toString()})`, text: text });
             }
 
             return response;
@@ -81,6 +82,7 @@ function addNetworkInterceptors() {
 function notifyNetworkError(resource?: string) {
     const requestTarget = extractRequestTarget(resource);
     notificationsStore.push({
+        type: 'error',
         title: 'Network error',
         text: requestTarget
             ? `A request to ${requestTarget} failed before the app received a response. This is often caused by CORS, DNS, or connectivity issues.`

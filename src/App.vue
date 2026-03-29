@@ -5,11 +5,11 @@ import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, Produ
 import { ref } from 'vue';
 import { computed, watch } from 'vue';
 import basketService from './services/basket.service';
-import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
 import breakpointService from './services/breakpoint.service';
 import notificationsStore from './stores/notifications.store';
+import { Toaster } from 'vue-sonner';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -56,7 +56,7 @@ async function init() {
             contextStore.setDataset(datasetId);
         }
         else {
-            notificationsStore.push({ title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
+            notificationsStore.push({ type: 'error', title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
         }
 
     }
@@ -113,7 +113,12 @@ function clearNavigation() {
 </script>
 
 <template>
-  <ApiErrors />
+  <Toaster
+    position="bottom-right"
+    rich-colors
+    :visible-toasts="5"
+    offset="16px"
+  />
   <Header
     :line-items-count="lineItemsCount"
     :has-child-categories="hasChildCategories"
