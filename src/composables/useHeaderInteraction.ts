@@ -48,6 +48,7 @@ export function useHeaderInteraction() {
 
         const updateHeaderHeight = () => {
             headerHeight.value = Math.ceil(headerElement.value?.getBoundingClientRect().height ?? 106);
+            document.documentElement.style.setProperty('--header-height', `${headerHeight.value}px`);
         };
 
         updateHeaderHeight();

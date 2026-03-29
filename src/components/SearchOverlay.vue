@@ -424,15 +424,13 @@ function trackBrandView(
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 109px;
-
 .modal {
     @apply bg-white overflow-y-scroll;
     position: fixed;
     z-index: 999;
-    top: $headerHeight; // height of header
+    top: var(--header-height, 109px);
     left: 0;
     width: 100%;
-    height: calc(100% - $headerHeight);
+    height: calc(100% - var(--header-height, 109px));
 }
 </style>
