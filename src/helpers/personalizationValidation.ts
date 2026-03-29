@@ -1,7 +1,7 @@
 import type { IDataset } from '@/stores/context.store';
 import type { Company, DataValue } from '@relewise/client';
 
-export function validatePersonalisation(dataset: IDataset) {
+export function validatePersonalization(dataset: IDataset) {
     const errors: string[] = [];
     const users = dataset.users ?? [];
     const companies = dataset.companies ?? [];

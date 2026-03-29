@@ -39,7 +39,7 @@
 
     <SettingsPanel
       title="Companies"
-      description="Manage companies for this dataset. Company ids must remain unique."
+      description="Manage companies for this dataset. Company IDs must remain unique."
     >
       <template #actions>
         <button @click="addCompany">

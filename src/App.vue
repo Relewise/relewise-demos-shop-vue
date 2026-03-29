@@ -35,12 +35,12 @@ async function init() {
     let query = undefined;
     if (params.has('share')) {
         query = { share: params.get('share') };
-        await router.push({ path: '/app-settings', query: query });
+        await router.push({ path: '/settings', query: query });
     }
 
     if (!contextStore.hasActiveDataset.value) {
-        if (router.currentRoute.value.path !== '/app-settings') {
-            await router.push('/app-settings');
+        if (router.currentRoute.value.path !== '/settings') {
+            await router.push('/settings');
         }
         return;
     }

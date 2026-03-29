@@ -175,7 +175,7 @@
       :open="openSections.personalization"
       @toggle="toggleSection('personalization')"
     >
-      <Personalisation :dataset="editableDataset" />
+      <Personalization :dataset="editableDataset" />
     </SettingsAccordionSection>
   </div>
 </template>
@@ -183,7 +183,7 @@
 <script lang="ts" setup>
  
 import DismissibleBadgeInput from '@/components/DismissibleBadgeInput.vue';
-import Personalisation from '@/components/Personalisation.vue';
+import Personalization from '@/components/Personalization.vue';
 import SecretInput from '@/components/SecretInput.vue';
 import SettingsAccordionSection from '@/components/settings/SettingsAccordionSection.vue';
 import SettingsField from '@/components/settings/SettingsField.vue';

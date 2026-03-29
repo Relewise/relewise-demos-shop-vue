@@ -52,7 +52,7 @@ const email = ref('');
 const success = ref<boolean | undefined>();
 const isValidEmail = ref(true);
 const trackingEnabled = computed(() => contextStore.tracking.value.enabled);
-const disabledTrackingMessage = 'Newsletter signup requires tracking to be enabled in the demo shop context.';
+const disabledTrackingMessage = 'To subscribe to the newsletter, enable tracking in the demo shop context.';
 
 // Email validation using regex
 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;

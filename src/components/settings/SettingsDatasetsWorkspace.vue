@@ -373,7 +373,7 @@ function selectDataset(datasetId: string) {
 }
 
 function shareDataset(dataset: IDataset) {
-    const shareUrl = new URL('/app-settings', window.location.origin);
+    const shareUrl = new URL('/settings', window.location.origin);
     shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(dataset)));
     navigator.clipboard.writeText(shareUrl.toString());
     notificationsStore.push({ type: 'success', title: 'Share link copied', text: `The share link for ${dataset.displayName || dataset.datasetId} was copied to your clipboard.` });

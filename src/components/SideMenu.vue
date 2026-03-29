@@ -33,7 +33,7 @@ const { mainCategories } = toRefs(props);
     >
       <div class="flex w-full">
         <RouterLink
-          to="/app-settings"
+          to="/settings"
           class="text-slate-600 inline-flex items-center whitespace-nowrap py-2 flex-grow"
           @click="toggleMenu"
         >

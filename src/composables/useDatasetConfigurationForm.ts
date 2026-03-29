@@ -1,7 +1,7 @@
 import { datasetFeatureFields } from '@/helpers/datasetFeatures';
 import { cloneDatasetConfiguration, createDatasetSnapshot, normalizeDatasetConfiguration, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { validateDatasetCoreFields } from '@/helpers/datasetValidation';
-import { validatePersonalisation } from '@/helpers/personalisationValidation';
+import { validatePersonalization } from '@/helpers/personalizationValidation';
 import { useStickyPinned } from '@/composables/useStickyPinned';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
@@ -72,7 +72,7 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
             errors.value.push('Dataset ID must be unique.');
         }
 
-        errors.value.push(...validatePersonalisation(normalizedDataset));
+        errors.value.push(...validatePersonalization(normalizedDataset));
 
         if (errors.value.length > 0) {
             return;

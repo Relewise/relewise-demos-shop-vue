@@ -41,7 +41,7 @@ function addNetworkInterceptors() {
             const response = await originalFetch(resource, options);
 
             if (response.status !== 200) {
-                let text = 'Could not perform action against Relewise, due to missing permissions on the API Key.';
+                let text = 'Could not perform the action against Relewise because the API key is missing the required permissions.';
 
                 if (response.status === 400) {
                     text = 'The App does not support the expected scenario. Contact Relewise for help.';

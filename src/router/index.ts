@@ -18,12 +18,12 @@ const router = createRouter({
             component: HomeView,
         },
         {
-            path: '/app-settings',
+            path: '/settings',
             name: 'settings',
             component: () => import('../views/Settings.vue'),
         },
         {
-            path: '/app-settings/:datasetId',
+            path: '/settings/:datasetId',
             name: 'settings-dataset',
             component: () => import('../views/Settings.vue'),
         },
@@ -91,9 +91,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-    if (!contextStore.hasActiveDataset.value && to.path !== '/app-settings') {
+    if (!contextStore.hasActiveDataset.value && to.path !== '/settings') {
         return {
-            path: '/app-settings',
+            path: '/settings',
             query: to.query,
         };
     }

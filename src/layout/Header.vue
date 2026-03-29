@@ -147,7 +147,7 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
                   No dataset configured
                 </div>
                 <div class="mt-1 text-xs text-slate-500">
-                  Configure in App Settings
+                  Configure in Settings
                 </div>
               </div>
             </div>

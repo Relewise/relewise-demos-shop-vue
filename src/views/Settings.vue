@@ -6,7 +6,7 @@
       v-if="!selectedDataset"
       class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block"
     >
-      App Settings
+      Settings
     </h1>
     <h1
       v-else
@@ -56,11 +56,11 @@ const selectedDataset = computed(() => datasetIdParam.value
     : undefined);
 const breadcrumbItems = computed(() => {
     if (!selectedDataset.value) {
-        return [{ name: 'App Settings', route: { name: 'settings' } }];
+        return [{ name: 'Settings', route: { name: 'settings' } }];
     }
 
     return [
-        { name: 'App Settings', route: { name: 'settings' } },
+        { name: 'Settings', route: { name: 'settings' } },
         { name: selectedDataset.value.displayName || selectedDataset.value.datasetId, route: { name: 'settings-dataset', params: { datasetId: selectedDataset.value.datasetId } } },
     ];
 });
@@ -98,6 +98,6 @@ async function init() {
     history.replaceState(null, '', url);
 
     notificationsStore.push({ type: 'success', title: 'Dataset imported', text: `${settings.displayName || settings.datasetId} was added.` });
-    await router.replace('/app-settings');
+    await router.replace('/settings');
 }
 </script>
