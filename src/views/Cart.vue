@@ -9,17 +9,33 @@
     </h1>
     <div
       v-if="isEmpty"
-      class="bg-neutral-200 p-6 flex justify-between items-center w-full"
+      class="rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-sm lg:px-10"
     >
-      <div class="flex-grow">
-        Cart is empty
+      <div class="mx-auto flex max-w-2xl flex-col items-center text-center">
+        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <ShoppingBagIcon class="h-8 w-8" />
+        </div>
+        <h2 class="mt-6 text-2xl text-slate-900 lg:text-3xl">
+          Your cart is empty
+        </h2>
+        <p class="mt-3 max-w-xl text-sm text-slate-600 lg:text-base">
+          Looks like you haven’t added anything yet. Explore the shop and add something you like.
+        </p>
+        <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+          <RouterLink
+            to="/"
+            class="inline-flex items-center justify-center rounded-md bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
+          >
+            Start shopping
+          </RouterLink>
+          <RouterLink
+            to="/favorites"
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+          >
+            View favorites
+          </RouterLink>
+        </div>
       </div>
-      <RouterLink
-        to="/"
-        class="bg-slate-900 px-6 py-2.5 font-semibold text-sm text-white rounded shadow-sm"
-      >
-        Continue shopping
-      </RouterLink>
     </div>
     <div class="justify-center md:flex md:space-x-6 xl:px-0">
       <div class="md:w-3/5">
@@ -131,7 +147,7 @@
       class="scrollbar mt-8"
     >
       <h2 class="text-2xl font-semibold mb-3">
-        People also buy
+        {{ recommendationTitle }}
       </h2>
       <div class="w-full overflow-x-scroll">
         <div class="flex flex-row gap-6">
@@ -160,8 +176,10 @@ import { computed } from 'vue';
 import Image from '@/components/Image.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
+import { ShoppingBagIcon } from '@heroicons/vue/24/outline';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
+const recommendationTitle = ref('People also buy');
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
@@ -170,7 +188,9 @@ function init() {
     if (contextStore.user.value.classifications?.channel === 'B2B'
     && contextStore.context.value.B2bRecommendations) {
         recommendB2B();
-    } else if (!isEmpty.value) {
+    } else if (isEmpty.value) {
+        recommendPopular();
+    } else {
         recommend();
     }
 }
@@ -196,6 +216,7 @@ async function recommendB2B() {
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPopularProducts(request);
     contextStore.assertApiCall(response);
 
+    recommendationTitle.value = 'People also buy';
     result.value = response;
 }
 async function recommend() {
@@ -215,12 +236,29 @@ async function recommend() {
     const response: ProductRecommendationResponse | undefined = await recommender.recommendPurchasedWithMultipleProducts(request);
     contextStore.assertApiCall(response);
 
+    recommendationTitle.value = 'People also buy';
+    result.value = response;
+}
+
+async function recommendPopular() {
+    const request = new PopularProductsBuilder(contextStore.defaultSettings)
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .setSelectedVariantProperties({ allData: true })
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
+        .filters(builder => globalProductRecommendationFilters(builder))
+        .build();
+
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPopularProducts(request);
+    contextStore.assertApiCall(response);
+
+    recommendationTitle.value = 'Popular right now';
     result.value = response;
 }
 
 function updateLineItem(item: ILineItem, quantityDelta: number) {
     basketService.addProduct({ product: item.product, quantityDelta });
     trackingService.trackCart(basketService.model.value.lineItems);
+    init();
 }
 
 function remove(item: ILineItem) {
