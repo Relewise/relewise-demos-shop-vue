@@ -9,7 +9,7 @@
           v-for="(category, index) in categories?.recommendations"
           :key="category.categoryId ?? ''"
           :to="`/category/${category.categoryId}`"
-          class="flex flex-col flex-wrap items-center text-stone-900 hover:text-brand-800"
+          class="popular-category-tile flex w-36 shrink-0 flex-col items-center text-center text-stone-900 hover:text-brand-800"
         >
           <div
             class="overflow-hidden rounded-full h-[100px] w-[100px]"
@@ -20,7 +20,7 @@
               :entity="category"
             />
           </div>
-          <h4 class="font-bold mt-2">
+          <h4 class="popular-category-title mt-2 font-bold">
             {{ category.displayName }}
           </h4>
         </RouterLink>
@@ -51,3 +51,15 @@ async function setup() {
 setup();
 
 </script>
+
+<style scoped>
+.popular-category-title {
+    min-height: 2.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.375rem;
+}
+</style>
