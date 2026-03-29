@@ -168,7 +168,7 @@
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import ProductTile from '../components/ProductTile.vue';
 import { ref } from 'vue';
-import { PopularProductsBuilder, type ProductRecommendationResponse, PurchasedWithMultipleProductsBuilder } from '@relewise/client';
+import { PersonalProductRecommendationBuilder, PopularProductsBuilder, PurchasedWithMultipleProductsBuilder, type ProductRecommendationResponse } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
@@ -187,17 +187,17 @@ const isEmpty = computed(() => basketService.model.value.lineItems.length === 0)
 function init() {
     if (contextStore.user.value.classifications?.channel === 'B2B'
     && contextStore.context.value.B2bRecommendations) {
-        recommendB2B();
+        recommendB2BPopularProducts();
     } else if (isEmpty.value) {
-        recommendPopular();
+        recommendPersonalProducts();
     } else {
-        recommend();
+        recommendPurchasedWithMultipleProducts();
     }
 }
 
 init();
 
-async function recommendB2B() {
+async function recommendB2BPopularProducts() {
     const request = new PopularProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
@@ -219,7 +219,8 @@ async function recommendB2B() {
     recommendationTitle.value = 'People also buy';
     result.value = response;
 }
-async function recommend() {
+
+async function recommendPurchasedWithMultipleProducts() {
     const request = new PurchasedWithMultipleProductsBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
@@ -240,18 +241,18 @@ async function recommend() {
     result.value = response;
 }
 
-async function recommendPopular() {
-    const request = new PopularProductsBuilder(contextStore.defaultSettings)
+async function recommendPersonalProducts() {
+    const request = new PersonalProductRecommendationBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
-    const response: ProductRecommendationResponse | undefined = await recommender.recommendPopularProducts(request);
+    const response: ProductRecommendationResponse | undefined = await recommender.recommendPersonalProducts(request);
     contextStore.assertApiCall(response);
 
-    recommendationTitle.value = 'Popular right now';
+    recommendationTitle.value = 'Recommended for you';
     result.value = response;
 }
 
