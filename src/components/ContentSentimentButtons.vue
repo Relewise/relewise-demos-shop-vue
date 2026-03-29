@@ -14,46 +14,54 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
 <template>
-    <div class="sentiment-buttons" @click.stop.prevent>
-        <relewise-content-sentiment-buttons
-            v-if="!isAnonymous"
-            :content.prop="content"
-            :user.prop="user"
-        />
-        <Popover v-else placement="right-end" :arrow="false" popper-class="favorite-popover">
-            <template #default>
-                <div
-                    class="fake-sentiment-button"
-                    role="group"
-                    aria-label="Content sentiment actions"
-                >
-                    <button
-                        type="button"
-                        class="fake-sentiment-button__button"
-                    >
-                        <relewise-like-icon
-                            class="fake-sentiment-button__icon"
-                            aria-hidden="true"
-                        ></relewise-like-icon>
-                    </button>
-                    <button
-                        type="button"
-                        class="fake-sentiment-button__button"
-                    >
-                        <relewise-dislike-icon
-                            class="fake-sentiment-button__icon"
-                            aria-hidden="true"
-                        ></relewise-dislike-icon>
-                    </button>
-                </div>
-            </template>
-            <template #content>
-                <div class="engagement-popover-content max-w-xs p-4 text-sm text-slate-700">
-                    This feature requires a non-anonymous user.
-                </div>
-            </template>
-        </Popover>
-    </div>
+  <div
+    class="sentiment-buttons"
+    @click.stop.prevent
+  >
+    <relewise-content-sentiment-buttons
+      v-if="!isAnonymous"
+      :content.prop="content"
+      :user.prop="user"
+    />
+    <Popover
+      v-else
+      placement="right-end"
+      :arrow="false"
+      popper-class="favorite-popover"
+    >
+      <template #default>
+        <div
+          class="fake-sentiment-button"
+          role="group"
+          aria-label="Content sentiment actions"
+        >
+          <button
+            type="button"
+            class="fake-sentiment-button__button"
+          >
+            <relewise-like-icon
+              class="fake-sentiment-button__icon"
+              aria-hidden="true"
+            />
+          </button>
+          <button
+            type="button"
+            class="fake-sentiment-button__button"
+          >
+            <relewise-dislike-icon
+              class="fake-sentiment-button__icon"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </template>
+      <template #content>
+        <div class="engagement-popover-content max-w-xs p-4 text-sm text-slate-700">
+          This feature requires a non-anonymous user.
+        </div>
+      </template>
+    </Popover>
+  </div>
 </template>
 
 <style scoped>

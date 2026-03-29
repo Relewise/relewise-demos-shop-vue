@@ -1,73 +1,126 @@
 <template>
-    <div class="category-page container mx-auto p-2 xl:p-0 relative">
-        <Breadcrumb v-if="breadcrumb" :breadcrumb="breadcrumb" />
+  <div class="category-page container mx-auto p-2 xl:p-0 relative">
+    <Breadcrumb
+      v-if="breadcrumb"
+      :breadcrumb="breadcrumb"
+    />
 
-        <div class="grid grid-cols-1 xl:grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start items-center">
-            <div>
-                <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
-                    {{ category?.displayName }}
-                </h1>
-                <span v-if="result && result.hits > 0" class="ml-4 text-sm lg:text-base whitespace-nowrap">
-                    Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of {{
-                        result?.hits }} products </span>
-            </div>
+    <div class="grid grid-cols-1 xl:grid-cols-2 bg-white rounded gap-1 lg:flex lg:gap-4 items-start items-center">
+      <div>
+        <h1 class="text-xl lg:text-4xl font-semibold my-6 underline--yellow inline-block">
+          {{ category?.displayName }}
+        </h1>
+        <span
+          v-if="result && result.hits > 0"
+          class="ml-4 text-sm lg:text-base whitespace-nowrap"
+        >
+          Showing {{ (page * 40) - 39 }} - {{ result?.hits < 40 ? result?.hits : page * 40 }} of {{
+            result?.hits }} products </span>
+      </div>
 
-            <div class="hidden lg:block lg:flex-grow">
-            </div>
-            <Sorting v-if="filters.sort != null" v-model="filters.sort" type="Product" @change="search" />
-        </div>
-
-        <div class="flex gap-10">
-            <div v-if="result?.facets || (childCategories?.length ?? 0) > 0" class="hidden lg:block w-1/5">
-                <div v-if="(childCategories?.length ?? 0) > 0" class="mb-6 border-b border-solid border-slate-300 pb-6">
-                    <div class="font-semibold text-lg mb-1">
-                        Categories
-                    </div>
-                    <ul>
-                        <li v-for="(childCategory, index) in childCategories" :key="index">
-                            <RouterLink
-                                :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.category.categoryId } }"
-                                class="text-slate-700 hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer">
-                                {{ childCategory.category.displayName ?? childCategory.category.categoryId }}
-                            </RouterLink>
-                        </li>
-                    </ul>
-                </div>
-
-                <Facets v-if="result?.facets" :filters="filters" :facets="result.facets" :context="'Category'"
-                    @search="search" />
-            </div>
-            <div class="w-full lg:w-4/5">
-                <div v-if="result?.results">
-                    <DisplayAdHeroBanner
-                        v-if="result.retailMedia?.placements?.HERO_BANNER?.results && result.retailMedia?.placements?.HERO_BANNER?.results[0]?.promotedDisplayAd?.result"
-                        v-model="result.retailMedia.placements.HERO_BANNER.results[0].promotedDisplayAd">
-                    </DisplayAdHeroBanner>
-
-                    <div v-if="products" class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
-                        <template v-for="(product, pIndex) in products" :key="pIndex">
-                            <ProductTile v-if="product.product" :product="product.product"
-                                :is-promotion="product.isPromotion" />
-                            <DisplayAdTile v-else-if="product.displayAd" :key="'ad' + pIndex"
-                                :display-ad="product.displayAd" />
-                        </template>
-                    </div>
-
-                    <div class="py-3 flex justify-center mt-10">
-                        <Pagination v-model.sync="page" v-model:total="result.hits" :page-size="40" />
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div v-if="rightSide" class="absolute h-[95%] top-[128px] -right-56 flex flex-col gap-2">
-            <template v-for="(item, pIndex) in rightSide.slice(0, 4)">
-                <ProductTile v-if="item.promotedProduct?.result" :key="pIndex" :product="item.promotedProduct?.result"
-                    :is-promotion="true" class="w-[200px] shadow ad" />
-                <DisplayAdTile v-else-if="item.promotedDisplayAd?.result" :key="'ad' + pIndex"
-                    :display-ad="item.promotedDisplayAd" class="w-[200px]" />
-            </template>
-        </div>
+      <div class="hidden lg:block lg:flex-grow" />
+      <Sorting
+        v-if="filters.sort != null"
+        v-model="filters.sort"
+        type="Product"
+        @change="search"
+      />
     </div>
+
+    <div class="flex gap-10">
+      <div
+        v-if="result?.facets || (childCategories?.length ?? 0) > 0"
+        class="hidden lg:block w-1/5"
+      >
+        <div
+          v-if="(childCategories?.length ?? 0) > 0"
+          class="mb-6 border-b border-solid border-slate-300 pb-6"
+        >
+          <div class="font-semibold text-lg mb-1">
+            Categories
+          </div>
+          <ul>
+            <li
+              v-for="(childCategory, index) in childCategories"
+              :key="index"
+            >
+              <RouterLink
+                :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.category.categoryId } }"
+                class="text-slate-700 hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+              >
+                {{ childCategory.category.displayName ?? childCategory.category.categoryId }}
+              </RouterLink>
+            </li>
+          </ul>
+        </div>
+
+        <Facets
+          v-if="result?.facets"
+          :filters="filters"
+          :facets="result.facets"
+          :context="'Category'"
+          @search="search"
+        />
+      </div>
+      <div class="w-full lg:w-4/5">
+        <div v-if="result?.results">
+          <DisplayAdHeroBanner
+            v-if="result.retailMedia?.placements?.HERO_BANNER?.results && result.retailMedia?.placements?.HERO_BANNER?.results[0]?.promotedDisplayAd?.result"
+            v-model="result.retailMedia.placements.HERO_BANNER.results[0].promotedDisplayAd"
+          />
+
+          <div
+            v-if="products"
+            class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3"
+          >
+            <template
+              v-for="(product, pIndex) in products"
+              :key="pIndex"
+            >
+              <ProductTile
+                v-if="product.product"
+                :product="product.product"
+                :is-promotion="product.isPromotion"
+              />
+              <DisplayAdTile
+                v-else-if="product.displayAd"
+                :key="'ad' + pIndex"
+                :display-ad="product.displayAd"
+              />
+            </template>
+          </div>
+
+          <div class="py-3 flex justify-center mt-10">
+            <Pagination
+              v-model.sync="page"
+              v-model:total="result.hits"
+              :page-size="40"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="rightSide"
+      class="absolute h-[95%] top-[128px] -right-56 flex flex-col gap-2"
+    >
+      <template v-for="(item, pIndex) in rightSide.slice(0, 4)">
+        <ProductTile
+          v-if="item.promotedProduct?.result"
+          :key="pIndex"
+          :product="item.promotedProduct?.result"
+          :is-promotion="true"
+          class="w-[200px] shadow ad"
+        />
+        <DisplayAdTile
+          v-else-if="item.promotedDisplayAd?.result"
+          :key="'ad' + pIndex"
+          :display-ad="item.promotedDisplayAd"
+          class="w-[200px]"
+        />
+      </template>
+    </div>
+  </div>
 </template>
 
 
@@ -188,7 +241,7 @@ watch(route, () => {
         init();
 });
 
-watch(page, async () => {
+watch(page, async() => {
     await search();
 });
 
@@ -212,7 +265,7 @@ async function search() {
                 variation: { key: variationName },
             })
             .setSelectedDisplayAdProperties({
-                allData: true
+                allData: true,
             }))
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
@@ -251,7 +304,7 @@ async function search() {
     if (response && response.facets && response.facets.items) {
         if (renderCatoryLinks.value && response.facets.items[0] !== null) {
             const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
-            var root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0]!;
+            let root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0]!;
             while (root?.category.categoryId !== categoryId.value) {
                 if (!root?.children) {
                     root = null;

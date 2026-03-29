@@ -1,6 +1,6 @@
 import type { ILineItem } from './basket.service';
 import contextStore from '../stores/context.store';
-import { UserFactory, type FeedItem } from '@relewise/client';
+import type { FeedItem } from '@relewise/client';
 
 class TrackingService {
     public trackProductCategoryView(id: string) {
@@ -36,11 +36,10 @@ class TrackingService {
     }
 
     public async trackUserUpdate(email: string): Promise<boolean> {
-        const tracker = contextStore.getTracker();
+        if (!contextStore.tracking.value.enabled) return false;
 
-        const user = !contextStore.tracking.value.enabled ?
-            UserFactory.byEmail(email)
-            : { ...contextStore.user.value, email };
+        const tracker = contextStore.getTracker();
+        const user = { ...contextStore.user.value, email };
 
         try {
             await tracker.trackUserUpdate({ user: user });

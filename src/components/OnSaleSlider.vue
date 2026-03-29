@@ -1,16 +1,23 @@
 <template>
-    <div v-if="result && result.recommendations && result.recommendations.length > 0" class="container mx-auto scrollbar mt-8">
-        <h2 class="text-3xl font-semibold mb-3 text-center">
-            On sale right now
-        </h2>
-        <div class="w-full overflow-x-scroll">
-            <div class="flex flex-row gap-6">
-                <div v-for="(product, pIndex) in result?.recommendations ?? []" :key="pIndex" class="min-w-[250px] pb-3">
-                    <ProductTile :product="product"/>
-                </div>
-            </div>
+  <div
+    v-if="result && result.recommendations && result.recommendations.length > 0"
+    class="container mx-auto scrollbar mt-8"
+  >
+    <h2 class="text-3xl font-semibold mb-3 text-center">
+      On sale right now
+    </h2>
+    <div class="w-full overflow-x-scroll">
+      <div class="flex flex-row gap-6">
+        <div
+          v-for="(product, pIndex) in result?.recommendations ?? []"
+          :key="pIndex"
+          class="min-w-[250px] pb-3"
+        >
+          <ProductTile :product="product" />
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
