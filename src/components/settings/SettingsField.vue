@@ -2,7 +2,7 @@
   <div>
     <label
       v-if="label"
-      class="text-sm block"
+      class="block text-sm text-slate-700"
       :for="forId"
     >
       {{ label }}

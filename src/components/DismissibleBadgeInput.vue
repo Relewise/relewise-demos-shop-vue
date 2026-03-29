@@ -1,8 +1,8 @@
 <template>
   <div>
-    <label class="text-sm block">{{ label }}</label>
+    <label class="block text-sm text-slate-700">{{ label }}</label>
 
-    <div class="mt-3 rounded-md border border-slate-300 bg-white px-2 py-2 shadow-sm transition focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-200">
+    <div class="mt-1 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
       <div class="flex flex-wrap items-center gap-2">
         <span
           v-for="item in normalizedItems"
@@ -38,7 +38,7 @@
           v-model="newItem"
           type="text"
           :placeholder="placeholder"
-          class="h-7 min-w-[7rem] flex-1 !border-0 !bg-transparent !px-0 !py-0 text-sm text-slate-700 !shadow-none placeholder:text-slate-400 focus:!ring-0"
+          class="h-7 min-w-[7rem] flex-1 !border-0 !bg-transparent !px-0 !py-0 text-sm text-slate-900 !shadow-none placeholder:text-slate-400 focus:!ring-0"
           @keydown.enter.prevent="addItem"
           @keydown.backspace="handleBackspace"
         >
