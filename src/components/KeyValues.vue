@@ -1,43 +1,39 @@
 <template>
   <div>
-    <label class="block text-sm">{{ title }}</label>
+    <label class="block text-sm text-slate-700">{{ title }}</label>
     <div class="mt-3 flex flex-col gap-3">
       <div
         v-for="(row, index) in rows"
         :key="row.id"
         class="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
       >
-        <input
+        <InputText
           v-model="row.key"
-          type="text"
           placeholder="Key"
+          :aria-label="`${title} key`"
           @input="handleRowInput"
-        >
-        <input
+        />
+        <InputText
           v-model="row.value"
-          type="text"
           placeholder="Value"
+          :aria-label="`${title} value`"
           @input="handleRowInput"
-        >
-        <button
-          type="button"
-          class="inline-flex h-10 w-10 items-center justify-center self-start rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+        />
+        <TrashCanButton
+          class="self-start"
           title="Remove row"
+          aria-label="Remove row"
           :disabled="!canRemoveRow(index)"
           @click="remove(index)"
-        >
-          <TrashIcon
-            class="shrink-0"
-            style="width: 1.25rem; height: 1.25rem;"
-          />
-        </button>
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { TrashIcon } from '@heroicons/vue/24/outline';
+import InputText from '@/components/form/InputText.vue';
+import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import { ref, type PropType, watch } from 'vue';
 
 export type KeyValue = {

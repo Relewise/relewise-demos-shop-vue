@@ -105,17 +105,11 @@
                   style="width: 1.25rem; height: 1.25rem;"
                 />
               </button>
-              <button
-                type="button"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+              <TrashCanButton
                 title="Remove dataset"
+                aria-label="Remove dataset"
                 @click.stop="removeDataset(dataset)"
-              >
-                <TrashIcon
-                  class="shrink-0"
-                  style="width: 1.25rem; height: 1.25rem;"
-                />
-              </button>
+              />
             </div>
           </div>
         </article>
@@ -135,58 +129,48 @@
         </div>
 
         <div class="mt-6 grid gap-5">
-          <SettingsField label="Name">
-            <input
-              ref="nameInput"
-              v-model="draft.displayName"
-              type="text"
-              placeholder="Name"
-            >
-          </SettingsField>
+          <InputText
+            id="dataset-draft-name"
+            ref="nameInput"
+            v-model="draft.displayName"
+            label="Name"
+            placeholder="Name"
+          />
 
-          <SettingsField label="Dataset ID">
-            <input
-              v-model="draft.datasetId"
-              type="text"
-              placeholder="Dataset ID"
-            >
-          </SettingsField>
+          <InputText
+            v-model="draft.datasetId"
+            label="Dataset ID"
+            placeholder="Dataset ID"
+          />
 
-          <SettingsField label="API Key">
-            <SecretInput
-              v-model="draft.apiKey"
-              name="new-dataset-api-key"
-              placeholder="API Key"
-              :reveal-on-change-key="isCreating ? 'create-dataset' : 'closed'"
-              show-label="Show API key"
-              hide-label="Hide API key"
-            />
-          </SettingsField>
+          <SecretInput
+            v-model="draft.apiKey"
+            label="API Key"
+            name="new-dataset-api-key"
+            placeholder="API Key"
+            :reveal-on-change-key="isCreating ? 'create-dataset' : 'closed'"
+            show-label="Show API key"
+            hide-label="Hide API key"
+          />
 
-          <SettingsField label="Server URL">
-            <input
-              v-model="draft.serverUrl"
-              type="text"
-              placeholder="Server URL"
-            >
-          </SettingsField>
+          <InputText
+            v-model="draft.serverUrl"
+            label="Server URL"
+            placeholder="Server URL"
+          />
 
           <div class="grid gap-5 md:grid-cols-2">
-            <SettingsField label="Language">
-              <input
-                v-model="draft.language"
-                type="text"
-                placeholder="en"
-              >
-            </SettingsField>
+            <InputText
+              v-model="draft.language"
+              label="Language"
+              placeholder="en"
+            />
 
-            <SettingsField label="Currency">
-              <input
-                v-model="draft.currencyCode"
-                type="text"
-                placeholder="EUR"
-              >
-            </SettingsField>
+            <InputText
+              v-model="draft.currencyCode"
+              label="Currency"
+              placeholder="EUR"
+            />
           </div>
         </div>
 
@@ -223,7 +207,8 @@
 <script lang="ts" setup>
 import SecretInput from '@/components/SecretInput.vue';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
-import SettingsField from '@/components/settings/SettingsField.vue';
+import InputText from '@/components/form/InputText.vue';
+import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import router from '@/router';
@@ -231,8 +216,8 @@ import { validateDatasetCoreFields } from '@/helpers/datasetValidation';
 import { encodeSharePayload } from '@/helpers/shareEncoding';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
-import { CheckCircleIcon, LinkIcon, TrashIcon } from '@heroicons/vue/24/outline';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { CheckCircleIcon, LinkIcon } from '@heroicons/vue/24/outline';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 type DatasetDraft = IDataset & {
     currencyCode: string;
@@ -245,7 +230,7 @@ const isCreating = ref(false);
 const datasetPendingRemoval = ref<IDataset | null>(null);
 const validationErrors = ref<string[]>([]);
 const draft = ref<DatasetDraft>(createEmptyDraft());
-const nameInput = ref<HTMLInputElement | null>(null);
+const nameInput = useTemplateRef<{ inputField: HTMLInputElement | null }>('nameInput');
 
 watch(isCreating, async(nextIsCreating) => {
     if (!nextIsCreating) {
@@ -253,7 +238,7 @@ watch(isCreating, async(nextIsCreating) => {
     }
 
     await nextTick();
-    nameInput.value?.focus();
+    nameInput.value?.inputField?.focus();
 });
 
 function handleEscape(event: KeyboardEvent) {

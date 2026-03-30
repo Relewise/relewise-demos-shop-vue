@@ -22,8 +22,18 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
 
     const enabledFeatureCount = computed(() => datasetFeatureFields
         .reduce((count, feature) => count + (editableDataset.value[feature.key] ? 1 : 0), 0));
-    const languageItems = computed(() => uniqueNormalizedStrings(editableDataset.value.allLanguages ?? []));
-    const currencyItems = computed(() => uniqueNormalizedStrings(editableDataset.value.allCurrencies ?? [], { uppercase: true }));
+    const languageItems = computed({
+        get: () => uniqueNormalizedStrings(editableDataset.value.allLanguages ?? []),
+        set: (nextLanguages: string[]) => {
+            editableDataset.value.allLanguages = uniqueNormalizedStrings(nextLanguages);
+        },
+    });
+    const currencyItems = computed({
+        get: () => uniqueNormalizedStrings(editableDataset.value.allCurrencies ?? [], { uppercase: true }),
+        set: (nextCurrencies: string[]) => {
+            editableDataset.value.allCurrencies = uniqueNormalizedStrings(nextCurrencies, { uppercase: true });
+        },
+    });
     const isDirty = computed(() => {
         return createDatasetSnapshot(editableDataset.value, trackingEnabled.value) !== lastSavedSnapshot.value;
     });
@@ -41,14 +51,6 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
 
     function toggleSection(section: keyof typeof openSections.value) {
         openSections.value[section] = !openSections.value[section];
-    }
-
-    function setLanguages(nextLanguages: string[]) {
-        editableDataset.value.allLanguages = uniqueNormalizedStrings(nextLanguages);
-    }
-
-    function setCurrencies(nextCurrencies: string[]) {
-        editableDataset.value.allCurrencies = uniqueNormalizedStrings(nextCurrencies, { uppercase: true });
     }
 
     function saveChanges() {
@@ -104,8 +106,6 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
         isDirty,
         featureFields: datasetFeatureFields,
         toggleSection,
-        setLanguages,
-        setCurrencies,
         saveChanges,
     };
 }

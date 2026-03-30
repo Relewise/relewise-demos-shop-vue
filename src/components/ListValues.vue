@@ -30,14 +30,12 @@
           >
             Use
           </button>
-          <button
-            type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+          <TrashCanButton
+            size="extrasmall"
             :title="`Remove ${item}`"
+            :aria-label="`Remove ${item}`"
             @click="removeItem(item)"
-          >
-            <TrashIcon class="h-4 w-4" />
-          </button>
+          />
         </div>
       </div>
     </div>
@@ -67,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { TrashIcon } from '@heroicons/vue/24/outline';
+import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import { computed, ref, toRefs, type PropType } from 'vue';
 
 const props = defineProps({

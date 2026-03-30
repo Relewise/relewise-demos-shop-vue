@@ -36,18 +36,11 @@
       </button>
 
       <div class="flex items-center gap-2 md:pl-4">
-        <button
-          type="button"
-          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+        <TrashCanButton
           title="Remove company"
           aria-label="Remove company"
           @click.stop="$emit('remove')"
-        >
-          <TrashIcon
-            class="shrink-0"
-            style="width: 1.25rem; height: 1.25rem;"
-          />
-        </button>
+        />
 
         <button
           type="button"
@@ -82,26 +75,23 @@
           @blur="commitCompanyIdChange"
         />
 
-        <div>
-          <label class="block text-sm">Parent company</label>
-          <select
-            :value="parentCompanyId"
-            class="mt-3"
-            :disabled="isParentSelectionDisabled"
-            @change="setParentCompany(($event.target as HTMLInputElement).value)"
+        <InputSelect
+          :model-value="parentCompanyId"
+          label="Parent company"
+          :disabled="isParentSelectionDisabled"
+          @update:model-value="setParentCompany"
+        >
+          <option value="">
+            {{ parentPlaceholder }}
+          </option>
+          <option
+            v-for="companyOption in availableParentCompanies"
+            :key="companyOption.id"
+            :value="companyOption.id"
           >
-            <option value="">
-              {{ parentPlaceholder }}
-            </option>
-            <option
-              v-for="companyOption in availableParentCompanies"
-              :key="companyOption.id"
-              :value="companyOption.id"
-            >
-              {{ companyOption.id }}
-            </option>
-          </select>
-        </div>
+            {{ companyOption.id }}
+          </option>
+        </InputSelect>
       </div>
 
       <div class="mt-6 grid gap-6 xl:grid-cols-2">
@@ -118,9 +108,11 @@
 <script setup lang="ts">
 /* eslint-disable vue/no-mutating-props */
 import InlineActionInput from '@/components/InlineActionInput.vue';
+import InputSelect from '@/components/form/InputSelect.vue';
+import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import contextStore from '@/stores/context.store';
-import { ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { DataValueFactory, type Company, type DataValue } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 

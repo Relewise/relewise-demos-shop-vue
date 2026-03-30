@@ -1,12 +1,12 @@
 <template>
   <div>
-    <label class="block text-sm">{{ label }}</label>
-    <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-100 bg-slate-100 px-4 py-2.5 shadow-sm focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-slate-200">
+    <label class="block text-sm text-slate-700">{{ label }}</label>
+    <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
       <input
         v-model="internalValue"
         type="text"
         :placeholder="placeholder"
-        class="!mt-0 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus:!ring-0"
+        class="!mt-0 !border-0 !bg-transparent !px-0 !py-0 !text-slate-900 !shadow-none placeholder:!text-slate-400 focus:!ring-0"
         @blur="$emit('blur')"
       >
       <button

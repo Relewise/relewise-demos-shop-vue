@@ -36,18 +36,11 @@
       </button>
 
       <div class="flex items-center gap-2 md:pl-4">
-        <button
-          type="button"
-          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+        <TrashCanButton
           title="Remove user"
           aria-label="Remove user"
           @click.stop="$emit('remove')"
-        >
-          <TrashIcon
-            class="shrink-0"
-            style="width: 1.25rem; height: 1.25rem;"
-          />
-        </button>
+        />
 
         <button
           type="button"
@@ -80,15 +73,11 @@
           @update:model-value="setAuthenticatedId"
         />
 
-        <div>
-          <label class="text-sm block">Email</label>
-          <input
-            v-model="email"
-            class="mt-1"
-            type="text"
-            placeholder="Email"
-          >
-        </div>
+        <InputText
+          v-model="email"
+          label="Email"
+          placeholder="Email"
+        />
 
         <InlineActionInput
           :model-value="temporaryId"
@@ -127,8 +116,10 @@
 <script lang="ts" setup>
 /* eslint-disable vue/no-mutating-props */
 import InlineActionInput from '@/components/InlineActionInput.vue';
+import InputText from '@/components/form/InputText.vue';
+import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
-import { ChevronDownIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { DataValueFactory, type DataValue, type User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
