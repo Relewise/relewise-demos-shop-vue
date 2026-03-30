@@ -256,14 +256,12 @@ const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommendationTitle = ref('People also buy');
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
-const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
+const isEmpty = computed(() => !basketService.hasItems.value);
 const canPlaceOrder = computed(() => contextStore.tracking.value.enabled);
 const isPlacingOrder = ref(false);
 const previousRecommendationSnapshot = ref<RecommendationSnapshot | null>(null);
-const cartTotal = computed(() => basketService.model.value.lineItems
-    .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
-const itemCount = computed(() => basketService.model.value.lineItems
-    .reduce((sum, item) => sum + item.quantity, 0));
+const cartTotal = basketService.subtotal;
+const itemCount = basketService.itemsCount;
 const placeOrderDisabledMessage = 'To place a demo order, enable tracking in the demo shop context.';
 const recommendationMode = computed<RecommendationMode>(() => {
     if (contextStore.user.value.classifications?.channel === 'B2B'

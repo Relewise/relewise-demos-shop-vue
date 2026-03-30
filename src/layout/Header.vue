@@ -171,7 +171,7 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
             <span class="text-[9px] mt-1 font-bold">CART</span>
             <span
               v-if="hasActiveDataset && lineItemsCount > 0"
-              class="absolute top-0 right-0 leading-none inline-flex items-center justify-center h-5 w-5 pb-0.5 bg-brand-700 rounded-full text-white font-bold text-[11px]"
+              class="absolute -right-1.5 -top-1.5 leading-none inline-flex items-center justify-center h-5 w-5 pb-0.5 bg-brand-700 rounded-full text-white font-bold text-[11px]"
             >
               {{ lineItemsCount }}
             </span>

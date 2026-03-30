@@ -17,7 +17,7 @@ const mainCategories = ref<NavigationItem[]>([]);
 const footer = ref<NavigationItem[]>([]);
 const hasChildCategories = ref(true);
 const router = useRouter();
-const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
+const lineItemsCount = basketService.itemsCount;
 const breakpoint = computed(() => breakpointService.active.value);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 const activeContextRevision = computed(() => contextStore.activeContextRevision.value);
