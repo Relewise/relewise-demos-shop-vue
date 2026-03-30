@@ -119,7 +119,7 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
     if (currentApiKey !== sharedDataset.apiKey) {
         changes.push({
             key: 'apiKey',
-            label: 'API key',
+            label: 'API Key',
             currentValue: currentApiKey,
             nextValue: sharedDataset.apiKey,
         });

@@ -142,7 +142,7 @@ function clearNavigation() {
     :footer="footer"
   />
 
-  <div class="fixed px-2 py-0.5 rounded bg-red-600 bottom-0 right-0 z-[10000] text-white text-xs font-mono uppercase">
+  <div class="fixed bottom-3 right-3 z-[10000] rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm">
     {{ breakpoint }}
   </div>
 </template>

@@ -41,17 +41,11 @@ function addNetworkInterceptors() {
             const response = await originalFetch(resource, options);
 
             if (response.status !== 200) {
-                let text = 'Could not perform the action against Relewise because the API key is missing the required permissions.';
-
-                if (response.status === 400) {
-                    text = 'The App does not support the expected scenario. Contact Relewise for help.';
-                }
-
-                if (response.status === 500) {
-                    text = 'There was an unexpected error on your dataset. Contact Relewise for help.';
-                }
-
-                notificationsStore.push({ type: 'error', title: `An error occurred (${response.status.toString()})`, text: text });
+                notificationsStore.push({
+                    type: 'error',
+                    title: `An error occurred (${response.status.toString()})`,
+                    text: getRelewiseErrorMessage(response.status),
+                });
             }
 
             return response;
@@ -79,6 +73,30 @@ function addNetworkInterceptors() {
 
         return originalXhrSend.call(this, body);
     };
+}
+
+function getRelewiseErrorMessage(status: number) {
+    if (status === 400) {
+        return 'The app does not support the expected scenario. Contact Relewise for help.';
+    }
+
+    if (status === 401) {
+        return 'The API Key is invalid or missing the required permissions.';
+    }
+
+    if (status === 404) {
+        return 'The dataset could not be found. Check that the Dataset ID and Server URL are correct.';
+    }
+
+    if (status === 500) {
+        return 'There was an unexpected error on your dataset. Contact Relewise for help.';
+    }
+
+    if (status === 504) {
+        return 'The dataset may still be getting ready. Wait a few seconds, then refresh the page.';
+    }
+
+    return 'The request to Relewise failed. Try again, and contact Relewise if the problem continues.';
 }
 
 function notifyNetworkError(resource?: string) {

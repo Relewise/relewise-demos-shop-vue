@@ -68,8 +68,8 @@
             name="dataset-api-key"
             placeholder="API Key"
             :reveal-on-change-key="props.dataset.datasetId"
-            show-label="Show API key"
-            hide-label="Hide API key"
+            show-label="Show API Key"
+            hide-label="Hide API Key"
           />
 
           <InputText
