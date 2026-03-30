@@ -143,7 +143,10 @@ function clearNavigation() {
     :footer="footer"
   />
 
-  <div class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm">
+  <div
+    v-tooltip="'Current breakpoint'"
+    class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm"
+  >
     <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
     <span>{{ breakpoint }}</span>
   </div>
