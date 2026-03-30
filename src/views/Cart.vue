@@ -172,11 +172,19 @@
         </dl>
         <div class="space-y-3">
           <button
-            class="w-full bg-slate-900 text-lg"
+            class="w-full text-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
+            :disabled="!canPlaceOrder"
+            :title="!canPlaceOrder ? placeOrderDisabledMessage : undefined"
             @click="checkout"
           >
             Place order
           </button>
+          <p
+            v-if="!canPlaceOrder"
+            class="text-sm text-amber-700"
+          >
+            {{ placeOrderDisabledMessage }}
+          </p>
           <RouterLink
             to="/"
             class="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
@@ -212,7 +220,7 @@
 <script lang="ts" setup>
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import ProductTile from '../components/ProductTile.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { PersonalProductRecommendationBuilder, PopularProductsBuilder, PurchasedWithMultipleProductsBuilder, type ProductRecommendationResponse } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
@@ -227,23 +235,50 @@ const recommendationTitle = ref('People also buy');
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
+const canPlaceOrder = computed(() => contextStore.tracking.value.enabled);
 const cartTotal = computed(() => basketService.model.value.lineItems
     .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
 const itemCount = computed(() => basketService.model.value.lineItems
     .reduce((sum, item) => sum + item.quantity, 0));
-
-function init() {
+const placeOrderDisabledMessage = 'To place a demo order, enable tracking in the demo shop context.';
+const recommendationMode = computed(() => {
     if (contextStore.user.value.classifications?.channel === 'B2B'
-    && contextStore.context.value.B2bRecommendations) {
+        && contextStore.context.value.B2bRecommendations) {
+        return 'b2b';
+    }
+
+    if (isEmpty.value) {
+        return 'personal';
+    }
+
+    return 'purchased-with-multiple';
+});
+const cartProductIdsSignature = computed(() => [...new Set(
+    basketService.model.value.lineItems
+        .map((item) => item.product.productId)
+        .filter((productId): productId is string => Boolean(productId)),
+)].sort().join('|'));
+const recommendationSignature = computed(() => JSON.stringify({
+    datasetId: contextStore.context.value.datasetId,
+    mode: recommendationMode.value,
+    userIndex: contextStore.selectedUserIndex.value ?? null,
+    companyId: contextStore.selectedCompanyId.value || null,
+    productIds: recommendationMode.value === 'purchased-with-multiple' ? cartProductIdsSignature.value : null,
+}));
+
+function refreshRecommendations() {
+    if (recommendationMode.value === 'b2b') {
         recommendB2BPopularProducts();
-    } else if (isEmpty.value) {
+    } else if (recommendationMode.value === 'personal') {
         recommendPersonalProducts();
     } else {
         recommendPurchasedWithMultipleProducts();
     }
 }
 
-init();
+watch(recommendationSignature, () => {
+    refreshRecommendations();
+}, { immediate: true });
 
 async function recommendB2BPopularProducts() {
     const request = new PopularProductsBuilder(contextStore.defaultSettings)
@@ -349,26 +384,33 @@ function setLineItemQuantity(item: ILineItem, event: Event) {
         return;
     }
 
-    basketService.addProduct({ product: item.product, quantityDelta });
-    trackingService.trackCart(basketService.model.value.lineItems);
-    init();
+    applyCartQuantityChange(item, quantityDelta);
 }
 
 function updateLineItem(item: ILineItem, quantityDelta: number) {
-    basketService.addProduct({ product: item.product, quantityDelta });
-    trackingService.trackCart(basketService.model.value.lineItems);
-    init();
+    applyCartQuantityChange(item, quantityDelta);
 }
 
 function remove(item: ILineItem) {
     basketService.remove(item);
-    trackingService.trackCart(basketService.model.value.lineItems);
-
-    init();
+    refreshCartState();
 }
 
-function checkout() {
-    trackingService.trackOrder(basketService.model.value.lineItems);
+function applyCartQuantityChange(item: ILineItem, quantityDelta: number) {
+    basketService.addProduct({ product: item.product, quantityDelta });
+    refreshCartState();
+}
+
+function refreshCartState() {
+    trackingService.trackCart(basketService.model.value.lineItems);
+}
+
+async function checkout() {
+    if (!canPlaceOrder.value || isEmpty.value) {
+        return;
+    }
+
+    await trackingService.trackOrder(basketService.model.value.lineItems);
     basketService.clear();
     router.push({
         name: 'receipt',
