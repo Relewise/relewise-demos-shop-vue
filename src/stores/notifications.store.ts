@@ -17,6 +17,7 @@ const defaultDurations: Record<NotificationType, number> = {
 };
 
 class NotificationsStore {
+    private readonly reloadNotificationKey = 'pendingNotification';
 
     public push(notification: Notification) {
         const options: ExternalToast = {
@@ -33,6 +34,25 @@ class NotificationsStore {
             return toast.warning(notification.title, options);
         case 'error':
             return toast.error(notification.title, options);
+        }
+    }
+
+    public pushAfterReload(notification: Notification) {
+        sessionStorage.setItem(this.reloadNotificationKey, JSON.stringify(notification));
+    }
+
+    public flushAfterReload() {
+        const value = sessionStorage.getItem(this.reloadNotificationKey);
+        if (!value) {
+            return;
+        }
+
+        sessionStorage.removeItem(this.reloadNotificationKey);
+
+        try {
+            this.push(JSON.parse(value) as Notification);
+        } catch {
+            // Ignore malformed persisted notifications.
         }
     }
 

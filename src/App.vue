@@ -3,7 +3,7 @@ import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
-import { computed, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import basketService from './services/basket.service';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
@@ -25,6 +25,10 @@ const routeViewKey = computed(() => activeContextRevision.value.toString());
 let categoryLoadToken = 0;
 
 init();
+
+onMounted(() => {
+    notificationsStore.flushAfterReload();
+});
 
 watch(activeContextRevision, async() => {
     await refreshActiveContext();

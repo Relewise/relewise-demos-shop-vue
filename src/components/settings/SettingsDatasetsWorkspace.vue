@@ -210,6 +210,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputText from '@/components/form/InputText.vue';
 import SettingsMetadataBadge from '@/components/settings/SettingsMetadataBadge.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
+import { buildSharedDataset } from '@/helpers/sharedDataset';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import router from '@/router';
@@ -360,7 +361,11 @@ function selectDataset(datasetId: string) {
 
 function shareDataset(dataset: IDataset) {
     const shareUrl = new URL('/settings', window.location.origin);
-    shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(dataset)));
+    const isActiveDataset = dataset.datasetId === activeDatasetId.value;
+    shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(buildSharedDataset(dataset, {
+        language: isActiveDataset ? contextStore.language.value : undefined,
+        currencyCode: isActiveDataset ? contextStore.currencyCode.value : undefined,
+    }))));
     navigator.clipboard.writeText(shareUrl.toString());
     notificationsStore.push({ type: 'success', title: 'Share link copied', text: `The share link for ${dataset.displayName || dataset.datasetId} was copied to your clipboard.` });
 }

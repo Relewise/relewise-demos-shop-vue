@@ -3,7 +3,7 @@
     <div
       v-if="modelValue"
       class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
-      @click.self="close"
+      @click.self="cancelAction"
     >
       <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
         <div class="space-y-3">
@@ -16,19 +16,27 @@
           >
             {{ description }}
           </p>
+          <slot name="content" />
+        </div>
+
+        <div
+          v-if="$slots.footer"
+          class="mt-6"
+        >
+          <slot name="footer" />
         </div>
 
         <div class="mt-6 flex items-center justify-end gap-3">
           <button
             type="button"
             class="!bg-white !text-slate-700 hover:!bg-slate-50"
-            @click="close"
+            @click="cancelAction"
           >
             {{ cancelLabel }}
           </button>
           <button
             type="button"
-            class="!bg-red-600 hover:!bg-red-700"
+            :class="confirmTone === 'primary' ? '!bg-brand-500 hover:!bg-brand-600' : '!bg-red-600 hover:!bg-red-700'"
             @click="confirmAction"
           >
             {{ confirmLabel }}
@@ -48,19 +56,27 @@ const props = withDefaults(defineProps<{
     description?: string;
     confirmLabel?: string;
     cancelLabel?: string;
+    confirmTone?: 'danger' | 'primary';
 }>(), {
     description: '',
     confirmLabel: 'Confirm',
     cancelLabel: 'Cancel',
+    confirmTone: 'danger',
 });
 
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
     confirm: [];
+    cancel: [];
 }>();
 
 function close() {
     emit('update:modelValue', false);
+}
+
+function cancelAction() {
+    emit('cancel');
+    close();
 }
 
 function confirmAction() {
@@ -70,7 +86,7 @@ function confirmAction() {
 
 function handleEscape(event: KeyboardEvent) {
     if (event.key === 'Escape' && props.modelValue) {
-        close();
+        cancelAction();
     }
 }
 
