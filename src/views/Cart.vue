@@ -83,8 +83,9 @@
               <div class="inline-flex items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 shadow-sm">
                 <button
                   type="button"
-                  class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100"
+                  class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                   aria-label="Decrease quantity"
+                  :disabled="isPlacingOrder"
                   @click="updateLineItem(item, -1)"
                 >
                   -
@@ -95,13 +96,15 @@
                   type="text"
                   inputmode="numeric"
                   maxlength="3"
+                  :disabled="isPlacingOrder"
                   @change="setLineItemQuantity(item, $event)"
                   @blur="setLineItemQuantity(item, $event)"
                 >
                 <button
                   type="button"
-                  class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100"
+                  class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                   aria-label="Increase quantity"
+                  :disabled="isPlacingOrder"
                   @click="updateLineItem(item, 1)"
                 >
                   +
@@ -127,9 +130,10 @@
             <div class="border-t border-slate-200 pt-4 sm:self-center sm:justify-self-center sm:border-t-0 sm:pt-0">
               <button
                 type="button"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
                 title="Remove from cart"
                 aria-label="Remove from cart"
+                :disabled="isPlacingOrder"
                 @click="remove(item)"
               >
                 <TrashIcon
@@ -173,11 +177,18 @@
         <div class="space-y-3">
           <button
             class="w-full text-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
-            :disabled="!canPlaceOrder"
+            :disabled="!canPlaceOrder || isPlacingOrder"
             :title="!canPlaceOrder ? placeOrderDisabledMessage : undefined"
             @click="checkout"
           >
-            Place order
+            <span
+              v-if="isPlacingOrder"
+              class="inline-flex items-center justify-center gap-2"
+            >
+              <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              Placing order...
+            </span>
+            <span v-else>Place order</span>
           </button>
           <p
             v-if="!canPlaceOrder"
@@ -188,6 +199,9 @@
           <RouterLink
             to="/"
             class="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            :class="isPlacingOrder ? 'pointer-events-none opacity-50' : ''"
+            :aria-disabled="isPlacingOrder"
+            :tabindex="isPlacingOrder ? -1 : undefined"
           >
             Continue shopping
           </RouterLink>
@@ -230,18 +244,28 @@ import { globalProductRecommendationFilters } from '@/stores/globalProductFilter
 import router from '@/router';
 import { ShoppingBagIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
+type RecommendationMode = 'b2b' | 'personal' | 'purchased-with-multiple';
+type RecommendationSnapshot = {
+    mode: RecommendationMode;
+    selectedUserIndex?: number;
+    selectedCompanyId?: string;
+    productIds: string[];
+}
+
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommendationTitle = ref('People also buy');
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
 const canPlaceOrder = computed(() => contextStore.tracking.value.enabled);
+const isPlacingOrder = ref(false);
+const previousRecommendationSnapshot = ref<RecommendationSnapshot | null>(null);
 const cartTotal = computed(() => basketService.model.value.lineItems
     .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
 const itemCount = computed(() => basketService.model.value.lineItems
     .reduce((sum, item) => sum + item.quantity, 0));
 const placeOrderDisabledMessage = 'To place a demo order, enable tracking in the demo shop context.';
-const recommendationMode = computed(() => {
+const recommendationMode = computed<RecommendationMode>(() => {
     if (contextStore.user.value.classifications?.channel === 'B2B'
         && contextStore.context.value.B2bRecommendations) {
         return 'b2b';
@@ -253,32 +277,22 @@ const recommendationMode = computed(() => {
 
     return 'purchased-with-multiple';
 });
-const cartProductIdsSignature = computed(() => [...new Set(
-    basketService.model.value.lineItems
-        .map((item) => item.product.productId)
-        .filter((productId): productId is string => Boolean(productId)),
-)].sort().join('|'));
-const recommendationSignature = computed(() => JSON.stringify({
-    datasetId: contextStore.context.value.datasetId,
-    mode: recommendationMode.value,
-    userIndex: contextStore.selectedUserIndex.value ?? null,
-    companyId: contextStore.selectedCompanyId.value || null,
-    productIds: recommendationMode.value === 'purchased-with-multiple' ? cartProductIdsSignature.value : null,
-}));
 
-function refreshRecommendations() {
+async function refreshRecommendations() {
     if (recommendationMode.value === 'b2b') {
-        recommendB2BPopularProducts();
+        await recommendB2BPopularProducts();
     } else if (recommendationMode.value === 'personal') {
-        recommendPersonalProducts();
+        await recommendPersonalProducts();
     } else {
-        recommendPurchasedWithMultipleProducts();
+        await recommendPurchasedWithMultipleProducts();
     }
 }
 
-watch(recommendationSignature, () => {
-    refreshRecommendations();
-}, { immediate: true });
+watch(() => contextStore.activeContextRevision.value, () => {
+    void refreshRecommendationsIfNeeded();
+});
+
+void refreshRecommendationsIfNeeded({ force: true });
 
 async function recommendB2BPopularProducts() {
     const request = new PopularProductsBuilder(contextStore.defaultSettings)
@@ -361,6 +375,55 @@ function lineTotal(item: ILineItem) {
     return (item.product.salesPrice ?? 0) * item.quantity;
 }
 
+function getCartProductIds() {
+    const productIds = new Set<string>();
+
+    for (const item of basketService.model.value.lineItems) {
+        if (item.product.productId) {
+            productIds.add(item.product.productId);
+        }
+    }
+
+    return [...productIds].sort();
+}
+
+function createRecommendationSnapshot(): RecommendationSnapshot {
+    return {
+        mode: recommendationMode.value,
+        selectedUserIndex: contextStore.selectedUserIndex.value,
+        selectedCompanyId: contextStore.selectedCompanyId.value || undefined,
+        productIds: recommendationMode.value === 'purchased-with-multiple' ? getCartProductIds() : [],
+    };
+}
+
+function recommendationSnapshotChanged(
+    previousSnapshot: RecommendationSnapshot | null,
+    nextSnapshot: RecommendationSnapshot,
+) {
+    if (!previousSnapshot) {
+        return true;
+    }
+
+    if (previousSnapshot.mode !== nextSnapshot.mode
+        || previousSnapshot.selectedUserIndex !== nextSnapshot.selectedUserIndex
+        || previousSnapshot.selectedCompanyId !== nextSnapshot.selectedCompanyId
+        || previousSnapshot.productIds.length !== nextSnapshot.productIds.length) {
+        return true;
+    }
+
+    return previousSnapshot.productIds.some((productId, index) => productId !== nextSnapshot.productIds[index]);
+}
+
+async function refreshRecommendationsIfNeeded({ force = false }: { force?: boolean } = {}) {
+    const nextSnapshot = createRecommendationSnapshot();
+    if (!force && !recommendationSnapshotChanged(previousRecommendationSnapshot.value, nextSnapshot)) {
+        return;
+    }
+
+    await refreshRecommendations();
+    previousRecommendationSnapshot.value = nextSnapshot;
+}
+
 function setLineItemQuantity(item: ILineItem, event: Event) {
     const input = event.target as HTMLInputElement | null;
     if (!input)
@@ -403,17 +466,32 @@ function applyCartQuantityChange(item: ILineItem, quantityDelta: number) {
 
 function refreshCartState() {
     trackingService.trackCart(basketService.model.value.lineItems);
+    void refreshRecommendationsIfNeeded();
 }
 
 async function checkout() {
-    if (!canPlaceOrder.value || isEmpty.value) {
+    if (!canPlaceOrder.value || isEmpty.value || isPlacingOrder.value) {
         return;
     }
 
-    await trackingService.trackOrder(basketService.model.value.lineItems);
-    basketService.clear();
-    router.push({
-        name: 'receipt',
-    });
+    isPlacingOrder.value = true;
+
+    try {
+        await Promise.all([
+            trackingService.trackOrder(basketService.model.value.lineItems),
+            wait(900),
+        ]);
+
+        basketService.clear();
+        await router.push({
+            name: 'receipt',
+        });
+    } finally {
+        isPlacingOrder.value = false;
+    }
+}
+
+function wait(durationMs: number) {
+    return new Promise((resolve) => window.setTimeout(resolve, durationMs));
 }
 </script>

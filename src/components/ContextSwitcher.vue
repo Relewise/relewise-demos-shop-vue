@@ -4,6 +4,7 @@ import { computed, ref, watch } from 'vue';
 import contextStore from '@/stores/context.store';
 import { displayUserOption } from '@/helpers/userHelper';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import router from '@/router';
 
 const datasets = contextStore.datasets;
 const draftDatasetId = ref('');
@@ -94,10 +95,13 @@ function changeCurrency(currency: string) {
     draftCurrencyCode.value = currency;
 }
 
-function applyContextChanges() {
+async function applyContextChanges() {
     if (!draftDataset.value) {
         return;
     }
+
+    const activeDatasetId = contextStore.hasActiveDataset.value ? contextStore.context.value.datasetId : '';
+    const datasetChanged = activeDatasetId !== draftDataset.value.datasetId;
 
     contextStore.applySessionContext({
         datasetId: draftDataset.value.datasetId,
@@ -106,6 +110,10 @@ function applyContextChanges() {
         selectedUserIndex: draftSelectedUserOption.value === '' ? undefined : Number(draftSelectedUserOption.value),
         selectedCompanyId: draftSelectedCompanyOption.value || undefined,
     });
+
+    if (datasetChanged) {
+        await router.push({ name: 'home' });
+    }
 }
 </script>
 
