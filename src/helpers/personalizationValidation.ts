@@ -11,18 +11,15 @@ export function validatePersonalization(dataset: IDataset) {
         errors.push('All user classifications, identifiers, and data values must include both a key and value.');
     }
 
-    const temporaryIds = users.map((user) => user.temporaryId?.trim()).filter(Boolean);
-    if (new Set(temporaryIds).size !== temporaryIds.length) {
+    if (hasDuplicateValues(users, (user) => user.temporaryId?.trim())) {
         errors.push('Temporary IDs must be unique.');
     }
 
-    const authenticatedIds = users.map((user) => user.authenticatedId?.trim()).filter(Boolean);
-    if (new Set(authenticatedIds).size !== authenticatedIds.length) {
+    if (hasDuplicateValues(users, (user) => user.authenticatedId?.trim())) {
         errors.push('Authenticated IDs must be unique.');
     }
 
-    const emails = users.map((user) => user.email?.trim().toLowerCase()).filter(Boolean);
-    if (new Set(emails).size !== emails.length) {
+    if (hasDuplicateValues(users, (user) => user.email?.trim().toLowerCase())) {
         errors.push('User emails must be unique.');
     }
 
@@ -31,8 +28,7 @@ export function validatePersonalization(dataset: IDataset) {
         errors.push('Each company must have an ID.');
     }
 
-    const companyIds = companies.map((company) => company.id?.trim()).filter(Boolean);
-    if (new Set(companyIds).size !== companyIds.length) {
+    if (hasDuplicateValues(companies, (company) => company.id?.trim())) {
         errors.push('Company IDs must be unique.');
     }
 
@@ -98,6 +94,25 @@ function hasInvalidDataRecord(record?: Record<string, DataValue>) {
     }
 
     return Object.entries(record).some(([key, value]) => !key || !value?.value);
+}
+
+function hasDuplicateValues<T>(items: T[], getValue: (item: T) => string | undefined) {
+    const seenValues = new Set<string>();
+
+    for (const item of items) {
+        const value = getValue(item);
+        if (!value) {
+            continue;
+        }
+
+        if (seenValues.has(value)) {
+            return true;
+        }
+
+        seenValues.add(value);
+    }
+
+    return false;
 }
 
 function hasCompanyHierarchyCycle(companiesById: Map<string, Company>) {

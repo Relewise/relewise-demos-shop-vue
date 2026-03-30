@@ -228,11 +228,9 @@ const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
 const cartTotal = computed(() => basketService.model.value.lineItems
-    .map(x => (x.product.salesPrice ?? 0) * x.quantity)
-    .reduce((partialSum, a) => partialSum + a, 0));
+    .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
 const itemCount = computed(() => basketService.model.value.lineItems
-    .map(x => x.quantity)
-    .reduce((partialSum, a) => partialSum + a, 0));
+    .reduce((sum, item) => sum + item.quantity, 0));
 
 function init() {
     if (contextStore.user.value.classifications?.channel === 'B2B'

@@ -83,12 +83,8 @@ const newItem = ref('');
 const emit = defineEmits(['update:singleItem', 'update:items']);
 
 const internalItems = computed({
-    get: () => {
-        return [...new Set((items.value ?? []).map((item) => item.trim()).filter(Boolean))];
-    },
-    set: (value: string[]) => {
-        emit('update:items', [...new Set(value.map((item) => item.trim()).filter(Boolean))]);
-    },
+    get: () => normalizeItems(items.value ?? []),
+    set: (value: string[]) => emit('update:items', normalizeItems(value)),
 });
 
 function addItem() {
@@ -120,5 +116,9 @@ function removeItem(item: string) {
 
 function setActiveItem(item: string) {
     emit('update:singleItem', item);
+}
+
+function normalizeItems(items: string[]) {
+    return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
 }
 </script>

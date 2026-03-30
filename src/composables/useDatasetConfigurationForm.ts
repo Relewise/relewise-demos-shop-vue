@@ -20,9 +20,8 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
     const lastSavedSnapshot = ref('');
     const { isPinned: isSaveBarPinned } = useStickyPinned(saveBarElement, 12);
 
-    const enabledFeatureCount = computed(() => {
-        return datasetFeatureFields.filter((feature) => editableDataset.value[feature.key]).length;
-    });
+    const enabledFeatureCount = computed(() => datasetFeatureFields
+        .reduce((count, feature) => count + (editableDataset.value[feature.key] ? 1 : 0), 0));
     const languageItems = computed(() => uniqueNormalizedStrings(editableDataset.value.allLanguages ?? []));
     const currencyItems = computed(() => uniqueNormalizedStrings(editableDataset.value.allCurrencies ?? [], { uppercase: true }));
     const isDirty = computed(() => {
