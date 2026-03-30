@@ -9,15 +9,15 @@ export default {
 
             try {
                 return new Intl.NumberFormat(
-                    contextStore.context.value.language,
+                    contextStore.language.value,
                     {
                         style: 'currency',
-                        currency: contextStore.context.value.currencyCode,
+                        currency: contextStore.currencyCode.value,
                     })
                     .format(Number(value));
             }
             catch {
-                console.warn(`Could not format price using the currency: '${contextStore.context.value.currencyCode}'`);
+                console.warn(`Could not format price using the currency: '${contextStore.currencyCode.value}'`);
                 return value;
             }
         };

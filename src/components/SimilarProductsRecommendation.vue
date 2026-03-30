@@ -1,18 +1,23 @@
 <template>
-    <div v-if="productRecommendation" class="scrollbar mt-8">
-        <h2 class="text-2xl font-semibold mb-3">
-            Consider an alternative
-        </h2>
-        <div class="w-full">
-            <div class="flex flex-row gap-6">
-                <div v-for="(p, index) in productRecommendation?.recommendations ?? []"
-                     :key="index"
-                     class="min-w-[250px] pb-3">
-                    <ProductTile :product="p"/>
-                </div>
-            </div>
+  <div
+    v-if="productRecommendation"
+    class="scrollbar mt-8"
+  >
+    <h2 class="text-2xl font-semibold mb-3">
+      Consider an alternative
+    </h2>
+    <div class="w-full">
+      <div class="flex flex-row gap-6">
+        <div
+          v-for="(p, index) in productRecommendation?.recommendations ?? []"
+          :key="index"
+          class="min-w-[250px] pb-3"
+        >
+          <ProductTile :product="p" />
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>

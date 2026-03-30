@@ -1,127 +1,237 @@
 <script setup lang="ts">
+import { createSessionSelectionsForDataset } from '@/helpers/contextSession';
+import { computed, ref, watch } from 'vue';
 import contextStore from '@/stores/context.store';
-import { displayUser } from '@/helpers/userHelper';
-import type { User } from '@relewise/client';
+import { displayUserOption } from '@/helpers/userHelper';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import router from '@/router';
 
-const user = contextStore.user;
-const context = contextStore.context;
 const datasets = contextStore.datasets;
+const draftDatasetId = ref('');
+const draftLanguage = ref('');
+const draftCurrencyCode = ref('');
+const draftSelectedUserOption = ref('');
+const draftSelectedCompanyOption = ref('');
+
+const draftDataset = computed(() => {
+    return datasets.value.find((dataset) => dataset.datasetId === draftDatasetId.value);
+});
+const configureDemoRoute = computed(() => {
+    if (!contextStore.hasActiveDataset.value) {
+        return { name: 'settings' as const };
+    }
+
+    return {
+        name: 'settings-dataset' as const,
+        params: { datasetId: contextStore.context.value.datasetId },
+    };
+});
+
+const hasUsers = computed(() => (draftDataset.value?.users?.length ?? 0) > 0);
+const hasCompanies = computed(() => (draftDataset.value?.companies?.length ?? 0) > 0);
+
+watch(
+    () => contextStore.activeContextRevision.value,
+    () => {
+        syncDraftWithContext();
+    },
+    { immediate: true },
+);
+
+watch(
+    draftDatasetId,
+    (nextDatasetId) => {
+        const nextDataset = datasets.value.find((dataset) => dataset.datasetId === nextDatasetId);
+        if (!nextDataset) {
+            draftLanguage.value = '';
+            draftCurrencyCode.value = '';
+            draftSelectedUserOption.value = '';
+            draftSelectedCompanyOption.value = '';
+            return;
+        }
+
+        const nextSelections = createSessionSelectionsForDataset(nextDataset);
+        draftLanguage.value = nextSelections.selectedLanguage ?? '';
+        draftCurrencyCode.value = nextSelections.selectedCurrencyCode ?? '';
+        draftSelectedUserOption.value = nextSelections.selectedUserIndex === undefined ? '' : String(nextSelections.selectedUserIndex);
+        draftSelectedCompanyOption.value = nextSelections.selectedCompanyId ?? '';
+    },
+);
+
+function syncDraftWithContext() {
+    if (!contextStore.hasActiveDataset.value) {
+        draftDatasetId.value = '';
+        draftLanguage.value = '';
+        draftCurrencyCode.value = '';
+        draftSelectedUserOption.value = '';
+        draftSelectedCompanyOption.value = '';
+        return;
+    }
+
+    draftDatasetId.value = contextStore.context.value.datasetId;
+    draftLanguage.value = contextStore.language.value;
+    draftCurrencyCode.value = contextStore.currencyCode.value;
+    draftSelectedUserOption.value = contextStore.selectedUserIndex.value === undefined ? '' : String(contextStore.selectedUserIndex.value);
+    draftSelectedCompanyOption.value = contextStore.selectedCompanyId.value || '';
+}
 
 function setDataset(datasetId: string) {
-    contextStore.setDataset(datasetId);
-    window.location.reload();
+    draftDatasetId.value = datasetId;
 }
 
-function setUser(userToSet: User) {
-    contextStore.setUser(userToSet);
+function setUser(selectedIndex: string) {
+    draftSelectedUserOption.value = selectedIndex;
 }
 
-function setUserCompany(companyToSet: string) {
-    const selectedCompany = context.value.companies?.find(x => x.id === companyToSet);
-    user.value.company = selectedCompany;
+function setCompany(companyToSet: string) {
+    draftSelectedCompanyOption.value = companyToSet;
 }
 
 function changeLanguage(language: string) {
-    context.value.language = language;
+    draftLanguage.value = language;
 }
 
 function changeCurrency(currency: string) {
-    context.value.currencyCode = currency;
+    draftCurrencyCode.value = currency;
 }
 
-function persistStateAndReload() {
-    contextStore.persistState();
-    window.location.reload();
+async function applyContextChanges() {
+    if (!draftDataset.value) {
+        return;
+    }
+
+    const activeDatasetId = contextStore.hasActiveDataset.value ? contextStore.context.value.datasetId : '';
+    const datasetChanged = activeDatasetId !== draftDataset.value.datasetId;
+
+    contextStore.applySessionContext({
+        datasetId: draftDataset.value.datasetId,
+        language: draftLanguage.value,
+        currencyCode: draftCurrencyCode.value,
+        selectedUserIndex: draftSelectedUserOption.value === '' ? undefined : Number(draftSelectedUserOption.value),
+        selectedCompanyId: draftSelectedCompanyOption.value || undefined,
+    });
+
+    if (datasetChanged) {
+        await router.push({ name: 'home' });
+    }
 }
 </script>
 
 <template>
-    <div class="flex flex-col">
-        <div class="font-semibold px-2 bg-gray-100 py-2">
-            Switch Context
-        </div>
-        <hr class="p-0 my-0">
-        <div class="p-2 flex flex-col gap-4">
-            <div class="flex-grow">
-                <label class="text-sm block">Dataset</label>
-                <select :value="context.datasetId"
-                        @change="setDataset(($event.target as HTMLInputElement).value)">
-                    <option v-for="dataset in datasets" :key="dataset.datasetId" :value="dataset.datasetId">
-                        {{ dataset.displayName }}
-                    </option>
-                </select>
-            </div>
-            <div class="flex gap-2 items-end">
-                <div class="flex flex-col flex-grow w-1/2">
-                    <label class="text-sm block">Language</label>
-                    <select name="Language" :value="context.language" class="w-full" @change="changeLanguage(($event.target as HTMLInputElement).value)">
-                        <template v-if="Array.isArray(context.allLanguages)">
-                            <option v-for="(language, index) in context.allLanguages" :key="index" :value="language" :selected="context.language == language">
-                                {{ language }} 
-                            </option>
-                        </template>
-                        <template v-else>
-                            <option :value="context.language">
-                                {{ context.language }}
-                            </option>
-                        </template>
-                    </select>
-                </div>
-                <div class="flex flex-col flex-grow w-1/2">
-                    <label class="text-sm block">Currency</label>
-                    <select name="Currency" :value="context.currencyCode" class="w-full" @change="changeCurrency(($event.target as HTMLInputElement).value)">
-                        <template v-if="Array.isArray(context.allCurrencies)">
-                            <option v-for="(currencyCode, index) in context.allCurrencies" :key="index" :value="currencyCode" :selected="context.currencyCode == currencyCode">
-                                {{ currencyCode }} 
-                            </option>
-                        </template>
-                        <template v-else>
-                            <option :value="context.currencyCode">
-                                {{ context.currencyCode }}
-                            </option>
-                        </template>
-                    </select>
-                </div>
-            </div>
-            <div class="flex-grow">
-                <label class="text-sm block">User</label>
-                <select :disabled="context.users?.length === 1"
-                        :value="JSON.stringify(user)"
-                        @change="setUser((JSON.parse(($event.target as HTMLInputElement).value) as User))">
-                    <option v-for="(userOption, index) in context.users"
-                            :key="index"
-                            :value="JSON.stringify(userOption)">
-                        {{ displayUser(userOption) }}
-                    </option>
-                </select>
-            </div>
-            <div v-if="context.companies?.length ?? 0 > 0" class="flex-grow">
-                <label class="text-sm block">Company</label>
-                <select :value="user.company?.id"
-                        :disabled="!context.companies || context.companies.length < 1"
-                        @change="setUserCompany(($event.target as HTMLInputElement).value)">
-                    <option value="">
-                        {{ context.companies && context.companies.length > 0 ? "No company assigned" : "No companies exist" }}
-                    </option>
-                    <option v-for="(userCompanyOption, index) in context.companies" :key="index" :value="userCompanyOption.id">
-                        {{ userCompanyOption.id }}
-                    </option>
-                </select>
-            </div>
-            <div class="flex items-center justify-between">
-                <RouterLink 
-                    v-close-popper
-                    to="/app-settings"
-                    class="text-slate-600 inline-flex items-center whitespace-nowrap hover:text-brand-500 right-0 w-fit mr-auto">
-                    <div class="flex items-center justify-center">
-                        <Cog6ToothIcon class="w-5 h-5 mr-1"/> Configure Demo 
-                    </div>
-                </RouterLink>
-                <button class="ml-auto" @click="persistStateAndReload">
-                    Apply
-                </button>
-            </div>
-        </div>
+  <div class="flex flex-col">
+    <div class="bg-gray-100 px-2 py-2 font-semibold">
+      Switch Context
     </div>
+    <hr class="my-0 p-0">
+    <div class="flex flex-col gap-4 p-2">
+      <div class="flex-grow">
+        <label class="text-sm block">Dataset</label>
+        <select
+          :value="draftDatasetId"
+          @change="setDataset(($event.target as HTMLInputElement).value)"
+        >
+          <option
+            v-for="dataset in datasets"
+            :key="dataset.datasetId"
+            :value="dataset.datasetId"
+          >
+            {{ dataset.displayName }}
+          </option>
+        </select>
+      </div>
+      <div class="flex items-end gap-2">
+        <div class="flex w-1/2 flex-grow flex-col">
+          <label class="text-sm block">Language</label>
+          <select
+            name="Language"
+            :value="draftLanguage"
+            class="w-full"
+            @change="changeLanguage(($event.target as HTMLInputElement).value)"
+          >
+            <option
+              v-for="(language, index) in draftDataset?.allLanguages ?? []"
+              :key="index"
+              :value="language"
+            >
+              {{ language }}
+            </option>
+          </select>
+        </div>
+        <div class="flex w-1/2 flex-grow flex-col">
+          <label class="text-sm block">Currency</label>
+          <select
+            name="Currency"
+            :value="draftCurrencyCode"
+            class="w-full"
+            @change="changeCurrency(($event.target as HTMLInputElement).value)"
+          >
+            <option
+              v-for="(currencyCode, index) in draftDataset?.allCurrencies ?? []"
+              :key="index"
+              :value="currencyCode"
+            >
+              {{ currencyCode }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="flex-grow">
+        <label class="text-sm block">User</label>
+        <select
+          :disabled="!hasUsers"
+          :value="draftSelectedUserOption"
+          @change="setUser(($event.target as HTMLInputElement).value)"
+        >
+          <option value="">
+            (None)
+          </option>
+          <option
+            v-for="(userOption, index) in draftDataset?.users ?? []"
+            :key="index"
+            :value="String(index)"
+          >
+            {{ displayUserOption(userOption, index) }}
+          </option>
+        </select>
+      </div>
+      <div
+        v-if="hasCompanies"
+        class="flex-grow"
+      >
+        <label class="text-sm block">Company</label>
+        <select
+          :value="draftSelectedCompanyOption"
+          @change="setCompany(($event.target as HTMLInputElement).value)"
+        >
+          <option value="">
+            (None)
+          </option>
+          <option
+            v-for="(companyOption, index) in draftDataset?.companies ?? []"
+            :key="index"
+            :value="companyOption.id"
+          >
+            {{ companyOption.id }}
+          </option>
+        </select>
+      </div>
+      <div class="flex items-center justify-between">
+        <RouterLink
+          v-close-popper
+          :to="configureDemoRoute"
+          class="mr-auto inline-flex w-fit items-center whitespace-nowrap text-slate-600 hover:text-brand-500"
+        >
+          <div class="flex items-center justify-center">
+            <Cog6ToothIcon class="mr-1 h-5 w-5" /> Configure Demo
+          </div>
+        </RouterLink>
+        <button
+          class="ml-auto"
+          @click="applyContextChanges"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
 </template>

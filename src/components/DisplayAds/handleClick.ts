@@ -3,13 +3,15 @@ import contextStore from '@/stores/context.store';
 import type { RetailMediaResultPlacementResultEntityDisplayAd } from '@relewise/client';
 
 export async function handleClick(displayAd: RetailMediaResultPlacementResultEntityDisplayAd) {
-    const tracker = contextStore.getTracker();
+    if (contextStore.tracking.value.enabled) {
+        const tracker = contextStore.getTracker();
 
-    await tracker.trackDisplayAdClick({
-        displayAdId: displayAd.result.displayAdId!,
-        campaignId: displayAd.campaignId,
-        user: contextStore.user.value,
-    });
+        await tracker.trackDisplayAdClick({
+            displayAdId: displayAd.result.displayAdId!,
+            campaignId: displayAd.campaignId,
+            user: contextStore.user.value,
+        });
+    }
 
     if (isExternalUrl(displayAd)) {
         window.location.href = displayAd.result.data?.Link?.value;

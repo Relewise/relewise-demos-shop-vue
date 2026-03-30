@@ -1,21 +1,31 @@
 <template>
-    <label class="flex">
-        <span class="text-slate-600 mr-2">Sorting by</span>
-        <select v-model="internalSelectedOption" class="!outline-0 m-0 shadow-none !border-0 bg-white font-medium !p-0 w-[175px]" @on="$attrs">
-            <option value="">
-                Relevance
-            </option>
-            <option value="Popular">
-                Popular
-            </option>
-            <option v-if="type === 'Product'" value="SalesPriceDesc">
-                Sales Price desc
-            </option>
-            <option v-if="type === 'Product'" value="SalesPriceAsc">
-                Sales Price asc
-            </option>
-        </select>
-    </label>
+  <label class="flex">
+    <span class="text-slate-600 mr-2">Sorting by</span>
+    <select
+      v-model="internalSelectedOption"
+      class="!outline-0 m-0 shadow-none !border-0 bg-white font-medium !p-0 w-[175px]"
+      @on="$attrs"
+    >
+      <option value="">
+        Relevance
+      </option>
+      <option value="Popular">
+        Popular
+      </option>
+      <option
+        v-if="type === 'Product'"
+        value="SalesPriceDesc"
+      >
+        Sales Price desc
+      </option>
+      <option
+        v-if="type === 'Product'"
+        value="SalesPriceAsc"
+      >
+        Sales Price asc
+      </option>
+    </select>
+  </label>
 </template>
 
 <script lang="ts" setup>

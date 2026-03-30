@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
+import contextStore from '@/stores/context.store';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,8 +18,13 @@ const router = createRouter({
             component: HomeView,
         },
         {
-            path: '/app-settings',
+            path: '/settings',
             name: 'settings',
+            component: () => import('../views/Settings.vue'),
+        },
+        {
+            path: '/settings/:datasetId',
+            name: 'settings-dataset',
             component: () => import('../views/Settings.vue'),
         },
         {
@@ -67,21 +73,30 @@ const router = createRouter({
             component: () => import('../views/Favorites.vue'),
         },
         {
-            path: "/feed",
-            name: "feed",
+            path: '/feed',
+            name: 'feed',
             component: () => import('../views/Feed.vue'),
         },
         {
-            path: "/product-feed/:id",
-            name: "product-feed",
+            path: '/product-feed/:id',
+            name: 'product-feed',
             component: () => import('../views/Feed.vue'),
         },
         {
-            path: "/content-feed/:id",
-            name: "content-feed",
+            path: '/content-feed/:id',
+            name: 'content-feed',
             component: () => import('../views/Feed.vue'),
-        }
+        },
     ],
+});
+
+router.beforeEach((to) => {
+    if (!contextStore.hasActiveDataset.value && to.path !== '/settings') {
+        return {
+            path: '/settings',
+            query: to.query,
+        };
+    }
 });
 
 export default router;

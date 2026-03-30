@@ -1,13 +1,24 @@
 <template>
-    <div v-if="pageCount > 1" class="flex items-center gap-2">
-        <button v-if="modelValue > 1" class="item" @click="selectPage(modelValue - 1)">
-            <ChevronLeftIcon class="h-4 w-4 mr-2"/> Previous
-        </button>
+  <div
+    v-if="pageCount > 1"
+    class="flex items-center gap-2"
+  >
+    <button
+      v-if="modelValue > 1"
+      class="item"
+      @click="selectPage(modelValue - 1)"
+    >
+      <ChevronLeftIcon class="h-4 w-4 mr-2" /> Previous
+    </button>
 
-        <button v-if="modelValue < pageCount" class="item" @click="selectPage(modelValue + 1)">
-            Next <ChevronRightIcon class="h-4 w-4 ml-2"/>
-        </button>
-    </div>
+    <button
+      v-if="modelValue < pageCount"
+      class="item"
+      @click="selectPage(modelValue + 1)"
+    >
+      Next <ChevronRightIcon class="h-4 w-4 ml-2" />
+    </button>
+  </div>
 </template>
 
 <script lang="ts" setup>

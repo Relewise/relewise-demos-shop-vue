@@ -1,11 +1,15 @@
 <template>
-    <template v-for="(facet, index) in facets.items" :key="index">
-        <Facet
-            :facet="facet"
-            :filters="filters"
-            :context="context"
-            @search="applyFacet"/>
-    </template>
+  <template
+    v-for="(facet, index) in facets.items"
+    :key="index"
+  >
+    <Facet
+      :facet="facet"
+      :filters="filters"
+      :context="context"
+      @search="applyFacet"
+    />
+  </template>
 </template>
 
 <script setup lang="ts">

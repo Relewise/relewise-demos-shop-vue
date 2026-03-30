@@ -3,13 +3,14 @@ import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
-import { computed } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import basketService from './services/basket.service';
-import ApiErrors from './components/ApiErrors.vue';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
 import breakpointService from './services/breakpoint.service';
 import notificationsStore from './stores/notifications.store';
+import { Toaster } from 'vue-sonner';
+import { ComputerDesktopIcon } from '@heroicons/vue/24/outline';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -17,23 +18,36 @@ const mainCategories = ref<NavigationItem[]>([]);
 const footer = ref<NavigationItem[]>([]);
 const hasChildCategories = ref(true);
 const router = useRouter();
-const lineItemsCount = computed(() => basketService.model.value.lineItems.length);
+const lineItemsCount = basketService.itemsCount;
 const breakpoint = computed(() => breakpointService.active.value);
+const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
+const activeContextRevision = computed(() => contextStore.activeContextRevision.value);
+const routeViewKey = computed(() => activeContextRevision.value.toString());
+let categoryLoadToken = 0;
 
 init();
+
+onMounted(() => {
+    notificationsStore.flushAfterReload();
+});
+
+watch(activeContextRevision, async() => {
+    await refreshActiveContext();
+}, { immediate: true });
 
 async function init() {
     const params = new URLSearchParams(window.location.search);
     let query = undefined;
     if (params.has('share')) {
         query = { share: params.get('share') };
-        await router.push({ path: '/app-settings', query: query });
+        await router.push({ path: '/settings', query: query });
     }
 
-    if (contextStore.isConfigured) {
-        const searcher = contextStore.getSearcher();
-
-        getCategories(searcher);
+    if (!contextStore.hasActiveDataset.value) {
+        if (router.currentRoute.value.path !== '/settings') {
+            await router.push('/settings');
+        }
+        return;
     }
 
     if (params.has('datasetId')) {
@@ -44,23 +58,46 @@ async function init() {
         history.replaceState(null, '', url);
 
         if (datasetId && contextStore.datasets.value.some(x => x.datasetId === datasetId)) {
-            contextStore.setDataset(datasetId); 
-            window.location.reload();
+            contextStore.setDataset(datasetId);
         }
         else {
-            notificationsStore.push({ title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
+            notificationsStore.push({ type: 'error', title: 'Could not find dataset', text: 'Make sure it is correctly configured' });
         }
 
     }
 }
 
-async function getCategories(searcher: Searcher) {
+async function refreshActiveContext() {
+    categoryLoadToken += 1;
+    const loadToken = categoryLoadToken;
+
+    if (!contextStore.hasActiveDataset.value || !contextStore.isConfigured.value) {
+        clearNavigation();
+        return;
+    }
+
+    try {
+        await getCategories(contextStore.getSearcher(), loadToken);
+    } catch {
+        if (loadToken !== categoryLoadToken) {
+            return;
+        }
+
+        clearNavigation();
+    }
+}
+
+async function getCategories(searcher: Searcher, loadToken: number) {
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .pagination(p => p.setPageSize(0))
         .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true }))
         .build();
 
     const response = await searcher.searchProducts(request);
+
+    if (loadToken !== categoryLoadToken) {
+        return;
+    }
 
     const categoryFacet = response?.facets?.items![0] as CategoryHierarchyFacetResult;
     const navigation: NavigationItem[] = categoryFacet.nodes
@@ -72,22 +109,47 @@ async function getCategories(searcher: Searcher) {
     mainCategories.value = navigation;
     footer.value = navigation.slice(0, 4);
 }
+
+function clearNavigation() {
+    hasChildCategories.value = false;
+    mainCategories.value = [];
+    footer.value = [];
+}
 </script>
 
 <template>
-    <ApiErrors/>
-    <Header :line-items-count="lineItemsCount"
-            :has-child-categories="hasChildCategories"
-            :main-categories="mainCategories"/>
+  <Toaster
+    position="bottom-right"
+    rich-colors
+    :visible-toasts="5"
+    offset="16px"
+  />
+  <Header
+    :line-items-count="lineItemsCount"
+    :has-child-categories="hasChildCategories"
+    :main-categories="mainCategories"
+  />
 
-    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <RouterView/>
-    </div>
-    <Footer :has-child-categories="hasChildCategories" :main-categories="mainCategories" :footer="footer"/>
+  <div
+    id="main-container"
+    class="w-full mx-auto pb-10 flex-grow relative"
+  >
+    <RouterView :key="routeViewKey" />
+  </div>
+  <Footer
+    v-if="hasActiveDataset"
+    :has-child-categories="hasChildCategories"
+    :main-categories="mainCategories"
+    :footer="footer"
+  />
 
-    <div class="fixed px-2 py-0.5 rounded bg-red-600 bottom-0 right-0 z-[10000] text-white text-xs font-mono uppercase">
-        {{ breakpoint }}
-    </div>
+  <div
+    v-tooltip="'Current breakpoint'"
+    class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm"
+  >
+    <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
+    <span>{{ breakpoint }}</span>
+  </div>
 </template>
 
 <style lang="scss">
@@ -98,13 +160,11 @@ async function getCategories(searcher: Searcher) {
   opacity: 0;
 }
 
-$headerHeight: 106px;
-
 .navigationmodal {
     @apply bg-white overflow-hidden border-t border-solid border-slate-100;
     position: fixed;
     z-index: 1000;
-    top: $headerHeight; // height of header
+    top: var(--header-height, 106px);
     left: 0;
     width: 100%;
 
@@ -114,7 +174,7 @@ $headerHeight: 106px;
         z-index: 1;
         left: 0;
         width: 100%;
-        height: calc(100% - $headerHeight);
+        height: calc(100% - var(--header-height, 106px));
     }
 
     .modalcontent {

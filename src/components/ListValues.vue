@@ -1,93 +1,122 @@
 <template>
-    <div>
-        <label class="text-sm block mt-6">{{ label }}</label>
-        <template v-if="!internalItems && internalSingleItem">
-            <div class="flex mt-2 gap-2">
-                <input v-model="internalSingleItem" type="text" :placeholder="inputPlaceholder">
-                <button class="bg-gray-500 text-white" @click="removeItem(0)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <template v-else>
-            <div v-for="(_, index) in internalItems" :key="index" class="flex mt-2 gap-2">
-                <input v-model="internalItems[index]" type="text" :placeholder="inputPlaceholder">
-                <button class="bg-gray-500 text-white" @click="removeItem(index)">
-                    Remove
-                </button>
-            </div>
-        </template>
-        <div class="flex mt-2 gap-2">
-            <input v-model="newItem" type="text" :placeholder="newItemPlaceholder">
-            <button class="outline" @click="addItem">
-                Add
-            </button>
+  <div>
+    <label class="text-sm block mt-6">{{ label }}</label>
+
+    <div
+      v-if="internalItems.length > 0"
+      class="mt-3 space-y-2"
+    >
+      <div
+        v-for="item in internalItems"
+        :key="item"
+        class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+      >
+        <div class="flex min-w-0 items-center gap-2">
+          <span class="truncate text-sm font-medium text-slate-900">{{ item }}</span>
+          <span
+            v-if="singleItem === item"
+            class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-700"
+          >
+            Active
+          </span>
         </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            v-if="singleItem !== item"
+            type="button"
+            class="outline !px-3"
+            @click="setActiveItem(item)"
+          >
+            Use
+          </button>
+          <TrashCanButton
+            size="extrasmall"
+            :title="`Remove ${item}`"
+            :aria-label="`Remove ${item}`"
+            @click="removeItem(item)"
+          />
+        </div>
+      </div>
     </div>
+
+    <p
+      v-else
+      class="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500"
+    >
+      No {{ label.toLowerCase() }} added yet.
+    </p>
+
+    <div class="mt-3 flex gap-2">
+      <input
+        v-model="newItem"
+        type="text"
+        :placeholder="newItemPlaceholder"
+        @keydown.enter.prevent="addItem"
+      >
+      <button
+        class="outline"
+        @click="addItem"
+      >
+        Add
+      </button>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, toRefs } from 'vue';
-import contextStore from '@/stores/context.store';
+import TrashCanButton from '@/components/form/TrashCanButton.vue';
+import { computed, ref, toRefs, type PropType } from 'vue';
 
 const props = defineProps({
     label: { type: String, required: true },
-    items: { type: Array, default: null },
-    singleItem: { type: String, default: null },
-    inputPlaceholder: { type: String, required: true },
+    items: { type: Array as PropType<string[]>, default: () => [] },
+    singleItem: { type: String, default: '' },
     newItemPlaceholder: { type: String, required: true },
 });
 
 const { singleItem, items } = toRefs(props);
 const newItem = ref('');
 
-const internalSingleItem = computed({
-    get: () => {
-        return singleItem.value;
-    },
-    set: (v) => {
-        emit('update:singleItem', v);
-    },
-});
-
-const internalItems = computed({
-    get: () => {
-        return items.value ?? [];
-    },
-    set: (v) => {
-        emit('update:items', v);
-    },
-});
-
-
 const emit = defineEmits(['update:singleItem', 'update:items']);
 
+const internalItems = computed({
+    get: () => normalizeItems(items.value ?? []),
+    set: (value: string[]) => emit('update:items', normalizeItems(value)),
+});
+
 function addItem() {
-    if (!newItem.value) return;
-   
-    if (!internalItems.value) {
-        internalItems.value = internalSingleItem.value ? [internalSingleItem.value] : [];
-    }
-
-    if (!internalSingleItem.value) {
-        internalSingleItem.value = newItem.value;
-    }
-
-    internalItems.value.push(newItem.value);
-    newItem.value = '';
-    contextStore.persistState();
-}
-
-function removeItem(index: number) {
-    if (!internalItems.value) {
-        internalItems.value = [];
-        internalSingleItem.value = '';
-        contextStore.persistState();
+    const trimmedValue = newItem.value.trim();
+    if (!trimmedValue) {
         return;
     }
 
-    internalItems.value.splice(index, 1);
-    contextStore.persistState();
+    if (internalItems.value.includes(trimmedValue)) {
+        newItem.value = '';
+        return;
+    }
+
+    internalItems.value = [...internalItems.value, trimmedValue];
+    if (!singleItem.value) {
+        emit('update:singleItem', trimmedValue);
+    }
+    newItem.value = '';
+}
+
+function removeItem(item: string) {
+    const nextItems = internalItems.value.filter((existingItem) => existingItem !== item);
+    internalItems.value = nextItems;
+
+    if (singleItem.value === item) {
+        emit('update:singleItem', nextItems[0] ?? '');
+    }
+}
+
+function setActiveItem(item: string) {
+    emit('update:singleItem', item);
+}
+
+function normalizeItems(items: string[]) {
+    return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
 }
 </script>
-
