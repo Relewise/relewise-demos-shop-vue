@@ -78,17 +78,43 @@ defineProps({
         v-if="hasChildCategories || mainCategories.length > 0"
         class="my-6 border-[#e4a8bd] md:my-5"
       >
-      <div class="flex flex-col items-center justify-between sm:flex-row">
-        <a href="https://relewise.com/contact-us/">
-          <img
-            src="/logo.svg"
-            class="h-14"
-          >
-        </a>
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <img
+          src="/logo.svg"
+          class="h-11"
+          alt="Relewise"
+        >
 
-        <p class="mt-4 text-sm text-slate-500 sm:mt-0 text-[#af778c]">
-          © Copyright {{ new Date().getFullYear() }}
-        </p>
+        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-sm text-slate-900 sm:justify-end sm:text-right">
+          <span>© Copyright {{ new Date().getFullYear() }}</span>
+          <span class="text-slate-500">·</span>
+          <a
+            href="https://docs.relewise.com/docs/intro/demo-shop.html"
+            target="_blank"
+            rel="noreferrer noopener"
+            class="underline underline-offset-2 hover:text-slate-700"
+          >
+            Documentation
+          </a>
+          <span class="text-slate-500">·</span>
+          <a
+            href="https://github.com/Relewise/relewise-demos-shop-vue"
+            target="_blank"
+            rel="noreferrer noopener"
+            class="underline underline-offset-2 hover:text-slate-700"
+          >
+            GitHub
+          </a>
+          <span class="text-slate-500">·</span>
+          <a
+            href="https://relewise.com/contact-us/"
+            target="_blank"
+            rel="noreferrer noopener"
+            class="underline underline-offset-2 hover:text-slate-700"
+          >
+            Contact Relewise
+          </a>
+        </div>
       </div>
     </div>
   </footer>

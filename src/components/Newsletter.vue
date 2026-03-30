@@ -2,34 +2,31 @@
   <h3 class="text-lg font-medium">
     Subscribe to our newsletter
   </h3>
-  <div class="flex mt-2 gap-2">
-    <input
-      v-model="email"
-      type="text"
-      :disabled="!trackingEnabled"
-      :title="!trackingEnabled ? disabledTrackingMessage : undefined"
-      :class="[
-        '!shadow-none !bg-slate-100 !border-slate-100 focus:!border-slate-100', 
-        { '!border-red-500 focus:!ring-red-500': !isValidEmail }
-      ]"
-      placeholder="Email"
-      @keyup.enter="subscribe"
-    >
-    <button
-      class="bg-brand-500 text-white" 
-      :title="!trackingEnabled ? disabledTrackingMessage : undefined"
-      :disabled="!trackingEnabled || (!isValidEmail && email.length > 0)" 
-      @click="subscribe"
-    >
-      Subscribe
-    </button>
-  </div>
-  <p
-    v-if="!trackingEnabled"
-    class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"
+  <div
+    v-tooltip="!trackingEnabled ? disabledTrackingMessage : undefined"
+    class="mt-2"
   >
-    {{ disabledTrackingMessage }}
-  </p>
+    <div class="flex gap-2">
+      <input
+        v-model="email"
+        type="text"
+        :disabled="!trackingEnabled"
+        :class="[
+          '!shadow-none !bg-slate-100 !border-slate-100 focus:!border-slate-100',
+          { '!border-red-500 focus:!ring-red-500': !isValidEmail }
+        ]"
+        placeholder="Email"
+        @keyup.enter="subscribe"
+      >
+      <button
+        class="bg-brand-500 text-white"
+        :disabled="!trackingEnabled || (!isValidEmail && email.length > 0)"
+        @click="subscribe"
+      >
+        Subscribe
+      </button>
+    </div>
+  </div>
   <span
     v-if="success === true"
     class="flex items-center"
