@@ -10,6 +10,7 @@ import Footer from './layout/Footer.vue';
 import breakpointService from './services/breakpoint.service';
 import notificationsStore from './stores/notifications.store';
 import { Toaster } from 'vue-sonner';
+import { ComputerDesktopIcon } from '@heroicons/vue/24/outline';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -142,8 +143,9 @@ function clearNavigation() {
     :footer="footer"
   />
 
-  <div class="fixed bottom-3 right-3 z-[10000] rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm">
-    {{ breakpoint }}
+  <div class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm">
+    <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
+    <span>{{ breakpoint }}</span>
   </div>
 </template>
 
