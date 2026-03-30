@@ -59,21 +59,21 @@
               </div>
 
               <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                <span class="rounded-full bg-white px-3 py-1 font-mono text-xs text-slate-700">
+                <SettingsMetadataBadge variant="identifier">
                   {{ dataset.datasetId || 'Missing dataset ID' }}
-                </span>
-                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                </SettingsMetadataBadge>
+                <SettingsMetadataBadge>
                   {{ formatCount(dataset.allLanguages?.length ?? 0, 'language') }}
-                </span>
-                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                </SettingsMetadataBadge>
+                <SettingsMetadataBadge>
                   {{ formatCount(dataset.allCurrencies?.length ?? 0, 'currency', 'currencies') }}
-                </span>
-                <span class="rounded-full bg-white px-3 py-1 text-xs text-slate-600">
+                </SettingsMetadataBadge>
+                <SettingsMetadataBadge>
                   {{ formatCount(dataset.users?.length ?? 0, 'user') }}
-                </span>
-                <span class="rounded-full bg-white px-3 py-1 text-xs text-slate-600">
+                </SettingsMetadataBadge>
+                <SettingsMetadataBadge>
                   {{ formatCount(dataset.companies?.length ?? 0, 'company', 'companies') }}
-                </span>
+                </SettingsMetadataBadge>
               </div>
             </div>
 
@@ -208,6 +208,7 @@
 import SecretInput from '@/components/SecretInput.vue';
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputText from '@/components/form/InputText.vue';
+import SettingsMetadataBadge from '@/components/settings/SettingsMetadataBadge.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
