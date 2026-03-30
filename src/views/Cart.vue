@@ -37,108 +37,153 @@
         </div>
       </div>
     </div>
-    <div class="justify-center md:flex md:space-x-6 xl:px-0">
-      <div class="md:w-3/5">
+    <div
+      v-else
+      class="gap-6 lg:grid lg:grid-cols-[minmax(0,1fr),22rem] xl:gap-8 xl:px-0"
+    >
+      <div>
         <div
           v-for="item in model.lineItems"
           :key="item.product.productId ?? ''"
-          class="justify-between mb-5 rounded bg-white sm:flex sm:justify-start"
+          class="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
         >
-          <Image
-            :entity="item.product"
-            class="w-full rounded sm:!w-20 xl:!w-60"
-          />
-          <div class="sm:ml-4 flex-grow">
-            <div class="mt-5 sm:mt-0">
+          <div class="flex flex-col gap-4 sm:grid sm:grid-cols-[auto,minmax(0,1fr),8.5rem,9rem,4rem] sm:items-center sm:gap-5">
+            <RouterLink
+              :to="productRoute(item)"
+              class="mx-auto flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 transition hover:bg-slate-100 sm:mx-0 xl:h-28 xl:w-28"
+            >
+              <Image
+                :entity="item.product"
+                class="h-24 w-24 rounded-2xl xl:h-28 xl:w-28"
+              />
+            </RouterLink>
+
+            <div class="min-w-0 flex-1">
               <p
                 v-if="item.product.brand"
-                class="mt-1 text-gray-500"
+                class="text-sm font-medium uppercase tracking-[0.18em] text-slate-500"
               >
                 {{ item.product.brand?.displayName }}
               </p>
-              <h2 class="text-xl font-semibold text-gray-900">
+              <RouterLink
+                :to="productRoute(item)"
+                class="mt-2 block text-lg font-semibold leading-snug text-slate-900 transition hover:text-brand-500 sm:text-xl"
+              >
                 {{ item.product.displayName }}
-              </h2>
+              </RouterLink>
+              <p
+                v-if="productMeta(item)"
+                class="mt-2 text-sm text-slate-500"
+              >
+                {{ productMeta(item) }}
+              </p>
             </div>
-            <div class="mt-4 flex flex-wrap gap-4 justify-between w-full">
-              <div class="flex items-center border-gray-100 w-1/2">
-                <span
-                  class="cursor-pointer rounded-l bg-gray-100 py-1 px-3.5 duration-100 hover:bg-gray-300"
-                  @click="updateLineItem(item, -1)"
-                > - </span>
-                <input
-                  v-model="item.quantity"
-                  class="h-8 w-12 border bg-white text-center text-xs outline-none"
-                  type="number"
-                  min="1"
-                >
-                <span
-                  class="cursor-pointer rounded-r bg-gray-100 py-1 px-3 duration-100 hover:bg-gray-300"
-                  @click="updateLineItem(item, 1)"
-                > + </span>
-              </div>
-              <div class="flex-grow flex items-center justify-end">
-                <span class="text-xl text-slate-900 mr-1 leading-none">{{
-                  $format(item.product.salesPrice) }}</span>
-                <span
-                  v-if="item.product.salesPrice !== item.product.listPrice"
-                  class="text-slate-900 line-through"
-                >
-                  {{ $format(item.product.listPrice) }}
-                </span>
-              </div>
 
-              <div class="flex items-center w-full">
-                <a
-                  href="#"
-                  class="inline-flex text-neutral-600 hover:underline"
-                  @click.prevent="remove(item)"
+            <div class="border-t border-slate-200 pt-4 sm:self-center sm:justify-self-center sm:border-t-0 sm:pt-0">
+              <div class="inline-flex items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 shadow-sm">
+                <button
+                  type="button"
+                  class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100"
+                  aria-label="Decrease quantity"
+                  @click="updateLineItem(item, -1)"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="h-5 w-5 cursor-pointer duration-150"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                  <span class="ml-3 text-sm">Remove from cart</span>
-                </a>
+                  -
+                </button>
+                <input
+                  :value="item.quantity"
+                  class="!block !h-10 !w-10 !min-w-0 !rounded-none !border-x !border-y-0 !border-slate-200 !bg-white !px-0 !py-0 text-center !text-sm !font-semibold tabular-nums !text-slate-900 !shadow-none !ring-0 outline-none focus:!border-slate-200 focus:!ring-0"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="3"
+                  @change="setLineItemQuantity(item, $event)"
+                  @blur="setLineItemQuantity(item, $event)"
+                >
+                <button
+                  type="button"
+                  class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100"
+                  aria-label="Increase quantity"
+                  @click="updateLineItem(item, 1)"
+                >
+                  +
+                </button>
               </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-4 text-left sm:self-center sm:justify-self-end sm:border-t-0 sm:pt-0 sm:text-right">
+              <p class="text-2xl font-semibold leading-none text-slate-900">
+                {{ $format(lineTotal(item)) }}
+              </p>
+              <div class="mt-2 text-sm text-slate-500">
+                <p>Each: {{ $format(item.product.salesPrice) }}</p>
+                <p
+                  v-if="item.product.salesPrice !== item.product.listPrice"
+                  class="line-through"
+                >
+                  Was {{ $format(item.product.listPrice) }}
+                </p>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-4 sm:self-center sm:justify-self-center sm:border-t-0 sm:pt-0">
+              <button
+                type="button"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                title="Remove from cart"
+                aria-label="Remove from cart"
+                @click="remove(item)"
+              >
+                <TrashIcon
+                  class="shrink-0"
+                  style="width: 1.25rem; height: 1.25rem;"
+                />
+              </button>
             </div>
           </div>
         </div>
       </div>
       <div
-        v-if="!isEmpty"
-        class="mt-6 h-full bg-neutral-200 p-6 md:mt-0 md:w-2/5"
+        class="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-28"
       >
-        <div class="flex justify-between mb-6">
-          <h4 class="text-xl font-bold">
-            Total
-          </h4>
-          <div class="">
-            <h4 class="mb-1 text-xl font-bold">
-              {{ $format(model.lineItems.map(x => (x.product.salesPrice ?? 0) *
-                x.quantity).reduce((partialSum, a) => partialSum + a, 0)) }}
+        <div class="flex items-start justify-between gap-4 border-b border-slate-200 pb-5">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Order summary
+            </p>
+            <h4 class="mt-2 text-2xl font-semibold text-slate-900">
+              Total
             </h4>
-            <p class="text-sm text-gray-700">
+          </div>
+          <div class="text-right">
+            <h4 class="text-3xl font-semibold text-slate-900">
+              {{ $format(cartTotal) }}
+            </h4>
+            <p class="mt-1 text-sm text-slate-500">
               including VAT
             </p>
           </div>
         </div>
-        <button
-          class="bg-slate-900 w-full text-lg"
-          @click="checkout"
-        >
-          Place order
-        </button>
+        <dl class="space-y-3 py-5 text-sm text-slate-600">
+          <div class="flex items-center justify-between gap-4">
+            <dt>Items</dt>
+            <dd class="font-medium text-slate-900">
+              {{ itemCount }}
+            </dd>
+          </div>
+        </dl>
+        <div class="space-y-3">
+          <button
+            class="w-full bg-slate-900 text-lg"
+            @click="checkout"
+          >
+            Place order
+          </button>
+          <RouterLink
+            to="/"
+            class="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+          >
+            Continue shopping
+          </RouterLink>
+        </div>
       </div>
     </div>
 
@@ -167,22 +212,27 @@
 <script lang="ts" setup>
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import ProductTile from '../components/ProductTile.vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { PersonalProductRecommendationBuilder, PopularProductsBuilder, PurchasedWithMultipleProductsBuilder, type ProductRecommendationResponse } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import basketService, { type ILineItem } from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
-import { computed } from 'vue';
 import Image from '@/components/Image.vue';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import router from '@/router';
-import { ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { ShoppingBagIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
 const result = ref<ProductRecommendationResponse | undefined>(undefined);
 const recommendationTitle = ref('People also buy');
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => basketService.model.value.lineItems.length === 0);
+const cartTotal = computed(() => basketService.model.value.lineItems
+    .map(x => (x.product.salesPrice ?? 0) * x.quantity)
+    .reduce((partialSum, a) => partialSum + a, 0));
+const itemCount = computed(() => basketService.model.value.lineItems
+    .map(x => x.quantity)
+    .reduce((partialSum, a) => partialSum + a, 0));
 
 function init() {
     if (contextStore.user.value.classifications?.channel === 'B2B'
@@ -254,6 +304,56 @@ async function recommendPersonalProducts() {
 
     recommendationTitle.value = 'Recommended for you';
     result.value = response;
+}
+
+function productRoute(item: ILineItem) {
+    return {
+        name: item.product.variant ? 'variant' : 'product',
+        params: {
+            id: item.product.productId,
+            variant: item.product.variant?.variantId,
+        },
+    };
+}
+
+function productMeta(item: ILineItem) {
+    const variantName = item.product.variant?.displayName?.trim();
+    if (!variantName || variantName === item.product.displayName)
+        return '';
+
+    return `Variant: ${variantName}`;
+}
+
+function lineTotal(item: ILineItem) {
+    return (item.product.salesPrice ?? 0) * item.quantity;
+}
+
+function setLineItemQuantity(item: ILineItem, event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input)
+        return;
+
+    const rawValue = input.value.trim();
+    if (!/^\d{1,3}$/.test(rawValue)) {
+        input.value = String(item.quantity);
+        return;
+    }
+
+    const nextQuantity = Number.parseInt(rawValue, 10);
+    if (!Number.isFinite(nextQuantity) || nextQuantity <= 0 || nextQuantity > 999) {
+        input.value = String(item.quantity);
+        return;
+    }
+
+    const quantityDelta = nextQuantity - item.quantity;
+    if (quantityDelta === 0) {
+        input.value = String(item.quantity);
+        return;
+    }
+
+    basketService.addProduct({ product: item.product, quantityDelta });
+    trackingService.trackCart(basketService.model.value.lineItems);
+    init();
 }
 
 function updateLineItem(item: ILineItem, quantityDelta: number) {
