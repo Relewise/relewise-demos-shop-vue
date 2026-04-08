@@ -1,0 +1,4 @@
+interface:
+  display_name: "Read PR Comments"
+  short_description: "Read PR comments and review feedback into structured Markdown for planning in this repository"
+  default_prompt: "Use skill read-pr-comments to read comments from PR <url>. Require the PR URL if missing, verify the local branch matches the PR head branch and is fully up to date, request permission before any safe branch sync, and if sync is not approved return retrieval_skipped_reason. Then return unresolved review threads and PR conversation comments as structured Markdown for planning in relewise-demos-shop-vue."
