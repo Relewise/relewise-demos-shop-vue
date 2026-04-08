@@ -5,6 +5,7 @@ import contextStore from '@/stores/context.store';
 import { displayUserOption } from '@/helpers/userHelper';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import router from '@/router';
+import InputSelect from '@/components/form/InputSelect.vue';
 
 const datasets = contextStore.datasets;
 const draftDatasetId = ref('');
@@ -125,10 +126,10 @@ async function applyContextChanges() {
     <hr class="my-0 p-0">
     <div class="flex flex-col gap-4 p-2">
       <div class="flex-grow">
-        <label class="text-sm block">Dataset</label>
-        <select
-          :value="draftDatasetId"
-          @change="setDataset(($event.target as HTMLInputElement).value)"
+        <InputSelect
+          label="Dataset"
+          :model-value="draftDatasetId"
+          @update:model-value="setDataset"
         >
           <option
             v-for="dataset in datasets"
@@ -137,16 +138,16 @@ async function applyContextChanges() {
           >
             {{ dataset.displayName }}
           </option>
-        </select>
+        </InputSelect>
       </div>
       <div class="flex items-end gap-2">
         <div class="flex w-1/2 flex-grow flex-col">
-          <label class="text-sm block">Language</label>
-          <select
+          <InputSelect
+            label="Language"
             name="Language"
-            :value="draftLanguage"
+            :model-value="draftLanguage"
             class="w-full"
-            @change="changeLanguage(($event.target as HTMLInputElement).value)"
+            @update:model-value="changeLanguage"
           >
             <option
               v-for="(language, index) in draftDataset?.allLanguages ?? []"
@@ -155,15 +156,15 @@ async function applyContextChanges() {
             >
               {{ language }}
             </option>
-          </select>
+          </InputSelect>
         </div>
         <div class="flex w-1/2 flex-grow flex-col">
-          <label class="text-sm block">Currency</label>
-          <select
+          <InputSelect
+            label="Currency"
             name="Currency"
-            :value="draftCurrencyCode"
+            :model-value="draftCurrencyCode"
             class="w-full"
-            @change="changeCurrency(($event.target as HTMLInputElement).value)"
+            @update:model-value="changeCurrency"
           >
             <option
               v-for="(currencyCode, index) in draftDataset?.allCurrencies ?? []"
@@ -172,15 +173,15 @@ async function applyContextChanges() {
             >
               {{ currencyCode }}
             </option>
-          </select>
+          </InputSelect>
         </div>
       </div>
       <div class="flex-grow">
-        <label class="text-sm block">User</label>
-        <select
+        <InputSelect
+          label="User"
           :disabled="!hasUsers"
-          :value="draftSelectedUserOption"
-          @change="setUser(($event.target as HTMLInputElement).value)"
+          :model-value="draftSelectedUserOption"
+          @update:model-value="setUser"
         >
           <option value="">
             (None)
@@ -192,16 +193,16 @@ async function applyContextChanges() {
           >
             {{ displayUserOption(userOption, index) }}
           </option>
-        </select>
+        </InputSelect>
       </div>
       <div
         v-if="hasCompanies"
         class="flex-grow"
       >
-        <label class="text-sm block">Company</label>
-        <select
-          :value="draftSelectedCompanyOption"
-          @change="setCompany(($event.target as HTMLInputElement).value)"
+        <InputSelect
+          label="Company"
+          :model-value="draftSelectedCompanyOption"
+          @update:model-value="setCompany"
         >
           <option value="">
             (None)
@@ -213,7 +214,7 @@ async function applyContextChanges() {
           >
             {{ companyOption.id }}
           </option>
-        </select>
+        </InputSelect>
       </div>
       <div class="flex items-center justify-between">
         <RouterLink

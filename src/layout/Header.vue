@@ -16,7 +16,7 @@ defineProps({
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
 });
 
-const { open, headerElement, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
+const { open, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 const currentUsers = computed(() => contextStore.context.value?.users ?? []);
 const activeUserLabel = computed(() => {
