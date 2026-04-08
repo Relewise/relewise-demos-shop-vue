@@ -49,6 +49,16 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
         { immediate: true, deep: true },
     );
 
+    watch(
+        [editableDataset, trackingEnabled],
+        () => {
+            if (errors.value.length > 0) {
+                errors.value = [];
+            }
+        },
+        { deep: true },
+    );
+
     function toggleSection(section: keyof typeof openSections.value) {
         openSections.value[section] = !openSections.value[section];
     }
