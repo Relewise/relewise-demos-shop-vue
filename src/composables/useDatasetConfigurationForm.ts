@@ -12,10 +12,14 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
     const trackingEnabled = ref(toValue(sourceDataset).trackingEnabled ?? false);
     const errors = ref<string[]>([]);
     const saveBarElement = ref<HTMLElement | null>(null);
+    const openSections = ref({
+        general: true,
+        features: false,
+        personalization: true,
+    });
     const lastSavedSnapshot = ref('');
     const currentSnapshot = ref(createDatasetSnapshot(editableDataset.value, trackingEnabled.value));
     const { isPinned: isSaveBarPinned } = useStickyPinned(saveBarElement, 12);
-    const openSections = ref(loadOpenSections(toValue(sourceDataset).datasetId));
 
     const enabledFeatureCount = computed(() => datasetFeatureFields
         .reduce((count, feature) => count + (editableDataset.value[feature.key] ? 1 : 0), 0));
@@ -43,7 +47,6 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
             errors.value = [];
             currentSnapshot.value = createDatasetSnapshot(editableDataset.value, trackingEnabled.value);
             lastSavedSnapshot.value = currentSnapshot.value;
-            openSections.value = loadOpenSections(nextDataset.datasetId);
         },
         { immediate: true, deep: true },
     );
@@ -55,14 +58,6 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
             if (errors.value.length > 0) {
                 errors.value = [];
             }
-        },
-        { deep: true },
-    );
-
-    watch(
-        openSections,
-        (nextValue) => {
-            saveOpenSections(toValue(sourceDataset).datasetId, nextValue);
         },
         { deep: true },
     );
@@ -127,45 +122,4 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
         toggleSection,
         saveChanges,
     };
-}
-
-function getOpenSectionsStorageKey(datasetId: string | undefined) {
-    return `settings-open-sections:${datasetId ?? 'unknown'}`;
-}
-
-function loadOpenSections(datasetId: string | undefined) {
-    const fallback = {
-        general: true,
-        features: false,
-        personalization: true,
-    };
-
-    if (typeof window === 'undefined') {
-        return fallback;
-    }
-
-    try {
-        const raw = window.sessionStorage.getItem(getOpenSectionsStorageKey(datasetId));
-        if (!raw) {
-            return fallback;
-        }
-
-        const parsed = JSON.parse(raw) as Partial<typeof fallback>;
-        return {
-            general: parsed.general ?? fallback.general,
-            features: parsed.features ?? fallback.features,
-            personalization: parsed.personalization ?? fallback.personalization,
-        };
-    }
-    catch {
-        return fallback;
-    }
-}
-
-function saveOpenSections(datasetId: string | undefined, openSections: { general: boolean; features: boolean; personalization: boolean }) {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
-    window.sessionStorage.setItem(getOpenSectionsStorageKey(datasetId), JSON.stringify(openSections));
 }
