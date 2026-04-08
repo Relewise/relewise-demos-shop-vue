@@ -119,22 +119,26 @@
         <div
           v-for="feature in featureFields"
           :key="feature.key"
-          class="rounded-xl border border-slate-200 bg-slate-50 p-4"
+          class="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100"
+          @click="toggleFeatureFromCard(feature.key, $event)"
         >
           <InputCheckbox
             v-model="editableDataset[feature.key]"
+            class="pointer-events-none"
             :label="feature.label"
             :help="feature.description"
           />
         </div>
 
-        <InputText
-          :model-value="editableDataset.recommendationsMinutesAgo"
-          label="Recommendations lookback in minutes"
-          help="Default is 20160 minutes, equivalent to 14 days."
-          type="text"
-          @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
-        />
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <InputText
+            :model-value="editableDataset.recommendationsMinutesAgo"
+            label="Recommendations lookback in minutes"
+            help="Default is 20160 minutes, equivalent to 14 days."
+            type="text"
+            @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
+          />
+        </div>
       </div>
     </SettingsAccordionSection>
 
@@ -154,6 +158,7 @@ import FormTags from '@/components/form/FormTags.vue';
 import InputCheckbox from '@/components/form/InputCheckbox.vue';
 import InputText from '@/components/form/InputText.vue';
 import InputToggle from '@/components/form/InputToggle.vue';
+import type { DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import Personalization from '@/components/Personalization.vue';
 import SecretInput from '@/components/SecretInput.vue';
 import SettingsAccordionSection from '@/components/settings/SettingsAccordionSection.vue';
@@ -181,4 +186,17 @@ const {
     toggleSection,
     saveChanges,
 } = useDatasetConfigurationForm(toRef(props, 'dataset'));
+
+function toggleFeatureFromCard(key: DatasetBooleanKey, event: MouseEvent) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+        return;
+    }
+
+    if (target.closest('a, button, input, label, select, textarea')) {
+        return;
+    }
+
+    editableDataset.value[key] = !editableDataset.value[key];
+}
 </script>

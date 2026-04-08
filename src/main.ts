@@ -32,7 +32,6 @@ app.mount('#app');
 
 function addNetworkInterceptors() {
     const { fetch: originalFetch } = window;
-    const { open: originalXhrOpen, send: originalXhrSend } = XMLHttpRequest.prototype;
 
     window.fetch = async(...args) => {
         const [resource, options] = args;
@@ -55,23 +54,6 @@ function addNetworkInterceptors() {
             }
             throw error;
         }
-    };
-
-    XMLHttpRequest.prototype.open = function(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null) {
-        Reflect.set(this, '__requestUrl', typeof url === 'string' ? url : url.toString());
-        return originalXhrOpen.call(this, method, url, async ?? true, username ?? undefined, password ?? undefined);
-    };
-
-    XMLHttpRequest.prototype.send = function(body?: Document | XMLHttpRequestBodyInit | null) {
-        this.addEventListener('error', () => {
-            notifyNetworkError(Reflect.get(this, '__requestUrl'));
-        }, { once: true });
-
-        this.addEventListener('timeout', () => {
-            notifyNetworkError(Reflect.get(this, '__requestUrl'));
-        }, { once: true });
-
-        return originalXhrSend.call(this, body);
     };
 }
 

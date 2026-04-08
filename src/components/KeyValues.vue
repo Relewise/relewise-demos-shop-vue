@@ -55,7 +55,7 @@ const rows = ref<EditableKeyValue[]>([]);
 watch(
     () => props.modelValue,
     (nextValue) => {
-        const nextRows = toEditableRows(nextValue);
+        const nextRows = toEditableRows(nextValue, rows.value);
         if (serializeModelValue(nextRows) !== serializeModelValue(rows.value)) {
             rows.value = nextRows;
         }
@@ -89,16 +89,20 @@ function createEmptyRow(): EditableKeyValue {
     };
 }
 
-function toEditableRows(items: KeyValue[]) {
+function toEditableRows(items: KeyValue[], existingRows: EditableKeyValue[] = []) {
     const populatedRows = items
         .filter((item) => isPopulated(item))
-        .map((item) => ({
-            id: crypto.randomUUID(),
+        .map((item, index) => ({
+            id: existingRows[index]?.id ?? crypto.randomUUID(),
             key: item.key ?? '',
             value: item.value ?? '',
         }));
 
-    return [...populatedRows, createEmptyRow()];
+    const trailingRow = existingRows[populatedRows.length];
+    return [
+        ...populatedRows,
+        trailingRow && !isPopulated(trailingRow) ? trailingRow : createEmptyRow(),
+    ];
 }
 
 function remove(index: number) {
