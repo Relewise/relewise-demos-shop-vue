@@ -119,8 +119,9 @@ import InlineActionInput from '@/components/InlineActionInput.vue';
 import InputText from '@/components/form/InputText.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
+import { keyValueArrayToDataRecord, keyValueArrayToStringRecord, keyValuesFromDataRecord, keyValuesFromStringRecord, setUserMetadataDraft } from '@/helpers/keyValueMetadata';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
-import { DataValueFactory, type DataValue, type User } from '@relewise/client';
+import type { User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -215,9 +216,9 @@ watch(
         temporaryId.value = nextUser?.temporaryId ?? '';
         authenticatedId.value = nextUser?.authenticatedId ?? '';
         email.value = nextUser?.email ?? '';
-        classifications.value = Object.keys(nextUser?.classifications ?? {}).map((key) => ({ key, value: nextUser?.classifications?.[key] ?? null }));
-        identifiers.value = Object.keys(nextUser?.identifiers ?? {}).map((key) => ({ key, value: nextUser?.identifiers?.[key] ?? null }));
-        data.value = Object.keys(nextUser?.data ?? {}).map((key) => ({ key, value: nextUser?.data?.[key]?.type === 'String' ? String(nextUser.data[key].value) : null }));
+        classifications.value = keyValuesFromStringRecord(nextUser?.classifications);
+        identifiers.value = keyValuesFromStringRecord(nextUser?.identifiers);
+        data.value = keyValuesFromDataRecord(nextUser?.data);
     },
     { immediate: true },
 );
@@ -230,23 +231,19 @@ watch(
     { deep: true },
 );
 
-function keyValueArrayToRecord(items: KeyValue[]) {
-    return items.reduce((acc, entry) => {
-        acc[entry.key] = entry.value;
-        return acc;
-    }, {} as Record<string, string | null>);
-}
-
 function syncUserMetadata() {
+    setUserMetadataDraft(props.user, {
+        classifications: classifications.value,
+        identifiers: identifiers.value,
+        data: data.value,
+    });
+
     props.user.temporaryId = temporaryId.value || undefined;
     props.user.authenticatedId = authenticatedId.value || undefined;
     props.user.email = email.value || undefined;
-    props.user.classifications = keyValueArrayToRecord(classifications.value);
-    props.user.identifiers = keyValueArrayToRecord(identifiers.value);
-    props.user.data = data.value.reduce((acc, entry) => {
-        acc[entry.key] = DataValueFactory.string(entry.value ?? '');
-        return acc;
-    }, {} as Record<string, DataValue>);
+    props.user.classifications = keyValueArrayToStringRecord(classifications.value);
+    props.user.identifiers = keyValueArrayToStringRecord(identifiers.value);
+    props.user.data = keyValueArrayToDataRecord(data.value);
 }
 
 function setAuthenticatedId(value: string) {

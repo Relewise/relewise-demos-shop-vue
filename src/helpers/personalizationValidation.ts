@@ -1,4 +1,5 @@
 import type { IDataset } from '@/stores/context.store';
+import { getCompanyDataDraft, getUserMetadataDraft, hasDuplicateKeyValueKeys, hasIncompleteKeyValueRows } from '@/helpers/keyValueMetadata';
 import type { Company, DataValue } from '@relewise/client';
 
 export function validatePersonalization(dataset: IDataset) {
@@ -9,6 +10,44 @@ export function validatePersonalization(dataset: IDataset) {
     const invalidUserMetadata = users.some((user) => hasInvalidRecord(user.classifications) || hasInvalidRecord(user.identifiers) || hasInvalidDataRecord(user.data));
     if (invalidUserMetadata) {
         errors.push('All user classifications, identifiers, and data values must include both a key and value.');
+    }
+
+    const invalidUserMetadataDrafts = users.some((user) => {
+        const draft = getUserMetadataDraft(user);
+        if (!draft) {
+            return false;
+        }
+
+        return hasIncompleteKeyValueRows(draft.classifications)
+            || hasIncompleteKeyValueRows(draft.identifiers)
+            || hasIncompleteKeyValueRows(draft.data);
+    });
+    if (invalidUserMetadataDrafts && !errors.includes('All user classifications, identifiers, and data values must include both a key and value.')) {
+        errors.push('All user classifications, identifiers, and data values must include both a key and value.');
+    }
+
+    const hasDuplicateUserIdentifierKeys = users.some((user) => {
+        const draft = getUserMetadataDraft(user);
+        return draft ? hasDuplicateKeyValueKeys(draft.identifiers) : false;
+    });
+    if (hasDuplicateUserIdentifierKeys) {
+        errors.push('User identifier keys must be unique within the same user.');
+    }
+
+    const hasDuplicateUserClassificationKeys = users.some((user) => {
+        const draft = getUserMetadataDraft(user);
+        return draft ? hasDuplicateKeyValueKeys(draft.classifications) : false;
+    });
+    if (hasDuplicateUserClassificationKeys) {
+        errors.push('User classification keys must be unique within the same user.');
+    }
+
+    const hasDuplicateUserDataKeys = users.some((user) => {
+        const draft = getUserMetadataDraft(user);
+        return draft ? hasDuplicateKeyValueKeys(draft.data) : false;
+    });
+    if (hasDuplicateUserDataKeys) {
+        errors.push('User data keys must be unique within the same user.');
     }
 
     if (hasDuplicateValues(users, (user) => user.temporaryId?.trim())) {
@@ -35,6 +74,22 @@ export function validatePersonalization(dataset: IDataset) {
     const invalidCompanyData = companies.some((company) => hasInvalidDataRecord(company.data));
     if (invalidCompanyData) {
         errors.push('All company data values must include both a key and value.');
+    }
+
+    const invalidCompanyDraftData = companies.some((company) => {
+        const draft = getCompanyDataDraft(company);
+        return draft ? hasIncompleteKeyValueRows(draft.data) : false;
+    });
+    if (invalidCompanyDraftData && !errors.includes('All company data values must include both a key and value.')) {
+        errors.push('All company data values must include both a key and value.');
+    }
+
+    const hasDuplicateCompanyDataKeys = companies.some((company) => {
+        const draft = getCompanyDataDraft(company);
+        return draft ? hasDuplicateKeyValueKeys(draft.data) : false;
+    });
+    if (hasDuplicateCompanyDataKeys) {
+        errors.push('Company data keys must be unique within the same company.');
     }
 
     const companiesById = new Map(
@@ -85,7 +140,11 @@ function hasInvalidRecord(record?: Record<string, string | null>) {
         return false;
     }
 
-    return Object.entries(record).some(([key, value]) => !key || !value);
+    return Object.entries(record).some(([key, value]) => {
+        const trimmedKey = key.trim();
+        const trimmedValue = value?.trim() ?? '';
+        return !trimmedKey || !trimmedValue;
+    });
 }
 
 function hasInvalidDataRecord(record?: Record<string, DataValue>) {
@@ -93,7 +152,11 @@ function hasInvalidDataRecord(record?: Record<string, DataValue>) {
         return false;
     }
 
-    return Object.entries(record).some(([key, value]) => !key || !value?.value);
+    return Object.entries(record).some(([key, value]) => {
+        const trimmedKey = key.trim();
+        const normalizedValue = typeof value?.value === 'string' ? value.value.trim() : value?.value;
+        return !trimmedKey || !normalizedValue;
+    });
 }
 
 function hasDuplicateValues<T>(items: T[], getValue: (item: T) => string | undefined) {

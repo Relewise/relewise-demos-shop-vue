@@ -11,13 +11,11 @@
           v-model="row.key"
           placeholder="Key"
           :aria-label="`${title} key`"
-          @input="handleRowInput"
         />
         <InputText
           v-model="row.value"
           placeholder="Value"
           :aria-label="`${title} value`"
-          @input="handleRowInput"
         />
         <TrashCanButton
           class="self-start"
@@ -55,12 +53,24 @@ const rows = ref<EditableKeyValue[]>([]);
 watch(
     () => props.modelValue,
     (nextValue) => {
+        if (rows.value.length > 0 && serializeModelValue(nextValue) === serializeModelValue(toModelValue(rows.value))) {
+            return;
+        }
+
         const nextRows = toEditableRows(nextValue, rows.value);
-        if (serializeModelValue(nextRows) !== serializeModelValue(rows.value)) {
+        if (serializeEditableRows(nextRows) !== serializeEditableRows(rows.value)) {
             rows.value = nextRows;
         }
     },
     { immediate: true, deep: true },
+);
+
+watch(
+    rows,
+    () => {
+        syncRows();
+    },
+    { deep: true },
 );
 
 function reconcileRows() {
@@ -122,21 +132,25 @@ function isPopulated(row: KeyValue | EditableKeyValue | undefined) {
     return Boolean(row?.key?.trim() || row?.value?.trim());
 }
 
+function isComplete(row: KeyValue | EditableKeyValue | undefined) {
+    return Boolean(row?.key?.trim() && row?.value?.trim());
+}
+
 function toModelValue(items: KeyValue[]) {
     return items
         .filter((item) => isPopulated(item))
         .map((item) => ({
-            key: item.key,
+            key: item.key ?? '',
             value: item.value ?? '',
         }));
 }
 
-function handleRowInput() {
-    syncRows();
-}
-
 function syncRows() {
-    reconcileRows();
+    const nextRows = normalizeEditableRows(rows.value);
+    if (serializeEditableRows(nextRows) !== serializeEditableRows(rows.value)) {
+        rows.value = nextRows;
+        return;
+    }
 
     const emittedValue = toModelValue(rows.value);
     if (serializeModelValue(emittedValue) !== serializeModelValue(props.modelValue)) {
@@ -144,8 +158,31 @@ function syncRows() {
     }
 }
 
+function normalizeEditableRows(items: EditableKeyValue[]) {
+    const normalizedRows = items.filter((row, index) => isPopulated(row) || index === items.length - 1);
+
+    if (normalizedRows.length === 0) {
+        return [createEmptyRow()];
+    }
+
+    const lastRow = normalizedRows[normalizedRows.length - 1];
+    if (isPopulated(lastRow)) {
+        return [...normalizedRows, createEmptyRow()];
+    }
+
+    return normalizedRows;
+}
+
 function serializeModelValue(items: Array<KeyValue | EditableKeyValue>) {
     return JSON.stringify(items.map((item) => ({
+        key: item.key,
+        value: item.value ?? '',
+    })));
+}
+
+function serializeEditableRows(items: EditableKeyValue[]) {
+    return JSON.stringify(items.map((item) => ({
+        id: item.id,
         key: item.key,
         value: item.value ?? '',
     })));

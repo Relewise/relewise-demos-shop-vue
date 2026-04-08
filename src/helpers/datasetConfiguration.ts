@@ -1,4 +1,5 @@
 import type { IDataset } from '@/stores/context.store';
+import { getCompanyDataDraft, getUserMetadataDraft } from '@/helpers/keyValueMetadata';
 import { sanitizeUsers } from '@/helpers/userContext';
 import type { Company } from '@relewise/client';
 
@@ -68,5 +69,9 @@ export function createDatasetSnapshot(dataset: IDataset, trackingEnabled = datas
     return JSON.stringify({
         tracking: trackingEnabled,
         dataset: normalizeDatasetConfiguration(dataset),
+        drafts: {
+            users: (dataset.users ?? []).map((user) => getUserMetadataDraft(user) ?? null),
+            companies: (dataset.companies ?? []).map((company) => getCompanyDataDraft(company) ?? null),
+        },
     });
 }

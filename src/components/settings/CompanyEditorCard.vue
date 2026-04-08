@@ -111,9 +111,10 @@ import InlineActionInput from '@/components/InlineActionInput.vue';
 import InputSelect from '@/components/form/InputSelect.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
+import { keyValueArrayToDataRecord, keyValuesFromDataRecord, setCompanyDataDraft } from '@/helpers/keyValueMetadata';
 import contextStore from '@/stores/context.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
-import { DataValueFactory, type Company, type DataValue } from '@relewise/client';
+import type { Company } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -188,10 +189,7 @@ watch(
     (nextCompany) => {
         companyId.value = nextCompany?.id ?? '';
         parentCompanyId.value = nextCompany?.parent?.id ?? '';
-        data.value = Object.keys(nextCompany?.data ?? {}).map((key) => ({
-            key,
-            value: nextCompany?.data?.[key]?.type === 'String' ? String(nextCompany.data[key].value) : null,
-        }));
+        data.value = keyValuesFromDataRecord(nextCompany?.data);
     },
     { immediate: true },
 );
@@ -219,11 +217,12 @@ watch(
 );
 
 function syncCompanyMetadata() {
+    setCompanyDataDraft(props.company, {
+        data: data.value,
+    });
+
     props.company.parent = props.companies.find((company) => company.id === parentCompanyId.value);
-    props.company.data = data.value.reduce((acc, entry) => {
-        acc[entry.key] = DataValueFactory.string(entry.value ?? '');
-        return acc;
-    }, {} as Record<string, DataValue>);
+    props.company.data = keyValueArrayToDataRecord(data.value);
 }
 
 function setCompanyId(value: string) {
