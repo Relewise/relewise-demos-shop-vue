@@ -15,11 +15,11 @@ export default defineConfig({
                     compilerOptions: {
                         // treat <relewise-*> and <app-*> as custom elements
                         isCustomElement: (tag) => tag.startsWith('relewise-') || tag.startsWith('app-'),
-                    }
-                }
-            }
+                    },
+                },
+            },
         ),
-        vueJsx()
+        vueJsx(),
     ],
     resolve: {
         alias: {

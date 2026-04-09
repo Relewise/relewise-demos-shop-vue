@@ -165,7 +165,7 @@ async function search() {
             .setSelectedVariantProperties({
                 displayName: true,
                 pricing: true,
-                allData: true
+                allData: true,
             })
             .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
             .setExplodedVariants(contextStore.context.value.variantBasedSearchOverlay ? 5 : 1)
@@ -203,7 +203,7 @@ async function search() {
                     variation: { key: variationName },
                 })
                 .setSelectedDisplayAdProperties({
-                    allData: true
+                    allData: true,
                 }))
             .highlighting(h =>
                 h.enabled(contextStore.context.value.searchHighlight ?? false)
@@ -343,58 +343,94 @@ function trackBrandView(
 </script>
 
 <template>
-    <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
-        <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
-        </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
-        <input v-model="searchTerm" type="text" placeholder="Search..."
-            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-            @keyup="typeAHeadSearch()">
-    </div>
+  <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+    <span class="flex items-center bg-slate-100 rounded-none px-3">
+      <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
+    </span>
+    <XMarkIcon
+      v-if="open"
+      class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer"
+      @click="close"
+    />
+    <input
+      v-model="searchTerm"
+      type="text"
+      placeholder="Search..."
+      class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+      @keyup="typeAHeadSearch()"
+    >
+  </div>
 
-    <Teleport to="#modal">
-        <div v-if="open" id="search-result-overlay" class="modal">
-            <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pt-6 pb-10 px-2 xl:px-0">
-                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName"
-                    class="mb-6 flex border-b border-slate-200">
-                    <div :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
-                        @click="() => activeTab = Tabs.Products">
-                        Products ({{ productSearchResult?.hits }})
-                    </div>
-                    <div :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
-                        @click="() => activeTab = Tabs.Content">
-                        Content ({{ contentSearchResult?.hits }})
-                    </div>
-                </div>
-
-                <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
-                    && productSearchResult" v-model:sort="filters.sort!" :page-size="productPageSize"
-                    :term="filters.term ?? ''" :product-search-result="productSearchResult"
-                    :content-recommendation-result="contentRecommendationResult"
-                    :fallback-recommendations="fallbackRecommendations" :products="products"
-                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    @search-for="searchFor" @search="persistInUrl" />
-                <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
-                    && contextStore.context.value.contentSearch
-                    && contentSearchResult" v-model:sort="filters.sort!" :content-search-result="contentSearchResult"
-                    :page-size="contentPageSize" :term="filters.term ?? ''" :predictions-list="predictionsList"
-                    :filters="filters" @search-for="searchFor" @search="persistInUrl" />
-            </div>
+  <Teleport to="#modal">
+    <div
+      v-if="open"
+      id="search-result-overlay"
+      class="modal"
+    >
+      <div
+        v-if="productSearchResult || contentSearchResult"
+        class="container mx-auto pt-6 pb-10 px-2 xl:px-0"
+      >
+        <div
+          v-if="contextStore.context.value.contentSearch && !route.query.brandName"
+          class="mb-6 flex border-b border-slate-200"
+        >
+          <div
+            :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+            @click="() => activeTab = Tabs.Products"
+          >
+            Products ({{ productSearchResult?.hits }})
+          </div>
+          <div
+            :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+            @click="() => activeTab = Tabs.Content"
+          >
+            Content ({{ contentSearchResult?.hits }})
+          </div>
         </div>
-    </Teleport>
+
+        <ProductSearchOverlayResult
+          v-if="activeTab === Tabs.Products
+            && productSearchResult"
+          v-model:sort="filters.sort!"
+          :page-size="productPageSize"
+          :term="filters.term ?? ''"
+          :product-search-result="productSearchResult"
+          :content-recommendation-result="contentRecommendationResult"
+          :fallback-recommendations="fallbackRecommendations"
+          :products="products"
+          :predictions-list="predictionsList"
+          :filters="filters"
+          :right-side="rightSide"
+          @search-for="searchFor"
+          @search="persistInUrl"
+        />
+        <ContentSearchOverlayResult
+          v-else-if="activeTab === Tabs.Content
+            && contextStore.context.value.contentSearch
+            && contentSearchResult"
+          v-model:sort="filters.sort!"
+          :content-search-result="contentSearchResult"
+          :page-size="contentPageSize"
+          :term="filters.term ?? ''"
+          :predictions-list="predictionsList"
+          :filters="filters"
+          @search-for="searchFor"
+          @search="persistInUrl"
+        />
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
-$headerHeight: 109px;
-
 .modal {
     @apply bg-white overflow-y-scroll;
     position: fixed;
     z-index: 999;
-    top: $headerHeight; // height of header
+    top: var(--header-height, 109px);
     left: 0;
     width: 100%;
-    height: calc(100% - $headerHeight);
+    height: calc(100% - var(--header-height, 109px));
 }
 </style>

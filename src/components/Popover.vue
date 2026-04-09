@@ -1,10 +1,14 @@
 <template>
-    <VDropdown :placement="placement" :arrow="arrow" :triggers="['click']">
-        <slot></slot>
-        <template #popper>
-            <slot name="content" />
-        </template>
-    </VDropdown>
+  <VDropdown
+    :placement="placement"
+    :arrow="arrow"
+    :triggers="['click']"
+  >
+    <slot />
+    <template #popper>
+      <slot name="content" />
+    </template>
+  </VDropdown>
 </template>
 
 <script lang="ts" setup>

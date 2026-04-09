@@ -1,33 +1,39 @@
 <template>
-    <div v-if="config?.contexts.includes(context)" 
-         class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1">
-        <h4 class="font-semibold text-lg">
-            {{ config?.label }}
-        </h4>
+  <div
+    v-if="config?.contexts.includes(context)" 
+    class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1"
+  >
+    <h4 class="font-semibold text-lg">
+      {{ config?.label }}
+    </h4>
         
-        <CategoryFacet 
-            v-if="config?.type === 'Category' && context != 'ContentSearch'"
-            :facet="facet"
-            :filters="filters"
-            @search="$emit('search', $event)"/>
+    <CategoryFacet 
+      v-if="config?.type === 'Category' && context != 'ContentSearch'"
+      :facet="facet"
+      :filters="filters"
+      @search="$emit('search', $event)"
+    />
         
-        <CheckListFacet 
-            v-if="config?.type === 'Category' && context == 'ContentSearch'"
-            :facet="facet"
-            :filters="filters"
-            @search="$emit('search', $event)"/>
+    <CheckListFacet 
+      v-if="config?.type === 'Category' && context == 'ContentSearch'"
+      :facet="facet"
+      :filters="filters"
+      @search="$emit('search', $event)"
+    />
 
-        <CheckListFacet
-            v-if="config?.renderType === 'Checklist'"
-            :facet="facet" 
-            @search="$emit('search', $event)"/>
+    <CheckListFacet
+      v-if="config?.renderType === 'Checklist'"
+      :facet="facet" 
+      @search="$emit('search', $event)"
+    />
         
-        <RangeFacet
-            v-else-if="config?.renderType === 'Range'"
-            :facet="(facet as PriceRangeFacetResult | ProductDataDoubleRangeFacetResult)"
-            :filters="filters"
-            @search="$emit('search', $event)"/>
-    </div>
+    <RangeFacet
+      v-else-if="config?.renderType === 'Range'"
+      :facet="(facet as PriceRangeFacetResult | ProductDataDoubleRangeFacetResult)"
+      :filters="filters"
+      @search="$emit('search', $event)"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

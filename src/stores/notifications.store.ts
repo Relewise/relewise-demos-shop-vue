@@ -1,27 +1,75 @@
-import { computed, reactive } from 'vue';
+import { toast, type ExternalToast } from 'vue-sonner';
+
+export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 
 export type Notification = {
     title: string;
-    text: string;
-}
+    text?: string;
+    type: NotificationType;
+    duration?: number;
+};
 
-export interface INotifcationsState {
-    notifications: Notification[];
-}
+const defaultDurations: Record<NotificationType, number> = {
+    success: 4000,
+    info: 4000,
+    warning: 5000,
+    error: 7000,
+};
 
 class NotificationsStore {
-
-    private state = reactive<INotifcationsState>({ notifications: [] });
-
-    public get notifications() {
-        return computed(() => this.state.notifications);
-    }
+    private readonly reloadNotificationKey = 'pendingNotification';
 
     public push(notification: Notification) {
+        const options: ExternalToast = {
+            description: notification.text,
+            duration: notification.duration ?? defaultDurations[notification.type],
+        };
 
-        this.state.notifications.push(notification);
+        switch (notification.type) {
+        case 'success':
+            return toast.success(notification.title, options);
+        case 'info':
+            return toast.info(notification.title, options);
+        case 'warning':
+            return toast.warning(notification.title, options);
+        case 'error':
+            return toast.error(notification.title, options);
+        }
+    }
 
-        setTimeout(() => { this.state.notifications.splice(this.state.notifications.indexOf(notification), 1); }, 10000);
+    public pushAfterReload(notification: Notification) {
+        sessionStorage.setItem(this.reloadNotificationKey, JSON.stringify(notification));
+    }
+
+    public flushAfterReload() {
+        const value = sessionStorage.getItem(this.reloadNotificationKey);
+        if (!value) {
+            return;
+        }
+
+        sessionStorage.removeItem(this.reloadNotificationKey);
+
+        try {
+            this.push(JSON.parse(value) as Notification);
+        } catch {
+            // Ignore malformed persisted notifications.
+        }
+    }
+
+    public success(title: string, text?: string, options?: Pick<Notification, 'duration'>) {
+        return this.push({ type: 'success', title, text, ...options });
+    }
+
+    public info(title: string, text?: string, options?: Pick<Notification, 'duration'>) {
+        return this.push({ type: 'info', title, text, ...options });
+    }
+
+    public warning(title: string, text?: string, options?: Pick<Notification, 'duration'>) {
+        return this.push({ type: 'warning', title, text, ...options });
+    }
+
+    public error(title: string, text?: string, options?: Pick<Notification, 'duration'>) {
+        return this.push({ type: 'error', title, text, ...options });
     }
 }
 

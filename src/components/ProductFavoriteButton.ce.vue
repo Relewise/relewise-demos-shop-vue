@@ -15,21 +15,37 @@ const isAnonymous = computed(() => userIsAnonymous(user.value));
 </script>
 
 <template>
-    <div class="favorite-button" :class="{ 'favorite-button--floating': props.floating }" @click.stop.prevent>
-        <relewise-product-favorite-button v-if="!isAnonymous" :product.prop="product" :user.prop="user" />
-        <Popover v-else placement="bottom-end" popper-class="favorite-popover">
-            <template #default>
-                <button class="fake-favorite-button" type="button" @click.stop.prevent>
-                    <relewise-heart-icon></relewise-heart-icon>
-                </button>
-            </template>
-            <template #content>
-                <div class="engagement-popover-content">
-                    This feature requires a non-anonymous user.
-                </div>
-            </template>
-        </Popover>
-    </div>
+  <div
+    class="favorite-button"
+    :class="{ 'favorite-button--floating': props.floating }"
+    @click.stop.prevent
+  >
+    <relewise-product-favorite-button
+      v-if="!isAnonymous"
+      :product.prop="product"
+      :user.prop="user"
+    />
+    <Popover
+      v-else
+      placement="bottom-end"
+      popper-class="favorite-popover"
+    >
+      <template #default>
+        <button
+          class="fake-favorite-button"
+          type="button"
+          @click.stop.prevent
+        >
+          <relewise-heart-icon />
+        </button>
+      </template>
+      <template #content>
+        <div class="engagement-popover-content">
+          This feature requires a non-anonymous user.
+        </div>
+      </template>
+    </Popover>
+  </div>
 </template>
 
 <style scoped>

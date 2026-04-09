@@ -1,28 +1,30 @@
 <template>
-    <RouterLink :to="{ name: 'content-feed', params: { 'id': content.contentId ?? '' } }"
-        class="relative flex flex-col overflow-hidden text-white bg-white  transition duration-200 h-full rounded-lg p-2 hover:scale-105"
-        :class="brandClass">
-        <div class="gap-4 items-start h-full flex flex-col">
-            <div class="flex-shrink-0">
-                <Image :entity="content" />
-            </div>
+  <RouterLink
+    :to="{ name: 'content-feed', params: { 'id': content.contentId ?? '' } }"
+    class="relative flex flex-col overflow-hidden text-white bg-white  transition duration-200 h-full rounded-lg p-2 hover:scale-105"
+    :class="brandClass"
+  >
+    <div class="gap-4 items-start h-full flex flex-col">
+      <div class="flex-shrink-0">
+        <Image :entity="content" />
+      </div>
 
-            <div class="text-left flex flex-col flex-1 h-full w-full">
-                <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
-                    {{ content.displayName ?? content.contentId }}
-                </h5>
-                <div class="grow"></div>
-                <div class="flex justify-end">
-                    <!-- <span class="text-sm text-neutral-500" v-if="content.data">
+      <div class="text-left flex flex-col flex-1 h-full w-full">
+        <h5 class="tracking-tight text-lg font-semibold leading-tight line-clamp-2 h-12">
+          {{ content.displayName ?? content.contentId }}
+        </h5>
+        <div class="grow" />
+        <div class="flex justify-end">
+          <!-- <span class="text-sm text-neutral-500" v-if="content.data">
                         {{ content.data['ByLine']?.value }}
                     </span> -->
-                    <span class="flex gap-3 text-neutral-400">
-                        <ContentSentimentButtons :content="content" />
-                    </span>
-                </div>
-            </div>
+          <span class="flex gap-3 text-neutral-400">
+            <ContentSentimentButtons :content="content" />
+          </span>
         </div>
-    </RouterLink>
+      </div>
+    </div>
+  </RouterLink>
 </template>
 
 <script setup lang="ts">

@@ -1,86 +1,145 @@
 <template>
-    <main class="pt-6 grow px-2 xl:px-0">
-        <div class="container mx-auto" v-if="!topProduct && !topContent">
-            <h1 class="text-xl lg:text-3xl font-semibold mb-4 underline--yellow inline-flex">Shoppertainment: Adaptive
-                Discovery
-            </h1>
+  <main class="pt-6 grow px-2 xl:px-0">
+    <div
+      v-if="!topProduct && !topContent"
+      class="container mx-auto"
+    >
+      <h1 class="text-xl lg:text-3xl font-semibold mb-4 underline--yellow inline-flex">
+        Shoppertainment: Adaptive
+        Discovery
+      </h1>
+    </div>
+
+    <div
+      v-if="topProduct || topContent"
+      class="container mx-auto mb-6 rounded-lg p-2 shadow bg-brand-50"
+    >
+      <div
+        v-if="topProduct"
+        class="relative p-2 rounded"
+      >
+        <app-product-favorite-button :product="topProduct" />
+        <div class="flex flex-col lg:flex-row gap-4 items-center">
+          <div class="w-32 h-32 flex-shrink-0">
+            <Image :entity="topProduct" />
+          </div>
+          <div class="flex-1">
+            <h2 class="inline-flex text-2xl font-semibold underline--yellow">
+              {{ topProduct?.displayName }}
+            </h2>
+            <p
+              v-if="topProduct?.data"
+              class="text-sm text-slate-600 line-clamp-3"
+            >
+              {{
+                topProduct?.data?.description?.value ?? topProduct?.data?.Description?.value }}
+            </p>
+          </div>
+          <div class="flex-shrink-0 items-end">
+            <button
+              type="button"
+              class="rounded bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
+              :class="topButtonClass"
+              @click="addProductToBasket"
+            >
+              Add to cart
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div class="container mx-auto mb-6 rounded-lg p-2 shadow bg-brand-50" v-if="topProduct || topContent">
-            <div v-if="topProduct" class="relative p-2 rounded">
-                <app-product-favorite-button :product="topProduct" />
-                <div class="flex flex-col lg:flex-row gap-4 items-center">
-                    <div class="w-32 h-32 flex-shrink-0">
-                        <Image :entity="topProduct" />
-                    </div>
-                    <div class="flex-1">
-
-                        <h2 class="inline-flex text-2xl font-semibold underline--yellow">{{ topProduct?.displayName }}
-                        </h2>
-                        <p class="text-sm text-slate-600 line-clamp-3" v-if="topProduct?.data">{{
-                            topProduct?.data?.description?.value ?? topProduct?.data?.Description?.value }}</p>
-                    </div>
-                    <div class="flex-shrink-0 items-end">
-                        <button type="button"
-                            class="rounded bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
-                            :class="topButtonClass" @click="addProductToBasket">
-                            Add to cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="topContent" class="p-2 rounded">
-                <div class="relative flex gap-4 items-start">
-                    <div class="w-32 h-32 flex-shrink-0" v-if="findImage(topContent)">
-                        <Image :entity="topContent" />
-                    </div>
-                    <div class="flex flex-col gap-1">
-
-                        <h2 class="text-2xl font-semibold inline-flex">
-                            {{ topContent?.displayName }}
-                        </h2>
-                        <div class="text-sm text-slate-600 line-clamp-3" v-if="topContent?.data?.Body?.value"
-                            v-html="topContent?.data?.Body?.value"></div>
-                        <span class="flex gap-3 text-neutral-400">
-                            <ContentSentimentButtons :content="topContent" />
-                        </span>
-                    </div>
-                </div>
-            </div>
+      <div
+        v-if="topContent"
+        class="p-2 rounded"
+      >
+        <div class="relative flex gap-4 items-start">
+          <div
+            v-if="findImage(topContent)"
+            class="w-32 h-32 flex-shrink-0"
+          >
+            <Image :entity="topContent" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <h2 class="text-2xl font-semibold inline-flex">
+              {{ topContent?.displayName }}
+            </h2>
+            <div
+              v-if="topContent?.data?.Body?.value"
+              class="text-sm text-slate-600 line-clamp-3"
+              v-html="topContent?.data?.Body?.value"
+            />
+            <span class="flex gap-3 text-neutral-400">
+              <ContentSentimentButtons :content="topContent" />
+            </span>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <article class="mb-4">
-            <div class="mx-auto container">
-                <div v-if="error" class="p-2 border border-red-500 rounded bg-white text-red-600">{{ error }}</div>
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4 relative">
-                    <template v-for="(group, index) in elements" :key="index" v-if="feedId">
-                        <span v-for="ele in group.content" :key="String(ele.contentId)" :data-feed-item-type="'Content'"
-                            :data-feed-item-id="ele.contentId" class="feed-item">
-                            <FeedContentTile :content="ele" @click="trackClick('Content', ele.contentId!)" />
-                        </span>
-
-                        <span v-for="ele in group.products" :key="String(ele.productId)"
-                            :data-feed-item-type="'Product'" :data-feed-item-id="ele.productId" class="feed-item"
-                            :class="group.name === 'Full' ? 'col-span-2 my-4 lg:my-0 full' : ''">
-                            <ProductTile :product="ele" class="hover:!scale-[1.02]"
-                                @click.prevent=" router.push({ name: 'product-feed', params: { 'id': ele.productId } }); trackClick('Product', ele.productId!);" />
-                        </span>
-                    </template>
-                </div>
-            </div>
-
-        </article>
-
-        <div v-if="loading" class="py-6 text-center text-sm text-neutral-950 opacity-70">
-            Loading more…
+    <article class="mb-4">
+      <div class="mx-auto container">
+        <div
+          v-if="error"
+          class="p-2 border border-red-500 rounded bg-white text-red-600"
+        >
+          {{ error }}
         </div>
-        <div v-else-if="done" class="py-6 text-center text-sm text-neutral-950 opacity-70">
-            You’re all caught up
-        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-4 relative">
+          <template
+            v-for="(group, index) in elements"
+            v-if="feedId"
+            :key="index"
+          >
+            <span
+              v-for="ele in group.content"
+              :key="String(ele.contentId)"
+              :data-feed-item-type="'Content'"
+              :data-feed-item-id="ele.contentId"
+              class="feed-item"
+            >
+              <FeedContentTile
+                :content="ele"
+                @click="trackClick('Content', ele.contentId!)"
+              />
+            </span>
 
-        <div ref="sentinel" class="h-2"></div>
-    </main>
+            <span
+              v-for="ele in group.products"
+              :key="String(ele.productId)"
+              :data-feed-item-type="'Product'"
+              :data-feed-item-id="ele.productId"
+              class="feed-item"
+              :class="group.name === 'Full' ? 'col-span-2 my-4 lg:my-0 full' : ''"
+            >
+              <ProductTile
+                :product="ele"
+                class="hover:!scale-[1.02]"
+                @click.prevent=" router.push({ name: 'product-feed', params: { 'id': ele.productId } }); trackClick('Product', ele.productId!);"
+              />
+            </span>
+          </template>
+        </div>
+      </div>
+    </article>
+
+    <div
+      v-if="loading"
+      class="py-6 text-center text-sm text-neutral-950 opacity-70"
+    >
+      Loading more…
+    </div>
+    <div
+      v-else-if="done"
+      class="py-6 text-center text-sm text-neutral-950 opacity-70"
+    >
+      You’re all caught up
+    </div>
+
+    <div
+      ref="sentinel"
+      class="h-2"
+    />
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -89,7 +148,7 @@ import ProductTile from '@/components/ProductTile.vue';
 import Image from '@/components/Image.vue';
 import contextStore from '@/stores/context.store';
 import { FeedRecommendationInitializationBuilder, FeedRecommendationNextItemsBuilder, type FeedCompositionResult, type ProductResult, type ContentResult } from '@relewise/client';
-import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
+import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { findImage } from '@/helpers/imageHelper';
 import trackingService from '@/services/tracking.service';
@@ -179,7 +238,7 @@ async function initialize(): Promise<void> {
         .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.leadContent, upperBoundInclusive: feedLayout.leadContent } } })
         .addComposition({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
         .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.tailProducts, upperBoundInclusive: feedLayout.tailProducts } } })
-        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.tailContent, upperBoundInclusive: feedLayout.tailContent } } })
+        .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.tailContent, upperBoundInclusive: feedLayout.tailContent } } });
 
     // If route contains an id for product-feed/:id or content-feed/:id, seed the initialization
     const idParam = route.params.id;
@@ -212,10 +271,10 @@ async function initialize(): Promise<void> {
     }
 }
 
-function trackClick(type: "Product" | "Content", id: string) {
+function trackClick(type: 'Product' | 'Content', id: string) {
     if (!feedId.value) return;
 
-    trackingService.trackFeedItemClick(feedId.value, type === "Product" ? { productAndVariantId: { productId: id } } : { contentId: id });
+    trackingService.trackFeedItemClick(feedId.value, type === 'Product' ? { productAndVariantId: { productId: id } } : { contentId: id });
 }
 
 function addProductToBasket() {
@@ -232,7 +291,7 @@ function addProductToBasket() {
 import { watch } from 'vue';
 import breakpointService from '@/services/breakpoint.service';
 import { fetchContent, fetchProduct } from '@/helpers/feedHelpers';
-watch(route, async () => {
+watch(route, async() => {
     feedId.value = undefined;
     elements.value = [];
     topProduct.value = null;
@@ -280,12 +339,12 @@ async function loadMoreAndFill() {
     }
 }
 
-onMounted(async () => {
-    await loadMoreAndFill()
+onMounted(async() => {
+    await loadMoreAndFill();
     io = new IntersectionObserver(
         (entries) => entries[0]?.isIntersecting && loadMoreAndFill(),
-        { root: null, rootMargin: `0px 0px ${preloadPx}px 0px`, threshold: 0 }
-    )
+        { root: null, rootMargin: `0px 0px ${preloadPx}px 0px`, threshold: 0 },
+    );
     if (sentinel.value) io.observe(sentinel.value);
 
     // observe the feed item elements for intersection
@@ -325,7 +384,7 @@ onMounted(async () => {
         }, dwellTimeoutMs);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-})
+});
 
 onBeforeUnmount(() => {
     if (io && sentinel.value) io.unobserve(sentinel.value);
@@ -341,7 +400,7 @@ onBeforeUnmount(() => {
         clearTimeout(idleTimer);
         idleTimer = null;
     }
-})
+});
 
 function observeFeedItems() {
     if (!itemObserver) return;

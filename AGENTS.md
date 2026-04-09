@@ -71,6 +71,13 @@ Use this guide to make changes that match the existing architecture and avoid re
   - Overlay search (`/` with `open=1`)
   - Category listing (`/category/...`)
 
+## Available Skills
+- `upgrade-dependencies`: Upgrade npm dependencies with the established safety and PR workflow.
+- `read-pr-comments`: Read GitHub PR comments and unresolved review feedback into structured Markdown or JSON for planning.
+  - Required input: GitHub PR URL
+  - Branch safety: may require explicit approval before syncing the local branch to the PR head branch
+  - Retrieval behavior: returns `retrieval_skipped_reason: branch_sync_required` when sync is needed but not approved
+
 ## Validation Checklist (before finalizing)
 1. `npm run type-check`
 2. `npm run lint`

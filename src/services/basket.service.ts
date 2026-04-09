@@ -30,6 +30,24 @@ class BasketService {
         return computed(() => this.state.model);
     }
 
+    get lineItemsCount() {
+        return computed(() => this.state.model.lineItems.length);
+    }
+
+    get itemsCount() {
+        return computed(() => this.state.model.lineItems
+            .reduce((sum, item) => sum + item.quantity, 0));
+    }
+
+    get subtotal() {
+        return computed(() => this.state.model.lineItems
+            .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
+    }
+
+    get hasItems() {
+        return computed(() => this.state.model.lineItems.length > 0);
+    }
+
     async addProduct({ product, quantityDelta }: { product: ProductResult, quantityDelta: number }) {
         const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId
             && x.product.variant?.variantId === product.variant?.variantId);

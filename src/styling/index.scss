@@ -19,15 +19,36 @@ body {
 }
 
 input[type="text"] {
-    @apply block w-full rounded-md border border-slate-100 py-2.5 px-4 bg-slate-100 shadow-sm focus:border-slate-300 focus:ring-1 focus:ring-slate-200 focus:outline-none;
+    @apply block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-none;
 
     &.small {
         @apply py-1.5 px-2;
     }
+
+    &:disabled {
+        @apply cursor-not-allowed bg-slate-100 text-slate-500;
+    }
+}
+
+div[data-lastpass-icon-root],
+div[data-lastpass-root],
+div[id^="__lpform_"],
+iframe[id^="__lpform_"],
+iframe[name^="__lpform_"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
 }
 
 button {
-    @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded shadow-sm;
+    @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded-lg shadow-sm;
 
     &.outline {
         @apply text-gray-500 border-[1px] border-solid border-gray-500 bg-white outline-none py-1.5;
@@ -47,7 +68,11 @@ a {
 }
 
 select {
-    @apply mt-1 block w-full rounded-md border-slate-100 py-2.5 px-4 bg-slate-100 shadow-sm focus:border-slate-300 focus:ring focus:ring-slate-200 focus:ring-opacity-50 focus:outline-none;
+    @apply mt-1 block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-none;
+
+    &:disabled {
+        @apply cursor-not-allowed bg-slate-100 text-slate-500;
+    }
 }
 
 @font-face {
