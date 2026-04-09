@@ -182,9 +182,16 @@ async function init() {
         return;
     }
 
+    const shareParam = params.get('share')!;
+
+    params.delete('share');
+    const url = new URL(window.location.href);
+    url.searchParams.delete('share');
+    window.history.replaceState(null, '', url.toString());
+
     let sharedDataset: SharedDataset | null = null;
     try {
-        sharedDataset = parseSharedDataset(JSON.parse(decodeSharePayload(params.get('share')!)));
+        sharedDataset = parseSharedDataset(JSON.parse(decodeSharePayload(shareParam)));
     } catch {
     }
 
