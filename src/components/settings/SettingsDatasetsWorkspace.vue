@@ -69,11 +69,20 @@
                   {{ formatCount(dataset.allCurrencies?.length ?? 0, 'currency', 'currencies') }}
                 </SettingsMetadataBadge>
                 <SettingsMetadataBadge>
+                  {{ formatCount(enabledFeatureCount(dataset), 'feature') }}
+                </SettingsMetadataBadge>
+                <SettingsMetadataBadge>
                   {{ formatCount(dataset.users?.length ?? 0, 'user') }}
                 </SettingsMetadataBadge>
                 <SettingsMetadataBadge>
                   {{ formatCount(dataset.companies?.length ?? 0, 'company', 'companies') }}
                 </SettingsMetadataBadge>
+                <span
+                  v-if="dataset.trackingEnabled"
+                  class="inline-flex items-center rounded-full px-3 py-1 text-xs ring-1 bg-emerald-100 text-emerald-700 ring-emerald-200"
+                >
+                  Tracking: On
+                </span>
               </div>
             </div>
 
@@ -210,6 +219,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import InputText from '@/components/form/InputText.vue';
 import SettingsMetadataBadge from '@/components/settings/SettingsMetadataBadge.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
+import { datasetFeatureFields } from '@/helpers/datasetFeatures';
 import { buildSharedDataset } from '@/helpers/sharedDataset';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
@@ -365,9 +375,15 @@ function shareDataset(dataset: IDataset) {
     shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(buildSharedDataset(dataset, {
         language: isActiveDataset ? contextStore.language.value : undefined,
         currencyCode: isActiveDataset ? contextStore.currencyCode.value : undefined,
+        selectedUserIndex: isActiveDataset ? contextStore.selectedUserIndex.value : undefined,
+        selectedCompanyId: isActiveDataset ? contextStore.selectedCompanyId.value : undefined,
     }))));
     navigator.clipboard.writeText(shareUrl.toString());
     notificationsStore.push({ type: 'success', title: 'Share link copied', text: `The share link for ${dataset.displayName || dataset.datasetId} was copied to your clipboard.` });
+}
+
+function enabledFeatureCount(dataset: IDataset) {
+    return datasetFeatureFields.reduce((count, feature) => count + (dataset[feature.key] ? 1 : 0), 0);
 }
 
 function removeDataset(dataset: IDataset) {
