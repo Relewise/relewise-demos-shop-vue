@@ -120,6 +120,7 @@ import InputText from '@/components/form/InputText.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import { keyValueArrayToDataRecord, keyValueArrayToStringRecord, keyValuesFromDataRecord, keyValuesFromStringRecord, setUserMetadataDraft } from '@/helpers/keyValueMetadata';
+import { displayUser } from '@/helpers/userHelper';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import type { User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
@@ -152,39 +153,22 @@ const identifierValues = computed(() => {
         .map((entry) => formatBadgeValue(entry.key, entry.value));
 });
 
-const headlineSource = computed<'authenticated' | 'email' | 'identifier' | 'temporary' | 'anonymous'>(() => {
-    if (authenticatedId.value.trim()) {
-        return 'authenticated';
-    }
+const headline = computed(() => {
+    const preferredLabel = displayUser({
+        email: email.value.trim() || undefined,
+        authenticatedId: authenticatedId.value.trim() || undefined,
+        temporaryId: temporaryId.value.trim() || undefined,
+    } as User);
 
-    if (email.value.trim()) {
-        return 'email';
+    if (preferredLabel !== 'Anonymous') {
+        return preferredLabel;
     }
 
     if (identifierValues.value.length > 0) {
-        return 'identifier';
+        return identifierValues.value.join(', ');
     }
 
-    if (temporaryId.value.trim()) {
-        return 'temporary';
-    }
-
-    return 'anonymous';
-});
-
-const headline = computed(() => {
-    switch (headlineSource.value) {
-        case 'authenticated':
-            return authenticatedId.value.trim();
-        case 'email':
-            return email.value.trim();
-        case 'identifier':
-            return identifierValues.value.join(', ');
-        case 'temporary':
-            return temporaryId.value.trim();
-        default:
-            return 'Anonymous user';
-    }
+    return 'Anonymous user';
 });
 
 const authenticatedIdActionLabel = computed(() => authenticatedId.value.trim() ? 'Regenerate' : 'Generate');

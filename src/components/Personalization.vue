@@ -99,6 +99,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import CompanyEditorCard from '@/components/settings/CompanyEditorCard.vue';
 import UserEditorCard from '@/components/settings/UserEditorCard.vue';
+import { displayUser } from '@/helpers/userHelper';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { UserFactory, type Company, type User } from '@relewise/client';
 import { computed, nextTick, ref, watch } from 'vue';
@@ -248,7 +249,8 @@ function confirmRemoveCompany() {
 }
 
 function userKey(user: User, index: number) {
-    return user.authenticatedId || user.temporaryId || user.email || `user-${index}`;
+    const label = displayUser(user);
+    return label !== 'Anonymous' ? label : `user-${index}`;
 }
 
 function toggleUserExpanded(index: number) {
