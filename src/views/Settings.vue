@@ -35,104 +35,36 @@
     </div>
   </div>
 
-  <ConfirmationDialog
+  <SettingsSharedDatasetImportDialog
     v-model="isSharedDatasetImportDialogOpen"
-    title="Update existing dataset?"
-    :description="sharedDatasetImportDescription"
-    confirm-label="Update dataset"
-    cancel-label="Keep existing"
-    confirm-tone="primary"
+    :pending-import="pendingSharedDatasetImport"
+    :import-decision="importDecision"
+    @update:import-decision="importDecision = $event"
     @confirm="confirmSharedDatasetImport"
-    @cancel="declineSharedDatasetImport"
-  >
-    <template #content>
-      <div class="space-y-3">
-        <div
-          v-if="pendingSharedDatasetImport"
-          class="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200"
-        >
-          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Dataset ID
-          </p>
-          <p class="mt-1 break-all font-mono text-sm text-slate-900">
-            {{ pendingSharedDatasetImport.incoming.datasetId }}
-          </p>
-        </div>
-
-        <p class="text-sm text-slate-600">
-          Confirm to update the fields below:
-        </p>
-
-        <div
-          v-for="change in sharedDatasetCoreFieldChanges"
-          :key="change.key"
-          class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <p class="text-sm font-semibold text-slate-900">
-              {{ change.label }}
-            </p>
-            <button
-              v-if="change.key === 'apiKey'"
-              type="button"
-              class="!bg-transparent !px-0 !py-0 text-sm font-semibold !text-slate-600 !shadow-none transition hover:!text-slate-900"
-              @click="isApiKeyComparisonVisible = !isApiKeyComparisonVisible"
-            >
-              {{ isApiKeyComparisonVisible ? 'Hide values' : 'Show values' }}
-            </button>
-          </div>
-          <div class="mt-3 space-y-3">
-            <div class="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Current
-              </p>
-              <p
-                class="mt-1 break-all font-mono text-sm text-slate-700"
-                :class="change.key === 'apiKey' && !isApiKeyComparisonVisible ? 'masked-secret' : ''"
-              >
-                {{ formatSharedFieldValue(change.currentValue) }}
-              </p>
-            </div>
-            <div class="rounded-xl bg-white p-3 ring-1 ring-brand-200">
-              <p class="text-xs font-semibold uppercase tracking-wide text-brand-600">
-                New
-              </p>
-              <p
-                class="mt-1 break-all font-mono text-sm text-slate-900"
-                :class="change.key === 'apiKey' && !isApiKeyComparisonVisible ? 'masked-secret' : ''"
-              >
-                {{ formatSharedFieldValue(change.nextValue) }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-    <template #footer>
-      <p class="text-sm text-slate-600">
-        Users, companies, feature settings, and other local configuration will be kept.
-      </p>
-    </template>
-  </ConfirmationDialog>
+    @cancel="cancelSharedDatasetImport"
+  />
 </template>
 
 <script lang="ts" setup>
 import router from '@/router';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Breadcrumb from '@/components/Breadcrumb.vue';
-import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import { decodeSharePayload } from '@/helpers/shareEncoding';
 import {
+    applySharedDatasetImportDecision,
     createDatasetFromSharedDataset,
-    getSharedDatasetCoreFieldChanges,
-    mergeSharedDatasetLocalesIntoExistingDataset,
-    mergeSharedDatasetIntoExistingDataset,
+    getDefaultSharedDatasetImportDecision,
+    getSharedDatasetDiff,
     parseSharedDataset,
+    resolveSharedDatasetSessionSelections,
     type SharedDataset,
+    type SharedDatasetDiff,
+    type SharedDatasetImportDecision,
 } from '@/helpers/sharedDataset';
 import SettingsDatasetsWorkspace from '@/components/settings/SettingsDatasetsWorkspace.vue';
 import SettingsDatasetConfiguration from '@/components/settings/SettingsDatasetConfiguration.vue';
+import SettingsSharedDatasetImportDialog from '@/components/settings/SettingsSharedDatasetImportDialog.vue';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import notificationsStore from '@/stores/notifications.store';
 
@@ -145,9 +77,10 @@ const selectedDataset = computed(() => datasetIdParam.value
 const pendingSharedDatasetImport = ref<{
     incoming: SharedDataset;
     existingDataset: IDataset;
+    diff: SharedDatasetDiff;
 } | null>(null);
+const importDecision = ref<SharedDatasetImportDecision>(createDefaultImportDecision());
 const isSharedDatasetImportDialogOpen = ref(false);
-const isApiKeyComparisonVisible = ref(false);
 const breadcrumbItems = computed(() => {
     if (!selectedDataset.value) {
         return [{ name: 'Settings', route: { name: 'settings' } }];
@@ -158,22 +91,6 @@ const breadcrumbItems = computed(() => {
         { name: selectedDataset.value.displayName || selectedDataset.value.datasetId, route: { name: 'settings-dataset', params: { datasetId: selectedDataset.value.datasetId } } },
     ];
 });
-const sharedDatasetImportDescription = computed(() => {
-    if (!pendingSharedDatasetImport.value) {
-        return '';
-    }
-
-    return 'The dataset already exists locally.';
-});
-const sharedDatasetCoreFieldChanges = computed(() => {
-    const pendingImport = pendingSharedDatasetImport.value;
-    if (!pendingImport) {
-        return [];
-    }
-
-    return getSharedDatasetCoreFieldChanges(pendingImport.existingDataset, pendingImport.incoming);
-});
-
 void init();
 
 async function init() {
@@ -213,20 +130,25 @@ async function init() {
         return;
     }
 
-    const coreFieldChanges = getSharedDatasetCoreFieldChanges(existingDataset, sharedDataset);
-    if (coreFieldChanges.length === 0) {
-        mergeSharedDatasetIntoExistingDataset(existingDataset, sharedDataset);
+    const diff = getSharedDatasetDiff(existingDataset, sharedDataset);
+    if (!diff.requiresReview) {
+        if (diff.hasChanges) {
+            applySharedDatasetImportDecision(existingDataset, sharedDataset, importDecision.value);
+        }
         activateImportedDataset(existingDataset.datasetId, sharedDataset);
-
-        await reloadAtRoute({ name: 'home' });
+        await reloadAtRoute(
+            { name: 'settings-dataset', params: { datasetId: existingDataset.datasetId } },
+            { type: 'success', title: diff.hasChanges ? 'Shared dataset applied.' : 'Dataset already up to date.' },
+        );
         return;
     }
 
     pendingSharedDatasetImport.value = {
         incoming: sharedDataset,
         existingDataset,
+        diff,
     };
-    isApiKeyComparisonVisible.value = false;
+    importDecision.value = createDefaultImportDecision();
     isSharedDatasetImportDialogOpen.value = true;
 }
 
@@ -236,18 +158,20 @@ async function confirmSharedDatasetImport() {
         return;
     }
 
-    mergeSharedDatasetIntoExistingDataset(pendingImport.existingDataset, pendingImport.incoming);
+    applySharedDatasetImportDecision(pendingImport.existingDataset, pendingImport.incoming, importDecision.value);
     activateImportedDataset(pendingImport.existingDataset.datasetId, pendingImport.incoming);
     pendingSharedDatasetImport.value = null;
     isSharedDatasetImportDialogOpen.value = false;
 
     await reloadAtRoute(
-        { name: 'settings-dataset', params: { datasetId: pendingImport.existingDataset.datasetId } },
-        { type: 'success', title: 'Dataset updated.' },
+            { name: 'settings-dataset', params: { datasetId: importDecision.value.coreFields === 'incoming'
+            ? pendingImport.incoming.datasetId
+            : pendingImport.existingDataset.datasetId } },
+        { type: 'success', title: 'Shared dataset applied.' },
     );
 }
 
-async function declineSharedDatasetImport() {
+async function cancelSharedDatasetImport() {
     const pendingImport = pendingSharedDatasetImport.value;
     pendingSharedDatasetImport.value = null;
     isSharedDatasetImportDialogOpen.value = false;
@@ -256,9 +180,7 @@ async function declineSharedDatasetImport() {
         return;
     }
 
-    mergeSharedDatasetLocalesIntoExistingDataset(pendingImport.existingDataset, pendingImport.incoming);
-    activateImportedDataset(pendingImport.existingDataset.datasetId, pendingImport.incoming);
-    await reloadAtRoute({ name: 'home' });
+    await router.replace({ name: 'settings-dataset', params: { datasetId: pendingImport.existingDataset.datasetId } });
 }
 
 function activateImportedDataset(datasetId: string, sharedDataset: SharedDataset) {
@@ -276,18 +198,19 @@ function activateImportedDataset(datasetId: string, sharedDataset: SharedDataset
         || (isCurrentDataset ? contextStore.currencyCode.value : '')
         || dataset.allCurrencies[0]
         || '';
+    const importedSelections = resolveSharedDatasetSessionSelections(dataset, sharedDataset);
 
     contextStore.applySessionContext({
         datasetId,
         language: nextLanguage,
         currencyCode: nextCurrency,
-        selectedUserIndex: isCurrentDataset ? contextStore.selectedUserIndex.value : undefined,
-        selectedCompanyId: isCurrentDataset ? contextStore.selectedCompanyId.value : undefined,
+        selectedUserIndex: importedSelections.selectedUserIndex ?? (isCurrentDataset ? contextStore.selectedUserIndex.value : undefined),
+        selectedCompanyId: importedSelections.selectedCompanyId ?? (isCurrentDataset ? contextStore.selectedCompanyId.value : undefined),
     });
 }
 
-function formatSharedFieldValue(value: string) {
-    return value || 'Empty';
+function createDefaultImportDecision() {
+    return { ...getDefaultSharedDatasetImportDecision() };
 }
 
 async function reloadAtRoute(
@@ -300,17 +223,4 @@ async function reloadAtRoute(
     await router.replace(to);
     window.location.reload();
 }
-
-watch(isSharedDatasetImportDialogOpen, (isOpen) => {
-    if (!isOpen) {
-        isApiKeyComparisonVisible.value = false;
-    }
-});
 </script>
-
-<style scoped>
-.masked-secret {
-    -webkit-text-security: disc;
-    text-security: disc;
-}
-</style>

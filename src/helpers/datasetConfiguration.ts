@@ -26,7 +26,7 @@ export function uniqueNormalizedStrings(
     return normalized;
 }
 
-function sanitizeCompanies(companies?: Company[]) {
+export function sanitizeCompanies(companies?: Company[]) {
     return (companies ?? []).map((company) => ({
         ...company,
         id: company.id?.trim() ?? '',
