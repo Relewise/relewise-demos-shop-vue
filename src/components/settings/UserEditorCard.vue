@@ -224,6 +224,7 @@ watch(
         classifications.value = keyValuesFromStringRecord(nextUser?.classifications);
         identifiers.value = keyValuesFromStringRecord(nextUser?.identifiers);
         data.value = keyValuesFromDataRecord(nextUser?.data);
+        companyIds.value = getUserCompanyIds(nextUser);
     },
     { immediate: true },
 );
