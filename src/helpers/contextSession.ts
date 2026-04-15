@@ -85,18 +85,11 @@ export function normalizeSessionSelectionsForDataset(dataset: IDataset | undefin
     const selectedUser = users[normalizedSelections.selectedUserIndex];
     const validCompanyIds = getSelectableCompanyIdsForUser(selectedUser, dataset);
     if (validCompanyIds.length === 0) {
-        normalizedSelections.selectedUserIndex = undefined;
         normalizedSelections.selectedCompanyId = undefined;
         return normalizedSelections;
     }
 
-    if (validCompanyIds.length === 1) {
-        normalizedSelections.selectedCompanyId = validCompanyIds[0];
-        return normalizedSelections;
-    }
-
-    if (!normalizedSelections.selectedCompanyId || !validCompanyIds.includes(normalizedSelections.selectedCompanyId)) {
-        normalizedSelections.selectedUserIndex = undefined;
+    if (normalizedSelections.selectedCompanyId && !validCompanyIds.includes(normalizedSelections.selectedCompanyId)) {
         normalizedSelections.selectedCompanyId = undefined;
     }
 

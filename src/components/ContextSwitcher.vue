@@ -3,7 +3,7 @@ import { createSessionSelectionsForDataset } from '@/helpers/contextSession';
 import { computed, ref, watch } from 'vue';
 import contextStore from '@/stores/context.store';
 import { displayUserOption } from '@/helpers/userHelper';
-import { getSelectableCompanyIdsForUser, hasSelectableCompaniesForUser } from '@/helpers/contextSession';
+import { getSelectableCompanyIdsForUser } from '@/helpers/contextSession';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import router from '@/router';
 import InputSelect from '@/components/form/InputSelect.vue';
@@ -20,8 +20,7 @@ const draftDataset = computed(() => {
 });
 const availableUserOptions = computed(() => {
     return (draftDataset.value?.users ?? [])
-        .map((user, index) => ({ user, index }))
-        .filter(({ user }) => hasSelectableCompaniesForUser(user, draftDataset.value));
+        .map((user, index) => ({ user, index }));
 });
 const availableCompanyOptions = computed(() => {
     if (!draftDataset.value || draftSelectedUserOption.value === '') {
@@ -53,7 +52,11 @@ const isDraftSelectionValid = computed(() => {
         return true;
     }
 
-    return availableCompanyOptions.value.includes(draftSelectedCompanyOption.value);
+    if (availableCompanyOptions.value.length === 0) {
+        return true;
+    }
+
+    return draftSelectedCompanyOption.value === '' || availableCompanyOptions.value.includes(draftSelectedCompanyOption.value);
 });
 
 watch(
@@ -217,7 +220,7 @@ async function applyContextChanges() {
       <div class="flex-grow">
         <InputSelect
           label="User"
-          :disabled="!hasUsers || availableUserOptions.length === 0"
+          :disabled="!hasUsers"
           :model-value="draftSelectedUserOption"
           @update:model-value="setUser"
         >
@@ -234,17 +237,16 @@ async function applyContextChanges() {
         </InputSelect>
       </div>
       <div
-        v-if="hasCompanies && draftSelectedUserOption !== ''"
+        v-if="hasCompanies && draftSelectedUserOption !== '' && availableCompanyOptions.length > 0"
         class="flex-grow"
       >
         <InputSelect
           label="Company"
-          :disabled="availableCompanyOptions.length === 0"
           :model-value="draftSelectedCompanyOption"
           @update:model-value="setCompany"
         >
           <option value="">
-            {{ availableCompanyOptions.length > 1 ? 'Select company' : '(None)' }}
+            (None)
           </option>
           <option
             v-for="companyOption in availableCompanyOptions"
