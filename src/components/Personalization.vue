@@ -31,6 +31,8 @@
             :expanded="expandedUserIndexes.includes(index)"
             :is-active="props.dataset.datasetId === activeDatasetId && index === activeUserIndex"
             :user="userOption"
+            :user-index="index"
+            :users="users"
             @remove="deleteUser(index)"
             @toggle-expand="toggleUserExpanded(index)"
           />
@@ -101,7 +103,7 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import CompanyEditorCard from '@/components/settings/CompanyEditorCard.vue';
 import UserEditorCard from '@/components/settings/UserEditorCard.vue';
-import { displayUser } from '@/helpers/userHelper';
+import { displayUserOption } from '@/helpers/userHelper';
 import { getUserCompanyIds, setUserCompanyIds } from '@/helpers/userContext';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { UserFactory, type Company, type User } from '@relewise/client';
@@ -258,8 +260,7 @@ function confirmRemoveCompany() {
 }
 
 function userKey(user: User, index: number) {
-    const label = displayUser(user);
-    return label !== 'Anonymous' ? label : `user-${index}`;
+    return displayUserOption(user, index, users.value);
 }
 
 function toggleUserExpanded(index: number) {

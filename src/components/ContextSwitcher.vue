@@ -232,7 +232,7 @@ async function applyContextChanges() {
             :key="userOption.index"
             :value="String(userOption.index)"
           >
-            {{ displayUserOption(userOption.user, userOption.index) }}
+            {{ displayUserOption(userOption.user, userOption.index, draftDataset?.users ?? []) }}
           </option>
         </InputSelect>
       </div>

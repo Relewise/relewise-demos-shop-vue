@@ -132,7 +132,7 @@ import InputText from '@/components/form/InputText.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import { keyValueArrayToDataRecord, keyValueArrayToStringRecord, keyValuesFromDataRecord, keyValuesFromStringRecord, setUserMetadataDraft } from '@/helpers/keyValueMetadata';
-import { displayUser } from '@/helpers/userHelper';
+import { displayUserOption } from '@/helpers/userHelper';
 import { getUserCompanyIds, setUserCompanyIds } from '@/helpers/userContext';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import type { Company } from '@relewise/client';
@@ -144,6 +144,8 @@ const props = defineProps<{
     expanded: boolean;
     isActive: boolean;
     user: User;
+    userIndex: number;
+    users: User[];
 }>();
 
 defineEmits<{
@@ -166,21 +168,11 @@ const identifierValues = computed(() => {
 });
 
 const headline = computed(() => {
-    const preferredLabel = displayUser({
+    return displayUserOption({
         email: email.value.trim() || undefined,
         authenticatedId: authenticatedId.value.trim() || undefined,
         temporaryId: temporaryId.value.trim() || undefined,
-    } as User);
-
-    if (preferredLabel !== 'Anonymous') {
-        return preferredLabel;
-    }
-
-    if (identifierValues.value.length > 0) {
-        return identifierValues.value.join(', ');
-    }
-
-    return 'Anonymous user';
+    } as User, props.userIndex, props.users);
 });
 
 const authenticatedIdActionLabel = computed(() => authenticatedId.value.trim() ? 'Regenerate' : 'Generate');
