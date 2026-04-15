@@ -224,9 +224,16 @@ watch(
         classifications.value = keyValuesFromStringRecord(nextUser?.classifications);
         identifiers.value = keyValuesFromStringRecord(nextUser?.identifiers);
         data.value = keyValuesFromDataRecord(nextUser?.data);
-        companyIds.value = getUserCompanyIds(nextUser);
     },
     { immediate: true },
+);
+
+watch(
+    [availableCompanyIds, () => getUserCompanyIds(props.user)],
+    () => {
+        syncCompanyIdsFromProps();
+    },
+    { immediate: true, deep: true },
 );
 
 watch(
@@ -253,6 +260,17 @@ function syncUserMetadata() {
     setUserCompanyIds(props.user, companyIds.value);
 }
 
+function syncCompanyIdsFromProps() {
+    const validCompanyIds = new Set(availableCompanyIds.value);
+    const nextCompanyIds = getUserCompanyIds(props.user).filter((companyId) => validCompanyIds.has(companyId));
+
+    if (areSameStringArrays(companyIds.value, nextCompanyIds)) {
+        return;
+    }
+
+    companyIds.value = nextCompanyIds;
+}
+
 function setAuthenticatedId(value: string) {
     authenticatedId.value = value;
 }
@@ -270,6 +288,14 @@ function formatBadgeValue(key?: string | null, value?: string | null) {
     }
 
     return trimmedValue || trimmedKey;
+}
+
+function areSameStringArrays(left: string[], right: string[]) {
+    if (left.length !== right.length) {
+        return false;
+    }
+
+    return left.every((value, index) => value === right[index]);
 }
 
 </script>
