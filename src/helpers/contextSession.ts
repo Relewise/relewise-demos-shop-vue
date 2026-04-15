@@ -111,21 +111,11 @@ export function hasSelectableCompaniesForUser(user: User | undefined, dataset?: 
 
 function getDefaultUserSelection(dataset: IDataset) {
     const users = dataset.users ?? [];
-
-    for (const [index, user] of users.entries()) {
-        const selectableCompanyIds = getSelectableCompanyIdsForUser(user, dataset);
-        if (selectableCompanyIds.length === 0) {
-            continue;
-        }
-
-        if (selectableCompanyIds.length === 1) {
-            return {
-                selectedUserIndex: index,
-                selectedCompanyId: selectableCompanyIds[0],
-            };
-        }
-
-        break;
+    if (users.length > 0) {
+        return {
+            selectedUserIndex: 0,
+            selectedCompanyId: undefined,
+        };
     }
 
     return {
