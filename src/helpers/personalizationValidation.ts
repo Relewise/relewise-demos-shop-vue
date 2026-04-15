@@ -1,5 +1,6 @@
 import type { IDataset } from '@/stores/context.store';
 import { getCompanyDataDraft, getUserMetadataDraft, hasDuplicateKeyValueKeys, hasIncompleteKeyValueRows } from '@/helpers/keyValueMetadata';
+import { getUserCompanyIds } from '@/helpers/userContext';
 import type { Company, DataValue } from '@relewise/client';
 
 export function validatePersonalization(dataset: IDataset) {
@@ -48,6 +49,14 @@ export function validatePersonalization(dataset: IDataset) {
     });
     if (hasDuplicateUserDataKeys) {
         errors.push('User data keys must be unique within the same user.');
+    }
+
+    const validCompanyIds = new Set(companies.map((company) => company.id?.trim()).filter(Boolean));
+    const hasUnknownUserCompanyReference = users.some((user) => {
+        return getUserCompanyIds(user).some((companyId) => !validCompanyIds.has(companyId));
+    });
+    if (hasUnknownUserCompanyReference) {
+        errors.push('All user company associations must reference companies in the dataset.');
     }
 
     if (hasDuplicateValues(users, (user) => user.temporaryId?.trim())) {

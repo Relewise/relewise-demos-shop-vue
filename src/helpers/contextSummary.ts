@@ -1,4 +1,5 @@
 import { displayUser } from '@/helpers/userHelper';
+import { getUserCompanyIds } from '@/helpers/userContext';
 import type { Company, User } from '@relewise/client';
 
 export function getSelectedUser(users: User[] | undefined, selectedUserIndex: number | undefined) {
@@ -49,6 +50,11 @@ export function formatUserDetails(user: User | undefined) {
         if (key && value?.value) {
             details.push(`Data ${key}: ${String(value.value)}`);
         }
+    }
+
+    const companyIds = getUserCompanyIds(user);
+    if (companyIds.length > 0) {
+        details.push(`Companies: ${companyIds.join(', ')}`);
     }
 
     return details.length > 0 ? details.join('\n') : 'Anonymous user';

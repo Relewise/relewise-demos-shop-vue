@@ -137,7 +137,9 @@ async function init() {
         }
         activateImportedDataset(existingDataset.datasetId, sharedDataset);
         await reloadAtRoute(
-            { name: 'settings-dataset', params: { datasetId: existingDataset.datasetId } },
+            diff.hasChanges
+                ? { name: 'settings-dataset', params: { datasetId: existingDataset.datasetId } }
+                : { name: 'home' },
             { type: 'success', title: diff.hasChanges ? 'Shared dataset applied.' : 'Dataset already up to date.' },
         );
         return;

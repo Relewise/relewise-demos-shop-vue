@@ -1,20 +1,68 @@
 import type { Company, User } from '@relewise/client';
 
+export type DemoUser = User & {
+    companyIds?: string[];
+};
+
+function normalizeCompanyIds(companyIds: Array<string | undefined | null> = []) {
+    const normalizedCompanyIds: string[] = [];
+
+    for (const companyId of companyIds) {
+        const normalizedCompanyId = companyId?.trim() ?? '';
+        if (!normalizedCompanyId || normalizedCompanyIds.some((existingCompanyId) => existingCompanyId.toLowerCase() === normalizedCompanyId.toLowerCase())) {
+            continue;
+        }
+
+        normalizedCompanyIds.push(normalizedCompanyId);
+    }
+
+    return normalizedCompanyIds;
+}
+
+export function getUserCompanyIds(user: User | undefined) {
+    if (!user) {
+        return [];
+    }
+
+    return normalizeCompanyIds((user as DemoUser).companyIds);
+}
+
+export function setUserCompanyIds(user: User, companyIds: string[]) {
+    const normalizedCompanyIds = normalizeCompanyIds(companyIds);
+
+    if (normalizedCompanyIds.length === 0) {
+        delete (user as DemoUser).companyIds;
+        return;
+    }
+
+    (user as DemoUser).companyIds = normalizedCompanyIds;
+}
+
 export function sanitizeUser(user: User) {
-    const normalizedUser: User = {
+    const normalizedUser: DemoUser = {
         ...user,
         classifications: user.classifications ? { ...user.classifications } : undefined,
         identifiers: user.identifiers ? { ...user.identifiers } : undefined,
         data: user.data ? { ...user.data } : undefined,
+        companyIds: getUserCompanyIds(user),
     };
 
     delete normalizedUser.company;
+    if ((normalizedUser.companyIds?.length ?? 0) === 0) {
+        delete normalizedUser.companyIds;
+    }
 
     return normalizedUser;
 }
 
 export function sanitizeUsers(users?: User[]) {
     return (users ?? []).map(sanitizeUser);
+}
+
+function sanitizeRuntimeUser(user: User) {
+    const normalizedUser = sanitizeUser(user);
+    delete normalizedUser.companyIds;
+    return normalizedUser as User;
 }
 
 function buildRuntimeCompany(company: Company | undefined, companies: Company[]) {
@@ -48,7 +96,7 @@ function buildRuntimeCompany(company: Company | undefined, companies: Company[])
 }
 
 export function buildContextUser(user: User | undefined, company: Company | undefined, companies: Company[] = []) {
-    const baseUser = user ? sanitizeUser(user) : {};
+    const baseUser = user ? sanitizeRuntimeUser(user) : {};
 
     return {
         ...baseUser,
