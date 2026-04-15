@@ -109,6 +109,17 @@
           title="Data"
         />
       </div>
+
+      <div class="mt-6 border-t border-slate-200 pt-6">
+        <InputTagSelect
+          v-model="companyIds"
+          :options="availableCompanyIds"
+          label="Companies"
+          placeholder="Select company"
+          :disabled="availableCompanyIds.length === 0"
+          :help="availableCompanyIds.length > 0 ? 'Select one or more companies that can be paired with this user in the context switcher.' : 'Add companies to the dataset before associating them with a user.'"
+        />
+      </div>
     </div>
   </article>
 </template>
@@ -116,16 +127,20 @@
 <script lang="ts" setup>
 /* eslint-disable vue/no-mutating-props */
 import InlineActionInput from '@/components/InlineActionInput.vue';
+import InputTagSelect from '@/components/form/InputTagSelect.vue';
 import InputText from '@/components/form/InputText.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import { keyValueArrayToDataRecord, keyValueArrayToStringRecord, keyValuesFromDataRecord, keyValuesFromStringRecord, setUserMetadataDraft } from '@/helpers/keyValueMetadata';
 import { displayUser } from '@/helpers/userHelper';
+import { getUserCompanyIds, setUserCompanyIds } from '@/helpers/userContext';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
+import type { Company } from '@relewise/client';
 import type { User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
+    companies: Company[];
     expanded: boolean;
     isActive: boolean;
     user: User;
@@ -142,10 +157,7 @@ const data = ref<KeyValue[]>([]);
 const temporaryId = ref('');
 const authenticatedId = ref('');
 const email = ref('');
-
-const firstIdentifier = computed(() => {
-    return identifiers.value.find((entry) => entry.key?.trim() || entry.value?.trim());
-});
+const companyIds = ref<string[]>([]);
 
 const identifierValues = computed(() => {
     return identifiers.value
@@ -173,6 +185,11 @@ const headline = computed(() => {
 
 const authenticatedIdActionLabel = computed(() => authenticatedId.value.trim() ? 'Regenerate' : 'Generate');
 const temporaryIdActionLabel = computed(() => temporaryId.value.trim() ? 'Regenerate' : 'Generate');
+const availableCompanyIds = computed(() => {
+    return props.companies
+        .map((company) => company.id?.trim() ?? '')
+        .filter((companyId, index, companyIds) => companyId && companyIds.indexOf(companyId) === index);
+});
 
 const summaryBadges = computed(() => {
     const badges: string[] = [];
@@ -191,6 +208,10 @@ const summaryBadges = computed(() => {
 
     badges.push(...identifierValues.value);
 
+    if (companyIds.value.length > 0) {
+        badges.push(`Companies: ${companyIds.value.join(', ')}`);
+    }
+
     return badges;
 });
 
@@ -203,12 +224,13 @@ watch(
         classifications.value = keyValuesFromStringRecord(nextUser?.classifications);
         identifiers.value = keyValuesFromStringRecord(nextUser?.identifiers);
         data.value = keyValuesFromDataRecord(nextUser?.data);
+        companyIds.value = getUserCompanyIds(nextUser);
     },
     { immediate: true },
 );
 
 watch(
-    [temporaryId, authenticatedId, email, classifications, identifiers, data],
+    [temporaryId, authenticatedId, email, classifications, identifiers, data, companyIds],
     () => {
         syncUserMetadata();
     },
@@ -228,6 +250,7 @@ function syncUserMetadata() {
     props.user.classifications = keyValueArrayToStringRecord(classifications.value);
     props.user.identifiers = keyValueArrayToStringRecord(identifiers.value);
     props.user.data = keyValueArrayToDataRecord(data.value);
+    setUserCompanyIds(props.user, companyIds.value);
 }
 
 function setAuthenticatedId(value: string) {

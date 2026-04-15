@@ -112,9 +112,10 @@ import InputSelect from '@/components/form/InputSelect.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import { keyValueArrayToDataRecord, keyValuesFromDataRecord, setCompanyDataDraft } from '@/helpers/keyValueMetadata';
+import { getUserCompanyIds, setUserCompanyIds } from '@/helpers/userContext';
 import contextStore from '@/stores/context.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
-import type { Company } from '@relewise/client';
+import type { Company, User } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
@@ -122,6 +123,7 @@ const props = defineProps<{
     company: Company;
     expanded: boolean;
     isActive: boolean;
+    users: User[];
 }>();
 
 defineEmits<{
@@ -249,6 +251,17 @@ function commitCompanyIdChange() {
         }
 
         company.parent = nextCompanyId ? props.company : undefined;
+    });
+    props.users.forEach((user) => {
+        const nextCompanyIds = getUserCompanyIds(user).map((companyId) => {
+            if (companyId !== previousCompanyId) {
+                return companyId;
+            }
+
+            return nextCompanyId;
+        });
+
+        setUserCompanyIds(user, nextCompanyIds);
     });
 
     if (props.isActive && contextStore.selectedCompanyId.value === previousCompanyId) {

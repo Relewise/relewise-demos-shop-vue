@@ -2,7 +2,7 @@ import { formatCompanyDetails, formatUserDetails } from '@/helpers/contextSummar
 import { normalizeDatasetConfiguration, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { datasetFeatureFields, type DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import { displayUser } from '@/helpers/userHelper';
-import { sanitizeUser, sanitizeUsers } from '@/helpers/userContext';
+import { getUserCompanyIds, sanitizeUser, sanitizeUsers } from '@/helpers/userContext';
 import type { IDataset } from '@/stores/context.store';
 import type { Company, DataValue, User } from '@relewise/client';
 
@@ -633,6 +633,7 @@ function createComparableUserKey(user: User) {
         classifications: normalizeComparableStringRecord(comparableUser.classifications),
         identifiers: normalizeComparableStringRecord(comparableUser.identifiers),
         data: normalizeComparableDataRecord(comparableUser.data),
+        companyIds: getUserCompanyIds(comparableUser).sort((leftValue, rightValue) => leftValue.localeCompare(rightValue)),
     });
 }
 

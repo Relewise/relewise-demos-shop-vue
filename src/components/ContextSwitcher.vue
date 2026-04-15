@@ -3,6 +3,7 @@ import { createSessionSelectionsForDataset } from '@/helpers/contextSession';
 import { computed, ref, watch } from 'vue';
 import contextStore from '@/stores/context.store';
 import { displayUserOption } from '@/helpers/userHelper';
+import { getSelectableCompanyIdsForUser, hasSelectableCompaniesForUser } from '@/helpers/contextSession';
 import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import router from '@/router';
 import InputSelect from '@/components/form/InputSelect.vue';
@@ -17,6 +18,19 @@ const draftSelectedCompanyOption = ref('');
 const draftDataset = computed(() => {
     return datasets.value.find((dataset) => dataset.datasetId === draftDatasetId.value);
 });
+const availableUserOptions = computed(() => {
+    return (draftDataset.value?.users ?? [])
+        .map((user, index) => ({ user, index }))
+        .filter(({ user }) => hasSelectableCompaniesForUser(user, draftDataset.value));
+});
+const availableCompanyOptions = computed(() => {
+    if (!draftDataset.value || draftSelectedUserOption.value === '') {
+        return [];
+    }
+
+    const selectedUser = draftDataset.value.users?.[Number(draftSelectedUserOption.value)];
+    return getSelectableCompanyIdsForUser(selectedUser, draftDataset.value);
+});
 const configureDemoRoute = computed(() => {
     if (!contextStore.hasActiveDataset.value) {
         return { name: 'settings' as const };
@@ -30,6 +44,17 @@ const configureDemoRoute = computed(() => {
 
 const hasUsers = computed(() => (draftDataset.value?.users?.length ?? 0) > 0);
 const hasCompanies = computed(() => (draftDataset.value?.companies?.length ?? 0) > 0);
+const isDraftSelectionValid = computed(() => {
+    if (!draftDataset.value) {
+        return false;
+    }
+
+    if (draftSelectedUserOption.value === '') {
+        return true;
+    }
+
+    return availableCompanyOptions.value.includes(draftSelectedCompanyOption.value);
+});
 
 watch(
     () => contextStore.activeContextRevision.value,
@@ -82,6 +107,19 @@ function setDataset(datasetId: string) {
 
 function setUser(selectedIndex: string) {
     draftSelectedUserOption.value = selectedIndex;
+
+    if (selectedIndex === '') {
+        draftSelectedCompanyOption.value = '';
+        return;
+    }
+
+    const nextAvailableCompanyOptions = availableCompanyOptions.value;
+    if (nextAvailableCompanyOptions.length === 1) {
+        draftSelectedCompanyOption.value = nextAvailableCompanyOptions[0];
+        return;
+    }
+
+    draftSelectedCompanyOption.value = '';
 }
 
 function setCompany(companyToSet: string) {
@@ -97,7 +135,7 @@ function changeCurrency(currency: string) {
 }
 
 async function applyContextChanges() {
-    if (!draftDataset.value) {
+    if (!draftDataset.value || !isDraftSelectionValid.value) {
         return;
     }
 
@@ -179,7 +217,7 @@ async function applyContextChanges() {
       <div class="flex-grow">
         <InputSelect
           label="User"
-          :disabled="!hasUsers"
+          :disabled="!hasUsers || availableUserOptions.length === 0"
           :model-value="draftSelectedUserOption"
           @update:model-value="setUser"
         >
@@ -187,32 +225,33 @@ async function applyContextChanges() {
             (None)
           </option>
           <option
-            v-for="(userOption, index) in draftDataset?.users ?? []"
-            :key="index"
-            :value="String(index)"
+            v-for="userOption in availableUserOptions"
+            :key="userOption.index"
+            :value="String(userOption.index)"
           >
-            {{ displayUserOption(userOption, index) }}
+            {{ displayUserOption(userOption.user, userOption.index) }}
           </option>
         </InputSelect>
       </div>
       <div
-        v-if="hasCompanies"
+        v-if="hasCompanies && draftSelectedUserOption !== ''"
         class="flex-grow"
       >
         <InputSelect
           label="Company"
+          :disabled="availableCompanyOptions.length === 0"
           :model-value="draftSelectedCompanyOption"
           @update:model-value="setCompany"
         >
           <option value="">
-            (None)
+            {{ availableCompanyOptions.length > 1 ? 'Select company' : '(None)' }}
           </option>
           <option
-            v-for="(companyOption, index) in draftDataset?.companies ?? []"
-            :key="index"
-            :value="companyOption.id"
+            v-for="companyOption in availableCompanyOptions"
+            :key="companyOption"
+            :value="companyOption"
           >
-            {{ companyOption.id }}
+            {{ companyOption }}
           </option>
         </InputSelect>
       </div>
@@ -227,7 +266,10 @@ async function applyContextChanges() {
           </div>
         </RouterLink>
         <button
+          v-close-popper
           class="ml-auto"
+          :disabled="!isDraftSelectionValid"
+          :class="!isDraftSelectionValid ? 'cursor-not-allowed opacity-60' : ''"
           @click="applyContextChanges"
         >
           Apply
