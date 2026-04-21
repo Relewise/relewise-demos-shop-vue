@@ -31,7 +31,7 @@ onMounted(() => {
     notificationsStore.flushAfterReload();
 });
 
-watch(activeContextRevision, async() => {
+watch(activeContextRevision, async () => {
     await refreshActiveContext();
 }, { immediate: true });
 
@@ -52,7 +52,7 @@ async function init() {
 
     if (params.has('datasetId')) {
         const datasetId = params.get('datasetId');
-        
+
         const url = new URL(window.location.href);
         url.searchParams.delete('datasetId');
         history.replaceState(null, '', url);
@@ -118,53 +118,39 @@ function clearNavigation() {
 </script>
 
 <template>
-  <Toaster
-    position="bottom-right"
-    rich-colors
-    :visible-toasts="5"
-    offset="16px"
-  />
-  <Header
-    :line-items-count="lineItemsCount"
-    :has-child-categories="hasChildCategories"
-    :main-categories="mainCategories"
-  />
+    <Toaster position="bottom-right" rich-colors :visible-toasts="5" offset="16px" />
+    <Header :line-items-count="lineItemsCount" :has-child-categories="hasChildCategories"
+        :main-categories="mainCategories" />
 
-  <div
-    id="main-container"
-    class="w-full mx-auto pb-10 flex-grow relative"
-  >
-    <RouterView :key="routeViewKey" />
-  </div>
-  <Footer
-    v-if="hasActiveDataset"
-    :has-child-categories="hasChildCategories"
-    :main-categories="mainCategories"
-    :footer="footer"
-  />
+    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
+        <RouterView :key="routeViewKey" />
+    </div>
+    <Footer v-if="hasActiveDataset" :has-child-categories="hasChildCategories" :main-categories="mainCategories"
+        :footer="footer" />
 
-  <div
-    v-tooltip="'Current breakpoint'"
-    class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm"
-  >
-    <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
-    <span>{{ breakpoint }}</span>
-  </div>
+    <div v-tooltip="'Current breakpoint'"
+        class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm">
+        <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
+        <span>{{ breakpoint }}</span>
+    </div>
 </template>
 
 <style lang="scss">
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s ease-in-out;
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s ease-in-out;
 }
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 
 .navigationmodal {
     @apply bg-white overflow-hidden border-t border-solid border-slate-100;
     position: fixed;
     z-index: 1000;
-    top: var(--header-height, 106px);
+    top: var(--header-height, 131px);
     left: 0;
     width: 100%;
 
@@ -174,7 +160,7 @@ function clearNavigation() {
         z-index: 1;
         left: 0;
         width: 100%;
-        height: calc(100% - var(--header-height, 106px));
+        height: calc(100% - var(--header-height, 131px));
     }
 
     .modalcontent {

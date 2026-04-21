@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 export function useHeaderInteraction() {
     const open = ref<string | null>(null);
     const headerElement = ref<HTMLElement | null>(null);
-    const headerHeight = ref(106);
+    const headerHeight = ref(131);
     let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
     let headerResizeObserver: ResizeObserver | null = null;
 
@@ -47,7 +47,8 @@ export function useHeaderInteraction() {
         }
 
         const updateHeaderHeight = () => {
-            headerHeight.value = Math.ceil(headerElement.value?.getBoundingClientRect().height ?? 106);
+            headerHeight.value = Math.ceil(headerElement.value?.getBoundingClientRect().height ?? 131);
+            console.log(headerHeight.value);
             document.documentElement.style.setProperty('--header-height', `${headerHeight.value}px`);
         };
 
