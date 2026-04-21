@@ -326,6 +326,7 @@ class AppContext {
 
     public setUserSelection(selectedUserIndex: number | undefined) {
         this.state.selectedUserIndex = selectedUserIndex;
+        this.normalizeSessionSelections();
         basketService.clear();
         this.persistState();
     }
@@ -373,6 +374,8 @@ class AppContext {
 
     public setCompany(companyId: string) {
         this.state.selectedCompanyId = companyId || undefined;
+        this.normalizeSessionSelections();
+        this.persistState();
     }
 
     public deleteSelectedUser() {

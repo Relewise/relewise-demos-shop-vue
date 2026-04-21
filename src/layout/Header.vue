@@ -26,8 +26,8 @@ const activeUser = computed(() => {
     return getSelectedUser(currentUsers.value, contextStore.selectedUserIndex.value);
 });
 const activeUserDetails = computed(() => formatUserDetails(activeUser.value));
-const hasConfiguredCompanies = computed(() => (contextStore.context.value?.companies?.length ?? 0) > 0);
-const activeCompanyLabel = computed(() => contextStore.selectedCompany.value?.id || '(None)');
+const hasSelectedCompany = computed(() => !!contextStore.selectedCompany.value);
+const activeCompanyLabel = computed(() => contextStore.selectedCompany.value?.id ?? '');
 const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.selectedCompany.value));
 </script>
 
@@ -120,7 +120,7 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
                         <span class="max-w-[10rem] truncate">User: {{ activeUserLabel }}</span>
                       </span>
                       <span
-                        v-if="hasConfiguredCompanies"
+                        v-if="hasSelectedCompany"
                         class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600"
                         :title="activeCompanyDetails"
                       >

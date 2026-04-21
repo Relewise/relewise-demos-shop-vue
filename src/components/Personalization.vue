@@ -27,9 +27,12 @@
           :ref="(element) => setUserCardRef(element, index)"
         >
           <UserEditorCard
+            :companies="companies"
             :expanded="expandedUserIndexes.includes(index)"
             :is-active="props.dataset.datasetId === activeDatasetId && index === activeUserIndex"
             :user="userOption"
+            :user-index="index"
+            :users="users"
             @remove="deleteUser(index)"
             @toggle-expand="toggleUserExpanded(index)"
           />
@@ -68,6 +71,7 @@
             :company="companyOption"
             :expanded="expandedCompanyIndexes.includes(index)"
             :is-active="props.dataset.datasetId === activeDatasetId && companyOption.id === activeContextCompanyId"
+            :users="users"
             @remove="deleteCompany(index)"
             @toggle-expand="toggleCompanyExpanded(index)"
           />
@@ -99,6 +103,8 @@ import ConfirmationDialog from '@/components/ConfirmationDialog.vue';
 import SettingsPanel from '@/components/settings/SettingsPanel.vue';
 import CompanyEditorCard from '@/components/settings/CompanyEditorCard.vue';
 import UserEditorCard from '@/components/settings/UserEditorCard.vue';
+import { displayUserOption } from '@/helpers/userHelper';
+import { getUserCompanyIds, setUserCompanyIds } from '@/helpers/userContext';
 import contextStore, { type IDataset } from '@/stores/context.store';
 import { UserFactory, type Company, type User } from '@relewise/client';
 import { computed, nextTick, ref, watch } from 'vue';
@@ -240,6 +246,12 @@ function confirmRemoveCompany() {
 
             return company;
         });
+    if (companyIdToRemove) {
+        props.dataset.users = users.value.map((user) => {
+            setUserCompanyIds(user, getUserCompanyIds(user).filter((companyId) => companyId !== companyIdToRemove));
+            return user;
+        });
+    }
 
     expandedCompanyIndexes.value = expandedCompanyIndexes.value
         .filter((expandedIndex) => expandedIndex !== index)
@@ -248,7 +260,7 @@ function confirmRemoveCompany() {
 }
 
 function userKey(user: User, index: number) {
-    return user.authenticatedId || user.temporaryId || user.email || `user-${index}`;
+    return displayUserOption(user, index, users.value);
 }
 
 function toggleUserExpanded(index: number) {
@@ -279,7 +291,8 @@ function isBlankAnonymousUser(user: User | undefined) {
         && !user.temporaryId
         && Object.keys(user.identifiers ?? {}).length === 0
         && Object.keys(user.classifications ?? {}).length === 0
-        && Object.keys(user.data ?? {}).length === 0;
+        && Object.keys(user.data ?? {}).length === 0
+        && getUserCompanyIds(user).length === 0;
 }
 
 function isBlankCompany(company: Company | undefined) {
