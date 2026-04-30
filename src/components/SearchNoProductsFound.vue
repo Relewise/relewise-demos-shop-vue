@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue';
-import type { ProductCategoryRecommendationResponse, ProductRecommendationResponse } from '@relewise/client';
-import ProductCategoryRecommendationTiles from '@/components/ProductCategoryRecommendationTiles.vue';
+import type { ProductRecommendationResponse } from '@relewise/client';
+import PopularCategories from '@/components/PopularCategories.vue';
 import ProductTile from '@/components/ProductTile.vue';
 
 const props = defineProps({
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
-    popularCategoryRecommendations: { type: Object as PropType<ProductCategoryRecommendationResponse | null>, required: false, default: null },
     productRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false, default: null },
 });
 
 const termLabel = computed(() => Array.isArray(props.term) ? props.term.join(' ') : props.term);
-const categories = computed(() => props.popularCategoryRecommendations?.recommendations ?? []);
 const products = computed(() => props.productRecommendations?.recommendations ?? []);
 </script>
 
@@ -30,15 +28,12 @@ const products = computed(() => props.productRecommendations?.recommendations ??
       </p>
     </div>
 
-    <section
-      v-if="categories.length > 0"
+    <PopularCategories
       class="mb-8"
-    >
-      <h4 class="text-xl font-semibold mb-3">
-        Popular Categories
-      </h4>
-      <ProductCategoryRecommendationTiles :categories="categories" />
-    </section>
+      :number-of-recommendations="8"
+      :use-container="false"
+      title-class="text-xl font-semibold mb-3"
+    />
 
     <section v-if="products.length > 0">
       <h4 class="text-xl font-semibold mb-3">

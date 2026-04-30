@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type ContentSearchResponse, type ProductCategoryRecommendationResponse, type ProductRecommendationResponse, type ProductSearchResponse, type RetailMediaResultPlacementResultEntity, type SearchTermPredictionResult } from '@relewise/client';
+import { type ContentSearchResponse, type ProductRecommendationResponse, type ProductSearchResponse, type RetailMediaResultPlacementResultEntity, type SearchTermPredictionResult } from '@relewise/client';
 import { computed, ref, watch, type PropType } from 'vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
@@ -16,7 +16,6 @@ import SearchNoProductsFound from '@/components/SearchNoProductsFound.vue';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
-    popularCategoryRecommendations: { type: Object as PropType<ProductCategoryRecommendationResponse | null>, required: false },
     personalProductRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
     products: { type: Array as PropType<ProductWithType[] | null>, required: true },
     rightSide: { type: Array as PropType<RetailMediaResultPlacementResultEntity[] | null>, required: true },
@@ -163,7 +162,6 @@ function searchFor(term: string) {
         >
           <SearchNoProductsFound
             :term="term"
-            :popular-category-recommendations="popularCategoryRecommendations ?? null"
             :product-recommendations="personalProductRecommendations ?? null"
           />
         </div>

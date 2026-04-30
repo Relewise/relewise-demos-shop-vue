@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, PopularProductCategoriesRecommendationBuilder, type ProductCategoryRecommendationResponse, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
@@ -26,7 +26,6 @@ const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
 const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
-const popularCategoryRecommendations = ref<ProductCategoryRecommendationResponse | null>(null);
 const personalProductRecommendations = ref<ProductRecommendationResponse | null>(null);
 const trackedBrandId = ref<string | null>(null);
 // page moved into filters below as filters.value.page (string)
@@ -101,7 +100,6 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         productSearchResult.value = null;
         contentSearchResult.value = null;
-        popularCategoryRecommendations.value = null;
         personalProductRecommendations.value = null;
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
@@ -148,7 +146,6 @@ async function search() {
 
     filters.value.term = searchTerm.value;
     rightSide.value = null;
-    popularCategoryRecommendations.value = null;
     personalProductRecommendations.value = null;
 
     const variationName = breakpointService.active.value.toUpperCase();
@@ -294,7 +291,7 @@ async function search() {
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
         if (productSearchResult.value.hits === 0) {
-            await recommendNoResultFallbacks(abortSignal).catch(error => {
+            await recommendNoResultPersonalProducts(abortSignal).catch(error => {
                 if (!abortSignal.aborted) {
                     throw error;
                 }
@@ -322,14 +319,8 @@ async function search() {
     }
 }
 
-async function recommendNoResultFallbacks(abortSignal: AbortSignal) {
+async function recommendNoResultPersonalProducts(abortSignal: AbortSignal) {
     const recommender = contextStore.getRecommender();
-
-    const popularCategoriesRequest = new PopularProductCategoriesRecommendationBuilder(contextStore.defaultSettings)
-        .setProductCategoryProperties(contextStore.selectedCategoryProperties)
-        .setNumberOfRecommendations(4)
-        .sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo())
-        .build();
 
     const personalProductsRequest = new PersonalProductRecommendationBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -338,19 +329,14 @@ async function recommendNoResultFallbacks(abortSignal: AbortSignal) {
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
-    const [popularCategoriesResponse, personalProductsResponse] = await Promise.all([
-        recommender.recommendPopularProductCategories(popularCategoriesRequest, { abortSignal }),
-        recommender.recommendPersonalProducts(personalProductsRequest, { abortSignal }),
-    ]);
+    const personalProductsResponse = await recommender.recommendPersonalProducts(personalProductsRequest, { abortSignal });
 
     if (abortSignal.aborted) {
         return;
     }
 
-    contextStore.assertApiCall(popularCategoriesResponse);
     contextStore.assertApiCall(personalProductsResponse);
 
-    popularCategoryRecommendations.value = popularCategoriesResponse ?? null;
     personalProductRecommendations.value = personalProductsResponse ?? null;
 }
 
@@ -428,7 +414,6 @@ function trackBrandView(
           :term="filters.term ?? ''"
           :product-search-result="productSearchResult"
           :content-recommendation-result="contentRecommendationResult"
-          :popular-category-recommendations="popularCategoryRecommendations"
           :personal-product-recommendations="personalProductRecommendations"
           :products="products"
           :predictions-list="predictionsList"
