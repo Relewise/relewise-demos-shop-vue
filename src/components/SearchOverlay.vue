@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
@@ -26,7 +26,8 @@ const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
 const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
-const personalProductRecommendations = ref<ProductRecommendationResponse | null>(null);
+const noResultProductRecommendations = ref<ProductRecommendationResponse | null>(null);
+const noResultProductRecommendationsTitle = ref('Recommended for you');
 const trackedBrandId = ref<string | null>(null);
 // page moved into filters below as filters.value.page (string)
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
@@ -100,7 +101,8 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         productSearchResult.value = null;
         contentSearchResult.value = null;
-        personalProductRecommendations.value = null;
+        noResultProductRecommendations.value = null;
+        noResultProductRecommendationsTitle.value = 'Recommended for you';
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
         trackedBrandId.value = null;
@@ -146,7 +148,8 @@ async function search() {
 
     filters.value.term = searchTerm.value;
     rightSide.value = null;
-    personalProductRecommendations.value = null;
+    noResultProductRecommendations.value = null;
+    noResultProductRecommendationsTitle.value = 'Recommended for you';
 
     const variationName = breakpointService.active.value.toUpperCase();
 
@@ -291,7 +294,7 @@ async function search() {
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
         if (productSearchResult.value.hits === 0) {
-            await recommendNoResultPersonalProducts(abortSignal).catch(error => {
+            await recommendNoResultProducts(abortSignal).catch(error => {
                 if (!abortSignal.aborted) {
                     throw error;
                 }
@@ -319,6 +322,55 @@ async function search() {
     }
 }
 
+function hasRecommendations(response: ProductRecommendationResponse | undefined) {
+    return (response?.recommendations?.length ?? 0) > 0;
+}
+
+async function recommendNoResultProducts(abortSignal: AbortSignal) {
+    const term = Array.isArray(filters.value.term) ? filters.value.term.join(' ') : filters.value.term;
+
+    if (term.trim().length > 0) {
+        const searchTermBasedProductsResponse = await recommendNoResultSearchTermBasedProducts(term, abortSignal);
+
+        if (abortSignal.aborted) {
+            return;
+        }
+
+        contextStore.assertApiCall(searchTermBasedProductsResponse);
+
+        if (hasRecommendations(searchTermBasedProductsResponse)) {
+            noResultProductRecommendations.value = searchTermBasedProductsResponse ?? null;
+            noResultProductRecommendationsTitle.value = `Recommended based on "${term}"`;
+            return;
+        }
+    }
+
+    const personalProductsResponse = await recommendNoResultPersonalProducts(abortSignal);
+
+    if (abortSignal.aborted) {
+        return;
+    }
+
+    contextStore.assertApiCall(personalProductsResponse);
+
+    noResultProductRecommendations.value = personalProductsResponse ?? null;
+    noResultProductRecommendationsTitle.value = 'Recommended for you';
+}
+
+async function recommendNoResultSearchTermBasedProducts(term: string, abortSignal: AbortSignal) {
+    const recommender = contextStore.getRecommender();
+
+    const searchTermBasedProductsRequest = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
+        .setTerm(term)
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .setSelectedVariantProperties({ allData: true })
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
+        .filters(builder => globalProductRecommendationFilters(builder))
+        .build();
+
+    return await recommender.recommendSearchTermBasedProducts(searchTermBasedProductsRequest, { abortSignal });
+}
+
 async function recommendNoResultPersonalProducts(abortSignal: AbortSignal) {
     const recommender = contextStore.getRecommender();
 
@@ -329,15 +381,7 @@ async function recommendNoResultPersonalProducts(abortSignal: AbortSignal) {
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
 
-    const personalProductsResponse = await recommender.recommendPersonalProducts(personalProductsRequest, { abortSignal });
-
-    if (abortSignal.aborted) {
-        return;
-    }
-
-    contextStore.assertApiCall(personalProductsResponse);
-
-    personalProductRecommendations.value = personalProductsResponse ?? null;
+    return await recommender.recommendPersonalProducts(personalProductsRequest, { abortSignal });
 }
 
 watch(activeTab, () => {
@@ -414,7 +458,8 @@ function trackBrandView(
           :term="filters.term ?? ''"
           :product-search-result="productSearchResult"
           :content-recommendation-result="contentRecommendationResult"
-          :personal-product-recommendations="personalProductRecommendations"
+          :no-result-product-recommendations="noResultProductRecommendations"
+          :no-result-product-recommendations-title="noResultProductRecommendationsTitle"
           :products="products"
           :predictions-list="predictionsList"
           :filters="filters"

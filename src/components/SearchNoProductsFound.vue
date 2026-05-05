@@ -7,6 +7,7 @@ import ProductTile from '@/components/ProductTile.vue';
 const props = defineProps({
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
     productRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false, default: null },
+    productRecommendationsTitle: { type: String, required: false, default: 'Recommended for you' },
 });
 
 const termLabel = computed(() => Array.isArray(props.term) ? props.term.join(' ') : props.term);
@@ -37,7 +38,7 @@ const products = computed(() => props.productRecommendations?.recommendations ??
 
     <section v-if="products.length > 0">
       <h4 class="text-xl font-semibold mb-3">
-        Recommended for you
+        {{ productRecommendationsTitle }}
       </h4>
       <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <ProductTile

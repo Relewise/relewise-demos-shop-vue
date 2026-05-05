@@ -16,7 +16,8 @@ import SearchNoProductsFound from '@/components/SearchNoProductsFound.vue';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
-    personalProductRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
+    noResultProductRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
+    noResultProductRecommendationsTitle: { type: String, required: true },
     products: { type: Array as PropType<ProductWithType[] | null>, required: true },
     rightSide: { type: Array as PropType<RetailMediaResultPlacementResultEntity[] | null>, required: true },
     contentRecommendationResult: { type: Object as PropType<ContentSearchResponse | null>, required: true },
@@ -162,7 +163,8 @@ function searchFor(term: string) {
         >
           <SearchNoProductsFound
             :term="term"
-            :product-recommendations="personalProductRecommendations ?? null"
+            :product-recommendations="noResultProductRecommendations ?? null"
+            :product-recommendations-title="noResultProductRecommendationsTitle"
           />
         </div>
         <VariantBasedProductList
