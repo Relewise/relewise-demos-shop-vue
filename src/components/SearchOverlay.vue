@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
+import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import { ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
@@ -26,7 +26,8 @@ const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
 const contentSearchResult = ref<ContentSearchResponse | null>(null);
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
-const fallbackRecommendations = ref<ProductRecommendationResponse | null>(null);
+const noResultProductRecommendations = ref<ProductRecommendationResponse | null>(null);
+const noResultProductRecommendationsTitle = ref('Recommended for you');
 const trackedBrandId = ref<string | null>(null);
 // page moved into filters below as filters.value.page (string)
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
@@ -100,6 +101,8 @@ function showOrHide(show: boolean) {
         searchTerm.value = '';
         productSearchResult.value = null;
         contentSearchResult.value = null;
+        noResultProductRecommendations.value = null;
+        noResultProductRecommendationsTitle.value = 'Recommended for you';
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
         trackedBrandId.value = null;
@@ -144,6 +147,9 @@ async function search() {
     if (!show) return; else showOrHide(show);
 
     filters.value.term = searchTerm.value;
+    rightSide.value = null;
+    noResultProductRecommendations.value = null;
+    noResultProductRecommendationsTitle.value = 'Recommended for you';
 
     const variationName = breakpointService.active.value.toUpperCase();
 
@@ -270,8 +276,9 @@ async function search() {
         .build();
 
     abortController = new AbortController();
+    const abortSignal = abortController.signal;
     const searcher = contextStore.getSearcher();
-    const response = await searcher.batch(request, { abortSignal: abortController.signal });
+    const response = await searcher.batch(request, { abortSignal });
     contextStore.assertApiCall(response);
 
     if (response && response.responses) {
@@ -287,21 +294,13 @@ async function search() {
 
         predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
         if (productSearchResult.value.hits === 0) {
-            const request = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
-                .setSelectedProductProperties(contextStore.selectedProductProperties)
-                .setSelectedVariantProperties({ allData: true })
-                .setTerm(searchTerm.value)
-                .setNumberOfRecommendations(40)
-                .filters(builder => globalProductRecommendationFilters(builder))
-                .build();
-
-            const recommender = contextStore.getRecommender();
-
-            fallbackRecommendations.value = await recommender.recommendSearchTermBasedProducts(request) ?? null;
+            await recommendNoResultProducts(abortSignal).catch(error => {
+                if (!abortSignal.aborted) {
+                    throw error;
+                }
+            });
             return;
         }
-
-        fallbackRecommendations.value = null;
 
         const placement = productSearchResult.value.retailMedia?.placements?.TOP;
         if (placement) {
@@ -321,6 +320,68 @@ async function search() {
             }
         }
     }
+}
+
+function hasRecommendations(response: ProductRecommendationResponse | undefined) {
+    return (response?.recommendations?.length ?? 0) > 0;
+}
+
+async function recommendNoResultProducts(abortSignal: AbortSignal) {
+    const term = Array.isArray(filters.value.term) ? filters.value.term.join(' ') : filters.value.term;
+
+    if (term.trim().length > 0) {
+        const searchTermBasedProductsResponse = await recommendNoResultSearchTermBasedProducts(term, abortSignal);
+
+        if (abortSignal.aborted) {
+            return;
+        }
+
+        contextStore.assertApiCall(searchTermBasedProductsResponse);
+
+        if (hasRecommendations(searchTermBasedProductsResponse)) {
+            noResultProductRecommendations.value = searchTermBasedProductsResponse ?? null;
+            noResultProductRecommendationsTitle.value = `Recommended based on "${term}"`;
+            return;
+        }
+    }
+
+    const personalProductsResponse = await recommendNoResultPersonalProducts(abortSignal);
+
+    if (abortSignal.aborted) {
+        return;
+    }
+
+    contextStore.assertApiCall(personalProductsResponse);
+
+    noResultProductRecommendations.value = personalProductsResponse ?? null;
+    noResultProductRecommendationsTitle.value = 'Recommended for you';
+}
+
+async function recommendNoResultSearchTermBasedProducts(term: string, abortSignal: AbortSignal) {
+    const recommender = contextStore.getRecommender();
+
+    const searchTermBasedProductsRequest = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
+        .setTerm(term)
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .setSelectedVariantProperties({ allData: true })
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
+        .filters(builder => globalProductRecommendationFilters(builder))
+        .build();
+
+    return await recommender.recommendSearchTermBasedProducts(searchTermBasedProductsRequest, { abortSignal });
+}
+
+async function recommendNoResultPersonalProducts(abortSignal: AbortSignal) {
+    const recommender = contextStore.getRecommender();
+
+    const personalProductsRequest = new PersonalProductRecommendationBuilder(contextStore.defaultSettings)
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .setSelectedVariantProperties({ allData: true })
+        .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
+        .filters(builder => globalProductRecommendationFilters(builder))
+        .build();
+
+    return await recommender.recommendPersonalProducts(personalProductsRequest, { abortSignal });
 }
 
 watch(activeTab, () => {
@@ -343,46 +404,85 @@ function trackBrandView(
 </script>
 
 <template>
-    <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
-        <span class="flex items-center bg-slate-100 rounded-none px-3">
-            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
-        </span>
-        <XMarkIcon v-if="open" class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer" @click="close" />
-        <input v-model="searchTerm" type="text" placeholder="Search..."
-            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-            @keyup="typeAHeadSearch()">
-    </div>
+  <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+    <span class="flex items-center bg-slate-100 rounded-none px-3">
+      <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
+    </span>
+    <XMarkIcon
+      v-if="open"
+      class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer"
+      @click="close"
+    />
+    <input
+      v-model="searchTerm"
+      type="text"
+      placeholder="Search..."
+      class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+      @keyup="typeAHeadSearch()"
+    >
+  </div>
 
-    <Teleport to="#modal">
-        <div v-if="open" id="search-result-overlay" class="modal">
-            <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pb-10 px-2 xl:px-0">
-                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName"
-                    class="mb-6 flex border-b border-slate-200">
-                    <div :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
-                        @click="() => activeTab = Tabs.Products">
-                        Products ({{ productSearchResult?.hits }})
-                    </div>
-                    <div :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
-                        @click="() => activeTab = Tabs.Content">
-                        Content ({{ contentSearchResult?.hits }})
-                    </div>
-                </div>
-
-                <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
-                    && productSearchResult" v-model:sort="filters.sort!" :page-size="productPageSize"
-                    :term="filters.term ?? ''" :product-search-result="productSearchResult"
-                    :content-recommendation-result="contentRecommendationResult"
-                    :fallback-recommendations="fallbackRecommendations" :products="products"
-                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
-                    @search-for="searchFor" @search="persistInUrl" />
-                <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
-                    && contextStore.context.value.contentSearch
-                    && contentSearchResult" v-model:sort="filters.sort!" :content-search-result="contentSearchResult"
-                    :page-size="contentPageSize" :term="filters.term ?? ''" :predictions-list="predictionsList"
-                    :filters="filters" @search-for="searchFor" @search="persistInUrl" />
-            </div>
+  <Teleport to="#modal">
+    <div
+      v-if="open"
+      id="search-result-overlay"
+      class="modal"
+    >
+      <div
+        v-if="productSearchResult || contentSearchResult"
+        class="container mx-auto pb-10 px-2 xl:px-0"
+      >
+        <div
+          v-if="contextStore.context.value.contentSearch && !route.query.brandName"
+          class="mb-6 flex border-b border-slate-200"
+        >
+          <div
+            :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+            @click="() => activeTab = Tabs.Products"
+          >
+            Products ({{ productSearchResult?.hits }})
+          </div>
+          <div
+            :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+            @click="() => activeTab = Tabs.Content"
+          >
+            Content ({{ contentSearchResult?.hits }})
+          </div>
         </div>
-    </Teleport>
+
+        <ProductSearchOverlayResult
+          v-if="activeTab === Tabs.Products
+            && productSearchResult"
+          v-model:sort="filters.sort!"
+          :page-size="productPageSize"
+          :term="filters.term ?? ''"
+          :product-search-result="productSearchResult"
+          :content-recommendation-result="contentRecommendationResult"
+          :no-result-product-recommendations="noResultProductRecommendations"
+          :no-result-product-recommendations-title="noResultProductRecommendationsTitle"
+          :products="products"
+          :predictions-list="predictionsList"
+          :filters="filters"
+          :right-side="rightSide"
+          @search-for="searchFor"
+          @search="persistInUrl"
+        />
+        <ContentSearchOverlayResult
+          v-else-if="activeTab === Tabs.Content
+            && contextStore.context.value.contentSearch
+            && contentSearchResult"
+          v-model:sort="filters.sort!"
+          :content-search-result="contentSearchResult"
+          :page-size="contentPageSize"
+          :term="filters.term ?? ''"
+          :predictions-list="predictionsList"
+          :filters="filters"
+          @search-for="searchFor"
+          @search="persistInUrl"
+        />
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">

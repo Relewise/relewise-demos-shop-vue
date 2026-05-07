@@ -12,10 +12,12 @@ import Facets from './Facets.vue';
 import VariantBasedProductList from './VariantBasedProductList.vue';
 import DisplayAdTile from './DisplayAds/DisplayAd-Tile.vue';
 import router from '@/router';
+import SearchNoProductsFound from '@/components/SearchNoProductsFound.vue';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
-    fallbackRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
+    noResultProductRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
+    noResultProductRecommendationsTitle: { type: String, required: true },
     products: { type: Array as PropType<ProductWithType[] | null>, required: true },
     rightSide: { type: Array as PropType<RetailMediaResultPlacementResultEntity[] | null>, required: true },
     contentRecommendationResult: { type: Object as PropType<ContentSearchResponse | null>, required: true },
@@ -34,6 +36,7 @@ const sortValue = ref(props.sort);
 // derive local numeric page value from filters.page (filters holds page as string)
 const pageValue = ref(Number((props.filters && (props.filters as any).page) ?? 1));
 
+const hasProductResults = computed(() => props.productSearchResult.hits > 0);
 const contentResults = computed(() => props.contentRecommendationResult?.results?.slice(0, 10));
 
 watch(sortValue, (newVal) => {
@@ -80,18 +83,22 @@ function searchFor(term: string) {
           route.query.brandName.join('') : route.query.brandName }}</span>
       </h2>
 
-      <span v-if="productSearchResult.hits > 0">
+      <span v-if="hasProductResults">
         Showing {{ pageValue * (pageSize) - (pageSize - 1) }} - {{
           productSearchResult?.hits < pageSize ? productSearchResult?.hits : pageValue * pageSize }} of {{
           productSearchResult?.hits }} </span>
       <div class="hidden lg:block lg:flex-grow" />
       <Sorting
+        v-if="hasProductResults"
         v-model="sortValue"
         type="Product"
       />
     </div>
-    <div class="flex gap-10">
-      <div class="hidden lg:block lg:w-1/5">
+    <div :class="hasProductResults ? 'flex gap-10' : ''">
+      <div
+        v-if="hasProductResults"
+        class="hidden lg:block lg:w-1/5"
+      >
         <div
           v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
           class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1"
@@ -109,7 +116,7 @@ function searchFor(term: string) {
           </a>
         </div>
         <Facets
-          v-if="productSearchResult.facets && productSearchResult.hits > 0"
+          v-if="productSearchResult.facets"
           :filters="filters"
           :facets="productSearchResult.facets"
           :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
@@ -134,7 +141,7 @@ function searchFor(term: string) {
           </div>
         </div>
       </div>
-      <div class="w-full lg:w-4/5">
+      <div :class="hasProductResults ? 'w-full lg:w-4/5' : 'w-full'">
         <div
           v-if="productSearchResult && productSearchResult?.redirects && productSearchResult.redirects.length > 0"
           class="mb-3 p-3 bg-white"
@@ -152,10 +159,13 @@ function searchFor(term: string) {
           </div>
         </div>
         <div
-          v-if="productSearchResult.hits == 0"
-          class="p-3 text-xl bg-white"
+          v-if="!hasProductResults"
         >
-          No products found
+          <SearchNoProductsFound
+            :term="term"
+            :product-recommendations="noResultProductRecommendations ?? null"
+            :product-recommendations-title="noResultProductRecommendationsTitle"
+          />
         </div>
         <VariantBasedProductList
           v-else-if="contextStore.context.value.variantBasedSearchOverlay"
@@ -180,27 +190,15 @@ function searchFor(term: string) {
             </template>
           </div>
         </div>
-        <div class="py-3 flex justify-center">
+        <div
+          v-if="hasProductResults"
+          class="py-3 flex justify-center"
+        >
           <Pagination
             v-model.sync="pageValue"
             :total="productSearchResult.hits"
             :page-size="pageSize"
           />
-        </div>
-        <div
-          v-if="fallbackRecommendations && fallbackRecommendations.recommendations && fallbackRecommendations.recommendations?.length > 0"
-          class="w-full p-3 bg-white rounded mb-6"
-        >
-          <h2 class="text-xl">
-            You may like
-          </h2>
-          <div class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <ProductTile
-              v-for="(product, index) in fallbackRecommendations?.recommendations"
-              :key="index"
-              :product="product"
-            />
-          </div>
         </div>
       </div>
     </div>

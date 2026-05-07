@@ -1,24 +1,21 @@
 <template>
-  <div class="flex mx-auto container">
+  <div :class="useContainer ? 'flex mx-auto container' : ''">
     <div class="w-full">
-      <h1 class="text-3xl font-semibold mb-3">
-        Popular Categories
+      <h1 :class="titleClass">
+        {{ title }}
       </h1>
-      <div class="flex flex-row flex-wrap gap-8">
+      <div class="flex flex-row flex-wrap gap-4 md:gap-8">
         <RouterLink
           v-for="(category, index) in categories?.recommendations"
           :key="category.categoryId ?? ''"
           :to="`/category/${category.categoryId}`"
-          class="popular-category-tile flex w-36 shrink-0 flex-col items-center text-center text-stone-900 hover:text-brand-800"
+          class="popular-category-tile flex w-32 md:w-36 shrink-0 flex-col items-center text-center text-stone-900 hover:text-brand-800"
         >
           <div
-            class="overflow-hidden rounded-full h-[100px] w-[100px]"
-            :class="`brand${index+1}`"
+            class="overflow-hidden rounded-full h-[88px] w-[88px] md:h-[100px] md:w-[100px]"
+            :class="`brand${(index % 6) + 1}`"
           >
-            <Image
-              v-if="findImage(category)"
-              :entity="category"
-            />
+            <Image :entity="category" />
           </div>
           <h4 class="popular-category-title mt-2 font-bold">
             {{ category.displayName }}
@@ -34,14 +31,25 @@ import contextStore from '@/stores/context.store';
 import { PopularProductCategoriesRecommendationBuilder, type ProductCategoryRecommendationResponse } from '@relewise/client';
 import { ref, type Ref } from 'vue';
 import Image from '@/components/Image.vue';
-import { findImage } from '@/helpers/imageHelper';
 
 const categories: Ref<ProductCategoryRecommendationResponse | undefined> = ref<ProductCategoryRecommendationResponse | undefined>({});
+
+const props = withDefaults(defineProps<{
+    numberOfRecommendations?: number,
+    title?: string,
+    titleClass?: string,
+    useContainer?: boolean,
+}>(), {
+    numberOfRecommendations: 4,
+    title: 'Popular Categories',
+    titleClass: 'text-3xl font-semibold mb-3',
+    useContainer: true,
+});
 
 async function setup() {
     categories.value = await contextStore.getRecommender().recommendPopularProductCategories(new PopularProductCategoriesRecommendationBuilder(contextStore.defaultSettings)
         .setProductCategoryProperties(contextStore.selectedCategoryProperties)
-        .setNumberOfRecommendations(4)
+        .setNumberOfRecommendations(props.numberOfRecommendations)
         .sinceMinutesAgo(contextStore.getRecommendationsSinceMinutesAgo())
         .build());
 
