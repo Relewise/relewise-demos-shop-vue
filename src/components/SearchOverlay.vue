@@ -486,6 +486,8 @@ function trackBrandView(
 </template>
 
 <style scoped lang="scss">
+@reference "../styling/index.scss";
+
 .modal {
     @apply bg-white overflow-y-scroll;
     position: fixed;

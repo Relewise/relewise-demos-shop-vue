@@ -1,4 +1,6 @@
 /* ./src/index.css */
+@config "../../tailwind.config.js";
+@reference "tailwindcss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,10 +63,6 @@ button {
 
 a {
     @apply text-brand-500;
-
-    // &:hover {
-    //     @apply text-brand-700 no-underline;
-    // }
 }
 
 select {
