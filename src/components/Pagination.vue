@@ -5,7 +5,7 @@
   >
     <button
       v-if="modelValue > 1"
-      class="item"
+      class="px-3 h-10 inline-flex items-center rounded cursor-pointer text-white font-semibold bg-slate-900 hover:bg-slate-800 w-48 justify-center"
       @click="selectPage(modelValue - 1)"
     >
       <ChevronLeftIcon class="h-4 w-4 mr-2" /> Previous
@@ -13,7 +13,7 @@
 
     <button
       v-if="modelValue < pageCount"
-      class="item"
+      class="px-3 h-10 inline-flex items-center rounded cursor-pointer text-white font-semibold bg-slate-900 hover:bg-slate-800 w-48 justify-center"
       @click="selectPage(modelValue + 1)"
     >
       Next <ChevronRightIcon class="h-4 w-4 ml-2" />
@@ -68,17 +68,3 @@ function selectPage(page: number) {
 }
 </script>
 
-<style scoped lang="scss">
-@reference "../styling/index.scss";
-
-.item {
-    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-white font-semibold bg-slate-900 hover:bg-slate-800 w-48 justify-center;
-
-    &:disabled {
-       @apply opacity-50 pointer-events-none;
-       &.active {
-           @apply bg-brand-200 text-brand-800 pointer-events-none opacity-100;
-       }        
-   }
-}
-</style>

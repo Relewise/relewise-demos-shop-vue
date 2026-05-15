@@ -280,8 +280,6 @@ function addToBasket() {
 </script>
 
 <style lang="scss" scoped>
-@reference "../styling/index.scss";
-
 dl {
     display: grid;
     grid-template-columns: max-content auto;
@@ -289,11 +287,16 @@ dl {
 
 dt {
     grid-column-start: 1;
-    @apply bg-gray-100 px-4 py-2 border-b border-solid border-gray-100 font-medium capitalize;
+    background: #f3f4f6;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-weight: 500;
+    text-transform: capitalize;
 }
 
 dd {
     grid-column-start: 2;
-    @apply p-2 border-b border-solid border-gray-100 pl-2;
+    padding: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
 }
 </style>

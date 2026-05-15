@@ -426,7 +426,7 @@ function trackBrandView(
     <div
       v-if="open"
       id="search-result-overlay"
-      class="modal"
+      class="modal bg-white overflow-y-scroll"
     >
       <div
         v-if="productSearchResult || contentSearchResult"
@@ -486,10 +486,7 @@ function trackBrandView(
 </template>
 
 <style scoped lang="scss">
-@reference "../styling/index.scss";
-
 .modal {
-    @apply bg-white overflow-y-scroll;
     position: fixed;
     z-index: 999;
     top: var(--header-height, 132px);

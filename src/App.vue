@@ -136,8 +136,6 @@ function clearNavigation() {
 </template>
 
 <style lang="scss">
-@reference "./styling/index.scss";
-
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.5s ease-in-out;
@@ -149,7 +147,9 @@ function clearNavigation() {
 }
 
 .navigationmodal {
-    @apply bg-white overflow-hidden border-t border-solid border-slate-100;
+    background: #fff;
+    overflow: hidden;
+    border-top: 1px solid #f1f5f9;
     position: fixed;
     z-index: 1000;
     top: var(--header-height, 131px);
