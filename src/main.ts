@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import './styling/index.scss';
+import './styling/index.css';
 import 'vue-sonner/style.css';
 import formatting from './plugins/formatting';
 import FloatingVue from 'floating-vue';

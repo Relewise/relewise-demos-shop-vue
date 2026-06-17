@@ -7,7 +7,7 @@
       {{ label }}
     </label>
 
-    <div class="mt-1 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+    <div class="mt-1 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-xs transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
       <div class="flex flex-wrap items-center gap-2">
         <span
           v-for="item in selectedItems"
@@ -62,7 +62,7 @@
         v-for="option in filteredOptions"
         :key="option"
         type="button"
-        class="flex w-full items-center justify-between bg-transparent px-4 py-2 text-left text-sm text-slate-700 shadow-none outline-none transition hover:bg-slate-50 hover:text-slate-900 focus:bg-slate-50 focus:text-slate-900 focus:outline-none focus-visible:outline-none active:bg-slate-100"
+        class="flex w-full items-center justify-between bg-transparent px-4 py-2 text-left text-sm text-slate-700 shadow-none outline-hidden transition hover:bg-slate-50 hover:text-slate-900 focus:bg-slate-50 focus:text-slate-900 focus:outline-hidden focus-visible:outline-hidden active:bg-slate-100"
         @mousedown.prevent="addItem(option)"
       >
         <span class="truncate">{{ option }}</span>

@@ -212,7 +212,7 @@ function searchFor(term: string) {
           :key="pIndex"
           :product="item.promotedProduct?.result"
           :is-promotion="true"
-          class="w-[200px] shadow ad"
+          class="w-[200px] shadow-sm ad"
         />
         <DisplayAdTile
           v-else-if="item.promotedDisplayAd?.result"

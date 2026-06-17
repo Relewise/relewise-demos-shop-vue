@@ -12,7 +12,7 @@
 
     <div
       v-if="topProduct || topContent"
-      class="container mx-auto mb-6 rounded-lg p-2 shadow bg-brand-50"
+      class="container mx-auto mb-6 rounded-lg p-2 shadow-sm bg-brand-50"
     >
       <div
         v-if="topProduct"
@@ -20,7 +20,7 @@
       >
         <app-product-favorite-button :product="topProduct" />
         <div class="flex flex-col lg:flex-row gap-4 items-center">
-          <div class="w-32 h-32 flex-shrink-0">
+          <div class="w-32 h-32 shrink-0">
             <Image :entity="topProduct" />
           </div>
           <div class="flex-1">
@@ -35,7 +35,7 @@
                 topProduct?.data?.description?.value ?? topProduct?.data?.Description?.value }}
             </p>
           </div>
-          <div class="flex-shrink-0 items-end">
+          <div class="shrink-0 items-end">
             <button
               type="button"
               class="rounded bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
@@ -55,7 +55,7 @@
         <div class="relative flex gap-4 items-start">
           <div
             v-if="findImage(topContent)"
-            class="w-32 h-32 flex-shrink-0"
+            class="w-32 h-32 shrink-0"
           >
             <Image :entity="topContent" />
           </div>

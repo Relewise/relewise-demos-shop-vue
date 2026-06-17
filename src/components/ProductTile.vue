@@ -30,7 +30,7 @@ const displayName = computed(() => {
 <template>
   <RouterLink
     :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
-    class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200 rounded-lg shadow p-2 hover:scale-105"
+    class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200 rounded-lg shadow-sm p-2 hover:scale-105"
   >
     <div class="relative flex h-max-[275px] justify-center">
       <Image

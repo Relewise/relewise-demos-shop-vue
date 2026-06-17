@@ -4,7 +4,7 @@
     class="sticky top-3 z-30 rounded-2xl border p-6 transition-all duration-200"
     :class="pinned
       ? 'border-slate-300 bg-white/95 shadow-xl ring-1 ring-slate-200 backdrop-blur'
-      : 'border-slate-200 bg-white shadow-sm'"
+      : 'border-slate-200 bg-white shadow-xs'"
   >
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div class="min-w-0">

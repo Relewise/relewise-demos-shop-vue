@@ -5,7 +5,7 @@
     :class="brandClass"
   >
     <div class="gap-4 items-start h-full flex flex-col">
-      <div class="flex-shrink-0">
+      <div class="shrink-0">
         <Image :entity="content" />
       </div>
 

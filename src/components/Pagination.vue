@@ -70,13 +70,32 @@ function selectPage(page: number) {
 
 <style scoped lang="scss">
 .item {
-    @apply px-3 h-10 inline-flex items-center rounded cursor-pointer text-white font-semibold bg-slate-900 hover:bg-slate-800 w-48 justify-center;
+    align-items: center;
+    background-color: #0f172a;
+    border-radius: 0.25rem;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    font-weight: 600;
+    height: 2.5rem;
+    justify-content: center;
+    padding-inline: 0.75rem;
+    width: 12rem;
+
+    &:hover {
+        background-color: #1e293b;
+    }
 
     &:disabled {
-       @apply opacity-50 pointer-events-none;
-       &.active {
-           @apply bg-brand-200 text-brand-800 pointer-events-none opacity-100;
-       }        
-   }
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    &:disabled.active {
+        background-color: #91AAF0;
+        color: #16399F;
+        opacity: 1;
+        pointer-events: none;
+    }
 }
 </style>

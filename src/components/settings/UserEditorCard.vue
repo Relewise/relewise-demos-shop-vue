@@ -1,5 +1,5 @@
 <template>
-  <article class="relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <article class="relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-xs">
     <div
       class="flex flex-col gap-4 bg-slate-50 px-6 py-4 md:flex-row md:items-start md:justify-between"
       :class="expanded ? 'rounded-t-2xl border-b border-slate-200' : 'rounded-2xl'"

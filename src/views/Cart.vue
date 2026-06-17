@@ -9,7 +9,7 @@
     </h1>
     <div
       v-if="isEmpty"
-      class="rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-sm lg:px-10"
+      class="rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-xs lg:px-10"
     >
       <div class="mx-auto flex max-w-2xl flex-col items-center text-center">
         <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-700">
@@ -24,13 +24,13 @@
         <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <RouterLink
             to="/"
-            class="inline-flex items-center justify-center rounded-md bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
+            class="inline-flex items-center justify-center rounded-md bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-700"
           >
             Start shopping
           </RouterLink>
           <RouterLink
             to="/favorites"
-            class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
           >
             View favorites
           </RouterLink>
@@ -45,7 +45,7 @@
         <div
           v-for="item in model.lineItems"
           :key="item.product.productId ?? ''"
-          class="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+          class="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5"
         >
           <div class="flex flex-col gap-4 sm:grid sm:grid-cols-[auto,minmax(0,1fr),8.5rem,9rem,4rem] sm:items-center sm:gap-5">
             <RouterLink
@@ -80,7 +80,7 @@
             </div>
 
             <div class="border-t border-slate-200 pt-4 sm:self-center sm:justify-self-center sm:border-t-0 sm:pt-0">
-              <div class="inline-flex items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 shadow-sm">
+              <div class="inline-flex items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 shadow-xs">
                 <button
                   type="button"
                   class="bg-slate-50 px-3 py-2 text-base font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
@@ -92,7 +92,7 @@
                 </button>
                 <input
                   :value="item.quantity"
-                  class="!block !h-10 !w-10 !min-w-0 !rounded-none !border-x !border-y-0 !border-slate-200 !bg-white !px-0 !py-0 text-center !text-sm !font-semibold tabular-nums !text-slate-900 !shadow-none !ring-0 outline-none focus:!border-slate-200 focus:!ring-0"
+                  class="!block !h-10 !w-10 !min-w-0 !rounded-none !border-x !border-y-0 !border-slate-200 !bg-white !px-0 !py-0 text-center !text-sm !font-semibold tabular-nums !text-slate-900 !shadow-none !ring-0 outline-hidden focus:!border-slate-200 focus:!ring-0"
                   type="text"
                   inputmode="numeric"
                   maxlength="3"
@@ -146,7 +146,7 @@
         </div>
       </div>
       <div
-        class="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-28"
+        class="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-xs lg:sticky lg:top-28"
       >
         <div class="flex items-start justify-between gap-4 border-b border-slate-200 pb-5">
           <div>
@@ -198,7 +198,7 @@
           </p>
           <RouterLink
             to="/"
-            class="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            class="inline-flex w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
             :class="isPlacingOrder ? 'pointer-events-none opacity-50' : ''"
             :aria-disabled="isPlacingOrder"
             :tabindex="isPlacingOrder ? -1 : undefined"

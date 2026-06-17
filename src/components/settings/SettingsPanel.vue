@@ -1,5 +1,5 @@
 <template>
-  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
     <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div class="min-w-0">
         <h2 class="text-2xl font-semibold text-slate-900">

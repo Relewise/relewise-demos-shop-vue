@@ -1,5 +1,5 @@
 <template>
-  <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
     <button
       type="button"
       class="flex w-full items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-6 py-4 text-left transition hover:bg-slate-100"

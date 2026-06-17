@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      class="shadow rounded overflow-hidden hover:shadow-lg transition duration-200 cursor-pointer flex flex-col"
+      class="shadow-sm rounded overflow-hidden hover:shadow-lg transition duration-200 cursor-pointer flex flex-col"
       @click="clicked"
     >
       <div

@@ -9,7 +9,7 @@
     </label>
 
     <div
-      class="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200"
+      class="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-xs transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200"
       :class="label ? 'mt-1' : ''"
     >
       <input

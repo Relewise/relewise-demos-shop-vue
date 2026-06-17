@@ -4,7 +4,7 @@ import { CheckCircleIcon } from '@heroicons/vue/24/outline';
 
 <template>
   <div class="container mx-auto min-h-[70vh] px-2 py-6 xl:px-0">
-    <div class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+    <div class="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xs">
       <div class="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-brand-50 via-white to-emerald-50" />
       <div class="absolute right-8 top-10 h-32 w-32 rounded-full bg-brand-100/60 blur-3xl" />
       <div class="absolute left-6 top-24 h-24 w-24 rounded-full bg-emerald-100/70 blur-2xl" />
@@ -26,13 +26,13 @@ import { CheckCircleIcon } from '@heroicons/vue/24/outline';
           <div class="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
             <RouterLink
               to="/"
-              class="inline-flex min-w-[12rem] items-center justify-center rounded-md bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
+              class="inline-flex min-w-[12rem] items-center justify-center rounded-md bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-700"
             >
               Continue shopping
             </RouterLink>
             <RouterLink
               to="/favorites"
-              class="inline-flex min-w-[12rem] items-center justify-center rounded-md border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              class="inline-flex min-w-[12rem] items-center justify-center rounded-md border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50"
             >
               View favorites
             </RouterLink>

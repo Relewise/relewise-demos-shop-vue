@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="model.result?.data?.ImageUrl?.value"
-    class="rounded shadow overflow-hidden mb-4 cursor-pointer hover:shadow-lg"
+    class="rounded shadow-sm overflow-hidden mb-4 cursor-pointer hover:shadow-lg"
     @click="clicked"
   >
     <img :src="model.result?.data.ImageUrl.value"></img>
