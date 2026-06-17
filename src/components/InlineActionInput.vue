@@ -1,7 +1,7 @@
 <template>
   <div>
     <label class="block text-sm text-slate-700">{{ label }}</label>
-    <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
+    <div class="mt-1 flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 shadow-xs transition focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200">
       <input
         v-model="internalValue"
         type="text"

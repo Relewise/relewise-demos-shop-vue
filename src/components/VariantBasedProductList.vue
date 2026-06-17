@@ -42,7 +42,7 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
   <div
     v-for="(product, index) in groupedProducts"
     :key="product.productId ?? index"
-    class="p-2 lg:p-4 rounded shadow mb-4"
+    class="p-2 lg:p-4 rounded shadow-sm mb-4"
   >
     <h3 class="lg:text-lg font-semibold flex justify-between items-center mb-2">
       <RouterLink

@@ -47,7 +47,7 @@ const displayName = computed(() => {
     <div class="mt-2 flex gap-4 items-start h-full">
       <div
         v-if="findImage(content)"
-        class="flex-shrink-0"
+        class="shrink-0"
         :class="showSummary ? 'w-36 h-36' : 'w-28 h-28'"
       >
         <Image :entity="content" />

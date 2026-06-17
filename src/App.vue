@@ -31,7 +31,7 @@ onMounted(() => {
     notificationsStore.flushAfterReload();
 });
 
-watch(activeContextRevision, async () => {
+watch(activeContextRevision, async() => {
     await refreshActiveContext();
 }, { immediate: true });
 
@@ -118,21 +118,38 @@ function clearNavigation() {
 </script>
 
 <template>
-    <Toaster position="bottom-right" rich-colors :visible-toasts="5" offset="16px" />
-    <Header :line-items-count="lineItemsCount" :has-child-categories="hasChildCategories"
-        :main-categories="mainCategories" />
+  <Toaster
+    position="bottom-right"
+    rich-colors
+    :visible-toasts="5"
+    offset="16px"
+  />
+  <Header
+    :line-items-count="lineItemsCount"
+    :has-child-categories="hasChildCategories"
+    :main-categories="mainCategories"
+  />
 
-    <div id="main-container" class="w-full mx-auto pb-10 flex-grow relative">
-        <RouterView :key="routeViewKey" />
-    </div>
-    <Footer v-if="hasActiveDataset" :has-child-categories="hasChildCategories" :main-categories="mainCategories"
-        :footer="footer" />
+  <div
+    id="main-container"
+    class="w-full mx-auto pb-10 flex-grow relative"
+  >
+    <RouterView :key="routeViewKey" />
+  </div>
+  <Footer
+    v-if="hasActiveDataset"
+    :has-child-categories="hasChildCategories"
+    :main-categories="mainCategories"
+    :footer="footer"
+  />
 
-    <div v-tooltip="'Current breakpoint'"
-        class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm">
-        <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
-        <span>{{ breakpoint }}</span>
-    </div>
+  <div
+    v-tooltip="'Current breakpoint'"
+    class="fixed bottom-3 right-3 z-[10000] inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-500/90 px-3 py-1 text-xs font-mono uppercase tracking-wide text-white shadow-lg shadow-red-950/20 backdrop-blur-sm"
+  >
+    <ComputerDesktopIcon class="h-3.5 w-3.5 shrink-0" />
+    <span>{{ breakpoint }}</span>
+  </div>
 </template>
 
 <style lang="scss">
@@ -147,7 +164,9 @@ function clearNavigation() {
 }
 
 .navigationmodal {
-    @apply bg-white overflow-hidden border-t border-solid border-slate-100;
+    background-color: #fff;
+    border-top: 1px solid #f1f5f9;
+    overflow: hidden;
     position: fixed;
     z-index: 1000;
     top: var(--header-height, 131px);

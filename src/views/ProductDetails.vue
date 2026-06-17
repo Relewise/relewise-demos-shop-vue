@@ -286,12 +286,17 @@ dl {
 }
 
 dt {
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+    font-weight: 500;
     grid-column-start: 1;
-    @apply bg-gray-100 px-4 py-2 border-b border-solid border-gray-100 font-medium capitalize;
+    padding: 0.5rem 1rem;
+    text-transform: capitalize;
 }
 
 dd {
+    border-bottom: 1px solid #f3f4f6;
     grid-column-start: 2;
-    @apply p-2 border-b border-solid border-gray-100 pl-2;
+    padding: 0.5rem;
 }
 </style>

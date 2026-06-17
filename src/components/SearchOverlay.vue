@@ -487,7 +487,8 @@ function trackBrandView(
 
 <style scoped lang="scss">
 .modal {
-    @apply bg-white overflow-y-scroll;
+    background-color: #fff;
+    overflow-y: scroll;
     position: fixed;
     z-index: 999;
     top: var(--header-height, 132px);

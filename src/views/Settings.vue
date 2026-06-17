@@ -23,7 +23,7 @@
         <SettingsDatasetConfiguration :dataset="selectedDataset" />
       </div>
       <div v-else-if="datasetIdParam">
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
           <p class="text-slate-600">
             The requested dataset could not be found.
           </p>
