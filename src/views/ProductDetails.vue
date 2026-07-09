@@ -23,6 +23,12 @@
 
         <div class="bg-white w-full xl:w-1/2 relative">
           <div>
+            <span
+              v-if="product.data && product.data.PrivateLabel && (product.data.PrivateLabel.value === true || product.data.PrivateLabel.value === 'true')"
+              class="rounded bg-yellow-300 px-2 py-0.5 text-center text-xs font-medium text-black inline-block mb-2"
+            >
+              Egne mærker
+            </span>
             <div
               class="flex items-center gap-2 mb-1"
               :class="product.brand ? 'justify-between' : 'items-end'"

@@ -78,6 +78,12 @@ const displayName = computed(() => {
           SOLD OUT
         </span>
         <span
+          v-if="product.data && product.data.PrivateLabel && (product.data.PrivateLabel.value === true || product.data.PrivateLabel.value === 'true')"
+          class="rounded bg-yellow-300 px-2 py-0.5 text-center text-xs font-medium text-black m-3"
+        >
+          Egne mærker
+        </span>
+        <span
           v-if="product.variant && contextStore.context.value.showVariantsBadge"
           class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3"
         >
