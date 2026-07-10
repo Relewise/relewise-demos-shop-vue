@@ -238,6 +238,7 @@ type DatasetDraft = IDataset & {
 
 const datasets = computed(() => contextStore.datasets.value);
 const activeDatasetId = computed(() => contextStore.context.value?.datasetId ?? '');
+const shortUrlServiceUrl = 'https://cdn.relewise.com/demo-shop';
 const isCreating = ref(false);
 const datasetPendingRemoval = ref<IDataset | null>(null);
 const validationErrors = ref<string[]>([]);
@@ -369,7 +370,7 @@ function selectDataset(datasetId: string) {
     notificationsStore.push({ type: 'success', title: 'Dataset selected', text: 'The active dataset was updated.' });
 }
 
-function shareDataset(dataset: IDataset) {
+async function shareDataset(dataset: IDataset) {
     const shareUrl = new URL('/settings', window.location.origin);
     const isActiveDataset = dataset.datasetId === activeDatasetId.value;
     shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(buildSharedDataset(dataset, {
@@ -378,7 +379,29 @@ function shareDataset(dataset: IDataset) {
         selectedUserIndex: isActiveDataset ? contextStore.selectedUserIndex.value : undefined,
         selectedCompanyId: isActiveDataset ? contextStore.selectedCompanyId.value : undefined,
     }))));
-    navigator.clipboard.writeText(shareUrl.toString());
+
+    try {
+        const response = await fetch(`${shortUrlServiceUrl}/${dataset.datasetId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: shareUrl.toString() }),
+        });
+
+        if (!response.ok) {
+            notificationsStore.push({ type: 'error', title: 'Share link failed', text: `Could not create a short link for ${dataset.displayName || dataset.datasetId}.` });
+            return;
+        }
+
+        const shortUrl = await response.json() as string;
+        const shortUrlId = shortUrl.substring(shortUrl.lastIndexOf('/') + 1);
+        await navigator.clipboard.writeText(`${shortUrlServiceUrl}/${dataset.datasetId}/${shortUrlId}`);
+    } catch {
+        notificationsStore.push({ type: 'error', title: 'Share link failed', text: `Could not create a short link for ${dataset.displayName || dataset.datasetId}.` });
+        return;
+    }
+
     notificationsStore.push({ type: 'success', title: 'Share link copied', text: `The share link for ${dataset.displayName || dataset.datasetId} was copied to your clipboard.` });
 }
 
