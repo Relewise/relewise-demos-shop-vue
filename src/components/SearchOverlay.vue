@@ -13,7 +13,7 @@ import { getFacets } from '@/helpers/facetHelper';
 import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
-import { applyVariantRequestSettings, findTermMatchedVariantImage, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
+import { applyVariantRequestSettings, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
 
 enum Tabs {
     Products,
@@ -288,11 +288,7 @@ async function search() {
 
         contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
-        products.value = productSearchResult.value.results?.map(x => ({
-            isPromotion: false,
-            product: x,
-            displayImageUrl: useVariantResolutionImages ? findTermMatchedVariantImage(x) : '',
-        })) ?? [];
+        products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
         if (response.responses.length === 3) {
             contentSearchResult.value = response.responses[2] as ContentSearchResponse;
@@ -317,7 +313,6 @@ async function search() {
                         isPromotion: true,
                         product: x.promotedProduct?.result,
                         displayAd: x.promotedDisplayAd,
-                        displayImageUrl: useVariantResolutionImages && x.promotedProduct?.result ? findTermMatchedVariantImage(x.promotedProduct.result) : '',
                     }) as ProductWithType)
                     .concat(products.value ?? []);
             }

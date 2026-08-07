@@ -66,7 +66,9 @@ describe('productSearchRequest', () => {
         } as unknown as ProductResult;
 
         expect(findTermMatchedVariantImage(product)).toBe('https://example.com/variant.jpg');
+        expect(findTermMatchedVariantImage({ ...product, variantResolution: { source: 'PartialMatchByTerm' } } as ProductResult)).toBe('https://example.com/variant.jpg');
         expect(findTermMatchedVariantImage({ ...product, variantResolution: { source: 'Default' } } as ProductResult)).toBe('');
         expect(findTermMatchedVariantImage({ ...product, variant: undefined } as ProductResult)).toBe('');
+        expect(findTermMatchedVariantImage({ ...product, variant: { data: {} } } as ProductResult)).toBe('');
     });
 });

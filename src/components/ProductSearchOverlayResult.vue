@@ -13,7 +13,6 @@ import VariantBasedProductList from './VariantBasedProductList.vue';
 import DisplayAdTile from './DisplayAds/DisplayAd-Tile.vue';
 import router from '@/router';
 import SearchNoProductsFound from '@/components/SearchNoProductsFound.vue';
-import { findTermMatchedVariantImage } from '@/helpers/productSearchRequest';
 
 const props = defineProps({
     productSearchResult: { type: Object as PropType<ProductSearchResponse>, required: true },
@@ -182,7 +181,6 @@ function searchFor(term: string) {
                 v-if="product.product"
                 :product="product.product"
                 :is-promotion="product.isPromotion"
-                :display-image-url="product.displayImageUrl"
               />
               <DisplayAdTile
                 v-else-if="product.displayAd"
@@ -214,7 +212,6 @@ function searchFor(term: string) {
           :key="pIndex"
           :product="item.promotedProduct?.result"
           :is-promotion="true"
-          :display-image-url="contextStore.context.value.variantResolutionImages ? findTermMatchedVariantImage(item.promotedProduct.result) : ''"
           class="w-[200px] shadow-sm ad"
         />
         <DisplayAdTile
