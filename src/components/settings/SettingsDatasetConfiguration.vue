@@ -134,16 +134,6 @@
         </template>
 
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <InputText
-            :model-value="editableDataset.recommendationsMinutesAgo"
-            label="Recommendations lookback in minutes"
-            help="Default is 20160 minutes, equivalent to 14 days."
-            type="text"
-            @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
-          />
-        </div>
-
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <h3 class="mb-4 text-base font-semibold text-slate-900">
             Variants 2.0
           </h3>
@@ -175,6 +165,16 @@
               </option>
             </InputSelect>
           </div>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <InputText
+            :model-value="editableDataset.recommendationsMinutesAgo"
+            label="Recommendations lookback in minutes"
+            help="Default is 20160 minutes, equivalent to 14 days."
+            type="text"
+            @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
+          />
         </div>
       </div>
     </SettingsAccordionSection>
