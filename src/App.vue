@@ -11,7 +11,6 @@ import breakpointService from './services/breakpoint.service';
 import notificationsStore from './stores/notifications.store';
 import { Toaster } from 'vue-sonner';
 import { ComputerDesktopIcon } from '@heroicons/vue/24/outline';
-import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -89,9 +88,9 @@ async function refreshActiveContext() {
 }
 
 async function getCategories(searcher: Searcher, loadToken: number) {
-    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+    const request = new ProductSearchBuilder(contextStore.defaultSettings)
         .pagination(p => p.setPageSize(0))
-        .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true })), contextStore.context.value)
+        .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true }))
         .build();
 
     const response = await searcher.searchProducts(request);
