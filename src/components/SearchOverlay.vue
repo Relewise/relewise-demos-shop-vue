@@ -13,6 +13,7 @@ import { getFacets } from '@/helpers/facetHelper';
 import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
+import { applyVariantRequestSettings, findTermMatchedVariantImage, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
 
 enum Tabs {
     Products,
@@ -164,17 +165,18 @@ async function search() {
     const contentTerm = filters.value.term.length > 0
         ? filters.value.term
         : (typeof brandName === 'string' ? brandName : null);
+    const productTerm = filters.value.term.length > 0 ? filters.value.term : null;
+    const useVariantResolutionImages = !!productTerm && (contextStore.context.value.variantResolutionImages ?? false);
 
     const request = new SearchCollectionBuilder()
-        .addRequest(new ProductSearchBuilder(contextStore.defaultSettings)
-            .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .addRequest(applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+            .setSelectedProductProperties(selectedProductPropertiesForTermSearch(contextStore.selectedProductProperties, useVariantResolutionImages))
             .setSelectedVariantProperties({
                 displayName: true,
                 pricing: true,
                 allData: true,
             })
-            .setTerm(filters.value.term.length > 0 ? filters.value.term : null)
-            .setExplodedVariants(contextStore.context.value.variantBasedSearchOverlay ? 5 : 1)
+            .setTerm(productTerm)
             .filters(f => {
                 if (Array.isArray(selectedCategoryFilterIds)) {
                     selectedCategoryFilterIds.slice(0, categoryFilterThreshold).forEach(id => {
@@ -227,7 +229,7 @@ async function search() {
                         },
                     }),
             )
-            .build())
+            , contextStore.context.value).build())
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product', 'Content')
             .setTerm(searchTerm.value)
@@ -286,7 +288,11 @@ async function search() {
 
         contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
         productSearchResult.value = response.responses[0] as ProductSearchResponse;
-        products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
+        products.value = productSearchResult.value.results?.map(x => ({
+            isPromotion: false,
+            product: x,
+            displayImageUrl: useVariantResolutionImages ? findTermMatchedVariantImage(x) : '',
+        })) ?? [];
 
         if (response.responses.length === 3) {
             contentSearchResult.value = response.responses[2] as ContentSearchResponse;
@@ -307,7 +313,12 @@ async function search() {
 
             if (placement?.results) {
                 products.value = placement.results
-                    .map(x => ({ isPromotion: true, product: x.promotedProduct?.result, displayAd: x.promotedDisplayAd }) as ProductWithType)
+                    .map(x => ({
+                        isPromotion: true,
+                        product: x.promotedProduct?.result,
+                        displayAd: x.promotedDisplayAd,
+                        displayImageUrl: useVariantResolutionImages && x.promotedProduct?.result ? findTermMatchedVariantImage(x.promotedProduct.result) : '',
+                    }) as ProductWithType)
                     .concat(products.value ?? []);
             }
         }

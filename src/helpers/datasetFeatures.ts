@@ -7,6 +7,7 @@ export type DatasetBooleanKey =
     | 'showVariantsBadge'
     | 'similarProductsOnPdp'
     | 'variantBasedSearchOverlay'
+    | 'variantResolutionImages'
     | 'searchHighlight'
     | 'contentSearch'
     | 'shoppertainmentEnabled';
@@ -51,6 +52,11 @@ export const datasetFeatureFields: Array<{ key: DatasetBooleanKey; label: string
         key: 'variantBasedSearchOverlay',
         label: 'Variant-based search overlay',
         description: 'Group and display variants beneath each search result product.',
+    },
+    {
+        key: 'variantResolutionImages',
+        label: 'Variant Resolution',
+        description: 'Use matched selected-variant images for term-based product search results when Relewise resolves a variant by term.',
     },
     {
         key: 'searchHighlight',

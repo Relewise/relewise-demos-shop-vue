@@ -10,6 +10,7 @@ import { highlightWithOffsets } from '@/helpers/highligther';
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
     isPromotion: { type: Boolean, required: false, default: false },
+    displayImageUrl: { type: String, required: false, default: '' },
 });
 
 const { product } = toRefs(props);
@@ -35,6 +36,7 @@ const displayName = computed(() => {
     <div class="relative flex h-max-[275px] justify-center">
       <Image
         :entity="product"
+        :image-url="displayImageUrl"
         class="h-[275px]"
       />
       <div class="absolute top-0 left-0 flex gap-1">

@@ -117,7 +117,7 @@
 
       <div class="space-y-4">
         <div
-          v-for="feature in featureFields"
+          v-for="feature in generalFeatureFields"
           :key="feature.key"
           class="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100"
           @click="toggleFeatureFromCard(feature.key, $event)"
@@ -139,6 +139,53 @@
             @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
           />
         </div>
+
+        <div
+          v-if="variantResolutionFeature"
+          class="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100"
+          @click="toggleFeatureFromCard(variantResolutionFeature.key, $event)"
+        >
+          <InputCheckbox
+            v-model="editableDataset[variantResolutionFeature.key]"
+            class="pointer-events-none"
+            :label="variantResolutionFeature.label"
+            :help="variantResolutionFeature.description"
+          />
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 class="mb-4 text-base font-semibold text-slate-900">
+            Variants 2.0
+          </h3>
+
+          <div
+            class="grid gap-5 xl:grid-cols-2"
+          >
+            <InputText
+              :model-value="editableDataset.maxVariantsPerProduct ?? defaultMaxVariantsPerProduct"
+              label="Max variants per product"
+              help="Defaults to 1 and applies everywhere VariantRequestSettings is used."
+              type="number"
+              min="1"
+              step="1"
+              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-200"
+              @update:model-value="editableDataset.maxVariantsPerProduct = Number($event)"
+            />
+
+            <InputSelect
+              v-model="editableDataset.variantRequestSorting"
+              label="Variant sorting"
+              help="Controls how variants are sorted in product search responses."
+            >
+              <option value="GroupedByProduct">
+                Grouped by product
+              </option>
+              <option value="ByRelevance">
+                By relevance
+              </option>
+            </InputSelect>
+          </div>
+        </div>
       </div>
     </SettingsAccordionSection>
 
@@ -156,6 +203,7 @@
  
 import FormTags from '@/components/form/FormTags.vue';
 import InputCheckbox from '@/components/form/InputCheckbox.vue';
+import InputSelect from '@/components/form/InputSelect.vue';
 import InputText from '@/components/form/InputText.vue';
 import InputToggle from '@/components/form/InputToggle.vue';
 import type { DatasetBooleanKey } from '@/helpers/datasetFeatures';
@@ -164,8 +212,9 @@ import SecretInput from '@/components/SecretInput.vue';
 import SettingsAccordionSection from '@/components/settings/SettingsAccordionSection.vue';
 import SettingsStickyActions from '@/components/settings/SettingsStickyActions.vue';
 import { useDatasetConfigurationForm } from '@/composables/useDatasetConfigurationForm';
+import { defaultMaxVariantsPerProduct } from '@/helpers/productSearchRequest';
 import type { IDataset } from '@/stores/context.store';
-import { toRef } from 'vue';
+import { computed, toRef } from 'vue';
 
 const props = defineProps<{
     dataset: IDataset;
@@ -186,6 +235,9 @@ const {
     toggleSection,
     saveChanges,
 } = useDatasetConfigurationForm(toRef(props, 'dataset'));
+
+const generalFeatureFields = computed(() => featureFields.filter(feature => feature.key !== 'variantResolutionImages'));
+const variantResolutionFeature = computed(() => featureFields.find(feature => feature.key === 'variantResolutionImages'));
 
 function toggleFeatureFromCard(key: DatasetBooleanKey, event: MouseEvent) {
     const target = event.target;

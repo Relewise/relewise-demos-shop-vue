@@ -8,6 +8,8 @@ import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSes
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
 
+export type VariantRequestSorting = 'GroupedByProduct' | 'ByRelevance';
+
 export interface IDataset {
     datasetId: string;
     apiKey: string;
@@ -27,6 +29,9 @@ export interface IDataset {
     showVariantsBadge?: boolean;
     similarProductsOnPdp?: boolean;
     variantBasedSearchOverlay?: boolean;
+    variantResolutionImages?: boolean;
+    maxVariantsPerProduct?: number;
+    variantRequestSorting?: VariantRequestSorting;
     contentSearch?: boolean;
     searchHighlight?: boolean;
     shoppertainmentEnabled?: boolean;

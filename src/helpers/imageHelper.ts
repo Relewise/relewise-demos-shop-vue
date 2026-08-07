@@ -1,6 +1,6 @@
-import type { CategoryResult, ContentResult, DataValue, ProductResult } from '@relewise/client';
+import type { CategoryResult, ContentResult, DataValue, ProductResult, VariantResult } from '@relewise/client';
 
-type ImageEntity = ProductResult | ContentResult | CategoryResult;
+type ImageEntity = ProductResult | ContentResult | CategoryResult | VariantResult;
 
 export const findImage = (entity: ImageEntity) => {
     return mapDataKey(('variant' in entity ? entity.variant?.data : undefined) ?? {}) ??

@@ -16,16 +16,21 @@
 
 <script setup lang="ts">
 import { PhotoIcon } from '@heroicons/vue/24/outline';
-import type { CategoryResult, ContentResult, ProductResult } from '@relewise/client';
+import type { CategoryResult, ContentResult, ProductResult, VariantResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
 import { findImage } from '@/helpers/imageHelper';
 import { computed } from 'vue';
 
 const props = defineProps({
-    entity: { type: Object as PropType<ProductResult | ContentResult | CategoryResult>, required: true },
+    entity: { type: Object as PropType<ProductResult | ContentResult | CategoryResult | VariantResult>, required: true },
+    imageUrl: { type: String, required: false, default: '' },
 });
 
 const image = computed(() => {
+    if (props.imageUrl) {
+        return props.imageUrl;
+    }
+
     return findImage(entity.value);
 });
 

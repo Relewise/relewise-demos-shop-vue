@@ -188,6 +188,7 @@ import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import ProductVariants from '../components/ProductVariants.vue';
 import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
+import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);
@@ -231,10 +232,9 @@ async function init() {
 
         trackingService.trackProductView(id, variantId.value ?? undefined);
 
-        const request = new ProductSearchBuilder(contextStore.defaultSettings)
+        const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true, displayName: true })
-            .setExplodedVariants(1)
             .filters(f => {
                 f.addProductIdFilter([id]);
 
@@ -244,7 +244,7 @@ async function init() {
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .pagination(p => p.setPageSize(1))
+            .pagination(p => p.setPageSize(1)), contextStore.context.value)
             .build();
 
         const searcher = contextStore.getSearcher();
