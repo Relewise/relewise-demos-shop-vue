@@ -116,19 +116,22 @@
       </template>
 
       <div class="space-y-4">
-        <div
-          v-for="feature in generalFeatureFields"
+        <template
+          v-for="feature in featureFields"
           :key="feature.key"
-          class="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100"
-          @click="toggleFeatureFromCard(feature.key, $event)"
         >
-          <InputCheckbox
-            v-model="editableDataset[feature.key]"
-            class="pointer-events-none"
-            :label="feature.label"
-            :help="feature.description"
-          />
-        </div>
+          <div
+            class="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100"
+            @click="toggleFeatureFromCard(feature.key, $event)"
+          >
+            <InputCheckbox
+              v-model="editableDataset[feature.key]"
+              class="pointer-events-none"
+              :label="feature.label"
+              :help="feature.description"
+            />
+          </div>
+        </template>
 
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <InputText
@@ -137,19 +140,6 @@
             help="Default is 20160 minutes, equivalent to 14 days."
             type="text"
             @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
-          />
-        </div>
-
-        <div
-          v-if="variantResolutionFeature"
-          class="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-slate-100"
-          @click="toggleFeatureFromCard(variantResolutionFeature.key, $event)"
-        >
-          <InputCheckbox
-            v-model="editableDataset[variantResolutionFeature.key]"
-            class="pointer-events-none"
-            :label="variantResolutionFeature.label"
-            :help="variantResolutionFeature.description"
           />
         </div>
 
@@ -214,7 +204,7 @@ import SettingsStickyActions from '@/components/settings/SettingsStickyActions.v
 import { useDatasetConfigurationForm } from '@/composables/useDatasetConfigurationForm';
 import { defaultMaxVariantsPerProduct } from '@/helpers/productSearchRequest';
 import type { IDataset } from '@/stores/context.store';
-import { computed, toRef } from 'vue';
+import { toRef } from 'vue';
 
 const props = defineProps<{
     dataset: IDataset;
@@ -235,9 +225,6 @@ const {
     toggleSection,
     saveChanges,
 } = useDatasetConfigurationForm(toRef(props, 'dataset'));
-
-const generalFeatureFields = computed(() => featureFields.filter(feature => feature.key !== 'variantResolutionImages'));
-const variantResolutionFeature = computed(() => featureFields.find(feature => feature.key === 'variantResolutionImages'));
 
 function toggleFeatureFromCard(key: DatasetBooleanKey, event: MouseEvent) {
     const target = event.target;
