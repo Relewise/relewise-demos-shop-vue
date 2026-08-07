@@ -6,7 +6,6 @@ import Popover from '@/components/Popover.vue';
 import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
 import contextStore from '@/stores/context.store';
 import { highlightWithOffsets } from '@/helpers/highligther';
-import { findTermMatchedVariantImage } from '@/helpers/productSearchRequest';
 
 const props = defineProps({
     product: { type: Object as PropType<ProductResult>, required: true },
@@ -27,7 +26,6 @@ const displayName = computed(() => {
     return highlightWithOffsets(product.value.displayName, matchedOffsets);
 });
 
-const displayImageUrl = computed(() => findTermMatchedVariantImage(product.value));
 </script>
 
 <template>
@@ -38,7 +36,6 @@ const displayImageUrl = computed(() => findTermMatchedVariantImage(product.value
     <div class="relative flex h-max-[275px] justify-center">
       <Image
         :entity="product"
-        :image-url="displayImageUrl"
         class="h-[275px]"
       />
       <div class="absolute top-0 left-0 flex gap-1">

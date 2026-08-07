@@ -18,23 +18,26 @@
 import { PhotoIcon } from '@heroicons/vue/24/outline';
 import type { CategoryResult, ContentResult, ProductResult, VariantResult } from '@relewise/client';
 import { ref, toRefs, type PropType } from 'vue';
-import { findImage } from '@/helpers/imageHelper';
+import { findImage, findTermMatchedVariantImage } from '@/helpers/imageHelper';
 import { computed } from 'vue';
 
 const props = defineProps({
     entity: { type: Object as PropType<ProductResult | ContentResult | CategoryResult | VariantResult>, required: true },
-    imageUrl: { type: String, required: false, default: '' },
 });
 
+const { entity: entity } = toRefs(props);
+
 const image = computed(() => {
-    if (props.imageUrl) {
-        return props.imageUrl;
+    if ('variantResolution' in entity.value) {
+        const variantResolutionImage = findTermMatchedVariantImage(entity.value);
+        if (variantResolutionImage) {
+            return variantResolutionImage;
+        }
     }
 
     return findImage(entity.value);
 });
 
-const { entity: entity } = toRefs(props);
 const error = ref(false);
 </script>
 <style lang="css" scoped>

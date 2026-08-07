@@ -8,6 +8,15 @@ export const findImage = (entity: ImageEntity) => {
         '';
 };
 
+export function findTermMatchedVariantImage(product: ProductResult) {
+    const source = product.variantResolution?.source;
+    if (source !== 'PartialMatchByTerm' && source !== 'MatchByTerm') {
+        return '';
+    }
+
+    return product.variant ? findImage(product.variant) : '';
+}
+
 function mapDataKey(data: Record<string, DataValue>) {
     for (const dataKey of Object.keys(data ?? {})) {
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ProductResult, SelectedProductPropertiesSettings } from '@relewise/client';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
+import { findTermMatchedVariantImage } from '@/helpers/imageHelper';
 import {
-    findTermMatchedVariantImage,
     getDefaultMaxVariantsPerProduct,
     getMaxVariantsPerProduct,
     getVariantRequestSorting,

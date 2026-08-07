@@ -1,6 +1,5 @@
-import type { ProductResult, ProductSearchBuilder, SelectedProductPropertiesSettings } from '@relewise/client';
+import type { ProductSearchBuilder, SelectedProductPropertiesSettings } from '@relewise/client';
 import type { IDataset, VariantRequestSorting } from '@/stores/context.store';
-import { findImage } from '@/helpers/imageHelper';
 
 export const defaultVariantRequestSorting: VariantRequestSorting = 'GroupedByProduct';
 export const defaultMaxVariantsPerProduct = 1;
@@ -42,11 +41,3 @@ export function selectedProductPropertiesForTermSearch(
     };
 }
 
-export function findTermMatchedVariantImage(product: ProductResult) {
-    const source = product.variantResolution?.source;
-    if (source !== 'PartialMatchByTerm' && source !== 'MatchByTerm') {
-        return '';
-    }
-
-    return product.variant ? findImage(product.variant) : '';
-}
