@@ -2,6 +2,7 @@ import type { IDataset } from '@/stores/context.store';
 import { getCompanyDataDraft, getUserMetadataDraft } from '@/helpers/keyValueMetadata';
 import { sanitizeUsers } from '@/helpers/userContext';
 import type { Company } from '@relewise/client';
+import { defaultVariantRequestSorting } from '@/helpers/productSearchRequest';
 
 type DatasetNormalizationInput = Partial<IDataset> & {
     language?: string;
@@ -36,6 +37,8 @@ export function sanitizeCompanies(companies?: Company[]) {
 }
 
 export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput): IDataset {
+    const variantBasedSearchOverlay = dataset.variantBasedSearchOverlay ?? false;
+
     return {
         datasetId: dataset.datasetId?.trim() ?? '',
         apiKey: dataset.apiKey?.trim() ?? '',
@@ -54,11 +57,22 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         B2bRecommendations: dataset.B2bRecommendations ?? false,
         showVariantsBadge: dataset.showVariantsBadge ?? false,
         similarProductsOnPdp: dataset.similarProductsOnPdp ?? false,
-        variantBasedSearchOverlay: dataset.variantBasedSearchOverlay ?? false,
+        variantBasedSearchOverlay,
+        variantResolutionImages: dataset.variantResolutionImages ?? false,
+        maxVariantsPerProduct: normalizeMaxVariantsPerProduct(dataset.maxVariantsPerProduct),
+        variantRequestSorting: dataset.variantRequestSorting === 'ByRelevance' ? 'ByRelevance' : defaultVariantRequestSorting,
         contentSearch: dataset.contentSearch ?? false,
         searchHighlight: dataset.searchHighlight ?? false,
         shoppertainmentEnabled: dataset.shoppertainmentEnabled ?? false,
     };
+}
+
+function normalizeMaxVariantsPerProduct(value: number | undefined) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return undefined;
+    }
+
+    return Math.max(1, Math.floor(value));
 }
 
 export function cloneDatasetConfiguration(dataset: IDataset): IDataset {

@@ -59,6 +59,7 @@ import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, userIsAnonymous, type ProductSearchResponse } from '@relewise/client';
 import { onMounted, ref, watch } from 'vue';
 import Pagination from '@/components/Pagination.vue';
+import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
 const results = ref<ProductSearchResponse>();
 const page = ref(1);
@@ -74,12 +75,11 @@ onMounted(async() => {
 });
 
 async function search() {
-    const builder = new ProductSearchBuilder(contextStore.defaultSettings)
+    const builder = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
-        .setExplodedVariants(1)
         .pagination(p => p.setPage(page.value).setPageSize(40))
-        .filters(f => f.addProductEngagementFilter({ isFavorite: true }));
+        .filters(f => f.addProductEngagementFilter({ isFavorite: true })), contextStore.context.value);
 
     const searcher = await contextStore.getSearcher();
 
