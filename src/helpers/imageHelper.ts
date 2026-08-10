@@ -1,12 +1,21 @@
-import type { CategoryResult, ContentResult, DataValue, ProductResult } from '@relewise/client';
+import type { CategoryResult, ContentResult, DataValue, ProductResult, VariantResult } from '@relewise/client';
 
-type ImageEntity = ProductResult | ContentResult | CategoryResult;
+type ImageEntity = ProductResult | ContentResult | CategoryResult | VariantResult;
 
 export const findImage = (entity: ImageEntity) => {
     return mapDataKey(('variant' in entity ? entity.variant?.data : undefined) ?? {}) ??
         mapDataKey(entity.data ?? {}) ??
         '';
 };
+
+export function findTermMatchedVariantImage(product: ProductResult) {
+    const source = product.variantResolution?.source;
+    if (source !== 'PartialMatchByTerm' && source !== 'MatchByTerm') {
+        return '';
+    }
+
+    return product.variant ? findImage(product.variant) : '';
+}
 
 function mapDataKey(data: Record<string, DataValue>) {
     for (const dataKey of Object.keys(data ?? {})) {

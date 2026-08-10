@@ -25,6 +25,7 @@ const displayName = computed(() => {
 
     return highlightWithOffsets(product.value.displayName, matchedOffsets);
 });
+
 </script>
 
 <template>

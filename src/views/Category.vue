@@ -145,6 +145,7 @@ import { getFacets } from '@/helpers/facetHelper';
 import DisplayAdHeroBanner from '@/components/DisplayAds/DisplayAd-HeroBanner.vue';
 import DisplayAdTile from '@/components/DisplayAds/DisplayAd-Tile.vue';
 import { sortCategories } from '@/helpers/sortCategories';
+import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
@@ -254,10 +255,9 @@ async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
     scrollTo({ top: 0 });
 
-    const request = new ProductSearchBuilder(contextStore.defaultSettings)
+    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
-        .setExplodedVariants(1)
         .setRetailMedia(rm => rm
             .setLocation({
                 key: 'PRODUCT_LISTING_PAGE',
@@ -291,7 +291,7 @@ async function search() {
             else if (filters.value.sort === 'SalesPriceAsc') {
                 s.sortByProductAttribute('SalesPrice', 'Ascending');
             }
-        })
+        }), contextStore.context.value)
         .build();
 
     const query = { ...filters.value };

@@ -1,17 +1,17 @@
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, ContentSearchBuilder } from '@relewise/client';
+import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
 export async function fetchProduct(id: string) {
     try {
-        const request = new ProductSearchBuilder(contextStore.defaultSettings)
+        const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
             .setSelectedVariantProperties({ allData: true, displayName: true })
-            .setExplodedVariants(1)
             .filters(f => {
                 f.addProductIdFilter([id]);
                 contextStore.userClassificationBasedFilters(f);
             })
-            .pagination(p => p.setPageSize(1))
+            .pagination(p => p.setPageSize(1)), contextStore.context.value)
             .build();
 
         const searcher = contextStore.getSearcher();
