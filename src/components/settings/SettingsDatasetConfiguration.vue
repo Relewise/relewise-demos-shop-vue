@@ -135,7 +135,7 @@
 
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <h3 class="mb-4 text-base font-semibold text-slate-900">
-            Variants 2.0
+            Variant Request Settings
           </h3>
 
           <div
