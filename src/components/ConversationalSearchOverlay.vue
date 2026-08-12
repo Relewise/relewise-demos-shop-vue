@@ -70,6 +70,7 @@ function resetConversation() {
 
 async function submit() {
   const text = input.value.trim();
+  let firstAssistantMessageId: number | null = null;
 
   if (!text || loading.value || !canUseConversationalSearch.value) {
     return;
@@ -113,24 +114,30 @@ async function submit() {
     }
 
     if (response.message) {
+      const assistantMessageId = nextMessageId();
+      firstAssistantMessageId = assistantMessageId;
       messages.value.push({
-        id: nextMessageId(),
+        id: assistantMessageId,
         role: 'assistant',
         text: response.message,
       });
     }
 
     if (response.products.length > 0) {
+      const assistantMessageId = nextMessageId();
+      firstAssistantMessageId ??= assistantMessageId;
       messages.value.push({
-        id: nextMessageId(),
+        id: assistantMessageId,
         role: 'assistant',
         text: 'Here are the products I found.',
         products: response.products,
       });
     }
     else if (!response.message) {
+      const assistantMessageId = nextMessageId();
+      firstAssistantMessageId = assistantMessageId;
       messages.value.push({
-        id: nextMessageId(),
+        id: assistantMessageId,
         role: 'assistant',
         text: 'I did not find any products for that request.',
       });
@@ -146,7 +153,9 @@ async function submit() {
   finally {
     if (!abortController.signal.aborted) {
       loading.value = false;
-      await scrollToBottom();
+      if (firstAssistantMessageId !== null) {
+        await scrollToMessage(firstAssistantMessageId);
+      }
       focusInput();
     }
   }
@@ -154,7 +163,14 @@ async function submit() {
 
 async function scrollToBottom() {
   await nextTick();
-  scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight });
+  scrollContainer.value?.scrollTo({ top: scrollContainer.value.scrollHeight, behavior: 'smooth' });
+}
+
+async function scrollToMessage(id: number) {
+  await nextTick();
+  scrollContainer.value
+    ?.querySelector<HTMLElement>(`[data-message-id="${id}"]`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function nextMessageId() {
@@ -260,6 +276,7 @@ onBeforeUnmount(unlockBodyScroll);
             <article
               v-for="message in messages"
               :key="message.id"
+              :data-message-id="message.id"
               class="flex"
               :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
             >
