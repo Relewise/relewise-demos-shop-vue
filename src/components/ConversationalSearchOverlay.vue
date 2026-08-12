@@ -241,7 +241,7 @@ onBeforeUnmount(unlockBodyScroll);
       class="conversational-search-modal"
     >
       <section
-        class="mx-auto flex h-full w-full max-w-7xl flex-col bg-white shadow-2xl xl:my-6 xl:h-[calc(100%-3rem)] xl:rounded-lg"
+        class="container mx-auto flex h-full w-full flex-col bg-white shadow-2xl xl:my-6 xl:h-[calc(100%-3rem)] xl:rounded-lg"
       >
         <header class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div class="min-w-0">
