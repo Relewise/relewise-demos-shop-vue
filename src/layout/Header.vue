@@ -2,6 +2,7 @@
 import { BuildingOffice2Icon, ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { computed, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
+import ConversationalSearchOverlay from '@/components/ConversationalSearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
@@ -60,9 +61,12 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
         <div class="ml-0 flex min-w-0 flex-1 items-center gap-2">
           <div
             v-if="hasActiveDataset"
-            class="min-w-0 flex-1 xl:items-center"
+            class="flex min-w-0 flex-1 items-center gap-1 xl:items-center xl:gap-2"
           >
-            <SearchOverlay />
+            <div class="min-w-0 flex-1">
+              <SearchOverlay />
+            </div>
+            <ConversationalSearchOverlay />
           </div>
           <div
             v-else
