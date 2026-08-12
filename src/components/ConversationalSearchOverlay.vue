@@ -241,7 +241,7 @@ onBeforeUnmount(unlockBodyScroll);
       class="conversational-search-modal"
     >
       <section
-        class="mx-auto flex h-full w-full max-w-5xl flex-col bg-white shadow-2xl xl:my-6 xl:h-[calc(100%-3rem)] xl:rounded-lg"
+        class="mx-auto flex h-full w-full max-w-7xl flex-col bg-white shadow-2xl xl:my-6 xl:h-[calc(100%-3rem)] xl:rounded-lg"
       >
         <header class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div class="min-w-0">
@@ -272,7 +272,7 @@ onBeforeUnmount(unlockBodyScroll);
           ref="scrollContainer"
           class="flex-1 overflow-y-auto bg-slate-50 px-4 py-5"
         >
-          <div class="flex flex-col gap-4">
+          <div class="mx-auto flex w-full max-w-5xl flex-col gap-4">
             <article
               v-for="message in messages"
               :key="message.id"
@@ -322,29 +322,31 @@ onBeforeUnmount(unlockBodyScroll);
           class="border-t border-slate-200 bg-white p-4"
           @submit.prevent="submit"
         >
-          <p
-            v-if="error"
-            class="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-          >
-            {{ error }}
-          </p>
-          <div class="flex items-center gap-2">
-            <input
-              ref="inputElement"
-              v-model="input"
-              type="text"
-              class="!rounded-full !border-slate-200 !bg-white !shadow-none focus:!border-brand-400 focus:!ring-brand-200"
-              placeholder="Ask for products..."
-              :disabled="loading"
+          <div class="mx-auto w-full max-w-5xl">
+            <p
+              v-if="error"
+              class="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
-            <button
-              type="submit"
-              class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:bg-slate-300"
-              :disabled="loading || input.trim().length === 0"
-              title="Send"
-            >
-              <PaperAirplaneIcon class="size-5 min-w-5 stroke-white" />
-            </button>
+              {{ error }}
+            </p>
+            <div class="flex items-center gap-2">
+              <input
+                ref="inputElement"
+                v-model="input"
+                type="text"
+                class="!rounded-full !border-slate-200 !bg-white !shadow-none focus:!border-brand-400 focus:!ring-brand-200"
+                placeholder="Ask for products..."
+                :disabled="loading"
+              >
+              <button
+                type="submit"
+                class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:bg-slate-300"
+                :disabled="loading || input.trim().length === 0"
+                title="Send"
+              >
+                <PaperAirplaneIcon class="size-5 min-w-5 stroke-white" />
+              </button>
+            </div>
           </div>
         </form>
       </section>
