@@ -366,7 +366,7 @@ onBeforeUnmount(unlockBodyScroll);
 
 @media (min-width: 1280px) {
   .conversational-search-modal {
-    top: var(--header-height, 132px);
+    top: 89px;
   }
 }
 </style>
