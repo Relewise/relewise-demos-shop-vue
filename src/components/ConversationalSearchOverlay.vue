@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
-import { PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { InformationCircleIcon, PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import type { ProductResult, SelectedVariantPropertiesSettings } from '@relewise/client';
 import ProductTile from '@/components/ProductTile.vue';
 import { conversationalSearch, emptyConversationState, type ConversationState } from '@/helpers/conversationalSearchApi';
@@ -19,6 +19,8 @@ const messages = ref<ChatMessage[]>([]);
 const conversationState = ref<ConversationState>(emptyConversationState());
 const loading = ref(false);
 const error = ref('');
+const responseContext = ref<Record<string, string>>({});
+const showContext = ref(false);
 const scrollContainer = ref<HTMLElement | null>(null);
 const inputElement = ref<HTMLInputElement | null>(null);
 
@@ -28,6 +30,7 @@ let bodyScrollPosition = 0;
 let bodyScrollLocked = false;
 
 const canUseConversationalSearch = computed(() => contextStore.isConfigured.value);
+const hasResponseContext = computed(() => Object.keys(responseContext.value).length > 0);
 
 function toggle() {
   if (open.value) {
@@ -60,6 +63,8 @@ function resetConversation() {
   error.value = '';
   loading.value = false;
   conversationState.value = emptyConversationState();
+  responseContext.value = {};
+  showContext.value = false;
   messages.value = [{
     id: nextMessageId(),
     role: 'assistant',
@@ -108,6 +113,9 @@ async function submit() {
       } as SelectedVariantPropertiesSettings,
       take: 6,
     }, abortController.signal);
+
+    responseContext.value = response.context ?? {};
+    showContext.value = false;
 
     if (response.conversationState) {
       conversationState.value = response.conversationState;
@@ -182,6 +190,11 @@ function focusInput() {
   nextTick(() => inputElement.value?.focus());
 }
 
+function toggleContext() {
+  showContext.value = !showContext.value;
+  focusInput();
+}
+
 function lockBodyScroll() {
   bodyScrollPosition = window.scrollY;
   bodyScrollLocked = true;
@@ -251,6 +264,16 @@ onBeforeUnmount(unlockBodyScroll);
           </div>
           <div class="flex items-center gap-2">
             <button
+              v-if="hasResponseContext"
+              type="button"
+              class="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:border-brand-400 hover:text-brand-600"
+              title="Show search context"
+              :aria-expanded="showContext"
+              @click="toggleContext"
+            >
+              <InformationCircleIcon class="h-5 w-5" />
+            </button>
+            <button
               type="button"
               class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
               @click="resetConversation"
@@ -267,6 +290,26 @@ onBeforeUnmount(unlockBodyScroll);
             </button>
           </div>
         </header>
+
+        <div
+          v-if="showContext && hasResponseContext"
+          class="border-b border-slate-200 bg-white px-4 py-3"
+        >
+          <dl class="mx-auto grid w-full max-w-5xl gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            <div
+              v-for="(value, key) in responseContext"
+              :key="key"
+              class="min-w-0"
+            >
+              <dt class="font-semibold text-slate-700">
+                {{ key }}
+              </dt>
+              <dd class="break-words text-slate-600">
+                {{ value }}
+              </dd>
+            </div>
+          </dl>
+        </div>
 
         <div
           ref="scrollContainer"
