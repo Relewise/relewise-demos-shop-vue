@@ -36,6 +36,7 @@ export interface ConversationalSearchResponse {
     message: string;
     conversationState: ConversationState | null;
     products: ProductResult[];
+    context: Record<string, string>;
 }
 
 export enum ConversationalSearchResponseKind {
