@@ -290,7 +290,7 @@ onBeforeUnmount(unlockBodyScroll);
               :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
             >
               <div
-                class="rounded-lg text-sm leading-6"
+                class="relative rounded-lg text-sm leading-6"
                 :class="[
                   message.role === 'user'
                     ? 'max-w-[min(34rem,90%)] bg-brand-600 px-4 py-3 text-white'
@@ -299,44 +299,51 @@ onBeforeUnmount(unlockBodyScroll);
                       : 'max-w-[min(34rem,90%)] bg-white px-4 py-3 text-slate-800 shadow-sm',
                 ]"
               >
+                <div
+                  v-if="message.role === 'assistant' && message.context"
+                  class="absolute z-10"
+                  :class="message.products?.length ? 'right-0 top-0' : 'right-2 top-2'"
+                >
+                  <Popover
+                    placement="bottom-end"
+                    :arrow="false"
+                  >
+                    <button
+                      type="button"
+                      class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:border-brand-400 hover:text-brand-600"
+                      title="Show search context"
+                      aria-label="Show search context"
+                      @click="focusInput"
+                    >
+                      <InformationCircleIcon class="h-4 w-4" />
+                    </button>
+                    <template #content>
+                      <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
+                        <div
+                          v-for="(value, key) in message.context"
+                          :key="key"
+                          class="min-w-0"
+                        >
+                          <dt class="font-semibold text-slate-700">
+                            {{ key }}
+                          </dt>
+                          <dd class="break-words text-slate-600">
+                            {{ value }}
+                          </dd>
+                        </div>
+                      </dl>
+                    </template>
+                  </Popover>
+                </div>
                 <p
                   v-if="message.text"
-                  :class="message.products?.length ? 'mb-3 w-fit rounded-lg bg-white px-4 py-3 shadow-sm' : ''"
+                  :class="[
+                    message.products?.length ? 'mb-3 w-fit rounded-lg bg-white px-4 py-3 shadow-sm' : '',
+                    message.context && !message.products?.length ? 'pr-7' : '',
+                  ]"
                 >
                   {{ message.text }}
                 </p>
-                <Popover
-                  v-if="message.role === 'assistant' && message.context"
-                  placement="bottom-start"
-                  :arrow="false"
-                >
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
-                    :class="message.products?.length ? 'mb-3' : 'mt-2'"
-                    title="Show search context"
-                    @click="focusInput"
-                  >
-                    <InformationCircleIcon class="h-4 w-4" />
-                    <span>Context</span>
-                  </button>
-                  <template #content>
-                    <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
-                      <div
-                        v-for="(value, key) in message.context"
-                        :key="key"
-                        class="min-w-0"
-                      >
-                        <dt class="font-semibold text-slate-700">
-                          {{ key }}
-                        </dt>
-                        <dd class="break-words text-slate-600">
-                          {{ value }}
-                        </dd>
-                      </div>
-                    </dl>
-                  </template>
-                </Popover>
                 <div
                   v-if="message.products?.length"
                   class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
