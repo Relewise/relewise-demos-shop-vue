@@ -45,7 +45,7 @@ export enum ConversationalSearchResponseKind {
     Error,
 }
 
-const conversationalSearchApiBaseUrl = 'http://localhost:30045';  // 'https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production';
+const conversationalSearchApiBaseUrl = 'https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production';
 
 export async function conversationalSearch(
     datasetId: string,
