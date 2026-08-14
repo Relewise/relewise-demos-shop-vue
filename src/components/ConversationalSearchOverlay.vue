@@ -290,7 +290,7 @@ onBeforeUnmount(unlockBodyScroll);
               :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
             >
               <div
-                class="relative rounded-lg text-sm leading-6"
+                class="rounded-lg text-sm leading-6"
                 :class="[
                   message.role === 'user'
                     ? 'max-w-[min(34rem,90%)] bg-brand-600 px-4 py-3 text-white'
@@ -300,22 +300,31 @@ onBeforeUnmount(unlockBodyScroll);
                 ]"
               >
                 <div
-                  v-if="message.role === 'assistant' && message.context"
-                  class="absolute z-10"
-                  :class="message.products?.length ? 'right-0 top-0' : 'right-2 top-2'"
+                  v-if="message.text || message.context"
+                  class="flex items-start justify-between gap-2"
+                  :class="message.products?.length ? 'mb-3' : ''"
                 >
+                  <p
+                    v-if="message.text"
+                    :class="message.products?.length
+                      ? 'w-fit rounded-lg bg-white px-4 py-3 shadow-sm'
+                      : 'min-w-0 flex-1'"
+                  >
+                    {{ message.text }}
+                  </p>
                   <Popover
+                    v-if="message.role === 'assistant' && message.context"
                     placement="bottom-end"
                     :arrow="false"
                   >
                     <button
                       type="button"
-                      class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:border-brand-400 hover:text-brand-600"
+                      class="!m-0 !inline-flex !h-5 !w-5 !min-w-5 shrink-0 !items-center !justify-center !rounded-none !border-0 !bg-transparent !p-0 !text-slate-400 !shadow-none hover:!text-brand-600"
                       title="Show search context"
                       aria-label="Show search context"
                       @click="focusInput"
                     >
-                      <InformationCircleIcon class="h-4 w-4" />
+                      <InformationCircleIcon class="h-5 w-5 shrink-0 stroke-current" />
                     </button>
                     <template #content>
                       <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
@@ -335,15 +344,6 @@ onBeforeUnmount(unlockBodyScroll);
                     </template>
                   </Popover>
                 </div>
-                <p
-                  v-if="message.text"
-                  :class="[
-                    message.products?.length ? 'mb-3 w-fit rounded-lg bg-white px-4 py-3 shadow-sm' : '',
-                    message.context && !message.products?.length ? 'pr-7' : '',
-                  ]"
-                >
-                  {{ message.text }}
-                </p>
                 <div
                   v-if="message.products?.length"
                   class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
