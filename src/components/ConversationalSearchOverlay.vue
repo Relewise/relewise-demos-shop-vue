@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { InformationCircleIcon, PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import type { ProductResult, SelectedVariantPropertiesSettings } from '@relewise/client';
+import Popover from '@/components/Popover.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import { conversationalSearch, emptyConversationState, type ConversationState } from '@/helpers/conversationalSearchApi';
 import contextStore from '@/stores/context.store';
@@ -20,7 +21,6 @@ const conversationState = ref<ConversationState>(emptyConversationState());
 const loading = ref(false);
 const error = ref('');
 const responseContext = ref<Record<string, string>>({});
-const showContext = ref(false);
 const scrollContainer = ref<HTMLElement | null>(null);
 const inputElement = ref<HTMLInputElement | null>(null);
 
@@ -64,7 +64,6 @@ function resetConversation() {
   loading.value = false;
   conversationState.value = emptyConversationState();
   responseContext.value = {};
-  showContext.value = false;
   messages.value = [{
     id: nextMessageId(),
     role: 'assistant',
@@ -115,7 +114,6 @@ async function submit() {
     }, abortController.signal);
 
     responseContext.value = response.context ?? {};
-    showContext.value = false;
 
     if (response.conversationState) {
       conversationState.value = response.conversationState;
@@ -190,11 +188,6 @@ function focusInput() {
   nextTick(() => inputElement.value?.focus());
 }
 
-function toggleContext() {
-  showContext.value = !showContext.value;
-  focusInput();
-}
-
 function lockBodyScroll() {
   bodyScrollPosition = window.scrollY;
   bodyScrollLocked = true;
@@ -263,17 +256,37 @@ onBeforeUnmount(unlockBodyScroll);
             </h2>
           </div>
           <div class="flex items-center gap-2">
-            <button
+            <Popover
               v-if="hasResponseContext"
-              type="button"
-              class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
-              title="Show search context"
-              :aria-expanded="showContext"
-              @click="toggleContext"
+              placement="bottom-end"
+              :arrow="false"
             >
-              <InformationCircleIcon class="h-4 w-4" />
-              <span>Context</span>
-            </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
+                title="Show search context"
+                @click="focusInput"
+              >
+                <InformationCircleIcon class="h-4 w-4" />
+                <span>Context</span>
+              </button>
+              <template #content>
+                <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
+                  <div
+                    v-for="(value, key) in responseContext"
+                    :key="key"
+                    class="min-w-0"
+                  >
+                    <dt class="font-semibold text-slate-700">
+                      {{ key }}
+                    </dt>
+                    <dd class="break-words text-slate-600">
+                      {{ value }}
+                    </dd>
+                  </div>
+                </dl>
+              </template>
+            </Popover>
             <button
               type="button"
               class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
@@ -291,26 +304,6 @@ onBeforeUnmount(unlockBodyScroll);
             </button>
           </div>
         </header>
-
-        <div
-          v-if="showContext && hasResponseContext"
-          class="border-b border-slate-200 bg-white px-4 py-3"
-        >
-          <dl class="mx-auto grid w-full max-w-5xl gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-            <div
-              v-for="(value, key) in responseContext"
-              :key="key"
-              class="min-w-0"
-            >
-              <dt class="font-semibold text-slate-700">
-                {{ key }}
-              </dt>
-              <dd class="break-words text-slate-600">
-                {{ value }}
-              </dd>
-            </div>
-          </dl>
-        </div>
 
         <div
           ref="scrollContainer"
