@@ -12,6 +12,7 @@ type ChatMessage = {
   role: 'assistant' | 'user';
   text: string;
   products?: ProductResult[];
+  context?: Record<string, string>;
 }
 
 const open = ref(false);
@@ -20,7 +21,6 @@ const messages = ref<ChatMessage[]>([]);
 const conversationState = ref<ConversationState>(emptyConversationState());
 const loading = ref(false);
 const error = ref('');
-const responseContext = ref<Record<string, string>>({});
 const scrollContainer = ref<HTMLElement | null>(null);
 const inputElement = ref<HTMLInputElement | null>(null);
 
@@ -30,7 +30,6 @@ let bodyScrollPosition = 0;
 let bodyScrollLocked = false;
 
 const canUseConversationalSearch = computed(() => contextStore.isConfigured.value);
-const hasResponseContext = computed(() => Object.keys(responseContext.value).length > 0);
 
 function toggle() {
   if (open.value) {
@@ -63,7 +62,6 @@ function resetConversation() {
   error.value = '';
   loading.value = false;
   conversationState.value = emptyConversationState();
-  responseContext.value = {};
   messages.value = [{
     id: nextMessageId(),
     role: 'assistant',
@@ -113,7 +111,9 @@ async function submit() {
       take: 6,
     }, abortController.signal);
 
-    responseContext.value = response.context ?? {};
+    const responseContext = Object.keys(response.context ?? {}).length > 0
+      ? response.context
+      : undefined;
 
     if (response.conversationState) {
       conversationState.value = response.conversationState;
@@ -126,6 +126,7 @@ async function submit() {
         id: assistantMessageId,
         role: 'assistant',
         text: response.message,
+        context: responseContext,
       });
     }
 
@@ -137,6 +138,7 @@ async function submit() {
         role: 'assistant',
         text: 'Here are the products I found.',
         products: response.products,
+        context: response.message ? undefined : responseContext,
       });
     }
     else if (!response.message) {
@@ -146,6 +148,7 @@ async function submit() {
         id: assistantMessageId,
         role: 'assistant',
         text: 'I did not find any products for that request.',
+        context: responseContext,
       });
     }
   }
@@ -256,37 +259,6 @@ onBeforeUnmount(unlockBodyScroll);
             </h2>
           </div>
           <div class="flex items-center gap-2">
-            <Popover
-              v-if="hasResponseContext"
-              placement="bottom-end"
-              :arrow="false"
-            >
-              <button
-                type="button"
-                class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
-                title="Show search context"
-                @click="focusInput"
-              >
-                <InformationCircleIcon class="h-4 w-4" />
-                <span>Context</span>
-              </button>
-              <template #content>
-                <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
-                  <div
-                    v-for="(value, key) in responseContext"
-                    :key="key"
-                    class="min-w-0"
-                  >
-                    <dt class="font-semibold text-slate-700">
-                      {{ key }}
-                    </dt>
-                    <dd class="break-words text-slate-600">
-                      {{ value }}
-                    </dd>
-                  </div>
-                </dl>
-              </template>
-            </Popover>
             <button
               type="button"
               class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
@@ -333,6 +305,38 @@ onBeforeUnmount(unlockBodyScroll);
                 >
                   {{ message.text }}
                 </p>
+                <Popover
+                  v-if="message.role === 'assistant' && message.context"
+                  placement="bottom-start"
+                  :arrow="false"
+                >
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
+                    :class="message.products?.length ? 'mb-3' : 'mt-2'"
+                    title="Show search context"
+                    @click="focusInput"
+                  >
+                    <InformationCircleIcon class="h-4 w-4" />
+                    <span>Context</span>
+                  </button>
+                  <template #content>
+                    <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
+                      <div
+                        v-for="(value, key) in message.context"
+                        :key="key"
+                        class="min-w-0"
+                      >
+                        <dt class="font-semibold text-slate-700">
+                          {{ key }}
+                        </dt>
+                        <dd class="break-words text-slate-600">
+                          {{ value }}
+                        </dd>
+                      </div>
+                    </dl>
+                  </template>
+                </Popover>
                 <div
                   v-if="message.products?.length"
                   class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
