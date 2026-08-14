@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
-import { PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { InformationCircleIcon, PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import type { ProductResult, SelectedVariantPropertiesSettings } from '@relewise/client';
+import Popover from '@/components/Popover.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import { conversationalSearch, emptyConversationState, type ConversationState } from '@/helpers/conversationalSearchApi';
 import contextStore from '@/stores/context.store';
@@ -11,6 +12,7 @@ type ChatMessage = {
   role: 'assistant' | 'user';
   text: string;
   products?: ProductResult[];
+  context?: Record<string, string>;
 }
 
 const open = ref(false);
@@ -109,6 +111,10 @@ async function submit() {
       take: 6,
     }, abortController.signal);
 
+    const responseContext = Object.keys(response.context ?? {}).length > 0
+      ? response.context
+      : undefined;
+
     if (response.conversationState) {
       conversationState.value = response.conversationState;
     }
@@ -120,6 +126,7 @@ async function submit() {
         id: assistantMessageId,
         role: 'assistant',
         text: response.message,
+        context: responseContext,
       });
     }
 
@@ -131,6 +138,7 @@ async function submit() {
         role: 'assistant',
         text: 'Here are the products I found.',
         products: response.products,
+        context: response.message ? undefined : responseContext,
       });
     }
     else if (!response.message) {
@@ -140,6 +148,7 @@ async function submit() {
         id: assistantMessageId,
         role: 'assistant',
         text: 'I did not find any products for that request.',
+        context: responseContext,
       });
     }
   }
@@ -290,12 +299,51 @@ onBeforeUnmount(unlockBodyScroll);
                       : 'max-w-[min(34rem,90%)] bg-white px-4 py-3 text-slate-800 shadow-sm',
                 ]"
               >
-                <p
-                  v-if="message.text"
-                  :class="message.products?.length ? 'mb-3 w-fit rounded-lg bg-white px-4 py-3 shadow-sm' : ''"
+                <div
+                  v-if="message.text || message.context"
+                  class="flex items-start justify-between gap-2"
+                  :class="message.products?.length ? 'mb-3' : ''"
                 >
-                  {{ message.text }}
-                </p>
+                  <p
+                    v-if="message.text"
+                    :class="message.products?.length
+                      ? 'w-fit rounded-lg bg-white px-4 py-3 shadow-sm'
+                      : 'min-w-0 flex-1'"
+                  >
+                    {{ message.text }}
+                  </p>
+                  <Popover
+                    v-if="message.role === 'assistant' && message.context"
+                    placement="bottom-end"
+                    :arrow="false"
+                  >
+                    <button
+                      type="button"
+                      class="!m-0 !inline-flex !h-5 !w-5 !min-w-5 shrink-0 !items-center !justify-center !rounded-none !border-0 !bg-transparent !p-0 !text-slate-400 !shadow-none hover:!text-brand-600"
+                      title="Show search context"
+                      aria-label="Show search context"
+                      @click="focusInput"
+                    >
+                      <InformationCircleIcon class="h-5 w-5 shrink-0 stroke-current" />
+                    </button>
+                    <template #content>
+                      <dl class="grid max-h-96 w-96 max-w-[calc(100vw-2rem)] gap-3 overflow-y-auto bg-white p-4 text-sm sm:grid-cols-2">
+                        <div
+                          v-for="(value, key) in message.context"
+                          :key="key"
+                          class="min-w-0"
+                        >
+                          <dt class="font-semibold text-slate-700">
+                            {{ key }}
+                          </dt>
+                          <dd class="break-words text-slate-600">
+                            {{ value }}
+                          </dd>
+                        </div>
+                      </dl>
+                    </template>
+                  </Popover>
+                </div>
                 <div
                   v-if="message.products?.length"
                   class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
