@@ -266,12 +266,13 @@ onBeforeUnmount(unlockBodyScroll);
             <button
               v-if="hasResponseContext"
               type="button"
-              class="rounded-full border border-slate-200 bg-white p-2 text-slate-500 hover:border-brand-400 hover:text-brand-600"
+              class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
               title="Show search context"
               :aria-expanded="showContext"
               @click="toggleContext"
             >
-              <InformationCircleIcon class="h-5 w-5" />
+              <InformationCircleIcon class="h-4 w-4" />
+              <span>Context</span>
             </button>
             <button
               type="button"
