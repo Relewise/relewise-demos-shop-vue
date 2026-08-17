@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
-import { InformationCircleIcon, PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { BookOpenIcon, InformationCircleIcon, PaperAirplaneIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import type { ProductResult, SelectedVariantPropertiesSettings } from '@relewise/client';
 import Popover from '@/components/Popover.vue';
 import ProductTile from '@/components/ProductTile.vue';
@@ -259,6 +259,16 @@ onBeforeUnmount(unlockBodyScroll);
             </h2>
           </div>
           <div class="flex items-center gap-2">
+            <a
+              href="https://docs.relewise.com/docs/howto/conversational-search.html"
+              target="_blank"
+              rel="noreferrer noopener"
+              class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600 sm:px-3"
+              title="Read the Conversational Search implementation guide"
+            >
+              <BookOpenIcon class="h-4 w-4" />
+              <span class="hidden sm:inline">Guide</span>
+            </a>
             <button
               type="button"
               class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-400 hover:text-brand-600"
