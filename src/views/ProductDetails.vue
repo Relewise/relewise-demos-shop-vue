@@ -96,40 +96,22 @@
           </div>
 
           <div class="mt-5">
-            <h3 class="text-2xl inline-block">
-              Details
+            <h3 class="text-xl inline-block">
+              Highlighed details
             </h3>
-            <dl class="mt-2 border border-solid border-slate-100 border-b-0">
-              <dt>Product Id</dt>
-              <dd>{{ product.productId }}</dd>
-              <template v-if="product.brand">
-                <dt>Brand</dt>
-                <dd>
-                  <RouterLink
-                    :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-                    class="text-black hover:underline"
-                  >
-                    {{ product.brand.displayName }}
-                  </RouterLink>
-                </dd>
-              </template>
+            <DataValueList :entries="highlightedDetails">
               <template
-                v-for="[key, value] in details"
-                :key="key"
+                v-if="product.brand"
+                #Brand
               >
-                <dt>
-                  {{ key }}
-                </dt>
-                <dd class="break-all">
-                  <template v-if="value && value.value.$values">
-                    {{ value.value.$values.join(', ') }}
-                  </template>
-                  <template v-else>
-                    {{ value.value }}
-                  </template>
-                </dd>
+                <RouterLink
+                  :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
+                  class="text-brand-500 hover:underline"
+                >
+                  {{ product.brand.displayName }}
+                </RouterLink>
               </template>
-            </dl>
+            </DataValueList>
           </div>
         </div>
       </div>
@@ -174,6 +156,39 @@
         </div>
       </div>
     </relewise-product-recommendation-batcher>
+
+
+    <div
+      v-if="product?.variant && variantId"
+      class="mt-10"
+    >
+      <h3 class="text-xl inline-block">
+        Variant Data
+      </h3>
+      <DataValueList :entries="variantData" />
+    </div>
+
+    <div
+      v-if="product"
+      class="mt-10"
+    >
+      <h3 class="text-xl inline-block">
+        Product Data
+      </h3>
+      <DataValueList :entries="productData">
+        <template
+          v-if="product.brand"
+          #Brand
+        >
+          <RouterLink
+            :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
+            class="text-brand-500 hover:underline"
+          >
+            {{ product.brand.displayName }}
+          </RouterLink>
+        </template>
+      </DataValueList>
+    </div>
   </div>
 </template>
 
@@ -188,6 +203,7 @@ import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import ProductVariants from '../components/ProductVariants.vue';
 import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
+import DataValueList, { type DataValueEntry } from '../components/DataValueList.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
 const productId = ref<string>('');
@@ -199,104 +215,112 @@ const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
 const details = computed(() => {
-    if (!product.value) return [];
+  if (!product.value) return [];
 
-    const productDetails = Object.entries(product.value.data ?? {})
-        .filter((x) =>
-            x[1].type.indexOf('Object') === -1 &&
-            ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.language.value}_StockLevel`].includes(x[0]));
+  const productDetails = Object.entries(product.value.data ?? {})
+    .filter((x) =>
+      x[1].type.indexOf('Object') === -1 &&
+      ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.language.value}_StockLevel`].includes(x[0]));
 
-    const variantColor = product.value.variant?.data?.Color;
-    if (variantColor) {
-        productDetails.push(['Color', variantColor]);
-    }
+  const variantColor = product.value.variant?.data?.Color;
+  if (variantColor) {
+    productDetails.push(['Color', variantColor]);
+  }
 
-    const variantMaterial = product.value.variant?.data?.Material;
-    if (variantMaterial) {
-        productDetails.push(['Material', variantMaterial]);
-    }
+  const variantMaterial = product.value.variant?.data?.Material;
+  if (variantMaterial) {
+    productDetails.push(['Material', variantMaterial]);
+  }
 
-    return productDetails;
+  return productDetails;
+});
+
+const highlightedDetails = computed<DataValueEntry[]>(() => {
+  if (!product.value) return [];
+
+  return [
+    ['Product Id', DataValueFactory.string(product.value.productId ?? '')],
+    ...(product.value.brand ? [['Brand', DataValueFactory.string(product.value.brand.displayName ?? '')] as DataValueEntry] : []),
+    ...details.value,
+  ];
+});
+
+const variantData = computed<DataValueEntry[]>(() => {
+  if (!product.value?.variant) return [];
+
+  return [
+    ['Variant Id', DataValueFactory.string(product.value.variant.variantId ?? '')],
+    ...Object.entries(product.value.variant.data ?? {}),
+  ];
+});
+
+const productData = computed<DataValueEntry[]>(() => {
+  if (!product.value) return [];
+
+  return [
+    ['Product Id', DataValueFactory.string(product.value.productId ?? '')],
+    ...(product.value.brand ? [['Brand', DataValueFactory.string(product.value.brand.displayName ?? '')] as DataValueEntry] : []),
+    ...Object.entries(product.value.data ?? {}),
+  ];
 });
 
 async function init() {
-    const id = route.params.id;
-    const variantIdFromRoute = route.params.variant;
+  const id = route.params.id;
+  const variantIdFromRoute = route.params.variant;
 
-    if (id && !Array.isArray(id)) {
-        productId.value = id;
+  if (id && !Array.isArray(id)) {
+    productId.value = id;
 
-        if (variantIdFromRoute && !Array.isArray(variantIdFromRoute)) {
-            variantId.value = variantIdFromRoute;
-        }
-
-        trackingService.trackProductView(id, variantId.value ?? undefined);
-
-        const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
-            .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({ allData: true, displayName: true })
-            .filters(f => {
-                f.addProductIdFilter([id]);
-
-                if (variantId.value) {
-                    f.addVariantIdFilter(variantId.value);
-                }
-
-                contextStore.userClassificationBasedFilters(f);
-            })
-            .pagination(p => p.setPageSize(1)), contextStore.context.value)
-            .build();
-
-        const searcher = contextStore.getSearcher();
-        product.value = (await searcher.searchProducts(request))?.results![0];
-        if (product.value?.categoryPaths) {
-            // Taking the first path on the product to render the breadcrumb
-            breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
-        }
+    if (variantIdFromRoute && !Array.isArray(variantIdFromRoute)) {
+      variantId.value = variantIdFromRoute;
     }
+
+    trackingService.trackProductView(id, variantId.value ?? undefined);
+
+    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+      .setSelectedProductProperties(contextStore.selectedProductProperties)
+      .setSelectedVariantProperties({ allData: true, displayName: true })
+      .filters(f => {
+        f.addProductIdFilter([id]);
+
+        if (variantId.value) {
+          f.addVariantIdFilter(variantId.value);
+        }
+
+        contextStore.userClassificationBasedFilters(f);
+      })
+      .pagination(p => p.setPageSize(1)), contextStore.context.value)
+      .build();
+
+    const searcher = contextStore.getSearcher();
+    product.value = (await searcher.searchProducts(request))?.results![0];
+    if (product.value?.categoryPaths) {
+      // Taking the first path on the product to render the breadcrumb
+      breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
+    }
+  }
 }
 
 init();
 
 watch(route, () => {
-    init();
+  init();
 });
 
 function addToBasket() {
-    if (!product.value) return;
+  if (!product.value) return;
 
-    basketService.addProduct({
-        product: product.value,
-        quantityDelta: 1,
-    });
+  basketService.addProduct({
+    product: product.value,
+    quantityDelta: 1,
+  });
 
-    trackingService.trackCart(basketService.model.value.lineItems);
+  trackingService.trackCart(basketService.model.value.lineItems);
 
-    buttonClass.value = 'animate-bounce'; // Add Tailwind's bounce class
-    setTimeout(() => {
-        buttonClass.value = ''; // Remove the animation class
-    }, 2000); // Match the animation duration (500ms for `animate-bounce`)
+  buttonClass.value = 'animate-bounce'; // Add Tailwind's bounce class
+  setTimeout(() => {
+    buttonClass.value = ''; // Remove the animation class
+  }, 2000); // Match the animation duration (500ms for `animate-bounce`)
 }
+
 </script>
-
-<style lang="scss" scoped>
-dl {
-    display: grid;
-    grid-template-columns: max-content auto;
-}
-
-dt {
-    background-color: #f3f4f6;
-    border-bottom: 1px solid #f3f4f6;
-    font-weight: 500;
-    grid-column-start: 1;
-    padding: 0.5rem 1rem;
-    text-transform: capitalize;
-}
-
-dd {
-    border-bottom: 1px solid #f3f4f6;
-    grid-column-start: 2;
-    padding: 0.5rem;
-}
-</style>
