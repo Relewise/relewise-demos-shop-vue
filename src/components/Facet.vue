@@ -28,18 +28,19 @@
     />
         
     <RangeFacet
-      v-else-if="config?.renderType === 'Range'"
-      :facet="(facet as PriceRangeFacetResult | ProductDataDoubleRangeFacetResult)"
+      v-else-if="config?.renderType === 'Range' && rangeFacet && rangeFilterKey"
+      :facet="rangeFacet"
       :filters="filters"
+      :filter-key="rangeFilterKey"
       @search="$emit('search', $event)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult, FacetResult } from '@relewise/client';
+import type { FacetResult } from '@relewise/client';
 import { computed, type PropType } from 'vue';
-import { getFacetSettings } from '@/helpers/facetHelper';
+import { getFacetSettings, getRangeFacetResult } from '@/helpers/facetHelper';
 import type { FacetContext } from '@/facetConfig';
 import CategoryFacet from './CategoryFacet.vue';
 import CheckListFacet from './ChecklistFacet.vue';
@@ -56,4 +57,12 @@ defineEmits<{
 }>();
 
 const config = computed(() => getFacetSettings(props.facet, props.context));
+const rangeFacet = computed(() => getRangeFacetResult(props.facet));
+const rangeFilterKey = computed(() => {
+    if (config.value?.type === 'SalesPrice') {
+        return 'price';
+    }
+
+    return config.value?.dataKey;
+});
 </script>

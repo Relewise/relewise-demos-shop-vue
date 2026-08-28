@@ -14,6 +14,7 @@ import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 import { applyVariantRequestSettings, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
+import { removeEmptyBestPriceFacetSelection, sortByBestPrice } from '@/helpers/bestPriceSearch';
 
 enum Tabs {
     Products,
@@ -167,9 +168,10 @@ async function search() {
         : (typeof brandName === 'string' ? brandName : null);
     const productTerm = filters.value.term.length > 0 ? filters.value.term : null;
     const useVariantResolutionImages = !!productTerm && (contextStore.context.value.variantResolutionImages ?? false);
+    const pricingContext = contextStore.createSearchPricingContext();
 
-    const request = new SearchCollectionBuilder()
-        .addRequest(applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+    const productSearchRequest = removeEmptyBestPriceFacetSelection(
+        applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(selectedProductPropertiesForTermSearch(contextStore.selectedProductProperties, useVariantResolutionImages))
             .setSelectedVariantProperties({
                 displayName: true,
@@ -190,17 +192,17 @@ async function search() {
 
                 contextStore.userClassificationBasedFilters(f);
             })
-            .facets(f => getFacets(brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
+            .facets(f => getFacets(brandName ? 'Brand' : 'SearchOverlay', f, filters.value, pricingContext))
             .relevanceModifiers(r => addRelevanceModifiers(r))
             .sorting(s => {
                 if (filters.value.sort === 'Popular') {
                     s.sortByProductPopularity();
                 }
                 else if (filters.value.sort === 'SalesPriceDesc') {
-                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                    sortByBestPrice(s, 'Descending', pricingContext);
                 }
                 else if (filters.value.sort === 'SalesPriceAsc') {
-                    s.sortByProductAttribute('SalesPrice', 'Ascending');
+                    sortByBestPrice(s, 'Ascending', pricingContext);
                 }
             })
             .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
@@ -228,8 +230,11 @@ async function search() {
                             include: true,
                         },
                     }),
-            )
-            , contextStore.context.value).build())
+            ), contextStore.context.value).build(),
+    );
+
+    const request = new SearchCollectionBuilder()
+        .addRequest(productSearchRequest)
         .addRequest(new SearchTermPredictionBuilder(contextStore.defaultSettings)
             .addEntityType('Product', 'Content')
             .setTerm(searchTerm.value)

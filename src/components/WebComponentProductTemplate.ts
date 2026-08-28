@@ -1,9 +1,11 @@
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { ProductTemplateExtensions } from '@relewise/web-components';
+import type { DisplayPrice } from '@/services/price.service';
 
-export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
+export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions, displayPrice: DisplayPrice) => {
     let path = `/product/${product.productId}`;
+    const hasListPrice = displayPrice.listPrice !== null && displayPrice.salesPrice !== displayPrice.listPrice;
 
     if (product.variant?.variantId) {
         path += `/variant/${product.variant.variantId}`;
@@ -141,7 +143,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             <app-product-favorite-button floating .product=${product}></app-product-favorite-button>
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
-                ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
+                ${hasListPrice ? html`<span class="on-sale">ON SALE</span>` : html``}
                 ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
             </div>
             <div class="padding">
@@ -153,8 +155,8 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 </div>
                 <div class="price-container">
                     <p>
-                        <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
-                        ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
+                        <span class="sales-price">${helpers.formatPrice(displayPrice.salesPrice)}</span>
+                        ${hasListPrice ? html`<span class="list-price">${helpers.formatPrice(displayPrice.listPrice)}</span>` : ''}
                     </p>
                 </div>
             </div>

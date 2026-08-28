@@ -146,6 +146,7 @@ import DisplayAdHeroBanner from '@/components/DisplayAds/DisplayAd-HeroBanner.vu
 import DisplayAdTile from '@/components/DisplayAds/DisplayAd-Tile.vue';
 import { sortCategories } from '@/helpers/sortCategories';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { removeEmptyBestPriceFacetSelection, sortByBestPrice } from '@/helpers/bestPriceSearch';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
@@ -253,9 +254,10 @@ watch(breakpointService.active, () => {
 
 async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
+    const pricingContext = contextStore.createSearchPricingContext();
     scrollTo({ top: 0 });
 
-    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+    const request = removeEmptyBestPriceFacetSelection(applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .setRetailMedia(rm => rm
@@ -277,7 +279,7 @@ async function search() {
             } else {
                 f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
             }
-            getFacets('Category', f, filters.value);
+            getFacets('Category', f, filters.value, pricingContext);
         })
         .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))
@@ -286,13 +288,13 @@ async function search() {
                 s.sortByProductPopularity();
             }
             else if (filters.value.sort === 'SalesPriceDesc') {
-                s.sortByProductAttribute('SalesPrice', 'Descending');
+                sortByBestPrice(s, 'Descending', pricingContext);
             }
             else if (filters.value.sort === 'SalesPriceAsc') {
-                s.sortByProductAttribute('SalesPrice', 'Ascending');
+                sortByBestPrice(s, 'Ascending', pricingContext);
             }
         }), contextStore.context.value)
-        .build();
+        .build());
 
     const query = { ...filters.value };
     await router.push({ path: route.path, query: query, replace: true });

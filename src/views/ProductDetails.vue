@@ -59,7 +59,7 @@
           <div class="mt-6">
             <div class="mb-2 flex gap-2">
               <span
-                v-if="product.salesPrice !== product.listPrice"
+                v-if="hasListPrice"
                 class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900"
               >ON
                 SALE</span>
@@ -74,13 +74,13 @@
 
             <div>
               <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
-                {{ $format(product.salesPrice) }}
+                {{ $format(displayPrice?.salesPrice) }}
               </h3>
               <span
-                v-if="product.salesPrice !== product.listPrice"
+                v-if="hasListPrice"
                 class="text-slate-900 line-through ml-4"
               >
-                {{ $format(product.listPrice) }}
+                {{ $format(displayPrice?.listPrice) }}
               </span>
             </div>
           </div>
@@ -213,6 +213,10 @@ const route = useRoute();
 const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const displayPrice = computed(() => product.value ? contextStore.resolveProductPrice(product.value) : undefined);
+const hasListPrice = computed(() => displayPrice.value?.listPrice !== null
+  && displayPrice.value?.listPrice !== undefined
+  && displayPrice.value.salesPrice !== displayPrice.value.listPrice);
 
 const details = computed(() => {
   if (!product.value) return [];
