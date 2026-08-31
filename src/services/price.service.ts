@@ -39,9 +39,9 @@ export interface DisplayPrice {
 }
 
 interface ScopeAccess {
-    scopeIds: Set<string>;
-    agreedOrderScopeIds: Set<string>;
-    companyIds: Set<string>;
+    scopeIds: Map<string, string>;
+    agreedOrderScopeIds: Map<string, string>;
+    companyIds: Map<string, string>;
     userPriceListIds: string[];
     linkedCompanyIds: string[];
     companyLookups: Array<{
@@ -78,9 +78,9 @@ export class PriceService {
         }
 
         return {
-            accessibleScopeIds: [...access.scopeIds],
-            accessibleAgreedOrderScopeIds: [...access.agreedOrderScopeIds],
-            accessibleCompanyIds: [...access.companyIds],
+            accessibleScopeIds: [...access.scopeIds.values()],
+            accessibleAgreedOrderScopeIds: [...access.agreedOrderScopeIds.values()],
+            accessibleCompanyIds: [...access.companyIds.values()],
             currency,
             nowUnixMs,
         };
@@ -100,9 +100,9 @@ export class PriceService {
             linkedCompanyIds: access.linkedCompanyIds,
             userPriceListIds: access.userPriceListIds,
             companyLookups: access.companyLookups,
-            accessibleScopeIds: [...access.scopeIds],
-            accessibleAgreedOrderScopeIds: [...access.agreedOrderScopeIds],
-            accessibleCompanyIds: [...access.companyIds],
+            accessibleScopeIds: [...access.scopeIds.values()],
+            accessibleAgreedOrderScopeIds: [...access.agreedOrderScopeIds.values()],
+            accessibleCompanyIds: [...access.companyIds.values()],
         });
         logDiagnostics(product, 'Raw Prices data value', product.data?.[PRICES_KEY]);
         logDiagnostics(product, 'Raw Prices entries', rawPrices);
@@ -172,9 +172,9 @@ export class PriceService {
 
         const userPriceListIds = readStringList(user?.data?.[PRICE_LIST_IDS_KEY]);
         const linkedCompanyIds = getUserCompanyIds(user);
-        const scopeIds = new Set(userPriceListIds.map(normalizeId));
-        const agreedOrderScopeIds = new Set<string>();
-        const companyIds = new Set<string>();
+        const scopeIds = createCaseInsensitiveIdMap(userPriceListIds);
+        const agreedOrderScopeIds = new Map<string, string>();
+        const companyIds = new Map<string, string>();
         const companiesById = new Map(companies.map((company) => [normalizeId(company.id), company]));
         const visitedCompanyIds = new Set<string>();
         const companyLookups: ScopeAccess['companyLookups'] = [];
@@ -192,7 +192,7 @@ export class PriceService {
                 return;
             }
 
-            companyIds.add(normalizedCompanyId);
+            addCaseInsensitiveId(companyIds, company.id);
             const companyPriceListIds = readStringList(company.data?.[PRICE_LIST_IDS_KEY]);
             const companyAgreedOrderScopeIds = readStringList(company.data?.[AGREED_ORDER_SCOPE_IDS_KEY]);
             companyLookups.push({
@@ -203,11 +203,10 @@ export class PriceService {
                 agreedOrderScopeIds: companyAgreedOrderScopeIds,
                 parentCompanyId: company.parent?.id ?? undefined,
             });
-            companyPriceListIds.forEach((scopeId) => scopeIds.add(normalizeId(scopeId)));
+            companyPriceListIds.forEach((scopeId) => addCaseInsensitiveId(scopeIds, scopeId));
             companyAgreedOrderScopeIds.forEach((scopeId) => {
-                const normalizedScopeId = normalizeId(scopeId);
-                scopeIds.add(normalizedScopeId);
-                agreedOrderScopeIds.add(normalizedScopeId);
+                addCaseInsensitiveId(scopeIds, scopeId);
+                addCaseInsensitiveId(agreedOrderScopeIds, scopeId);
             });
             if (company.parent?.id) {
                 addCompanyScopes(company.parent.id);
@@ -215,9 +214,6 @@ export class PriceService {
         };
 
         linkedCompanyIds.forEach(addCompanyScopes);
-        scopeIds.delete('');
-        agreedOrderScopeIds.delete('');
-        companyIds.delete('');
         const access = {
             scopeIds,
             agreedOrderScopeIds,
@@ -326,6 +322,20 @@ function getWrappedCollection(value: unknown): unknown[] | null {
 
 function normalizeId(value: string) {
     return value.trim().toLowerCase();
+}
+
+function createCaseInsensitiveIdMap(values: string[]) {
+    const ids = new Map<string, string>();
+    values.forEach((value) => addCaseInsensitiveId(ids, value));
+    return ids;
+}
+
+function addCaseInsensitiveId(ids: Map<string, string>, value: string) {
+    const trimmedValue = value.trim();
+    const normalizedValue = normalizeId(trimmedValue);
+    if (normalizedValue && !ids.has(normalizedValue)) {
+        ids.set(normalizedValue, trimmedValue);
+    }
 }
 
 function logDiagnostics(product: ProductResult, label: string, value: unknown) {

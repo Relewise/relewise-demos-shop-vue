@@ -70,7 +70,7 @@ function context(selectedUser: User, companies: Company[] = [], overrides: Parti
 describe('PriceService', () => {
     beforeEach(() => priceService.clearAccessCache());
 
-    it('creates a normalized scope context from user, all linked companies, and parents', () => {
+    it('creates a case-preserving scope context from user, all linked companies, and parents', () => {
         const parent = company('PARENT', ['parent-list'], ['parent-agreement']);
         const first = company('first', ['first-list'], ['first-agreement'], parent);
         const second = company('second', ['second-list'], ['second-agreement']);
@@ -78,7 +78,7 @@ describe('PriceService', () => {
 
         expect(priceService.createSearchPricingContext(context(selectedUser, [first, second, parent]))).toEqual({
             accessibleScopeIds: [
-                'user-list',
+                'USER-LIST',
                 'first-list',
                 'first-agreement',
                 'parent-list',
@@ -87,7 +87,7 @@ describe('PriceService', () => {
                 'second-agreement',
             ],
             accessibleAgreedOrderScopeIds: ['first-agreement', 'parent-agreement', 'second-agreement'],
-            accessibleCompanyIds: ['first', 'parent', 'second'],
+            accessibleCompanyIds: ['first', 'PARENT', 'second'],
             currency: 'DKK',
             nowUnixMs: now.getTime(),
         });
@@ -153,12 +153,20 @@ describe('PriceService', () => {
     });
 
     it('matches scope IDs and currencies case-insensitively and de-duplicates access', () => {
-        const result = priceService.resolvePrice(
-            product([{ scopeId: 'List-1', amount: 99, currency: 'dkk' }]),
-            context(user([' LIST-1 ', 'list-1'])),
+        const linkedCompany = company(
+            'Company-A',
+            ['E26D4039-1B76-40EB-AA03-AFF5A3BB01EA', 'e26d4039-1b76-40eb-aa03-aff5a3bb01ea'],
         );
+        const pricingContext = context(user([' LIST-1 ', 'list-1'], ['company-a']), [linkedCompany]);
+        const result = priceService.resolvePrice(product([
+            { scopeId: 'list-1', amount: 99, currency: 'dkk' },
+        ]), pricingContext);
 
         expect(result?.amount).toBe(99);
+        expect(priceService.createSearchPricingContext(pricingContext)).toMatchObject({
+            accessibleScopeIds: ['LIST-1', 'E26D4039-1B76-40EB-AA03-AFF5A3BB01EA'],
+            accessibleCompanyIds: ['Company-A'],
+        });
     });
 
     it('uses inclusive Unix-millisecond date bounds', () => {
