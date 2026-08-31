@@ -2,7 +2,10 @@ import { getUserCompanyIds } from '@/helpers/userContext';
 import type { Company, DataValue, ProductResult, User } from '@relewise/client';
 
 const PRICE_LIST_IDS_KEY = 'PriceListIds';
+const AGREED_ORDER_SCOPE_IDS_KEY = 'AgreedOrderScopeIds';
 const PRICES_KEY = 'Prices';
+
+export type ScopedPriceSource = 'PriceList' | 'AgreedOrder';
 
 export interface PricingContext {
     user?: User;
@@ -12,7 +15,9 @@ export interface PricingContext {
 }
 
 export interface SearchPricingContext {
-    accessiblePriceListIds: string[];
+    accessibleScopeIds: string[];
+    accessibleAgreedOrderScopeIds: string[];
+    accessibleCompanyIds: string[];
     currency: string;
     nowUnixMs: number;
 }
@@ -20,29 +25,31 @@ export interface SearchPricingContext {
 export interface ResolvedPrice {
     amount: number;
     currency: string;
-    priceListId: string;
-    dateFrom: string;
-    dateTo: string;
-    source: 'price-list';
+    scopeId: string;
+    dateFromUnixMs: number;
+    dateToUnixMs: number;
+    source: ScopedPriceSource;
 }
 
 export interface DisplayPrice {
     salesPrice: number | null;
     listPrice: number | null;
     currency: string;
-    source: 'price-list' | 'relewise';
+    source: ScopedPriceSource | 'Relewise';
 }
 
-interface PriceListAccess {
-    ids: Set<string>;
+interface ScopeAccess {
+    scopeIds: Set<string>;
+    agreedOrderScopeIds: Set<string>;
+    companyIds: Set<string>;
     userPriceListIds: string[];
     linkedCompanyIds: string[];
     companyLookups: Array<{
         companyId: string;
         found: boolean;
         data?: Record<string, DataValue>;
-        priceListIdsDataValue?: DataValue;
         priceListIds: string[];
+        agreedOrderScopeIds: string[];
         parentCompanyId?: string;
     }>;
 }
@@ -51,7 +58,7 @@ export class PriceService {
     private accessCache?: {
         user: User | undefined;
         companies: Company[];
-        access: PriceListAccess;
+        access: ScopeAccess;
     };
 
     public clearAccessCache() {
@@ -65,70 +72,71 @@ export class PriceService {
             return null;
         }
 
-        const access = this.getAccessiblePriceListIds(context.user, context.companies);
-        if (access.ids.size === 0) {
+        const access = this.getAccessibleScopes(context.user, context.companies);
+        if (access.scopeIds.size === 0) {
             return null;
         }
 
         return {
-            accessiblePriceListIds: [...access.ids],
+            accessibleScopeIds: [...access.scopeIds],
+            accessibleAgreedOrderScopeIds: [...access.agreedOrderScopeIds],
+            accessibleCompanyIds: [...access.companyIds],
             currency,
             nowUnixMs,
         };
     }
 
     public resolvePrice(product: ProductResult, context: PricingContext): ResolvedPrice | null {
-        const access = this.getAccessiblePriceListIds(context.user, context.companies);
+        const access = this.getAccessibleScopes(context.user, context.companies);
         const rawPrices = readObjectList(product.data?.[PRICES_KEY]);
         const parsedPrices = rawPrices.map(parsePrice);
         const now = context.now ?? new Date();
-        const nowTimestamp = now.getTime();
+        const nowUnixMs = now.getTime();
         const currency = context.currency.trim().toLowerCase();
 
         logDiagnostics(product, 'Lookup context', {
             currency: context.currency,
-            now: Number.isFinite(nowTimestamp) ? now.toISOString() : String(now),
+            now: Number.isFinite(nowUnixMs) ? now.toISOString() : String(now),
             linkedCompanyIds: access.linkedCompanyIds,
-            userPriceListIdsDataValue: context.user?.data?.[PRICE_LIST_IDS_KEY],
             userPriceListIds: access.userPriceListIds,
             companyLookups: access.companyLookups,
-            accessiblePriceListIds: [...access.ids],
+            accessibleScopeIds: [...access.scopeIds],
+            accessibleAgreedOrderScopeIds: [...access.agreedOrderScopeIds],
+            accessibleCompanyIds: [...access.companyIds],
         });
         logDiagnostics(product, 'Raw Prices data value', product.data?.[PRICES_KEY]);
         logDiagnostics(product, 'Raw Prices entries', rawPrices);
         logDiagnostics(product, 'Parsed price records', parsedPrices);
 
-        if (access.ids.size === 0) {
-            logDiagnostics(product, 'Resolution result', 'No accessible PriceListIds were found.');
-            return null;
-        }
-
-        if (!Number.isFinite(nowTimestamp)) {
-            logDiagnostics(product, 'Resolution result', `The lookup date is invalid: ${String(now)}`);
+        if (access.scopeIds.size === 0 || !Number.isFinite(nowUnixMs)) {
             return null;
         }
 
         const priceChecks = parsedPrices
             .filter((price): price is ResolvedPrice => price !== null)
-            .map((price) => {
-                const dateFrom = Date.parse(price.dateFrom);
-                const dateTo = Date.parse(price.dateTo);
-                return {
-                    price,
-                    priceListAccessible: access.ids.has(price.priceListId.toLowerCase()),
-                    currencyMatches: price.currency.toLowerCase() === currency,
-                    activeNow: dateFrom <= nowTimestamp && nowTimestamp <= dateTo,
-                };
-            });
+            .map((price) => ({
+                price,
+                scopeAccessible: access.scopeIds.has(normalizeId(price.scopeId)),
+                currencyMatches: price.currency.toLowerCase() === currency,
+                activeNow: price.dateFromUnixMs <= nowUnixMs && nowUnixMs <= price.dateToUnixMs,
+            }));
         const eligiblePrices = priceChecks
-            .filter((check) => check.priceListAccessible && check.currencyMatches && check.activeNow)
+            .filter((check) => check.scopeAccessible && check.currencyMatches && check.activeNow)
             .map((check) => check.price);
 
         logDiagnostics(product, 'Price eligibility checks', priceChecks);
         logDiagnostics(product, 'Eligible price records', eligiblePrices);
 
         const resolvedPrice = eligiblePrices.reduce<ResolvedPrice | null>((cheapest, price) => {
-            return !cheapest || price.amount < cheapest.amount ? price : cheapest;
+            if (!cheapest || price.amount < cheapest.amount) {
+                return price;
+            }
+
+            if (price.amount === cheapest.amount && price.source === 'AgreedOrder' && cheapest.source === 'PriceList') {
+                return price;
+            }
+
+            return cheapest;
         }, null);
         logDiagnostics(product, 'Resolved cheapest price', resolvedPrice);
         return resolvedPrice;
@@ -145,21 +153,18 @@ export class PriceService {
             };
         }
 
-        logDiagnostics(product, 'Display fallback', {
-            salesPrice: product.salesPrice ?? null,
-            listPrice: product.listPrice ?? null,
+        const hasAccessibleScopes = this.getAccessibleScopes(context.user, context.companies).scopeIds.size > 0;
+        const fallback = {
+            salesPrice: hasAccessibleScopes ? null : product.salesPrice ?? null,
+            listPrice: hasAccessibleScopes ? null : product.listPrice ?? null,
             currency: context.currency,
-        });
-
-        return {
-            salesPrice: product.salesPrice ?? null,
-            listPrice: product.listPrice ?? null,
-            currency: context.currency,
-            source: 'relewise',
+            source: 'Relewise' as const,
         };
+        logDiagnostics(product, 'Display fallback', fallback);
+        return fallback;
     }
 
-    private getAccessiblePriceListIds(user: User | undefined, companies: Company[]): PriceListAccess {
+    private getAccessibleScopes(user: User | undefined, companies: Company[]): ScopeAccess {
         const cached = this.accessCache;
         if (cached && cached.user === user && cached.companies === companies) {
             return cached.access;
@@ -167,12 +172,14 @@ export class PriceService {
 
         const userPriceListIds = readStringList(user?.data?.[PRICE_LIST_IDS_KEY]);
         const linkedCompanyIds = getUserCompanyIds(user);
-        const priceListIds = new Set(userPriceListIds.map(normalizeId));
+        const scopeIds = new Set(userPriceListIds.map(normalizeId));
+        const agreedOrderScopeIds = new Set<string>();
+        const companyIds = new Set<string>();
         const companiesById = new Map(companies.map((company) => [normalizeId(company.id), company]));
         const visitedCompanyIds = new Set<string>();
-        const companyLookups: PriceListAccess['companyLookups'] = [];
+        const companyLookups: ScopeAccess['companyLookups'] = [];
 
-        const addCompanyPriceLists = (companyId: string) => {
+        const addCompanyScopes = (companyId: string) => {
             const normalizedCompanyId = normalizeId(companyId);
             if (!normalizedCompanyId || visitedCompanyIds.has(normalizedCompanyId)) {
                 return;
@@ -181,30 +188,40 @@ export class PriceService {
             visitedCompanyIds.add(normalizedCompanyId);
             const company = companiesById.get(normalizedCompanyId);
             if (!company) {
-                companyLookups.push({ companyId, found: false, priceListIds: [] });
+                companyLookups.push({ companyId, found: false, priceListIds: [], agreedOrderScopeIds: [] });
                 return;
             }
 
-            const priceListIdsDataValue = company.data?.[PRICE_LIST_IDS_KEY];
-            const companyPriceListIds = readStringList(priceListIdsDataValue);
+            companyIds.add(normalizedCompanyId);
+            const companyPriceListIds = readStringList(company.data?.[PRICE_LIST_IDS_KEY]);
+            const companyAgreedOrderScopeIds = readStringList(company.data?.[AGREED_ORDER_SCOPE_IDS_KEY]);
             companyLookups.push({
                 companyId: company.id,
                 found: true,
                 data: company.data,
-                priceListIdsDataValue,
                 priceListIds: companyPriceListIds,
+                agreedOrderScopeIds: companyAgreedOrderScopeIds,
                 parentCompanyId: company.parent?.id ?? undefined,
             });
-            companyPriceListIds.forEach((priceListId) => priceListIds.add(normalizeId(priceListId)));
+            companyPriceListIds.forEach((scopeId) => scopeIds.add(normalizeId(scopeId)));
+            companyAgreedOrderScopeIds.forEach((scopeId) => {
+                const normalizedScopeId = normalizeId(scopeId);
+                scopeIds.add(normalizedScopeId);
+                agreedOrderScopeIds.add(normalizedScopeId);
+            });
             if (company.parent?.id) {
-                addCompanyPriceLists(company.parent.id);
+                addCompanyScopes(company.parent.id);
             }
         };
 
-        linkedCompanyIds.forEach(addCompanyPriceLists);
-        priceListIds.delete('');
+        linkedCompanyIds.forEach(addCompanyScopes);
+        scopeIds.delete('');
+        agreedOrderScopeIds.delete('');
+        companyIds.delete('');
         const access = {
-            ids: priceListIds,
+            scopeIds,
+            agreedOrderScopeIds,
+            companyIds,
             userPriceListIds,
             linkedCompanyIds,
             companyLookups,
@@ -224,35 +241,30 @@ function parsePrice(value: unknown): ResolvedPrice | null {
         return null;
     }
 
-    const priceListId = readString(data.PriceListId);
+    const scopeId = readString(data.ScopeId);
+    const source = readPriceSource(data.Source);
     const amount = readNumber(data.Amount);
     const currency = readString(data.Currency);
-    const dateFrom = readUnixDate(data.DateFrom);
-    const dateTo = readUnixDate(data.DateTo);
+    const dateFromUnixMs = readNumber(data.DateFrom);
+    const dateToUnixMs = readNumber(data.DateTo);
 
-    if (!priceListId || amount === null || !currency || !dateFrom || !dateTo
-        || !Number.isFinite(Date.parse(dateFrom)) || !Number.isFinite(Date.parse(dateTo))) {
+    if (!scopeId || !source || amount === null || !currency || dateFromUnixMs === null || dateToUnixMs === null) {
         return null;
     }
 
     return {
         amount,
         currency,
-        priceListId,
-        dateFrom,
-        dateTo,
-        source: 'price-list',
+        scopeId,
+        dateFromUnixMs,
+        dateToUnixMs,
+        source,
     };
 }
 
-function readUnixDate(dataValue: DataValue | undefined) {
-    const unixTimestamp = readNumber(dataValue);
-    if (unixTimestamp === null) {
-        return '';
-    }
-
-    const date = new Date(unixTimestamp);
-    return Number.isFinite(date.getTime()) ? date.toISOString() : '';
+function readPriceSource(dataValue: DataValue | undefined): ScopedPriceSource | null {
+    const source = readString(dataValue);
+    return source === 'PriceList' || source === 'AgreedOrder' ? source : null;
 }
 
 function readString(dataValue: DataValue | undefined) {
@@ -268,16 +280,15 @@ function readNumber(dataValue: DataValue | undefined) {
 }
 
 function readStringList(dataValue: DataValue | undefined) {
-    if (dataValue?.type !== 'String') {
+    if (!dataValue || (dataValue.type !== 'String' && dataValue.type !== 'StringList')) {
         return [];
     }
 
-    const values = parseStringArray(dataValue.value);
-    if (!values) {
-        return [];
-    }
+    const values = dataValue.type === 'StringList'
+        ? getWrappedCollection(dataValue.value)
+        : parseStringArray(dataValue.value);
 
-    return values
+    return (values ?? [])
         .filter((value): value is string => typeof value === 'string')
         .map((value) => value.trim())
         .filter(Boolean);
@@ -301,17 +312,16 @@ function parseStringArray(value: unknown): unknown[] | null {
 }
 
 function readObjectList(dataValue: DataValue | undefined) {
-    return dataValue?.type === 'ObjectList' ? getDataValueCollection(dataValue) : [];
+    return dataValue?.type === 'ObjectList' ? getWrappedCollection(dataValue.value) ?? [] : [];
 }
 
-function getDataValueCollection(dataValue: DataValue | undefined): unknown[] {
-    const value = dataValue?.value;
+function getWrappedCollection(value: unknown): unknown[] | null {
     if (!value || typeof value !== 'object') {
-        return [];
+        return null;
     }
 
     const values = (value as { $values?: unknown }).$values;
-    return Array.isArray(values) ? values : [];
+    return Array.isArray(values) ? values : null;
 }
 
 function normalizeId(value: string) {

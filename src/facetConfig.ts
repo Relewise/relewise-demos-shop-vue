@@ -20,6 +20,12 @@ export const facetConfig: FacetConfigEntry[] = [
         label: 'Sales Price',
     },
     {
+        contexts: ['Category', 'SearchOverlay', 'Brand'],
+        type: 'AgreedOrder',
+        renderType: 'AgreedOrder',
+        label: 'Agreed orders',
+    },
+    {
         contexts: ['ContentSearch'],
         type: 'ContentCategory',
         renderType: 'Checklist',
@@ -36,8 +42,8 @@ export const facetConfig: FacetConfigEntry[] = [
 
 export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand' | 'ContentSearch';
 
-type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'ContentDataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange' | 'ContentCategory';
-type FacetRenderType = 'Checklist' | 'Range';
+type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'ContentDataString' | 'SalesPrice' | 'AgreedOrder' | 'DataDouble' | 'DataDoubleRange' | 'ContentCategory';
+type FacetRenderType = 'Checklist' | 'Range' | 'AgreedOrder';
 
 type BaseFacetConfigEntry = {
     contexts: FacetContext[];

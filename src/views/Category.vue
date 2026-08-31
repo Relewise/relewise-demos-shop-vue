@@ -23,6 +23,7 @@
         v-if="filters.sort != null"
         v-model="filters.sort"
         type="Product"
+        :show-agreed-order-sort="showAgreedOrderSort"
         @change="search"
       />
     </div>
@@ -146,7 +147,7 @@ import DisplayAdHeroBanner from '@/components/DisplayAds/DisplayAd-HeroBanner.vu
 import DisplayAdTile from '@/components/DisplayAds/DisplayAd-Tile.vue';
 import { sortCategories } from '@/helpers/sortCategories';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
-import { removeEmptyBestPriceFacetSelection, sortByBestPrice } from '@/helpers/bestPriceSearch';
+import { addAgreedOrderFilter, addScopedPriceEligibilityFilter, AGREED_ORDER_SORT, hasAgreedOrderAccess, removeEmptyBestPriceFacetSelection, sanitizeAgreedOrderSelections, sortByAgreedOrder, sortByBestPrice } from '@/helpers/bestPriceSearch';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
@@ -161,6 +162,7 @@ const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const showAgreedOrderSort = ref(false);
 
 async function init() {
     const id = route.params.id;
@@ -255,6 +257,8 @@ watch(breakpointService.active, () => {
 async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
     const pricingContext = contextStore.createSearchPricingContext();
+    sanitizeAgreedOrderSelections(filters.value, pricingContext);
+    showAgreedOrderSort.value = hasAgreedOrderAccess(pricingContext);
     scrollTo({ top: 0 });
 
     const request = removeEmptyBestPriceFacetSelection(applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
@@ -272,6 +276,8 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             contextStore.userClassificationBasedFilters(f);
+            addScopedPriceEligibilityFilter(f, pricingContext);
+            addAgreedOrderFilter(f, filters.value, pricingContext);
         })
         .facets(f => {
             if (renderCatoryLinks.value) {
@@ -292,6 +298,9 @@ async function search() {
             }
             else if (filters.value.sort === 'SalesPriceAsc') {
                 sortByBestPrice(s, 'Ascending', pricingContext);
+            }
+            else if (filters.value.sort === AGREED_ORDER_SORT) {
+                sortByAgreedOrder(s, pricingContext);
             }
         }), contextStore.context.value)
         .build());

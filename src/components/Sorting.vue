@@ -24,6 +24,12 @@
       >
         Sales Price asc
       </option>
+      <option
+        v-if="type === 'Product' && showAgreedOrderSort"
+        value="AgreedOrderFirst"
+      >
+        Agreed orders first
+      </option>
     </select>
   </label>
 </template>
@@ -34,9 +40,10 @@ import { computed, toRefs, type PropType } from 'vue';
 const props = defineProps({
     modelValue: { type: [String, Array] as PropType<string | string[]>, required: true },
     type: { type: String as PropType<'Content' | 'Product'>, required: true },
+    showAgreedOrderSort: { type: Boolean, required: false, default: false },
 });
 
-const { modelValue, type } = toRefs(props);
+const { modelValue, type, showAgreedOrderSort } = toRefs(props);
 
 const emit = defineEmits(['update:modelValue']);
 

@@ -21,6 +21,7 @@ vi.mock('@/stores/context.store', () => ({
         language: { value: 'da-DK' },
         getSearcher: () => ({ searchProducts: testState.searchProducts }),
         userClassificationBasedFilters: vi.fn(),
+        createSearchPricingContext: vi.fn(() => null),
         resolveProductPrice: testState.resolveProductPrice,
     },
 }));
@@ -49,8 +50,8 @@ describe('ProductDetails pricing', () => {
         testState.resolveProductPrice.mockReset();
     });
 
-    it('shows a resolved price-list amount without sale presentation', async() => {
-        testState.resolveProductPrice.mockReturnValue({ salesPrice: 70, listPrice: null, currency: 'DKK', source: 'price-list' });
+    it('shows a resolved scoped amount without sale presentation', async() => {
+        testState.resolveProductPrice.mockReturnValue({ salesPrice: 70, listPrice: null, currency: 'DKK', source: 'AgreedOrder' });
 
         const wrapper = renderProductDetails();
         await flushPromises();
@@ -60,8 +61,8 @@ describe('ProductDetails pricing', () => {
         expect(wrapper.text()).not.toContain('100');
     });
 
-    it('preserves Relewise sales and list prices when no price-list price resolves', async() => {
-        testState.resolveProductPrice.mockReturnValue({ salesPrice: 80, listPrice: 100, currency: 'DKK', source: 'relewise' });
+    it('preserves Relewise sales and list prices when the context has no scopes', async() => {
+        testState.resolveProductPrice.mockReturnValue({ salesPrice: 80, listPrice: 100, currency: 'DKK', source: 'Relewise' });
 
         const wrapper = renderProductDetails();
         await flushPromises();

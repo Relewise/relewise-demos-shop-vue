@@ -14,7 +14,7 @@ import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 import { applyVariantRequestSettings, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
-import { removeEmptyBestPriceFacetSelection, sortByBestPrice } from '@/helpers/bestPriceSearch';
+import { addAgreedOrderFilter, addScopedPriceEligibilityFilter, AGREED_ORDER_SORT, hasAgreedOrderAccess, removeEmptyBestPriceFacetSelection, sanitizeAgreedOrderSelections, sortByAgreedOrder, sortByBestPrice } from '@/helpers/bestPriceSearch';
 
 enum Tabs {
     Products,
@@ -34,6 +34,7 @@ const trackedBrandId = ref<string | null>(null);
 // page moved into filters below as filters.value.page (string)
 const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
+const showAgreedOrderSort = ref(false);
 const route = useRoute();
 let abortController = new AbortController();
 
@@ -169,6 +170,8 @@ async function search() {
     const productTerm = filters.value.term.length > 0 ? filters.value.term : null;
     const useVariantResolutionImages = !!productTerm && (contextStore.context.value.variantResolutionImages ?? false);
     const pricingContext = contextStore.createSearchPricingContext();
+    sanitizeAgreedOrderSelections(filters.value, pricingContext);
+    showAgreedOrderSort.value = hasAgreedOrderAccess(pricingContext);
 
     const productSearchRequest = removeEmptyBestPriceFacetSelection(
         applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
@@ -191,6 +194,8 @@ async function search() {
                 }
 
                 contextStore.userClassificationBasedFilters(f);
+                addScopedPriceEligibilityFilter(f, pricingContext);
+                addAgreedOrderFilter(f, filters.value, pricingContext);
             })
             .facets(f => getFacets(brandName ? 'Brand' : 'SearchOverlay', f, filters.value, pricingContext))
             .relevanceModifiers(r => addRelevanceModifiers(r))
@@ -203,6 +208,9 @@ async function search() {
                 }
                 else if (filters.value.sort === 'SalesPriceAsc') {
                     sortByBestPrice(s, 'Ascending', pricingContext);
+                }
+                else if (filters.value.sort === AGREED_ORDER_SORT) {
+                    sortByAgreedOrder(s, pricingContext);
                 }
             })
             .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
@@ -475,6 +483,7 @@ function trackBrandView(
           :predictions-list="predictionsList"
           :filters="filters"
           :right-side="rightSide"
+          :show-agreed-order-sort="showAgreedOrderSort"
           @search-for="searchFor"
           @search="persistInUrl"
         />

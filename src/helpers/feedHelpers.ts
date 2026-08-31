@@ -1,6 +1,7 @@
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, ContentSearchBuilder } from '@relewise/client';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { addScopedPriceEligibilityFilter } from '@/helpers/bestPriceSearch';
 
 export async function fetchProduct(id: string) {
     try {
@@ -10,6 +11,7 @@ export async function fetchProduct(id: string) {
             .filters(f => {
                 f.addProductIdFilter([id]);
                 contextStore.userClassificationBasedFilters(f);
+                addScopedPriceEligibilityFilter(f, contextStore.createSearchPricingContext());
             })
             .pagination(p => p.setPageSize(1)), contextStore.context.value)
             .build();

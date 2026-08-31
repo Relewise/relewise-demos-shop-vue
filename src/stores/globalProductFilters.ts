@@ -1,5 +1,6 @@
 import { FilterBuilder, ConditionBuilder, DataValueFactory } from '@relewise/client';
 import contextStore from './context.store';
+import { addScopedPriceEligibilityFilter } from '@/helpers/bestPriceSearch';
 
 export function globalProductRecommendationFilters(filterBuilder: FilterBuilder) {
 
@@ -8,4 +9,5 @@ export function globalProductRecommendationFilters(filterBuilder: FilterBuilder)
     }
 
     contextStore.userClassificationBasedFilters(filterBuilder);
+    addScopedPriceEligibilityFilter(filterBuilder, contextStore.createSearchPricingContext());
 }

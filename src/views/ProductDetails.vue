@@ -205,6 +205,7 @@ import ProductVariants from '../components/ProductVariants.vue';
 import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
 import DataValueList, { type DataValueEntry } from '../components/DataValueList.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { addScopedPriceEligibilityFilter } from '@/helpers/bestPriceSearch';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);
@@ -292,6 +293,7 @@ async function init() {
         }
 
         contextStore.userClassificationBasedFilters(f);
+        addScopedPriceEligibilityFilter(f, contextStore.createSearchPricingContext());
       })
       .pagination(p => p.setPageSize(1)), contextStore.context.value)
       .build();

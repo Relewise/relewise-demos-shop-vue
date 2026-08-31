@@ -1,31 +1,44 @@
-import { describe, expect, it } from 'vitest';
-import { DataValueFactory, type Company, type ProductResult, type User } from '@relewise/client';
-import priceService, { type PricingContext } from '@/services/price.service';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { DataValueFactory, type Company, type DataValue, type ProductResult, type User } from '@relewise/client';
+import priceService, { type PricingContext, type ScopedPriceSource } from '@/services/price.service';
 import type { DemoUser } from '@/helpers/userContext';
 
 const now = new Date('2026-06-01T12:00:00.000Z');
 
-function user(priceListIds: string[] = [], companyIds: string[] = []): User {
+function user(priceListIds: string[] = [], companyIds: string[] = [], canonical = false): User {
     return {
         companyIds,
-        data: priceListIds.length > 0 ? { PriceListIds: DataValueFactory.string(JSON.stringify(priceListIds)) } : undefined,
+        data: priceListIds.length > 0 ? {
+            PriceListIds: canonical
+                ? DataValueFactory.stringCollection(priceListIds)
+                : DataValueFactory.string(JSON.stringify(priceListIds)),
+        } : undefined,
     } as DemoUser;
 }
 
-function company(id: string, priceListIds: string[] = [], parent?: Company): Company {
+function company(
+    id: string,
+    priceListIds: string[] = [],
+    agreedOrderScopeIds: string[] = [],
+    parent?: Company,
+): Company {
     return {
         id,
         parent,
-        data: priceListIds.length > 0 ? { PriceListIds: DataValueFactory.string(JSON.stringify(priceListIds)) } : undefined,
+        data: {
+            PriceListIds: DataValueFactory.stringCollection(priceListIds),
+            AgreedOrderScopeIds: DataValueFactory.stringCollection(agreedOrderScopeIds),
+        },
     };
 }
 
 function product(prices: Array<{
-    priceListId: string;
+    scopeId: string;
+    source?: ScopedPriceSource | string;
     amount: number;
     currency?: string;
-    dateFrom?: number;
-    dateTo?: number;
+    dateFromUnixMs?: number;
+    dateToUnixMs?: number;
 }> = []): ProductResult {
     return {
         productId: 'product-1',
@@ -33,11 +46,12 @@ function product(prices: Array<{
         listPrice: 175,
         data: prices.length > 0 ? {
             Prices: DataValueFactory.objectCollection(prices.map((price) => ({
-                PriceListId: DataValueFactory.string(price.priceListId),
+                ScopeId: DataValueFactory.string(price.scopeId),
+                Source: DataValueFactory.string(price.source ?? 'PriceList'),
                 Amount: DataValueFactory.number(price.amount),
                 Currency: DataValueFactory.string(price.currency ?? 'DKK'),
-                DateFrom: DataValueFactory.number(price.dateFrom ?? Date.parse('2026-01-01T00:00:00.000Z')),
-                DateTo: DataValueFactory.number(price.dateTo ?? Date.parse('2026-12-31T23:59:59.999Z')),
+                DateFrom: DataValueFactory.number(price.dateFromUnixMs ?? Date.parse('2026-01-01T00:00:00.000Z')),
+                DateTo: DataValueFactory.number(price.dateToUnixMs ?? Date.parse('2026-12-31T23:59:59.999Z')),
             }))),
         } : undefined,
     } as ProductResult;
@@ -54,160 +68,185 @@ function context(selectedUser: User, companies: Company[] = [], overrides: Parti
 }
 
 describe('PriceService', () => {
-    it('creates one normalized request context from user and company access', () => {
-        const parent = company('parent', ['PARENT-LIST']);
-        const child = company('child', ['company-list', 'parent-list'], parent);
-        const selectedUser = user([' USER-LIST ', 'company-list'], ['child']);
+    beforeEach(() => priceService.clearAccessCache());
 
-        expect(priceService.createSearchPricingContext(context(selectedUser, [child, parent]))).toEqual({
-            accessiblePriceListIds: ['user-list', 'company-list', 'parent-list'],
+    it('creates a normalized scope context from user, all linked companies, and parents', () => {
+        const parent = company('PARENT', ['parent-list'], ['parent-agreement']);
+        const first = company('first', ['first-list'], ['first-agreement'], parent);
+        const second = company('second', ['second-list'], ['second-agreement']);
+        const selectedUser = user([' USER-LIST ', 'first-list'], ['first', 'second']);
+
+        expect(priceService.createSearchPricingContext(context(selectedUser, [first, second, parent]))).toEqual({
+            accessibleScopeIds: [
+                'user-list',
+                'first-list',
+                'first-agreement',
+                'parent-list',
+                'parent-agreement',
+                'second-list',
+                'second-agreement',
+            ],
+            accessibleAgreedOrderScopeIds: ['first-agreement', 'parent-agreement', 'second-agreement'],
+            accessibleCompanyIds: ['first', 'parent', 'second'],
             currency: 'DKK',
             nowUnixMs: now.getTime(),
         });
     });
 
-    it('returns no request context when there are no accessible price lists', () => {
+    it('supports canonical StringLists and the demo direct-array String representation', () => {
+        const canonicalUser = user(['canonical-list'], [], true);
+        const directArrayUser = {
+            data: {
+                PriceListIds: {
+                    type: 'String',
+                    value: ['direct-list'],
+                    isCollection: true,
+                } as unknown as DataValue,
+            },
+        } as User;
+
+        expect(priceService.resolvePrice(product([{ scopeId: 'canonical-list', amount: 90 }]), context(canonicalUser))?.amount).toBe(90);
+        expect(priceService.resolvePrice(product([{ scopeId: 'direct-list', amount: 80 }]), context(directArrayUser))?.amount).toBe(80);
+    });
+
+    it('returns no request context when there are no accessible scopes', () => {
         expect(priceService.createSearchPricingContext(context(user([])))).toBeNull();
     });
 
-    it('resolves the cheapest active price from user and linked-company price lists', () => {
-        const parent = company('parent', ['parent-list']);
-        const child = company('child', ['company-list'], parent);
-        const selectedUser = user(['user-list'], ['child']);
+    it('resolves the lowest active amount across price-list and agreed-order sources', () => {
+        const linkedCompany = company('company', ['company-list'], ['agreement']);
+        const selectedUser = user(['user-list'], ['company']);
         const result = priceService.resolvePrice(product([
-            { priceListId: 'user-list', amount: 120 },
-            { priceListId: 'company-list', amount: 110 },
-            { priceListId: 'parent-list', amount: 100 },
-            { priceListId: 'inaccessible-list', amount: 1 },
-        ]), context(selectedUser, [child, parent]));
+            { scopeId: 'user-list', source: 'PriceList', amount: 120 },
+            { scopeId: 'company-list', source: 'PriceList', amount: 110 },
+            { scopeId: 'agreement', source: 'AgreedOrder', amount: 100 },
+            { scopeId: 'inaccessible', source: 'AgreedOrder', amount: 1 },
+        ]), context(selectedUser, [linkedCompany]));
 
-        expect(result).toMatchObject({ amount: 100, priceListId: 'parent-list', currency: 'DKK', source: 'price-list' });
+        expect(result).toMatchObject({
+            amount: 100,
+            scopeId: 'agreement',
+            currency: 'DKK',
+            source: 'AgreedOrder',
+        });
     });
 
-    it('matches price-list ids and currencies case-insensitively and de-duplicates access', () => {
-        const selectedUser = user([' LIST-1 ', 'list-1']);
-        const result = priceService.resolvePrice(product([{ priceListId: 'List-1', amount: 99, currency: 'dkk' }]), context(selectedUser));
+    it('does not let a higher agreed-order price override a cheaper price-list price', () => {
+        const linkedCompany = company('company', ['list'], ['agreement']);
+        const result = priceService.resolvePrice(product([
+            { scopeId: 'list', source: 'PriceList', amount: 90 },
+            { scopeId: 'agreement', source: 'AgreedOrder', amount: 100 },
+        ]), context(user([], ['company']), [linkedCompany]));
+
+        expect(result?.source).toBe('PriceList');
+        expect(result?.amount).toBe(90);
+    });
+
+    it('prefers AgreedOrder source metadata when eligible amounts are equal', () => {
+        const linkedCompany = company('company', ['list'], ['agreement']);
+        const result = priceService.resolvePrice(product([
+            { scopeId: 'list', source: 'PriceList', amount: 90 },
+            { scopeId: 'agreement', source: 'AgreedOrder', amount: 90 },
+        ]), context(user([], ['company']), [linkedCompany]));
+
+        expect(result?.source).toBe('AgreedOrder');
+    });
+
+    it('matches scope IDs and currencies case-insensitively and de-duplicates access', () => {
+        const result = priceService.resolvePrice(
+            product([{ scopeId: 'List-1', amount: 99, currency: 'dkk' }]),
+            context(user([' LIST-1 ', 'list-1'])),
+        );
 
         expect(result?.amount).toBe(99);
     });
 
-    it('reads PriceListIds when a String data value contains an array directly', () => {
-        const selectedUser = {
-            data: {
-                PriceListIds: {
-                    type: 'String',
-                    value: ['list-1', 'list-2'],
-                    isCollection: true,
-                },
-            },
-        } as User;
-
-        expect(priceService.resolvePrice(product([
-            { priceListId: 'list-1', amount: 100 },
-            { priceListId: 'list-2', amount: 90 },
-        ]), context(selectedUser))?.amount).toBe(90);
-    });
-
-    it('supports an inclusive date range', () => {
-        const selectedUser = user(['list']);
+    it('uses inclusive Unix-millisecond date bounds', () => {
         const candidate = product([{
-            priceListId: 'list',
+            scopeId: 'list',
             amount: 99,
-            dateFrom: now.getTime(),
-            dateTo: now.getTime(),
+            dateFromUnixMs: now.getTime(),
+            dateToUnixMs: now.getTime(),
         }]);
 
-        expect(priceService.resolvePrice(candidate, context(selectedUser))?.amount).toBe(99);
+        expect(priceService.resolvePrice(candidate, context(user(['list'])))?.amount).toBe(99);
     });
 
-    it('requires DateFrom and DateTo to contain Unix milliseconds', () => {
-        const selectedUser = user(['list']);
-        const candidate = product([{ priceListId: 'list', amount: 99 }]);
-        const legacyStringDates = {
-            ...candidate,
-            data: {
-                Prices: DataValueFactory.objectCollection([{
-                    PriceListId: DataValueFactory.string('list'),
-                    Amount: DataValueFactory.number(99),
-                    Currency: DataValueFactory.string('DKK'),
-                    DateFrom: DataValueFactory.string('2026-01-01T00:00:00.000Z'),
-                    DateTo: DataValueFactory.string('2026-12-31T23:59:59.999Z'),
-                }]),
-            },
+    it('ignores invalid sources, malformed dates, future, expired, wrong-currency, and inaccessible prices', () => {
+        const malformedDates = product([{ scopeId: 'list', amount: 5 }]);
+        malformedDates.data = {
+            Prices: DataValueFactory.objectCollection([{
+                ScopeId: DataValueFactory.string('list'),
+                Source: DataValueFactory.string('PriceList'),
+                Amount: DataValueFactory.number(5),
+                Currency: DataValueFactory.string('DKK'),
+                DateFrom: DataValueFactory.string('2026-01-01'),
+                DateTo: DataValueFactory.string('2026-12-31'),
+            }]),
         };
 
-        expect(priceService.resolvePrice(candidate, context(selectedUser))?.amount).toBe(99);
-        expect(priceService.resolvePrice(legacyStringDates, context(selectedUser))).toBeNull();
-    });
-
-    it('ignores future, expired, wrong-currency, and inaccessible prices', () => {
-        const selectedUser = user(['list']);
         const result = priceService.resolvePrice(product([
-            { priceListId: 'list', amount: 1, dateFrom: Date.parse('2027-01-01T00:00:00.000Z') },
-            { priceListId: 'list', amount: 2, dateTo: Date.parse('2025-12-31T23:59:59.999Z') },
-            { priceListId: 'list', amount: 3, currency: 'EUR' },
-            { priceListId: 'other', amount: 4 },
-        ]), context(selectedUser));
+            { scopeId: 'list', source: 'Unknown', amount: 1 },
+            { scopeId: 'list', amount: 2, dateFromUnixMs: Date.parse('2027-01-01T00:00:00.000Z') },
+            { scopeId: 'list', amount: 3, dateToUnixMs: Date.parse('2025-12-31T23:59:59.999Z') },
+            { scopeId: 'list', amount: 4, currency: 'EUR' },
+            { scopeId: 'other', amount: 5 },
+        ]), context(user(['list'])));
 
         expect(result).toBeNull();
+        expect(priceService.resolvePrice(malformedDates, context(user(['list'])))).toBeNull();
     });
 
-    it('ignores unknown companies and handles cyclic parent references', () => {
-        const first = company('first', ['first-list']);
-        const second = company('second', ['second-list'], first);
+    it('keeps agreements isolated to linked companies and handles unknown and cyclic companies', () => {
+        const first = company('first', [], ['first-agreement']);
+        const second = company('second', [], ['second-agreement'], first);
         first.parent = second;
+        const unrelated = company('unrelated', [], ['unrelated-agreement']);
         const selectedUser = user([], ['missing', 'first']);
 
-        expect(priceService.resolvePrice(product([
-            { priceListId: 'first-list', amount: 20 },
-            { priceListId: 'second-list', amount: 10 },
-        ]), context(selectedUser, [first, second]))?.amount).toBe(10);
+        const result = priceService.resolvePrice(product([
+            { scopeId: 'first-agreement', source: 'AgreedOrder', amount: 20 },
+            { scopeId: 'second-agreement', source: 'AgreedOrder', amount: 10 },
+            { scopeId: 'unrelated-agreement', source: 'AgreedOrder', amount: 1 },
+        ]), context(selectedUser, [first, second, unrelated]));
+
+        expect(result?.amount).toBe(10);
     });
 
-    it('requires PriceListIds to be a JSON array string and ignores malformed price records', () => {
-        const selectedUser = {
-            data: { PriceListIds: DataValueFactory.string('not-json') },
-        } as User;
-        const candidate = product([{ priceListId: 'list', amount: 99 }]);
+    it('invalidates cached scope access explicitly after company data changes', () => {
+        const linkedCompany = company('company', ['first-list']);
+        const selectedUser = user([], ['company']);
+        const companies = [linkedCompany];
+        const pricingContext = context(selectedUser, companies);
 
-        expect(priceService.resolvePrice(candidate, context(selectedUser))).toBeNull();
-        expect(priceService.resolvePrice(candidate, context({
-            data: { PriceListIds: DataValueFactory.string(JSON.stringify({ id: 'list' })) },
-        } as User))).toBeNull();
-        expect(priceService.resolvePrice(candidate, context({
-            data: { PriceListIds: DataValueFactory.stringCollection(['list']) },
-        } as User))).toBeNull();
-        expect(priceService.resolvePrice({ ...candidate, data: { Prices: DataValueFactory.string('not-an-object-list') } }, context(user(['list'])))).toBeNull();
+        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['first-list']);
+        linkedCompany.data = { PriceListIds: DataValueFactory.stringCollection(['second-list']) };
+        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['first-list']);
 
-        const malformedPrice = {
-            ...candidate,
-            data: {
-                Prices: DataValueFactory.objectCollection([{
-                    PriceListId: DataValueFactory.string('list'),
-                    Amount: DataValueFactory.string('99'),
-                    Currency: DataValueFactory.string('DKK'),
-                    DateFrom: DataValueFactory.string('not-a-date'),
-                    DateTo: DataValueFactory.string('2026-12-31T23:59:59.999Z'),
-                }]),
-            },
-        };
-        expect(priceService.resolvePrice(malformedPrice, context(user(['list'])))).toBeNull();
+        priceService.clearAccessCache();
+        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['second-list']);
     });
 
-    it('uses a single resolved price and falls back to Relewise pricing when none is eligible', () => {
-        const candidate = product([{ priceListId: 'list', amount: 99 }]);
+    it('uses scoped display pricing and only falls back to native pricing for an unscoped context', () => {
+        const candidate = product([{ scopeId: 'list', amount: 99 }]);
 
         expect(priceService.resolveDisplayPrice(candidate, context(user(['list'])))).toEqual({
             salesPrice: 99,
             listPrice: null,
             currency: 'DKK',
-            source: 'price-list',
+            source: 'PriceList',
         });
         expect(priceService.resolveDisplayPrice(candidate, context(user([])))).toEqual({
             salesPrice: 150,
             listPrice: 175,
             currency: 'DKK',
-            source: 'relewise',
+            source: 'Relewise',
+        });
+        expect(priceService.resolveDisplayPrice(candidate, context(user(['other'])))).toEqual({
+            salesPrice: null,
+            listPrice: null,
+            currency: 'DKK',
+            source: 'Relewise',
         });
     });
 });

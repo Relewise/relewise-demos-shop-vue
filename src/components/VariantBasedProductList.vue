@@ -40,7 +40,7 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
 
 function getDisplayPrice(product: ProductResult, variant: VariantResult | null) {
     const displayPrice = contextStore.resolveProductPrice(product);
-    return displayPrice.source === 'price-list'
+    return displayPrice.source !== 'Relewise'
         ? displayPrice.salesPrice
         : variant?.listPrice ?? product.listPrice;
 }
