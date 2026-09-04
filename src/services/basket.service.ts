@@ -3,7 +3,8 @@ import { computed, reactive } from 'vue';
 
 export interface ILineItem {
     product: ProductResult;
-    quantity: number
+    quantity: number;
+    unitPrice: number;
 }
 
 export interface IBasket {
@@ -22,7 +23,10 @@ class BasketService {
     constructor() {
         const storedBasket = localStorage.getItem('basket');
         if (storedBasket !== null) {
-            this.state.model = JSON.parse(storedBasket);
+            const parsedBasket = JSON.parse(storedBasket) as IBasket;
+            this.state.model = {
+                lineItems: parsedBasket.lineItems.filter(item => Number.isFinite(item.unitPrice)),
+            };
         }
     }
 
@@ -41,14 +45,14 @@ class BasketService {
 
     get subtotal() {
         return computed(() => this.state.model.lineItems
-            .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
+            .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0));
     }
 
     get hasItems() {
         return computed(() => this.state.model.lineItems.length > 0);
     }
 
-    async addProduct({ product, quantityDelta }: { product: ProductResult, quantityDelta: number }) {
+    async addProduct({ product, quantityDelta, unitPrice }: { product: ProductResult, quantityDelta: number, unitPrice: number }) {
         const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId
             && x.product.variant?.variantId === product.variant?.variantId);
 
@@ -59,7 +63,7 @@ class BasketService {
                 this.state.model.lineItems.splice(productIndex, 1);
             }
         } else {
-            this.model.value.lineItems.push({ product: product, quantity: quantityDelta });
+            this.model.value.lineItems.push({ product, quantity: quantityDelta, unitPrice });
         }
 
         this.basketModified();

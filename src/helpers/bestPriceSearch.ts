@@ -37,7 +37,6 @@ export function addBestPriceFacet(
     const upper = getPriceBound(filters.price, 1);
 
     if (!context) {
-        facetBuilder.addSalesPriceRangeFacet('Product', lower, upper);
         return;
     }
 
@@ -55,7 +54,7 @@ export function sortByBestPrice(
     context: SearchPricingContext | null,
 ) {
     if (!context) {
-        sortingBuilder.sortByProductAttribute('SalesPrice', order);
+        sortingBuilder.sortByProductRelevance();
         return;
     }
 

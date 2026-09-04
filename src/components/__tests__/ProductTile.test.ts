@@ -25,7 +25,7 @@ describe('ProductTile pricing', () => {
     beforeEach(() => resolveProductPrice.mockReset());
 
     it('shows a resolved scoped amount without sale presentation', () => {
-        resolveProductPrice.mockReturnValue({ salesPrice: 70, listPrice: null, currency: 'DKK', source: 'PriceList' });
+        resolveProductPrice.mockReturnValue({ amount: 70, currency: 'DKK', source: 'PriceList' });
 
         const wrapper = renderTile();
 
@@ -34,14 +34,14 @@ describe('ProductTile pricing', () => {
         expect(wrapper.text()).not.toContain('100');
     });
 
-    it('preserves Relewise sales and list prices when the context has no scopes', () => {
-        resolveProductPrice.mockReturnValue({ salesPrice: 80, listPrice: 100, currency: 'DKK', source: 'Relewise' });
+    it('does not render native sales or list prices when no scoped price resolves', () => {
+        resolveProductPrice.mockReturnValue({ amount: null, currency: 'DKK', source: null });
 
         const wrapper = renderTile();
 
-        expect(wrapper.text()).toContain('80');
-        expect(wrapper.text()).toContain('100');
-        expect(wrapper.text()).toContain('ON SALE');
+        expect(wrapper.text()).not.toContain('80');
+        expect(wrapper.text()).not.toContain('100');
+        expect(wrapper.text()).not.toContain('ON SALE');
     });
 });
 

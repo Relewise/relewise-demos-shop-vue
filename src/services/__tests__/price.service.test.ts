@@ -1,18 +1,30 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DataValueFactory, type Company, type DataValue, type ProductResult, type User } from '@relewise/client';
-import priceService, { type PricingContext, type ScopedPriceSource } from '@/services/price.service';
+import priceService, { DEFAULT_PRICE_SCOPE_ID, type PricingContext, type ScopedPriceSource } from '@/services/price.service';
 import type { DemoUser } from '@/helpers/userContext';
 
 const now = new Date('2026-06-01T12:00:00.000Z');
 
-function user(priceListIds: string[] = [], companyIds: string[] = [], canonical = false): User {
+function user(
+    priceListIds: string[] = [],
+    companyIds: string[] = [],
+    canonical = false,
+    agreedOrderScopeIds: string[] = [],
+): User {
     return {
         companyIds,
-        data: priceListIds.length > 0 ? {
-            PriceListIds: canonical
-                ? DataValueFactory.stringCollection(priceListIds)
-                : DataValueFactory.string(JSON.stringify(priceListIds)),
-        } : undefined,
+        data: priceListIds.length > 0 || agreedOrderScopeIds.length > 0
+            ? {
+                ...(priceListIds.length > 0 ? {
+                    PriceListIds: canonical
+                        ? DataValueFactory.stringCollection(priceListIds)
+                        : DataValueFactory.string(JSON.stringify(priceListIds)),
+                } : {}),
+                ...(agreedOrderScopeIds.length > 0 ? {
+                    AgreedOrderScopeIds: DataValueFactory.stringCollection(agreedOrderScopeIds),
+                } : {}),
+            }
+            : undefined,
     } as DemoUser;
 }
 
@@ -21,6 +33,7 @@ function company(
     priceListIds: string[] = [],
     agreedOrderScopeIds: string[] = [],
     parent?: Company,
+    customerNumber?: string,
 ): Company {
     return {
         id,
@@ -28,6 +41,7 @@ function company(
         data: {
             PriceListIds: DataValueFactory.stringCollection(priceListIds),
             AgreedOrderScopeIds: DataValueFactory.stringCollection(agreedOrderScopeIds),
+            ...(customerNumber ? { CustomerNumber: DataValueFactory.string(customerNumber) } : {}),
         },
     };
 }
@@ -85,6 +99,7 @@ describe('PriceService', () => {
                 'parent-agreement',
                 'second-list',
                 'second-agreement',
+                DEFAULT_PRICE_SCOPE_ID,
             ],
             accessibleAgreedOrderScopeIds: ['first-agreement', 'parent-agreement', 'second-agreement'],
             accessibleCompanyIds: ['first', 'PARENT', 'second'],
@@ -109,8 +124,65 @@ describe('PriceService', () => {
         expect(priceService.resolvePrice(product([{ scopeId: 'direct-list', amount: 80 }]), context(directArrayUser))?.amount).toBe(80);
     });
 
-    it('returns no request context when there are no accessible scopes', () => {
-        expect(priceService.createSearchPricingContext(context(user([])))).toBeNull();
+    it('adds dataset-facing customer IDs for linked companies and their parents', () => {
+        const parent = company('company-parent', [], ['parent-agreement'], undefined, '100200');
+        const linkedCompany = company('company-000198', [], ['agreement'], parent, '000198');
+
+        expect(priceService.createSearchPricingContext(
+            context(user([], ['company-000198']), [linkedCompany, parent]),
+        )?.accessibleCompanyIds).toEqual([
+            'company-000198',
+            'customer-000198',
+            'company-parent',
+            'customer-100200',
+        ]);
+    });
+
+    it('uses the default price scope when no user or company scopes are accessible', () => {
+        expect(priceService.createSearchPricingContext(context(user([])))).toEqual({
+            accessibleScopeIds: [DEFAULT_PRICE_SCOPE_ID],
+            accessibleAgreedOrderScopeIds: [],
+            accessibleCompanyIds: [],
+            currency: 'DKK',
+            nowUnixMs: now.getTime(),
+        });
+
+        expect(priceService.resolvePrice(product([
+            { scopeId: DEFAULT_PRICE_SCOPE_ID, amount: 99 },
+        ]), context(user([])))).toMatchObject({
+            amount: 99,
+            scopeId: DEFAULT_PRICE_SCOPE_ID,
+            source: 'PriceList',
+        });
+    });
+
+    it('always adds the default scope alongside explicit pricing access', () => {
+        expect(priceService.createSearchPricingContext(context(user(['explicit-list'])))?.accessibleScopeIds)
+            .toEqual(['explicit-list', DEFAULT_PRICE_SCOPE_ID]);
+    });
+
+    it('uses a default-scope price when an explicitly scoped price is unavailable for the product', () => {
+        const candidate = product([
+            { scopeId: DEFAULT_PRICE_SCOPE_ID, amount: 125 },
+            { scopeId: 'another-company-list', amount: 80 },
+        ]);
+
+        expect(priceService.resolvePrice(candidate, context(user(['company-list'])))).toMatchObject({
+            amount: 125,
+            scopeId: DEFAULT_PRICE_SCOPE_ID,
+        });
+    });
+
+    it('chooses the cheapest price when both default and explicit scopes are available', () => {
+        const candidate = product([
+            { scopeId: DEFAULT_PRICE_SCOPE_ID, amount: 125 },
+            { scopeId: 'company-list', amount: 90 },
+        ]);
+
+        expect(priceService.resolvePrice(candidate, context(user(['company-list'])))).toMatchObject({
+            amount: 90,
+            scopeId: 'company-list',
+        });
     });
 
     it('resolves the lowest active amount across price-list and agreed-order sources', () => {
@@ -129,6 +201,18 @@ describe('PriceService', () => {
             currency: 'DKK',
             source: 'AgreedOrder',
         });
+    });
+
+    it('allows a customer-specific agreed-order scope on the user', () => {
+        const selectedUser = user([], [], true, ['customer-agreement']);
+
+        expect(priceService.createSearchPricingContext(context(selectedUser))).toMatchObject({
+            accessibleScopeIds: ['customer-agreement', DEFAULT_PRICE_SCOPE_ID],
+            accessibleAgreedOrderScopeIds: ['customer-agreement'],
+        });
+        expect(priceService.resolvePrice(product([
+            { scopeId: 'customer-agreement', source: 'AgreedOrder', amount: 79 },
+        ]), context(selectedUser))).toMatchObject({ amount: 79, source: 'AgreedOrder' });
     });
 
     it('does not let a higher agreed-order price override a cheaper price-list price', () => {
@@ -164,7 +248,7 @@ describe('PriceService', () => {
 
         expect(result?.amount).toBe(99);
         expect(priceService.createSearchPricingContext(pricingContext)).toMatchObject({
-            accessibleScopeIds: ['LIST-1', 'E26D4039-1B76-40EB-AA03-AFF5A3BB01EA'],
+            accessibleScopeIds: ['LIST-1', 'E26D4039-1B76-40EB-AA03-AFF5A3BB01EA', DEFAULT_PRICE_SCOPE_ID],
             accessibleCompanyIds: ['Company-A'],
         });
     });
@@ -227,34 +311,31 @@ describe('PriceService', () => {
         const companies = [linkedCompany];
         const pricingContext = context(selectedUser, companies);
 
-        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['first-list']);
+        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['first-list', DEFAULT_PRICE_SCOPE_ID]);
         linkedCompany.data = { PriceListIds: DataValueFactory.stringCollection(['second-list']) };
-        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['first-list']);
+        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['first-list', DEFAULT_PRICE_SCOPE_ID]);
 
         priceService.clearAccessCache();
-        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['second-list']);
+        expect(priceService.createSearchPricingContext(pricingContext)?.accessibleScopeIds).toEqual(['second-list', DEFAULT_PRICE_SCOPE_ID]);
     });
 
-    it('uses scoped display pricing and only falls back to native pricing for an unscoped context', () => {
+    it('uses scoped display pricing and never falls back to native pricing', () => {
         const candidate = product([{ scopeId: 'list', amount: 99 }]);
 
         expect(priceService.resolveDisplayPrice(candidate, context(user(['list'])))).toEqual({
-            salesPrice: 99,
-            listPrice: null,
+            amount: 99,
             currency: 'DKK',
             source: 'PriceList',
         });
         expect(priceService.resolveDisplayPrice(candidate, context(user([])))).toEqual({
-            salesPrice: 150,
-            listPrice: 175,
+            amount: null,
             currency: 'DKK',
-            source: 'Relewise',
+            source: null,
         });
         expect(priceService.resolveDisplayPrice(candidate, context(user(['other'])))).toEqual({
-            salesPrice: null,
-            listPrice: null,
+            amount: null,
             currency: 'DKK',
-            source: 'Relewise',
+            source: null,
         });
     });
 });

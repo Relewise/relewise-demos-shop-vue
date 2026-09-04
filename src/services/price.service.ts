@@ -3,7 +3,10 @@ import type { Company, DataValue, ProductResult, User } from '@relewise/client';
 
 const PRICE_LIST_IDS_KEY = 'PriceListIds';
 const AGREED_ORDER_SCOPE_IDS_KEY = 'AgreedOrderScopeIds';
+const CUSTOMER_NUMBER_KEY = 'CustomerNumber';
 const PRICES_KEY = 'Prices';
+
+export const DEFAULT_PRICE_SCOPE_ID = 'BF41F49F-8BC9-4A0F-AC02-EEE0B9522AD5';
 
 export type ScopedPriceSource = 'PriceList' | 'AgreedOrder';
 
@@ -32,10 +35,9 @@ export interface ResolvedPrice {
 }
 
 export interface DisplayPrice {
-    salesPrice: number | null;
-    listPrice: number | null;
+    amount: number | null;
     currency: string;
-    source: ScopedPriceSource | 'Relewise';
+    source: ScopedPriceSource | null;
 }
 
 interface ScopeAccess {
@@ -43,6 +45,7 @@ interface ScopeAccess {
     agreedOrderScopeIds: Map<string, string>;
     companyIds: Map<string, string>;
     userPriceListIds: string[];
+    userAgreedOrderScopeIds: string[];
     linkedCompanyIds: string[];
     companyLookups: Array<{
         companyId: string;
@@ -146,19 +149,16 @@ export class PriceService {
         const resolvedPrice = this.resolvePrice(product, context);
         if (resolvedPrice) {
             return {
-                salesPrice: resolvedPrice.amount,
-                listPrice: null,
+                amount: resolvedPrice.amount,
                 currency: resolvedPrice.currency,
                 source: resolvedPrice.source,
             };
         }
 
-        const hasAccessibleScopes = this.getAccessibleScopes(context.user, context.companies).scopeIds.size > 0;
         const fallback = {
-            salesPrice: hasAccessibleScopes ? null : product.salesPrice ?? null,
-            listPrice: hasAccessibleScopes ? null : product.listPrice ?? null,
+            amount: null,
             currency: context.currency,
-            source: 'Relewise' as const,
+            source: null,
         };
         logDiagnostics(product, 'Display fallback', fallback);
         return fallback;
@@ -171,9 +171,11 @@ export class PriceService {
         }
 
         const userPriceListIds = readStringList(user?.data?.[PRICE_LIST_IDS_KEY]);
+        const userAgreedOrderScopeIds = readStringList(user?.data?.[AGREED_ORDER_SCOPE_IDS_KEY]);
         const linkedCompanyIds = getUserCompanyIds(user);
         const scopeIds = createCaseInsensitiveIdMap(userPriceListIds);
-        const agreedOrderScopeIds = new Map<string, string>();
+        const agreedOrderScopeIds = createCaseInsensitiveIdMap(userAgreedOrderScopeIds);
+        userAgreedOrderScopeIds.forEach((scopeId) => addCaseInsensitiveId(scopeIds, scopeId));
         const companyIds = new Map<string, string>();
         const companiesById = new Map(companies.map((company) => [normalizeId(company.id), company]));
         const visitedCompanyIds = new Set<string>();
@@ -193,6 +195,10 @@ export class PriceService {
             }
 
             addCaseInsensitiveId(companyIds, company.id);
+            const customerNumber = readString(company.data?.[CUSTOMER_NUMBER_KEY]);
+            if (customerNumber) {
+                addCaseInsensitiveId(companyIds, `customer-${customerNumber}`);
+            }
             const companyPriceListIds = readStringList(company.data?.[PRICE_LIST_IDS_KEY]);
             const companyAgreedOrderScopeIds = readStringList(company.data?.[AGREED_ORDER_SCOPE_IDS_KEY]);
             companyLookups.push({
@@ -214,11 +220,13 @@ export class PriceService {
         };
 
         linkedCompanyIds.forEach(addCompanyScopes);
+        addCaseInsensitiveId(scopeIds, DEFAULT_PRICE_SCOPE_ID);
         const access = {
             scopeIds,
             agreedOrderScopeIds,
             companyIds,
             userPriceListIds,
+            userAgreedOrderScopeIds,
             linkedCompanyIds,
             companyLookups,
         };

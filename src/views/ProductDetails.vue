@@ -59,12 +59,6 @@
           <div class="mt-6">
             <div class="mb-2 flex gap-2">
               <span
-                v-if="hasListPrice"
-                class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900"
-              >ON
-                SALE</span>
-
-              <span
                 v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                 class="rounded-full bg-black px-2 text-center text-sm font-medium text-white"
               >
@@ -74,14 +68,8 @@
 
             <div>
               <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
-                {{ $format(displayPrice?.salesPrice) }}
+                {{ $format(displayPrice?.amount) }}
               </h3>
-              <span
-                v-if="hasListPrice"
-                class="text-slate-900 line-through ml-4"
-              >
-                {{ $format(displayPrice?.listPrice) }}
-              </span>
             </div>
           </div>
 
@@ -215,9 +203,6 @@ const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const displayPrice = computed(() => product.value ? contextStore.resolveProductPrice(product.value) : undefined);
-const hasListPrice = computed(() => displayPrice.value?.listPrice !== null
-  && displayPrice.value?.listPrice !== undefined
-  && displayPrice.value.salesPrice !== displayPrice.value.listPrice);
 
 const details = computed(() => {
   if (!product.value) return [];
@@ -314,11 +299,12 @@ watch(route, () => {
 });
 
 function addToBasket() {
-  if (!product.value) return;
+  if (!product.value || displayPrice.value?.amount == null) return;
 
   basketService.addProduct({
     product: product.value,
     quantityDelta: 1,
+    unitPrice: displayPrice.value.amount,
   });
 
   trackingService.trackCart(basketService.model.value.lineItems);

@@ -5,7 +5,6 @@ import type { DisplayPrice } from '@/services/price.service';
 
 export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions, displayPrice: DisplayPrice) => {
     let path = `/product/${product.productId}`;
-    const hasListPrice = displayPrice.listPrice !== null && displayPrice.salesPrice !== displayPrice.listPrice;
 
     if (product.variant?.variantId) {
         path += `/variant/${product.variant.variantId}`;
@@ -59,22 +58,6 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
 
             .image {
                 object-fit: cover;
-            }
-
-            .on-sale {
-                position: absolute; 
-                top: 0; 
-                left: 0; 
-                padding-left: 0.5rem;
-                padding-right: 0.5rem; 
-                margin: 0.5rem; 
-                border-radius: 9999px; 
-                font-size: 0.875rem;
-                line-height: 1.25rem; 
-                font-weight: 500; 
-                text-align: center; 
-                color: #7f1d1d; 
-                background-color: #fecaca; 
             }
 
              .sold-out {
@@ -135,15 +118,11 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 line-height: 1; 
             }
             
-            .list-price {
-                text-decoration: line-through; 
-            }
         </style>
         <a href="${path}" class="product-link">
             <app-product-favorite-button floating .product=${product}></app-product-favorite-button>
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
-                ${hasListPrice ? html`<span class="on-sale">ON SALE</span>` : html``}
                 ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
             </div>
             <div class="padding">
@@ -155,8 +134,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 </div>
                 <div class="price-container">
                     <p>
-                        <span class="sales-price">${helpers.formatPrice(displayPrice.salesPrice)}</span>
-                        ${hasListPrice ? html`<span class="list-price">${helpers.formatPrice(displayPrice.listPrice)}</span>` : ''}
+                        <span class="sales-price">${helpers.formatPrice(displayPrice.amount)}</span>
                     </p>
                 </div>
             </div>

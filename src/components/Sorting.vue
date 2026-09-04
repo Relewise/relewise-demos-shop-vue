@@ -16,13 +16,13 @@
         v-if="type === 'Product'"
         value="SalesPriceDesc"
       >
-        Sales Price desc
+        Price descending
       </option>
       <option
         v-if="type === 'Product'"
         value="SalesPriceAsc"
       >
-        Sales Price asc
+        Price ascending
       </option>
       <option
         v-if="type === 'Product' && showAgreedOrderSort"

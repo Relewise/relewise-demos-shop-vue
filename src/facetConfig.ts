@@ -2,22 +2,22 @@ import type { DataSelectionStrategy } from '@relewise/client';
 
 export const facetConfig: FacetConfigEntry[] = [
     {
-        contexts: ['SearchOverlay', 'Brand'],
+        contexts: ['SearchOverlay', 'Brand', 'AgreedOrders'],
         type: 'Category',
         renderType: 'Checklist',
         label: 'Category',
     },
     {
-        contexts: ['Category', 'SearchOverlay'],
+        contexts: ['Category', 'SearchOverlay', 'AgreedOrders'],
         type: 'BrandFacet',
         renderType: 'Checklist',
         label: 'Brand',
     },
     {
-        contexts: ['Category', 'SearchOverlay', 'Brand'],
+        contexts: ['Category', 'SearchOverlay', 'Brand', 'AgreedOrders'],
         type: 'SalesPrice',
         renderType: 'Range',
-        label: 'Sales Price',
+        label: 'Price',
     },
     {
         contexts: ['Category', 'SearchOverlay', 'Brand'],
@@ -40,7 +40,7 @@ export const facetConfig: FacetConfigEntry[] = [
     },
 ];
 
-export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand' | 'ContentSearch';
+export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand' | 'AgreedOrders' | 'ContentSearch';
 
 type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'ContentDataString' | 'SalesPrice' | 'AgreedOrder' | 'DataDouble' | 'DataDoubleRange' | 'ContentCategory';
 type FacetRenderType = 'Checklist' | 'Range' | 'AgreedOrder';

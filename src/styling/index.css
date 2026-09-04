@@ -2,16 +2,16 @@
 @import "tailwindcss";
 
 @theme {
-    --color-brand-50: #EBEFFC;
-    --color-brand-100: #AFC1F4;
-    --color-brand-200: #91AAF0;
-    --color-brand-300: #7392EC;
-    --color-brand-400: #557BE8;
-    --color-brand-500: #3764E4;
-    --color-brand-600: #1E4FDB;
-    --color-brand-700: #1A44BD;
-    --color-brand-800: #16399F;
-    --color-brand-900: #112F82;
+    --color-brand-50: #EEF2F5;
+    --color-brand-100: #D9E2EA;
+    --color-brand-200: #B7C9D8;
+    --color-brand-300: #8BA8C0;
+    --color-brand-400: #5F86A6;
+    --color-brand-500: #3B5777;
+    --color-brand-600: #294968;
+    --color-brand-700: #144164;
+    --color-brand-800: #103653;
+    --color-brand-900: #09243A;
 }
 
 :root {
@@ -23,6 +23,8 @@
 html,
 body {
     height: 100%;
+    color: #4A4A4A;
+    font-family: 'Titillium Web', Arial, sans-serif;
 }
 
 @layer base {
@@ -51,7 +53,7 @@ body {
     }
 
     button {
-        @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded-lg shadow-xs;
+        @apply px-6 py-2.5 font-semibold text-sm bg-brand-700 text-white rounded-none shadow-xs;
     }
 
     button:not(:disabled),
@@ -97,28 +99,21 @@ iframe[name^="__lpform_"] {
     overflow: hidden !important;
 }
 
-@font-face {
-    font-family: 'ItalianPlate';
-    src: url('/fonts/ItalianPlateNo2Expanded-Bold.woff2') format('woff2');
-    font-weight: bold;
-    font-style: normal;
-}
-
 h1,
 h2,
 h3,
 h4 {
-    font-family: 'ItalianPlate', sans-serif;
-    font-weight: 700;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400;
     font-style: normal;
 }
 
 .text-brand1 {
-    color: #3764E4;
+    color: #144164;
 }
 
 .text-brand2 {
-    color: #FFC1D7;
+    color: #B67C29;
 }
 
 .underline--yellow {
@@ -127,7 +122,7 @@ h4 {
 }
 
 .underline--yellow::after {
-    background: #FFD93B;
+    background: #C38C3D;
     border-radius: 2px;
     bottom: 3px;
     content: "";
@@ -141,27 +136,27 @@ h4 {
 }
 
 .brand1 {
-    background-color: #3764E4;
+    background-color: #144164;
 }
 
 .brand2 {
-    background-color: #FFC1D7;
+    background-color: #E9DFCF;
 }
 
 .brand3 {
-    background-color: #53CF78;
+    background-color: #B67C29;
 }
 
 .brand4 {
-    background-color: #FFD93B;
+    background-color: #D8C39A;
 }
 
 .brand5 {
-    background-color: #e9effb;
+    background-color: #EEF2F5;
 }
 
 .brand6 {
-    background-color: #e0d5d5;
+    background-color: #E7E1D8;
 }
 
 .brand1:hover,
@@ -250,6 +245,6 @@ h4 {
 }
 
 .bg-gradient {
-    background: rgb(55, 100, 228);
-    background: radial-gradient(circle, rgba(55, 100, 228, 1) 0%, rgba(15, 41, 115, 1) 81%);
+    background: rgb(59, 87, 119);
+    background: radial-gradient(circle, rgba(59, 87, 119, 1) 0%, rgba(20, 65, 100, 1) 81%);
 }

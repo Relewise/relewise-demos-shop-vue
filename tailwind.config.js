@@ -4,19 +4,18 @@ export default {
     theme: {
         extend: {
             colors: {
-                'brand-50': '#EBEFFC',
-                'brand-100': '#AFC1F4',
-                'brand-200': '#91AAF0',
-                'brand-300': '#7392EC',
-                'brand-400': '#557BE8',
-                'brand-500': '#3764E4',
-                'brand-600': '#1E4FDB',
-                'brand-700': '#1A44BD',
-                'brand-800': '#16399F',
-                'brand-900': '#112F82',
+                'brand-50': '#EEF2F5',
+                'brand-100': '#D9E2EA',
+                'brand-200': '#B7C9D8',
+                'brand-300': '#8BA8C0',
+                'brand-400': '#5F86A6',
+                'brand-500': '#3B5777',
+                'brand-600': '#294968',
+                'brand-700': '#144164',
+                'brand-800': '#103653',
+                'brand-900': '#09243A',
             },
         },
     },
     plugins: [],
 };
-

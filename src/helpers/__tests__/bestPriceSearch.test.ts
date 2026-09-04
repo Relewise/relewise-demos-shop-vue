@@ -208,12 +208,13 @@ describe('bestPriceSearch', () => {
         expect(filters).toEqual({ sort: '' });
     });
 
-    it('falls back to native SalesPrice behavior when scope access is empty', () => {
+    it('does not fall back to native SalesPrice behavior without a pricing context', () => {
         const request = buildPriceRequest(null);
 
         expect(request.filters?.items ?? []).toHaveLength(0);
-        expect(request.facets.items[0].field).toBe('SalesPrice');
-        expect(request.sorting.value).toMatchObject({ attribute: 'SalesPrice', order: 'Ascending' });
+        expect(request.facets?.items ?? []).toHaveLength(0);
+        expect(request.sorting.value).toMatchObject({ order: 'Descending' });
+        expect(request.sorting.value.$type).toContain('ProductRelevanceSorting');
     });
 
     it('adapts nested price and agreed-order facet results for the existing UI', () => {
