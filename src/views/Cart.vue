@@ -117,13 +117,7 @@
                 {{ $format(lineTotal(item)) }}
               </p>
               <div class="mt-2 text-sm text-slate-500">
-                <p>Each: {{ $format(item.product.salesPrice) }}</p>
-                <p
-                  v-if="item.product.salesPrice !== item.product.listPrice"
-                  class="line-through"
-                >
-                  Was {{ $format(item.product.listPrice) }}
-                </p>
+                <p>Each: {{ $format(item.unitPrice) }}</p>
               </div>
             </div>
 
@@ -370,7 +364,7 @@ function productMeta(item: ILineItem) {
 }
 
 function lineTotal(item: ILineItem) {
-    return (item.product.salesPrice ?? 0) * item.quantity;
+    return item.unitPrice * item.quantity;
 }
 
 function getCartProductIds() {
@@ -458,7 +452,7 @@ function remove(item: ILineItem) {
 }
 
 function applyCartQuantityChange(item: ILineItem, quantityDelta: number) {
-    basketService.addProduct({ product: item.product, quantityDelta });
+    basketService.addProduct({ product: item.product, quantityDelta, unitPrice: item.unitPrice });
     refreshCartState();
 }
 

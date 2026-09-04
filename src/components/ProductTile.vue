@@ -15,6 +15,7 @@ const props = defineProps({
 const { product } = toRefs(props);
 
 const showScore = contextStore.context.value.showProductRelevanceScore;
+const displayPrice = computed(() => contextStore.resolveProductPrice(product.value));
 
 const displayName = computed(() => {
     if (!contextStore.context.value.searchHighlight || !product.value.displayName)
@@ -67,12 +68,6 @@ const displayName = computed(() => {
         </Popover>
 
         <span
-          v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
-          class="rounded bg-red-200 px-2 py-0.5 text-center text-xs font-medium text-red-900 m-3"
-        >
-          ON SALE
-        </span>
-        <span
           v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
           class="rounded bg-black px-2 py-0.5 text-center text-xs font-medium text-white  m-3"
         >
@@ -107,13 +102,7 @@ const displayName = computed(() => {
       <div class="mt-2 flex items-center justify-between">
         <p>
           <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">
-            {{ $format(product.salesPrice) }}
-          </span>
-          <span
-            v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
-            class="text-slate-900 line-through"
-          >
-            {{ $format(product.listPrice) }}
+            {{ $format(displayPrice.amount) }}
           </span>
         </p>
       </div>

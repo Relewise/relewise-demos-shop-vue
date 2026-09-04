@@ -60,6 +60,7 @@ import { ProductSearchBuilder, userIsAnonymous, type ProductSearchResponse } fro
 import { onMounted, ref, watch } from 'vue';
 import Pagination from '@/components/Pagination.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { addScopedPriceEligibilityFilter } from '@/helpers/bestPriceSearch';
 
 const results = ref<ProductSearchResponse>();
 const page = ref(1);
@@ -79,7 +80,10 @@ async function search() {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .pagination(p => p.setPage(page.value).setPageSize(40))
-        .filters(f => f.addProductEngagementFilter({ isFavorite: true })), contextStore.context.value);
+        .filters(f => {
+            f.addProductEngagementFilter({ isFavorite: true });
+            addScopedPriceEligibilityFilter(f, contextStore.createSearchPricingContext());
+        }), contextStore.context.value);
 
     const searcher = await contextStore.getSearcher();
 
