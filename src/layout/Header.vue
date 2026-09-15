@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { BuildingOffice2Icon, ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
+import { ArchiveBoxIcon, BuildingOffice2Icon, ChevronDownIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { computed, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
-import ConversationalSearchOverlay from '@/components/ConversationalSearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
@@ -53,8 +52,9 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
             class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150"
           >
             <img
-              src="/demoshopwise.png"
-              style="height: 40px;"
+              src="/hj-hansen-vin-logo.svg"
+              alt="H.J. Hansen Vin"
+              class="h-12 w-auto object-contain"
             >
           </RouterLink>
         </div>
@@ -66,7 +66,6 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
             <div class="min-w-0 flex-1">
               <SearchOverlay />
             </div>
-            <ConversationalSearchOverlay />
           </div>
           <div
             v-else
@@ -158,12 +157,12 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
           </div>
           <component
             :is="hasActiveDataset ? 'RouterLink' : 'div'"
-            :to="hasActiveDataset ? '/favorites' : undefined"
+            :to="hasActiveDataset ? '/agreed-orders' : undefined"
             class="relative flex flex-col items-center"
             :class="hasActiveDataset ? 'text-slate-600' : 'text-slate-300 cursor-not-allowed'"
           >
-            <HeartIcon class="h-8 w-8" />
-            <span class="text-[9px] mt-1 font-bold">FAVORITES</span>
+            <ArchiveBoxIcon class="h-8 w-8" />
+            <span class="text-[9px] mt-1 font-bold whitespace-nowrap">MY AGREED ORDERS</span>
           </component>
           <component
             :is="hasActiveDataset ? 'RouterLink' : 'div'"

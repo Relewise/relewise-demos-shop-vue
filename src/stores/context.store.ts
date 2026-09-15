@@ -1,4 +1,4 @@
-import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, type Company, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
+import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, type Company, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory, type ProductResult } from '@relewise/client';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
@@ -7,6 +7,7 @@ import { createRecommenderForDataset, createSearcherForDataset, createTrackerFor
 import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSessionSelectionsForDataset, type SessionSelections } from '@/helpers/contextSession';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
+import priceService, { type DisplayPrice, type PricingContext, type SearchPricingContext } from '@/services/price.service';
 
 export type VariantRequestSorting = 'GroupedByProduct' | 'ByRelevance';
 
@@ -183,6 +184,23 @@ class AppContext {
         };
     }
 
+    public get pricingContext(): PricingContext {
+        const selectedUserIndex = this.selectedUserIndex.value;
+        return {
+            user: selectedUserIndex === undefined ? undefined : this.context.value.users?.[selectedUserIndex],
+            companies: this.hasActiveDataset.value ? this.context.value.companies ?? [] : [],
+            currency: this.currencyCode.value,
+        };
+    }
+
+    public resolveProductPrice(product: ProductResult): DisplayPrice {
+        return priceService.resolveDisplayPrice(product, this.pricingContext);
+    }
+
+    public createSearchPricingContext(now: Date = new Date()): SearchPricingContext | null {
+        return priceService.createSearchPricingContext(this.pricingContext, now);
+    }
+
     public get selectedProductProperties(): SelectedProductPropertiesSettings {
         return {
             displayName: true,
@@ -332,6 +350,7 @@ class AppContext {
     public setUserSelection(selectedUserIndex: number | undefined) {
         this.state.selectedUserIndex = selectedUserIndex;
         this.normalizeSessionSelections();
+        priceService.clearAccessCache();
         basketService.clear();
         this.persistState();
     }
@@ -375,11 +394,13 @@ class AppContext {
 
     public setCurrency(currency: string) {
         this.state.selectedCurrencyCode = currency || undefined;
+        priceService.clearAccessCache();
     }
 
     public setCompany(companyId: string) {
         this.state.selectedCompanyId = companyId || undefined;
         this.normalizeSessionSelections();
+        priceService.clearAccessCache();
         this.persistState();
     }
 
@@ -391,6 +412,7 @@ class AppContext {
         this.context.value.users.splice(this.selectedUserIndex.value, 1);
 
         this.normalizeSessionSelections();
+        priceService.clearAccessCache();
 
         this.initializeWebComponents();
         this.persistState();
@@ -402,6 +424,7 @@ class AppContext {
         }
 
         this.normalizeSessionSelections();
+        priceService.clearAccessCache();
         this.persistState();
 
         if (this.hasActiveDataset.value) {
@@ -414,6 +437,7 @@ class AppContext {
     public deleteCompanyById(id: string) {
         this.context.value.companies = this.context.value.companies?.filter((company) => company.id !== id);
         this.normalizeSessionSelections();
+        priceService.clearAccessCache();
         this.persistState();
     }
 
@@ -439,6 +463,7 @@ class AppContext {
             currencyCode: this.currencyCode.value,
             user: this.user.value,
             selectedProductProperties: this.selectedProductProperties,
+            resolveProductPrice: (product) => this.resolveProductPrice(product),
         });
     }
 

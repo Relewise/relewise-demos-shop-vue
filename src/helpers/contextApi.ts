@@ -1,8 +1,9 @@
 import { WebComponentProductTemplate } from '@/components/WebComponentProductTemplate';
 import { initializeRelewiseUI } from '@relewise/web-components';
-import { Recommender, Searcher, Tracker, type SelectedProductPropertiesSettings, type User } from '@relewise/client';
+import { Recommender, Searcher, Tracker, type ProductResult, type SelectedProductPropertiesSettings, type User } from '@relewise/client';
 import type { IDataset } from '@/stores/context.store';
 import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
+import type { DisplayPrice } from '@/services/price.service';
 
 function assertDatasetCredentials(dataset?: IDataset): asserts dataset is IDataset {
     if (!dataset?.apiKey || !dataset.datasetId) {
@@ -31,12 +32,14 @@ export function initializeWebComponentsForDataset({
     currencyCode,
     user,
     selectedProductProperties,
+    resolveProductPrice,
 }: {
     dataset: IDataset;
     language: string;
     currencyCode: string;
     user: User;
     selectedProductProperties: SelectedProductPropertiesSettings;
+    resolveProductPrice: (product: ProductResult) => DisplayPrice;
 }) {
     initializeRelewiseUI(
         {
@@ -56,7 +59,7 @@ export function initializeWebComponentsForDataset({
             },
             templates: {
                 product: (product, extentions) => {
-                    return WebComponentProductTemplate(product, extentions);
+                    return WebComponentProductTemplate(product, extentions, resolveProductPrice(product));
                 },
             },
             filters: {

@@ -11,10 +11,10 @@ defineProps({
 </script>
 
 <template>
-  <div class="waves-pink" />
+  <div class="waves" />
   <footer
-    class="!text-brand-500"
-    style="background-color: #FFC1D7;"
+    class="!text-brand-700"
+    style="background-color: #E9DFCF;"
   >
     <div class="container px-6 py-12 mx-auto">
       <div class="flex flex-col lg:flex-row gap-8">
@@ -76,13 +76,13 @@ defineProps({
 
       <hr
         v-if="hasChildCategories || mainCategories.length > 0"
-        class="my-6 border-[#e4a8bd] md:my-5"
+        class="my-6 border-[#CDBB9C] md:my-5"
       >
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <img
-          src="/logo.svg"
-          class="h-11"
-          alt="Relewise"
+          src="/hj-hansen-vin-logo.svg"
+          class="h-16 w-auto object-contain"
+          alt="H.J. Hansen Vin"
         >
 
         <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-sm text-slate-900 sm:justify-end sm:text-right">

@@ -73,6 +73,11 @@ const router = createRouter({
             component: () => import('../views/Favorites.vue'),
         },
         {
+            path: '/agreed-orders',
+            name: 'agreed-orders',
+            component: () => import('../views/AgreedOrders.vue'),
+        },
+        {
             path: '/feed',
             name: 'feed',
             component: () => import('../views/Feed.vue'),

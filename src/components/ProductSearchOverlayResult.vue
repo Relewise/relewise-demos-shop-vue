@@ -26,6 +26,7 @@ const props = defineProps({
     sort: { type: [String, Array] as PropType<string | string[]>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
     predictionsList: { type: Array as PropType<SearchTermPredictionResult[]>, required: true },
+    showAgreedOrderSort: { type: Boolean, required: false, default: false },
 });
 
 const route = useRoute();
@@ -92,6 +93,7 @@ function searchFor(term: string) {
         v-if="hasProductResults"
         v-model="sortValue"
         type="Product"
+        :show-agreed-order-sort="showAgreedOrderSort"
       />
     </div>
     <div :class="hasProductResults ? 'flex gap-10' : ''">

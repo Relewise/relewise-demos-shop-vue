@@ -3,6 +3,7 @@ import { computed, type PropType } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import type { ProductSearchResponse, ProductResult, VariantResult } from '@relewise/client';
 import Image from './Image.vue';
+import contextStore from '@/stores/context.store';
 
 const props = defineProps({
     productResult: { type: Object as PropType<ProductSearchResponse>, required: true },
@@ -35,6 +36,10 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
     } else {
         router.push({ name: 'product', params: { id: product.productId } });
     }
+}
+
+function getDisplayPrice(product: ProductResult, variant: VariantResult | null) {
+    return contextStore.resolveProductPrice(product).amount;
 }
 </script>
 
@@ -131,10 +136,10 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
       <div class="col-span-2 font-semibold flex lg:block w-full">
         <span class="lg:hidden inline-block w-1/3">Price: </span>
         <span
-          v-if="variant?.listPrice ?? product.listPrice"
+          v-if="getDisplayPrice(product, variant) !== null && getDisplayPrice(product, variant) !== undefined"
           class="text-slate-900"
         >
-          {{ $format(variant?.listPrice ?? product.listPrice) }}
+          {{ $format(getDisplayPrice(product, variant)) }}
         </span>
       </div>
     </div>

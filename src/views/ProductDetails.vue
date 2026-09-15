@@ -59,12 +59,6 @@
           <div class="mt-6">
             <div class="mb-2 flex gap-2">
               <span
-                v-if="product.salesPrice !== product.listPrice"
-                class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900"
-              >ON
-                SALE</span>
-
-              <span
                 v-if="product.data && product.data.SoldOut && product.data.SoldOut.value === 'true'"
                 class="rounded-full bg-black px-2 text-center text-sm font-medium text-white"
               >
@@ -74,14 +68,8 @@
 
             <div>
               <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
-                {{ $format(product.salesPrice) }}
+                {{ $format(displayPrice?.amount) }}
               </h3>
-              <span
-                v-if="product.salesPrice !== product.listPrice"
-                class="text-slate-900 line-through ml-4"
-              >
-                {{ $format(product.listPrice) }}
-              </span>
             </div>
           </div>
 
@@ -205,6 +193,7 @@ import ProductVariants from '../components/ProductVariants.vue';
 import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
 import DataValueList, { type DataValueEntry } from '../components/DataValueList.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { addScopedPriceEligibilityFilter } from '@/helpers/bestPriceSearch';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);
@@ -213,6 +202,7 @@ const route = useRoute();
 const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const displayPrice = computed(() => product.value ? contextStore.resolveProductPrice(product.value) : undefined);
 
 const details = computed(() => {
   if (!product.value) return [];
@@ -288,6 +278,7 @@ async function init() {
         }
 
         contextStore.userClassificationBasedFilters(f);
+        addScopedPriceEligibilityFilter(f, contextStore.createSearchPricingContext());
       })
       .pagination(p => p.setPageSize(1)), contextStore.context.value)
       .build();
@@ -308,11 +299,12 @@ watch(route, () => {
 });
 
 function addToBasket() {
-  if (!product.value) return;
+  if (!product.value || displayPrice.value?.amount == null) return;
 
   basketService.addProduct({
     product: product.value,
     quantityDelta: 1,
+    unitPrice: displayPrice.value.amount,
   });
 
   trackingService.trackCart(basketService.model.value.lineItems);

@@ -280,7 +280,10 @@ function trackClick(type: 'Product' | 'Content', id: string) {
 function addProductToBasket() {
     if (!topProduct.value) return;
 
-    basketService.addProduct({ product: topProduct.value, quantityDelta: 1 });
+    const displayPrice = contextStore.resolveProductPrice(topProduct.value);
+    if (displayPrice.amount == null) return;
+
+    basketService.addProduct({ product: topProduct.value, quantityDelta: 1, unitPrice: displayPrice.amount });
     trackingService.trackCart(basketService.model.value.lineItems);
 
     topButtonClass.value = 'animate-bounce';

@@ -23,6 +23,7 @@
         v-if="filters.sort != null"
         v-model="filters.sort"
         type="Product"
+        :show-agreed-order-sort="showAgreedOrderSort"
         @change="search"
       />
     </div>
@@ -146,6 +147,7 @@ import DisplayAdHeroBanner from '@/components/DisplayAds/DisplayAd-HeroBanner.vu
 import DisplayAdTile from '@/components/DisplayAds/DisplayAd-Tile.vue';
 import { sortCategories } from '@/helpers/sortCategories';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { addAgreedOrderFilter, addScopedPriceEligibilityFilter, AGREED_ORDER_SORT, hasAgreedOrderAccess, removeEmptyBestPriceFacetSelection, sanitizeAgreedOrderSelections, sortByAgreedOrder, sortByBestPrice } from '@/helpers/bestPriceSearch';
 
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
@@ -160,6 +162,7 @@ const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const showAgreedOrderSort = ref(false);
 
 async function init() {
     const id = route.params.id;
@@ -253,9 +256,12 @@ watch(breakpointService.active, () => {
 
 async function search() {
     const variationName = breakpointService.active.value.toUpperCase();
+    const pricingContext = contextStore.createSearchPricingContext();
+    sanitizeAgreedOrderSelections(filters.value, pricingContext);
+    showAgreedOrderSort.value = hasAgreedOrderAccess(pricingContext);
     scrollTo({ top: 0 });
 
-    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+    const request = removeEmptyBestPriceFacetSelection(applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .setRetailMedia(rm => rm
@@ -270,6 +276,8 @@ async function search() {
         .filters(f => {
             f.addProductCategoryIdFilter('Ancestor', [categoryId.value]);
             contextStore.userClassificationBasedFilters(f);
+            addScopedPriceEligibilityFilter(f, pricingContext);
+            addAgreedOrderFilter(f, filters.value, pricingContext);
         })
         .facets(f => {
             if (renderCatoryLinks.value) {
@@ -277,7 +285,7 @@ async function search() {
             } else {
                 f.addCategoryFacet('ImmediateParent', Array.isArray(filters.value['category']) && filters.value['category'].length > 0 ? filters.value['category'] : null);
             }
-            getFacets('Category', f, filters.value);
+            getFacets('Category', f, filters.value, pricingContext);
         })
         .relevanceModifiers(r => addRelevanceModifiers(r))
         .pagination(p => p.setPageSize(40).setPage(page.value))
@@ -286,13 +294,16 @@ async function search() {
                 s.sortByProductPopularity();
             }
             else if (filters.value.sort === 'SalesPriceDesc') {
-                s.sortByProductAttribute('SalesPrice', 'Descending');
+                sortByBestPrice(s, 'Descending', pricingContext);
             }
             else if (filters.value.sort === 'SalesPriceAsc') {
-                s.sortByProductAttribute('SalesPrice', 'Ascending');
+                sortByBestPrice(s, 'Ascending', pricingContext);
+            }
+            else if (filters.value.sort === AGREED_ORDER_SORT) {
+                sortByAgreedOrder(s, pricingContext);
             }
         }), contextStore.context.value)
-        .build();
+        .build());
 
     const query = { ...filters.value };
     await router.push({ path: route.path, query: query, replace: true });

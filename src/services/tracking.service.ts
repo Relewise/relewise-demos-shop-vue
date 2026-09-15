@@ -105,7 +105,7 @@ class TrackingService {
             productId: x.product.productId ?? '',
             variantId: x.product.variant?.variantId ?? undefined,
             quantity: x.quantity,
-            lineTotal: x.quantity * (x.product.salesPrice ?? 0),
+            lineTotal: x.quantity * x.unitPrice,
         }));
     }
 

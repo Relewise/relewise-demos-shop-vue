@@ -27,14 +27,14 @@
 </template>
 
 <script setup lang="ts">
-import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult } from '@relewise/client';
+import type { DataObjectDoubleRangeFacetResult, PriceRangeFacetResult, ProductDataDoubleRangeFacetResult } from '@relewise/client';
 import { ref, toRefs, watch, type PropType } from 'vue';
 import Slider from '@vueform/slider';
-import { getFacetSettings } from '@/helpers/facetHelper';
 
 const props = defineProps({
-    facet: { type: Object as PropType<PriceRangeFacetResult | ProductDataDoubleRangeFacetResult>, required: true },
+    facet: { type: Object as PropType<PriceRangeFacetResult | ProductDataDoubleRangeFacetResult | DataObjectDoubleRangeFacetResult>, required: true },
     filters: { type: Object as PropType<Record<string, string | string[]>>, required: true },
+    filterKey: { type: String, required: true },
 });
 
 const min = ref(0);
@@ -46,18 +46,7 @@ const { facet, filters } = toRefs(props);
 
 const emit = defineEmits(['search']);
 
-const filterKey = calculateFilterKey();
-
-function calculateFilterKey() {
-    const config = getFacetSettings(facet.value);
-
-    if (config?.type === 'SalesPrice')
-        return 'price';
-
-    if (config?.dataKey) {
-        return config.dataKey;
-    }
-}
+const filterKey = props.filterKey;
 
 watch(facet, () => {
     if (filterKey && filters.value[filterKey]) {
