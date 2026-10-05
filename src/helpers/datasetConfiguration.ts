@@ -63,6 +63,7 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         variantRequestSorting: dataset.variantRequestSorting === 'ByRelevance' ? 'ByRelevance' : defaultVariantRequestSorting,
         contentSearch: dataset.contentSearch ?? false,
         searchHighlight: dataset.searchHighlight ?? false,
+        conversationalSearchEnabled: dataset.conversationalSearchEnabled ?? false,
         shoppertainmentEnabled: dataset.shoppertainmentEnabled ?? false,
     };
 }

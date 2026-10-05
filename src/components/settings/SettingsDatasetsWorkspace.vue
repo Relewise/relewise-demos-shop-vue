@@ -292,6 +292,7 @@ function createEmptyDraft(): DatasetDraft {
         variantBasedSearchOverlay: false,
         contentSearch: false,
         searchHighlight: false,
+        conversationalSearchEnabled: false,
         shoppertainmentEnabled: false,
     };
 }
