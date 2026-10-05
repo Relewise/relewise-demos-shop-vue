@@ -66,7 +66,7 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
             <div class="min-w-0 flex-1">
               <SearchOverlay />
             </div>
-            <ConversationalSearchOverlay />
+            <ConversationalSearchOverlay v-if="contextStore.context.value.conversationalSearchEnabled" />
           </div>
           <div
             v-else

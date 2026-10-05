@@ -34,6 +34,7 @@ export interface IDataset {
     variantRequestSorting?: VariantRequestSorting;
     contentSearch?: boolean;
     searchHighlight?: boolean;
+    conversationalSearchEnabled?: boolean;
     shoppertainmentEnabled?: boolean;
 }
 

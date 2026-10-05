@@ -10,6 +10,7 @@ export type DatasetBooleanKey =
     | 'variantResolutionImages'
     | 'searchHighlight'
     | 'contentSearch'
+    | 'conversationalSearchEnabled'
     | 'shoppertainmentEnabled';
 
 export const datasetFeatureFields: Array<{ key: DatasetBooleanKey; label: string; description: string }> = [
@@ -62,6 +63,11 @@ export const datasetFeatureFields: Array<{ key: DatasetBooleanKey; label: string
         key: 'contentSearch',
         label: 'Content search',
         description: 'Include content results in the search overlay.',
+    },
+    {
+        key: 'conversationalSearchEnabled',
+        label: 'Conversational search',
+        description: 'Show the conversational search button in the header.',
     },
     {
         key: 'shoppertainmentEnabled',
