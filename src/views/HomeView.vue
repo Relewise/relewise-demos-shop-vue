@@ -1,16 +1,36 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import OnSaleSlider from '@/components/OnSaleSlider.vue';
 import HeroBanner from '@/components/HeroBanner.vue';
 import PopularCategories from '@/components/PopularCategories.vue';
 
 const brands = ref<BrandRecommendationResponse | undefined | null>(null);
+const route = useRoute();
+const router = useRouter();
 
 const defaultSettings = ref(contextStore.defaultSettings);
 const isConfigured = ref(contextStore.isConfigured);
+const recommendationMode = computed(() => {
+    if (route.query.recommendations === 'personal' || route.query.recommendations === 'popular') {
+        return route.query.recommendations;
+    }
+
+    return window.localStorage.getItem('homepage-recommendation-mode') === 'personal' ? 'personal' : 'popular';
+});
+
+function setRecommendationMode(mode: 'popular' | 'personal') {
+    window.localStorage.setItem('homepage-recommendation-mode', mode);
+    router.replace({
+        query: {
+            ...route.query,
+            recommendations: mode,
+        },
+    });
+}
 
 recommend();
 
@@ -41,14 +61,37 @@ async function recommend() {
       <div class="waves" />
       <div class="container mx-auto py-10">
         <h2 class="text-3xl font-semibold mb-3 text-center">
-          Most popular products right now.
+          {{ recommendationMode === 'personal' ? 'Recommended for you.' : 'Most popular products right now.' }}
         </h2>
+        <div class="flex justify-center gap-2 mb-6">
+          <button
+            class="rounded-lg px-4 py-2 border border-solid border-brand1"
+            :class="recommendationMode === 'popular' ? 'bg-brand1 text-white' : 'bg-white text-brand1'"
+            @click="setRecommendationMode('popular')"
+          >
+            Popular products
+          </button>
+          <button
+            class="rounded-lg px-4 py-2 border border-solid border-brand1"
+            :class="recommendationMode === 'personal' ? 'bg-brand1 text-white' : 'bg-white text-brand1'"
+            @click="setRecommendationMode('personal')"
+          >
+            Personal recommendations
+          </button>
+        </div>
         <div class="w-full overflow-x-auto pb-2">
           <relewise-popular-products
+            v-if="recommendationMode === 'popular'"
             class="flex flex-row gap-3"
             :displayed-at-location="defaultSettings.displayedAtLocation"
             :number-of-recommendations="contextStore.numberOfProductsToRecommend"
             :since-minutes-ago="contextStore.getRecommendationsSinceMinutesAgo()"
+          />
+          <relewise-personal-products
+            v-else
+            class="flex flex-row gap-3"
+            :displayed-at-location="defaultSettings.displayedAtLocation"
+            :number-of-recommendations="contextStore.numberOfProductsToRecommend"
           />
         </div>
       </div>
