@@ -385,6 +385,12 @@ async function shareDataset(dataset: IDataset) {
         selectedCompanyId: isActiveDataset ? contextStore.selectedCompanyId.value : undefined,
     }))));
 
+    if (window.location.hostname !== 'relewise-demo-shop.netlify.app') {
+        await navigator.clipboard.writeText(shareUrl.toString());
+        notificationsStore.push({ type: 'success', title: 'Share link copied', text: 'A configured preview link was copied to the clipboard.' });
+        return;
+    }
+
     try {
         const response = await fetch(`${shortUrlServiceUrl}/${dataset.datasetId}`, {
             method: 'POST',
