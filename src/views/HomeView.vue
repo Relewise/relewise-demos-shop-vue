@@ -14,9 +14,16 @@ const router = useRouter();
 
 const defaultSettings = ref(contextStore.defaultSettings);
 const isConfigured = ref(contextStore.isConfigured);
-const recommendationMode = computed(() => route.query.recommendations === 'personal' ? 'personal' : 'popular');
+const recommendationMode = computed(() => {
+    if (route.query.recommendations === 'personal' || route.query.recommendations === 'popular') {
+        return route.query.recommendations;
+    }
+
+    return window.localStorage.getItem('homepage-recommendation-mode') === 'personal' ? 'personal' : 'popular';
+});
 
 function setRecommendationMode(mode: 'popular' | 'personal') {
+    window.localStorage.setItem('homepage-recommendation-mode', mode);
     router.replace({
         query: {
             ...route.query,

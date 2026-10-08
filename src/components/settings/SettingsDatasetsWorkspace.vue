@@ -373,6 +373,10 @@ function selectDataset(datasetId: string) {
 
 async function shareDataset(dataset: IDataset) {
     const shareUrl = new URL('/settings', window.location.origin);
+    const recommendationMode = window.localStorage.getItem('homepage-recommendation-mode');
+    if (recommendationMode === 'popular' || recommendationMode === 'personal') {
+        shareUrl.searchParams.set('recommendations', recommendationMode);
+    }
     const isActiveDataset = dataset.datasetId === activeDatasetId.value;
     shareUrl.searchParams.set('share', encodeSharePayload(JSON.stringify(buildSharedDataset(dataset, {
         language: isActiveDataset ? contextStore.language.value : undefined,
@@ -391,7 +395,8 @@ async function shareDataset(dataset: IDataset) {
         });
 
         if (!response.ok) {
-            notificationsStore.push({ type: 'error', title: 'Share link failed', text: `Could not create a short link for ${dataset.displayName || dataset.datasetId}.` });
+            await navigator.clipboard.writeText(shareUrl.toString());
+            notificationsStore.push({ type: 'success', title: 'Share link copied', text: 'A configured preview link was copied to the clipboard.' });
             return;
         }
 
