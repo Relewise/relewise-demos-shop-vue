@@ -63,6 +63,11 @@ const router = createRouter({
             component: () => import('../views/Category.vue'),
         },
         {
+            path: '/landing/:campaignID',
+            name: 'campaign',
+            component: () => import('../views/Campaign.vue'),
+        },
+        {
             path: '/content/:id',
             name: 'content',
             component: () => import('../views/ContentDetails.vue'),
