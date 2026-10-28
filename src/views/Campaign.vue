@@ -82,7 +82,6 @@ import Breadcrumb from '@/components/Breadcrumb.vue';
 import Pagination from '@/components/Pagination.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
-import { withContextValues } from '@/helpers/requestContext';
 import contextStore from '@/stores/context.store';
 import { ProductSearchBuilder, type ProductSearchResponse } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
@@ -121,15 +120,13 @@ async function search() {
     const builder = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
       .setSelectedProductProperties(contextStore.selectedProductProperties)
       .setSelectedVariantProperties({ allData: true })
+      .contextValues({ [contextKey]: campaignId.value })
       .pagination(pagination => pagination
         .setPage(page.value)
         .setPageSize(pageSize))
       .filters(filters => contextStore.userClassificationBasedFilters(filters)), contextStore.context.value);
 
-    const request = withContextValues(builder.build(), {
-      [contextKey]: campaignId.value,
-    });
-    const response = await contextStore.getSearcher().searchProducts(request);
+    const response = await contextStore.getSearcher().searchProducts(builder.build());
 
     if (!response) {
       throw new Error('The product search returned no response.');
