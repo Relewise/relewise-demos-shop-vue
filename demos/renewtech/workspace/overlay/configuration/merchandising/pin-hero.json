@@ -1,0 +1,71 @@
+{
+  "endpoint": "/v1/SaveMerchandisingRuleRequest",
+  "id": "customer-renewtech_pin_184527",
+  "name": "Pin IBM 11K0864 - 1W 400MHZ PWR3-II PRO-Core 4MB L2 for project shoppers",
+  "payload": {
+    "$type": "Relewise.Client.Requests.Merchandising.SaveMerchandisingRuleRequest, Relewise.Client",
+    "CreatedBy": "Customer Demo Generator",
+    "ModifiedBy": "Customer Demo Generator",
+    "Rule": {
+      "$type": "Relewise.Client.DataTypes.Merchandising.Rules.FixedPositionRule, Relewise.Client",
+      "Id": "d917df84-25c1-4f8f-b2cd-7c524f8c44df",
+      "Name": "Pin IBM 11K0864 - 1W 400MHZ PWR3-II PRO-Core 4MB L2 for ProjectShopper persona",
+      "Enabled": false,
+      "Priority": 21,
+      "Position": 1,
+      "Conditions": {
+        "Context": {
+          "Filters": []
+        },
+        "Input": {
+          "EvaluationMode": "Any",
+          "Filters": {
+            "Items": [
+              {
+                "$type": "Relewise.Client.Requests.Filters.ProductCategoryIdFilter, Relewise.Client",
+                "CategoryIds": [
+                  "category-ibm"
+                ],
+                "EvaluationScope": "ImmediateParent",
+                "Negated": false,
+                "TypeName": "ProductCategoryIdFilter"
+              }
+            ]
+          }
+        },
+        "Target": {
+          "Filters": {
+            "Items": [
+              {
+                "$type": "Relewise.Client.Requests.Filters.ProductIdFilter, Relewise.Client",
+                "ProductIds": [
+                  "184527"
+                ],
+                "Negated": false,
+                "TypeName": "ProductIdFilter"
+              }
+            ]
+          }
+        },
+        "User": {
+          "Conditions": {
+            "Items": [
+              {
+                "$type": "Relewise.Client.DataTypes.UserConditions.HasClassificationCondition, Relewise.Client",
+                "Key": "Persona",
+                "Value": "ProjectShopper",
+                "Negated": false,
+                "TypeName": "HasClassificationCondition"
+              }
+            ]
+          }
+        }
+      },
+      "Request": {
+        "Filters": "Merge",
+        "RelevanceModifiers": "Merge"
+      },
+      "Settings": {}
+    }
+  }
+}

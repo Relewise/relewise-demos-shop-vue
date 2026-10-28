@@ -1,0 +1,22 @@
+{
+  "endpoint": "/v1/SaveRedirectRulesRequest",
+  "id": "customer-renewtech_redirect_inspiration",
+  "name": "Redirect inspiration searches to content",
+  "payload": {
+    "$type": "Relewise.Client.Requests.Search.Rules.SaveRedirectRulesRequest, Relewise.Client",
+    "CreatedBy": "Customer Demo Generator",
+    "ModifiedBy": "Customer Demo Generator",
+    "rules": [
+      {
+        "id": "4eccece2-0256-4321-9c02-1c0c8de4ce07",
+        "isApproved": true,
+        "condition": {
+          "kind": "Contains",
+          "value": "inspiration",
+          "negated": false
+        },
+        "destination": "/content"
+      }
+    ]
+  }
+}

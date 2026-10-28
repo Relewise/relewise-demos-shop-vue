@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import RenewtechHome from '@/components/RenewtechHome.vue';
+import { isRenewtechDemo } from '@/helpers/renewtechDemo';
 import contextStore from '@/stores/context.store';
 import { PopularBrandsRecommendationBuilder, type BrandRecommendationResponse } from '@relewise/client';
 import { ref } from 'vue';
@@ -15,7 +17,7 @@ const isConfigured = ref(contextStore.isConfigured);
 recommend();
 
 async function recommend() {
-    if (!isConfigured.value) return;
+    if (!isConfigured.value || isRenewtechDemo) return;
 
     const recommender = contextStore.getRecommender();
 
@@ -25,7 +27,11 @@ async function recommend() {
 }
 </script>
 <template>
-  <main class="pt-0 flex flex-col gap-20">
+  <RenewtechHome v-if="isRenewtechDemo" />
+  <main
+    v-else
+    class="pt-0 flex flex-col gap-20"
+  >
     <div class="flex flex-col">
       <HeroBanner />
       <template v-if="isConfigured">

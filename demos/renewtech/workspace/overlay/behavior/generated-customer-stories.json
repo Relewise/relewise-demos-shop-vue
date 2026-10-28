@@ -1,0 +1,900 @@
+{
+  "id": "generated-customer-stories",
+  "seeding": {
+    "idempotency": "once",
+    "intensity": "standard",
+    "viewedAfterReadiness": "eventual"
+  },
+  "ordersPerScenario": 0,
+  "scenarios": [],
+  "journeyCohorts": [
+    {
+      "id": "generated-lenovo-server-expansion-companion-a",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-a"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-a",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-a",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-companion-b",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-b"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-b",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-b",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-companion-c",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-c"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-c",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-c",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-companion-d",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-d"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-d",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-d",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-companion-e",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-e"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-e",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.companion-e",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-accessory-a",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-a"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-a",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-a",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-accessory-b",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-b"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-b",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-b",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-lenovo-server-expansion-accessory-c",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero"
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-c"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-c",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.lenovo-server-expansion.accessory-c",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-companion-a",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-a"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-a",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-a",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-companion-b",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-b"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-b",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-b",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-companion-c",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-c"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-c",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-c",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-companion-d",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-d"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-d",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-d",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-companion-e",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-e"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-e",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.companion-e",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-accessory-a",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-a"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-a",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-a",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-accessory-b",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-b"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-b",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-b",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-dell-server-refresh-accessory-c",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero"
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-c"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-c",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.dell-server-refresh.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.dell-server-refresh.accessory-c",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-companion-a",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-a"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-a",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-a",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-companion-b",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-b"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-b",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-b",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-companion-c",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-c"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-c",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-c",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-companion-d",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-d"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-d",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-d",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-companion-e",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-e"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-e",
+          "quantity": 1
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.companion-e",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-accessory-a",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-a"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-a",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-a",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-accessory-b",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-b"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-b",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-b",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "generated-hp-server-maintenance-accessory-c",
+      "currency": "DKK",
+      "weight": 1,
+      "classifications": {
+        "channel": "B2B"
+      },
+      "companyId": "b2bcompany1",
+      "viewSequence": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero"
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-c"
+        }
+      ],
+      "cart": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-c",
+          "quantity": 2
+        }
+      ],
+      "order": [
+        {
+          "productRole": "generated.journey.hp-server-maintenance.hero",
+          "quantity": 1
+        },
+        {
+          "productRole": "generated.journey.hp-server-maintenance.accessory-c",
+          "quantity": 2
+        }
+      ]
+    }
+  ]
+}

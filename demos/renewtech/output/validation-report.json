@@ -1,0 +1,558 @@
+{
+  "definition": {
+    "id": "customer-renewtech-customer-customer-renewtech-parts-discovery",
+    "version": "1.0.0",
+    "displayName": "Renewtech parts discovery",
+    "catalogueId": "customer-renewtech",
+    "catalogueDisplayName": "Renewtech",
+    "defaultSourceId": "customer",
+    "catalogueVersion": "2026.10.28",
+    "catalogueSourceId": "customer",
+    "catalogueSourceType": "embedded-json",
+    "catalogueSourceDisplayName": "Customer upload",
+    "catalogueSourceVersion": "2cd8ff56addc32d77b1d6e57a438bed719b26bbf8fed5cd6b9b3c37fc3600337",
+    "recipeId": "customer-renewtech-parts-discovery",
+    "recipeVersion": "1.0.0",
+    "profiles": [
+      {
+        "id": "commerce-base",
+        "version": "1.0.0",
+        "selection": "required"
+      },
+      {
+        "id": "b2b",
+        "version": "1.0.0",
+        "selection": "required"
+      },
+      {
+        "id": "retail-media",
+        "version": "1.0.0",
+        "selection": "required"
+      }
+    ],
+    "overlay": {
+      "id": "customer-renewtech-overlay",
+      "version": "1.0.0"
+    },
+    "requiredRunnerCapabilities": [
+      "configuration-v1",
+      "behavior-seeding-v4",
+      "embedded-catalogue-v1",
+      "semantic-product-roles-v1",
+      "warmup-v1",
+      "maintenance-jobs-v1"
+    ],
+    "bundlePath": "bundles/customer-renewtech-customer-customer-renewtech-parts-discovery/1.0.0/f298456597721ae37151c3fcf85666658a8d2a2a0f692891d86fff93d41097b8.zip",
+    "sha256": "f298456597721ae37151c3fcf85666658a8d2a2a0f692891d86fff93d41097b8",
+    "size": 681147
+  },
+  "productCount": 1554,
+  "contentCount": 4,
+  "taxonomy": [
+    {
+      "id": "category-hpe",
+      "name": "HPE",
+      "productCount": 297,
+      "subcategories": [
+        {
+          "id": "subcategory-hpe-other-hpe",
+          "name": "Other HPE",
+          "productCount": 108
+        },
+        {
+          "id": "subcategory-hpe-harddrives",
+          "name": "Harddrives",
+          "productCount": 49
+        },
+        {
+          "id": "subcategory-hpe-cpu-processors-vrm",
+          "name": "CPU Processors Vrm",
+          "productCount": 43
+        },
+        {
+          "id": "subcategory-hpe-adapters",
+          "name": "Adapters",
+          "productCount": 26
+        },
+        {
+          "id": "subcategory-hpe-memory",
+          "name": "Memory",
+          "productCount": 19
+        },
+        {
+          "id": "subcategory-hpe-controllers",
+          "name": "Controllers",
+          "productCount": 12
+        },
+        {
+          "id": "subcategory-hpe-network-cards",
+          "name": "Network Cards",
+          "productCount": 10
+        },
+        {
+          "id": "subcategory-hpe-power-supply-units",
+          "name": "Power Supply Units",
+          "productCount": 10
+        },
+        {
+          "id": "subcategory-hpe-server",
+          "name": "Server",
+          "productCount": 10
+        },
+        {
+          "id": "subcategory-hpe-spare-parts",
+          "name": "Spare Parts",
+          "productCount": 10
+        }
+      ]
+    },
+    {
+      "id": "category-dell",
+      "name": "Dell",
+      "productCount": 291,
+      "subcategories": [
+        {
+          "id": "subcategory-dell-other-dell",
+          "name": "Other Dell",
+          "productCount": 82
+        },
+        {
+          "id": "subcategory-dell-harddrives",
+          "name": "Harddrives",
+          "productCount": 60
+        },
+        {
+          "id": "subcategory-dell-cpu-processors-vrm",
+          "name": "CPU Processors Vrm",
+          "productCount": 41
+        },
+        {
+          "id": "subcategory-dell-network-cards",
+          "name": "Network Cards",
+          "productCount": 39
+        },
+        {
+          "id": "subcategory-dell-memory",
+          "name": "Memory",
+          "productCount": 17
+        },
+        {
+          "id": "subcategory-dell-controllers",
+          "name": "Controllers",
+          "productCount": 11
+        },
+        {
+          "id": "subcategory-dell-power-supply-units",
+          "name": "Power Supply Units",
+          "productCount": 11
+        },
+        {
+          "id": "subcategory-dell-spare-parts",
+          "name": "Spare Parts",
+          "productCount": 11
+        },
+        {
+          "id": "subcategory-dell-rack-options",
+          "name": "Rack Options",
+          "productCount": 10
+        },
+        {
+          "id": "subcategory-dell-server",
+          "name": "Server",
+          "productCount": 9
+        }
+      ]
+    },
+    {
+      "id": "category-lenovo",
+      "name": "Lenovo",
+      "productCount": 279,
+      "subcategories": [
+        {
+          "id": "subcategory-lenovo-other-lenovo",
+          "name": "Other Lenovo",
+          "productCount": 107
+        },
+        {
+          "id": "subcategory-lenovo-cpu-processors-vrm",
+          "name": "CPU Processors Vrm",
+          "productCount": 33
+        },
+        {
+          "id": "subcategory-lenovo-harddrives",
+          "name": "Harddrives",
+          "productCount": 33
+        },
+        {
+          "id": "subcategory-lenovo-adapters",
+          "name": "Adapters",
+          "productCount": 26
+        },
+        {
+          "id": "subcategory-lenovo-network-cards",
+          "name": "Network Cards",
+          "productCount": 24
+        },
+        {
+          "id": "subcategory-lenovo-memory",
+          "name": "Memory",
+          "productCount": 15
+        },
+        {
+          "id": "subcategory-lenovo-power-supply-units",
+          "name": "Power Supply Units",
+          "productCount": 13
+        },
+        {
+          "id": "subcategory-lenovo-spare-parts",
+          "name": "Spare Parts",
+          "productCount": 11
+        },
+        {
+          "id": "subcategory-lenovo-controllers",
+          "name": "Controllers",
+          "productCount": 9
+        },
+        {
+          "id": "subcategory-lenovo-accessories",
+          "name": "Accessories",
+          "productCount": 8
+        }
+      ]
+    },
+    {
+      "id": "category-ibm",
+      "name": "IBM",
+      "productCount": 187,
+      "subcategories": [
+        {
+          "id": "subcategory-ibm-other-ibm",
+          "name": "Other IBM",
+          "productCount": 115
+        },
+        {
+          "id": "subcategory-ibm-accessories",
+          "name": "Accessories",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-adapters",
+          "name": "Adapters",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-battery",
+          "name": "Battery",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-cables",
+          "name": "Cables",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-controllers",
+          "name": "Controllers",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-cpu-processors-vrm",
+          "name": "CPU Processors Vrm",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-expansion-cards",
+          "name": "Expansion Cards",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-harddrives",
+          "name": "Harddrives",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-ibm-ibm",
+          "name": "IBM",
+          "productCount": 8
+        }
+      ]
+    },
+    {
+      "id": "category-cisco",
+      "name": "Cisco",
+      "productCount": 166,
+      "subcategories": [
+        {
+          "id": "subcategory-cisco-other-cisco",
+          "name": "Other Cisco",
+          "productCount": 94
+        },
+        {
+          "id": "subcategory-cisco-access-point",
+          "name": "Access Point",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-antenna",
+          "name": "Antenna",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-cables",
+          "name": "Cables",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-controllers",
+          "name": "Controllers",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-cpu-processor",
+          "name": "CPU / Processor",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-fan",
+          "name": "Fan",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-firewalls",
+          "name": "Firewalls",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-harddrives",
+          "name": "Harddrives",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-cisco-heatsink",
+          "name": "Heatsink",
+          "productCount": 8
+        }
+      ]
+    },
+    {
+      "id": "category-emc",
+      "name": "Emc",
+      "productCount": 135,
+      "subcategories": [
+        {
+          "id": "subcategory-emc-other-emc",
+          "name": "Other Emc",
+          "productCount": 63
+        },
+        {
+          "id": "subcategory-emc-battery",
+          "name": "Battery",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-cables",
+          "name": "Cables",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-controllers",
+          "name": "Controllers",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-fan",
+          "name": "Fan",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-harddrives",
+          "name": "Harddrives",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-io-expansions",
+          "name": "Io Expansions",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-memory",
+          "name": "Memory",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-network-cards",
+          "name": "Network Cards",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-emc-power-supply-units",
+          "name": "Power Supply Units",
+          "productCount": 8
+        }
+      ]
+    },
+    {
+      "id": "category-netapp",
+      "name": "Netapp",
+      "productCount": 112,
+      "subcategories": [
+        {
+          "id": "subcategory-netapp-other-netapp",
+          "name": "Other Netapp",
+          "productCount": 40
+        },
+        {
+          "id": "subcategory-netapp-battery",
+          "name": "Battery",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-cables",
+          "name": "Cables",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-controllers",
+          "name": "Controllers",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-harddrives",
+          "name": "Harddrives",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-io-expansions",
+          "name": "Io Expansions",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-power-supply-units",
+          "name": "Power Supply Units",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-sfp",
+          "name": "SFP",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-spare-parts",
+          "name": "Spare Parts",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-netapp-storage-machines",
+          "name": "Storage Machines",
+          "productCount": 8
+        }
+      ]
+    },
+    {
+      "id": "category-servers",
+      "name": "Servers",
+      "productCount": 51,
+      "subcategories": [
+        {
+          "id": "subcategory-servers-dell-emc",
+          "name": "Dell Emc",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-servers-fujitsu",
+          "name": "Fujitsu",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-servers-hpe",
+          "name": "HPE",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-servers-lenovo",
+          "name": "Lenovo",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-servers-ibm",
+          "name": "IBM",
+          "productCount": 7
+        },
+        {
+          "id": "subcategory-servers-supermicro",
+          "name": "Supermicro",
+          "productCount": 7
+        },
+        {
+          "id": "subcategory-servers-cisco",
+          "name": "Cisco",
+          "productCount": 5
+        }
+      ]
+    },
+    {
+      "id": "category-storage",
+      "name": "Storage",
+      "productCount": 36,
+      "subcategories": [
+        {
+          "id": "subcategory-storage-dell-emc",
+          "name": "Dell Emc",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-storage-hpe",
+          "name": "HPE",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-storage-ibm",
+          "name": "IBM",
+          "productCount": 8
+        },
+        {
+          "id": "subcategory-storage-netapp",
+          "name": "Netapp",
+          "productCount": 6
+        },
+        {
+          "id": "subcategory-storage-fujitsu",
+          "name": "Fujitsu",
+          "productCount": 3
+        },
+        {
+          "id": "subcategory-storage-lenovo",
+          "name": "Lenovo",
+          "productCount": 3
+        }
+      ]
+    }
+  ],
+  "productData": {
+    "completeDescriptions": 1554,
+    "completeImages": 1554,
+    "completePrices": 1554,
+    "completeAvailability": 1554,
+    "placeholderImages": 0,
+    "productsWithFacets": 1554
+  },
+  "behavior": {
+    "personaScenarios": 0,
+    "ordersPerScenario": 0,
+    "personaOrders": 0,
+    "journeyCohorts": 24,
+    "journeyWeight": 24,
+    "relationshipAnchors": 3,
+    "seeding": {
+      "idempotency": "once",
+      "intensity": "standard",
+      "viewedAfterReadiness": "eventual"
+    }
+  },
+  "provenance": {
+    "featuredProducts": 27,
+    "sourceDescriptions": 1554,
+    "generatedDescriptions": 0
+  },
+  "checksum": "f298456597721ae37151c3fcf85666658a8d2a2a0f692891d86fff93d41097b8"
+}
