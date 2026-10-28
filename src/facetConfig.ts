@@ -1,3 +1,4 @@
+import { isRenewtechDemo } from '@/helpers/renewtechDemo';
 import type { DataSelectionStrategy } from '@relewise/client';
 
 export const facetConfig: FacetConfigEntry[] = [
@@ -33,6 +34,8 @@ export const facetConfig: FacetConfigEntry[] = [
         dataKey: 'Brand',
     },
 ];
+
+if (isRenewtechDemo) facetConfig.push({ contexts: ['Category', 'SearchOverlay', 'Brand'], type: 'DataString', renderType: 'Checklist', label: 'Condition', dataKey: 'Condition', dataSelectionStrategy: 'Product' });
 
 export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand' | 'ContentSearch';
 

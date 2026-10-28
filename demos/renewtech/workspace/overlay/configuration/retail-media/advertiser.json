@@ -1,0 +1,70 @@
+{
+  "endpoint": "/v1/SaveAdvertisersRequest",
+  "id": "customer-renewtech_create_advertiser",
+  "name": "Create Renewtech Retail Media advertiser",
+  "dependsOn": [
+    "RM_Create_Location_PRODUCT_LISTING_PAGE",
+    "RM_Create_Location_SEARCH_RESULTS_PAGE"
+  ],
+  "payload": {
+    "CreatedBy": "Customer Demo Generator",
+    "ModifiedBy": "Customer Demo Generator",
+    "Entities": [
+      {
+        "Id": "ad8e59ac-43a5-48ca-b2b5-c7daed507b0a",
+        "Name": "IBM",
+        "State": "Active",
+        "Metadata": {
+          "Activated": "0001-01-01T00:00:00+00:00",
+          "ActivatedBy": "Customer Demo Generator",
+          "Created": "0001-01-01T00:00:00+00:00",
+          "CreatedBy": "Customer Demo Generator",
+          "Inactivated": "0001-01-01T00:00:00+00:00",
+          "InactivatedBy": "Customer Demo Generator",
+          "Modified": "0001-01-01T00:00:00+00:00",
+          "ModifiedBy": "Customer Demo Generator"
+        },
+        "AllowedLocations": {
+          "Items": [
+            {
+              "Key": "SEARCH_RESULTS_PAGE",
+              "Placements": {
+                "Items": [
+                  {
+                    "Key": "TOP"
+                  }
+                ]
+              }
+            },
+            {
+              "Key": "PRODUCT_LISTING_PAGE",
+              "Placements": {
+                "Items": [
+                  {
+                    "Key": "TOP"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "AllowedPromotions": {
+          "ProductPromotion": {
+            "PromotableProducts": {
+              "Items": [
+                {
+                  "$type": "Relewise.Client.Requests.Filters.BrandIdFilter, Relewise.Client",
+                  "BrandIds": [
+                    "ibm"
+                  ],
+                  "Negated": false,
+                  "TypeName": "BrandIdFilter"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

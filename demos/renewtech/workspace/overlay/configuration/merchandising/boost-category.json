@@ -1,0 +1,60 @@
+{
+  "endpoint": "/v1/SaveMerchandisingRuleRequest",
+  "id": "renewtech-prefer-listed-psu",
+  "name": "Renewtech: prioritize a listed power supply",
+  "payload": {
+    "$type": "Relewise.Client.Requests.Merchandising.SaveMerchandisingRuleRequest, Relewise.Client",
+    "CreatedBy": "Customer Demo Generator",
+    "ModifiedBy": "Customer Demo Generator",
+    "Rule": {
+      "$type": "Relewise.Client.DataTypes.Merchandising.Rules.BoostAndBuryRule, Relewise.Client",
+      "Id": "dbaf1f1f-ccd2-53c8-86c9-18e4ce03c825",
+      "Name": "Renewtech: prioritize listed PSU 00FK930",
+      "Enabled": false,
+      "Priority": 20,
+      "Conditions": {
+        "Context": {
+          "Filters": [
+            {
+              "Locations": [
+                "Renewtech - Listed server options"
+              ]
+            }
+          ]
+        },
+        "Input": {
+          "EvaluationMode": "Any",
+          "Filters": {}
+        },
+        "Target": {
+          "Filters": {
+            "Items": [
+              {
+                "$type": "Relewise.Client.Requests.Filters.ProductIdFilter, Relewise.Client",
+                "ProductIds": [
+                  "266152"
+                ],
+                "Negated": false,
+                "TypeName": "ProductIdFilter"
+              }
+            ]
+          }
+        },
+        "User": {
+          "Conditions": {
+            "Items": []
+          }
+        }
+      },
+      "MultiplierSelector": {
+        "$type": "Relewise.Client.Requests.ValueSelectors.FixedDoubleValueSelector, Relewise.Client",
+        "Value": 1.5
+      },
+      "Request": {
+        "Filters": "Merge",
+        "RelevanceModifiers": "Merge"
+      },
+      "Settings": {}
+    }
+  }
+}

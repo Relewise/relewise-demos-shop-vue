@@ -1,0 +1,17 @@
+{
+  "allCurrencies": [
+    "DKK",
+    "EUR"
+  ],
+  "allLanguages": [
+    "da-dk",
+    "en-gb"
+  ],
+  "currencyCode": "EUR",
+  "displayName": "Renewtech Demo Shop",
+  "hideSoldOutProducts": true,
+  "language": "en-gb",
+  "selectedUserIndex": 0,
+  "B2bRecommendations": true,
+  "trackingEnabled": false
+}

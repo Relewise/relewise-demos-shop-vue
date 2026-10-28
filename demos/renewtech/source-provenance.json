@@ -1,0 +1,66 @@
+{
+  "capturedDate": "2026-10-28",
+  "source": "Thomas Bjørn Nielsen, email thread Renewtech x Relewise – input til demo på jeres data",
+  "snapshots": {
+    "com": {
+      "file": "renewtech-com.xml",
+      "sha256": "bd723328381518df32048426e4aa2db371642e95482b08776f7363d0cafa8756",
+      "records": 37057
+    },
+    "dk": {
+      "file": "renewtech-dk.xml",
+      "sha256": "366aaadba3dd2ff8ff121ad368e19943d62f69a80ab85e88925b6454c0e18d42",
+      "records": 25962
+    }
+  },
+  "normalizedProducts": 1554,
+  "featuredProducts": [
+    "190377",
+    "192333",
+    "201970",
+    "202006",
+    "210552",
+    "211029",
+    "222281",
+    "224046",
+    "224876",
+    "226821",
+    "228129",
+    "234902",
+    "241166",
+    "242494",
+    "256988",
+    "257278",
+    "257902",
+    "263509",
+    "263593",
+    "266152",
+    "266163",
+    "269878",
+    "282692",
+    "297138",
+    "330177",
+    "344416",
+    "351867"
+  ],
+  "mapping": {
+    "id": "g:id",
+    "name": "g:title, unchanged",
+    "description": "g:description, markup stripped only",
+    "price": "g:price, same list and sales price",
+    "availability": "in stock => storefront value 10, otherwise 0; not physical quantity",
+    "relationships": "explicit Component IDs, numbered chunks split independently at commas",
+    "market": "COM represented as gb/en-gb for runner convention, EUR; DK as dk/da-dk, DKK"
+  },
+  "warnings": [
+    "Curated subset, not full catalogue. Only shared market IDs with source images, prices and descriptions.",
+    "DK titles retain source English. No translated copy invented.",
+    "Margin Unknown is a sentinel, not a commercial margin. No discount invented.",
+    "No variants fabricated. Condition stock stays as source text.",
+    "Listed components do not prove selected-option compatibility.",
+    "Affinity groups and generated behavior are synthetic demo scenarios, not customer purchase evidence.",
+    "Generated guides, campaigns, personas and merchandising are demonstration configuration, not customer facts.",
+    "Products with missing prices excluded; configuration prices are starting prices.",
+    "No historical behavior or customer identities included."
+  ]
+}
