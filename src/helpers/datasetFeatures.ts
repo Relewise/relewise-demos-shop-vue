@@ -1,4 +1,5 @@
 export type DatasetBooleanKey =
+    | 'variantOwnedData'
     | 'allowThirdLevelCategories'
     | 'hideSoldOutProducts'
     | 'userClassificationFilters'
@@ -14,6 +15,7 @@ export type DatasetBooleanKey =
     | 'shoppertainmentEnabled';
 
 export const datasetFeatureFields: Array<{ key: DatasetBooleanKey; label: string; description: string }> = [
+    { key: 'variantOwnedData', label: 'Article-owned data model', description: 'Use physical article eligibility, prices and specifications; require article selection to purchase.' },
     {
         key: 'allowThirdLevelCategories',
         label: 'Third level categories',

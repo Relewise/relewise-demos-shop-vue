@@ -205,10 +205,12 @@ async function search() {
                     s.sortByProductPopularity();
                 }
                 else if (filters.value.sort === 'SalesPriceDesc') {
-                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                    if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Descending');
+                    else s.sortByProductAttribute('SalesPrice', 'Descending');
                 }
                 else if (filters.value.sort === 'SalesPriceAsc') {
-                    s.sortByProductAttribute('SalesPrice', 'Ascending');
+                    if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Ascending');
+                    else s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
             .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))

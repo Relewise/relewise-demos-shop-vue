@@ -117,12 +117,12 @@
                 {{ $format(lineTotal(item)) }}
               </p>
               <div class="mt-2 text-sm text-slate-500">
-                <p>Each: {{ $format(item.product.salesPrice) }}</p>
+                <p>Each: {{ $format(articleSalesPrice(item.product)) }}</p>
                 <p
-                  v-if="item.product.salesPrice !== item.product.listPrice"
+                  v-if="articleSalesPrice(item.product) !== articleListPrice(item.product)"
                   class="line-through"
                 >
-                  Was {{ $format(item.product.listPrice) }}
+                  Was {{ $format(articleListPrice(item.product)) }}
                 </p>
               </div>
             </div>
@@ -232,6 +232,7 @@
 </template>
 
 <script lang="ts" setup>
+import { articleSalesPrice, articleListPrice } from '@/helpers/variantOwnedData';
 import Breadcrumb from '@/components/Breadcrumb.vue';
 import ProductTile from '../components/ProductTile.vue';
 import { computed, ref, watch } from 'vue';
@@ -257,12 +258,14 @@ const recommendationTitle = ref('People also buy');
 const recommender = contextStore.getRecommender();
 const model = ref(basketService.model);
 const isEmpty = computed(() => !basketService.hasItems.value);
-const canPlaceOrder = computed(() => contextStore.tracking.value.enabled);
+const canPlaceOrder = computed(() => contextStore.tracking.value.enabled && basketService.canCheckout.value);
 const isPlacingOrder = ref(false);
 const previousRecommendationSnapshot = ref<RecommendationSnapshot | null>(null);
 const cartTotal = basketService.subtotal;
 const itemCount = basketService.itemsCount;
-const placeOrderDisabledMessage = 'To place a demo order, enable tracking in the demo shop context.';
+const placeOrderDisabledMessage = computed(() => contextStore.context.value.variantOwnedData
+    ? 'Enable tracking and select eligible articles with prices in the current market and currency. Re-add articles after changing context.'
+    : 'To place a demo order, enable tracking in the demo shop context.');
 const recommendationMode = computed<RecommendationMode>(() => {
     if (contextStore.user.value.classifications?.channel === 'B2B'
         && contextStore.context.value.B2bRecommendations) {
@@ -370,7 +373,7 @@ function productMeta(item: ILineItem) {
 }
 
 function lineTotal(item: ILineItem) {
-    return (item.product.salesPrice ?? 0) * item.quantity;
+    return (articleSalesPrice(item.product) ?? 0) * item.quantity;
 }
 
 function getCartProductIds() {

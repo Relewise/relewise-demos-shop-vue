@@ -22,7 +22,7 @@ export const fallbackKeys = [
     'type',
 ];
 const excluded =
-    /^(?:demo_|source_|internal_|search_terms$|(?:additional_)?information$)|(?:article_numbers?|product_numbers?|product_ids|gtins?$|image|link|description|provenance|manufacturer_part_number|supplier_code|product_code|barcode|(?:^|_)(?:sku|ean|mpn)$|(?:^|_)urls?$|(?:^|_)ids?$|contract|search_config)/i;
+    /^(?:demo_|source_|internal_|available_in_|buyable_in_|not_buyable_in_|buyability_unknown_|(?:sold_out|low_stock|stock_level|sales_status|on_sale|promoted|imported_at|days_available|data_model_version|margin|campaign_ids)$|search_terms$|(?:additional_)?information$)|(?:article_numbers?|product_numbers?|product_ids|gtins?$|image|link|description|provenance|manufacturer_part_number|supplier_code|product_code|barcode|(?:^|_)(?:sku|ean|mpn)$|(?:^|_)urls?$|(?:^|_)ids?$|contract|search_config)/i;
 const prefix = '__adaptive:';
 type AttributeType = 'String' | 'Double' | 'Boolean';
 type Attribute = { key: string; type: AttributeType };
@@ -64,7 +64,9 @@ function abortable<T>(task: Promise<T>, signal: AbortSignal): Promise<T> {
 }
 
 // Count a value once per base product, including scalar and wrapped list values.
-export function rankAttributes(products: any[]): string[] {
+export function rankAttributes(products: any[], variantOwned = false): string[] {
+    if (variantOwned) products = [...new Map(products.filter(product => product.variant?.variantId).map(product =>
+        [JSON.stringify([product.productId, product.variant.variantId]), product.variant])).values()];
     const keys = [
         ...new Set<string>(
             products.flatMap((product) => Object.keys(product.data ?? {})),
@@ -143,7 +145,7 @@ type StorageArea = {
     set(value: object): Promise<void>;
     remove(key: string): Promise<void>;
 };
-const storageKey = 'adaptive-facets-v1';
+const storageKey = 'adaptive-facets-v2';
 export class FacetDiscoveryCache {
     private entries: Record<string, Entry> = {};
     private loaded?: Promise<void>;
@@ -313,6 +315,7 @@ export function addAdaptiveFacet(
     builder: FacetBuilder,
     attribute: Attribute,
     values: string[] = [],
+    strategy: 'Product' | 'Variant' = 'Product',
 ) {
     const alias = facetIdentity(attribute);
     const settings = {
@@ -322,7 +325,7 @@ export function addAdaptiveFacet(
     if (attribute.type === 'Double')
         builder.addProductDataDoubleValueFacet(
             alias,
-            'Product',
+            strategy,
             values.map(Number).filter(Number.isFinite),
             'Or',
             settings,
@@ -330,7 +333,7 @@ export function addAdaptiveFacet(
     else if (attribute.type === 'Boolean')
         builder.addProductDataBooleanValueFacet(
             alias,
-            'Product',
+            strategy,
             values.map((value) => value === 'true'),
             'Or',
             settings,
@@ -338,7 +341,7 @@ export function addAdaptiveFacet(
     else
         builder.addProductDataStringValueFacet(
             alias,
-            'Product',
+            strategy,
             values,
             'Or',
             settings,
@@ -348,11 +351,12 @@ export function addAdaptiveFacet(
 export function addSelectedAdaptiveFacets(
     builder: FacetBuilder,
     filters: Record<string, string | string[]>,
+    strategy: 'Product' | 'Variant' = 'Product',
 ) {
     for (const [identity, values] of Object.entries(filters)) {
         const attribute = attributeFromIdentity(identity);
         if (attribute && Array.isArray(values) && values.length)
-            addAdaptiveFacet(builder, attribute, values);
+            addAdaptiveFacet(builder, attribute, values, strategy);
     }
 }
 
@@ -398,6 +402,7 @@ export async function prepareProductSearch(
     searcher: Pick<Searcher, 'searchProducts'>,
     namespace: string,
     signal: AbortSignal,
+    variantOwned = false,
 ): Promise<PreparedProductSearch> {
     const original = request.facets?.items ?? [];
     if (!original.length) return { request, restore: (response) => response };
@@ -409,7 +414,7 @@ export async function prepareProductSearch(
         currency: request.currency?.value ?? '',
     })
         .setSelectedProductProperties({
-            allData: true,
+            allData: !variantOwned,
             allVariants: false,
             displayName: false,
             pricing: false,
@@ -418,6 +423,8 @@ export async function prepareProductSearch(
             assortments: false,
             variantResolution: false,
         })
+        .setSelectedVariantProperties(variantOwned ? { allData: true, displayName: false, pricing: false } : null)
+        .setVariantRequestSettings(variantOwned ? settings => settings.setMaxVariantsPerProduct(5) : null)
         .build().settings!;
     // No catalogue schema is shipped with the demo. Discover data types from base
     // product data; keep explicit filters and selected facet queries authoritative.
@@ -441,8 +448,8 @@ export async function prepareProductSearch(
             ...request.settings,
             selectedProductProperties:
                 discoverySettings.selectedProductProperties,
-            selectedVariantProperties: undefined,
-            variantRequestSettings: undefined,
+            selectedVariantProperties: variantOwned ? discoverySettings.selectedVariantProperties : undefined,
+            variantRequestSettings: variantOwned ? discoverySettings.variantRequestSettings : undefined,
         },
     };
     let identities = fallbackKeys.map((key) =>
@@ -463,7 +470,7 @@ export async function prepareProductSearch(
                 check(probeSignal);
                 if (!response || !Array.isArray(response.results))
                     throw new Error('Invalid discovery response');
-                return rankAttributes(response.results.slice(0, 50));
+                return rankAttributes(response.results.slice(0, 50), variantOwned);
             },
             (code, status) => console.debug('[adaptive-facets]', code, status),
         );
@@ -497,7 +504,7 @@ export async function prepareProductSearch(
                 for (const identity of identities) {
                     const attribute = attributeFromIdentity(identity);
                     if (attribute && !retainedKeys.has(identity))
-                        addAdaptiveFacet(builder, attribute);
+                        addAdaptiveFacet(builder, attribute, [], variantOwned ? 'Variant' : 'Product');
                 }
             })
             .build().facets?.items ?? [];
@@ -546,12 +553,14 @@ export async function searchWithAdaptiveFacets(
     request: ProductSearchRequest,
     namespace: string,
     signal: AbortSignal,
+    variantOwned = false,
 ) {
     const prepared = await prepareProductSearch(
         request,
         searcher,
         namespace,
         signal,
+        variantOwned,
     );
     check(signal);
     const response = await searcher.searchProducts(
@@ -567,6 +576,7 @@ export async function batchWithAdaptiveFacets(
     request: SearchRequestCollection,
     namespace: string,
     signal: AbortSignal,
+    variantOwned = false,
 ) {
     const prepared = await Promise.all(
         request.requests.map((item) =>
@@ -576,6 +586,7 @@ export async function batchWithAdaptiveFacets(
                       searcher,
                       namespace,
                       signal,
+                      variantOwned,
                   )
                 : { request: item, restore: (response: any) => response },
         ),

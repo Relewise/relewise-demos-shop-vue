@@ -3,6 +3,12 @@
     id="product-page"
     class="container entity-page mx-auto px-2 lg:p-0"
   >
+    <p
+      v-if="hasLoaded && !product"
+      class="py-8"
+    >
+      No eligible article is available for the current market and company.
+    </p>
     <div
       v-if="product"
       class="mb-16"
@@ -42,15 +48,21 @@
               {{ product.displayName }}
             </h1>
 
+            <h2
+              v-if="isVariantOwned(product) && product.variant"
+              class="mb-3 text-xl"
+            >
+              {{ product.variant.displayName }}
+            </h2>
             <div
-              v-if="product.data && ((product.data.description && product.data.description.value) || (product.data.Description && product.data.Description.value))"
+              v-if="articleDescription(product)"
             >
               <p class="text-slate-600 line-clamp-3">
-                {{ product.data.description?.value ?? product.data.Description?.value }}
+                {{ articleDescription(product) }}
               </p>
             </div>
           </div>
-          <div v-if="product.allVariants">
+          <div v-if="product.filteredVariants || product.allVariants">
             <ProductVariants
               :product="product"
               :selected-variant-id="variantId ?? undefined"
@@ -59,7 +71,7 @@
           <div class="mt-6">
             <div class="mb-2 flex gap-2">
               <span
-                v-if="product.salesPrice !== product.listPrice"
+                v-if="articleSalesPrice(product) !== articleListPrice(product)"
                 class="rounded-full bg-red-200 px-2 text-center text-sm font-medium text-red-900"
               >ON
                 SALE</span>
@@ -74,13 +86,13 @@
 
             <div>
               <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
-                {{ $format(product.salesPrice) }}
+                {{ articleSalesPrice(product) == null ? 'Select article for price' : $format(articleSalesPrice(product)) }}
               </h3>
               <span
-                v-if="product.salesPrice !== product.listPrice"
+                v-if="articleSalesPrice(product) !== articleListPrice(product)"
                 class="text-slate-900 line-through ml-4"
               >
-                {{ $format(product.listPrice) }}
+                {{ $format(articleListPrice(product)) }}
               </span>
             </div>
           </div>
@@ -89,6 +101,7 @@
             <button
               class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700"
               :class="buttonClass"
+              :disabled="!canBuyArticle(product)"
               @click="addToBasket"
             >
               Add to cart
@@ -193,6 +206,7 @@
 </template>
 
 <script lang="ts" setup>
+import { articleSalesPrice, articleListPrice, articleDescription, canBuyArticle, isVariantOwned } from '@/helpers/variantOwnedData';
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
@@ -211,6 +225,8 @@ const variantId = ref<string | null>(null);
 const product = ref<ProductResult | null | undefined>(null);
 const route = useRoute();
 const buttonClass = ref('');
+const hasLoaded = ref(false);
+let requestGeneration = 0;
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 
@@ -221,6 +237,8 @@ const details = computed(() => {
     .filter((x) =>
       x[1].type.indexOf('Object') === -1 &&
       ['Margin', 'ImportedAt', 'Serie', 'FeedIntegrationVersion', 'InStock', 'OnSale', 'AvailableInChannels', 'AvailableInMarkets', `${contextStore.language.value}_StockLevel`].includes(x[0]));
+
+  if (isVariantOwned(product.value)) return productDetails;
 
   const variantColor = product.value.variant?.data?.Color;
   if (variantColor) {
@@ -265,21 +283,25 @@ const productData = computed<DataValueEntry[]>(() => {
 });
 
 async function init() {
+  const generation = ++requestGeneration;
+  hasLoaded.value = false;
+  product.value = null;
   const id = route.params.id;
   const variantIdFromRoute = route.params.variant;
 
   if (id && !Array.isArray(id)) {
     productId.value = id;
 
+    variantId.value = null;
     if (variantIdFromRoute && !Array.isArray(variantIdFromRoute)) {
       variantId.value = variantIdFromRoute;
     }
 
-    trackingService.trackProductView(id, variantId.value ?? undefined);
+
 
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
-      .setSelectedProductProperties(contextStore.selectedProductProperties)
-      .setSelectedVariantProperties({ allData: true, displayName: true })
+      .setSelectedProductProperties({ ...contextStore.selectedProductProperties, allVariants: true, filteredVariants: undefined })
+      .setSelectedVariantProperties({ allData: true, displayName: true, pricing: true })
       .filters(f => {
         f.addProductIdFilter([id]);
 
@@ -293,7 +315,12 @@ async function init() {
       .build();
 
     const searcher = contextStore.getSearcher();
-    product.value = (await searcher.searchProducts(request))?.results![0];
+    const response = await searcher.searchProducts(request);
+    if (generation !== requestGeneration) return;
+    product.value = response?.results?.[0];
+    hasLoaded.value = true;
+    if (product.value && isVariantOwned(product.value) && !variantId.value) product.value.variant = null;
+    if (product.value) trackingService.trackProductView(id, variantId.value ?? undefined);
     if (product.value?.categoryPaths) {
       // Taking the first path on the product to render the breadcrumb
       breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
@@ -308,7 +335,7 @@ watch(route, () => {
 });
 
 function addToBasket() {
-  if (!product.value) return;
+  if (!product.value || !canBuyArticle(product.value)) return;
 
   basketService.addProduct({
     product: product.value,

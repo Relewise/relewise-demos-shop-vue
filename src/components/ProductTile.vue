@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { articleSalesPrice, articleListPrice } from '@/helpers/variantOwnedData';
 import type { ProductResult } from '@relewise/client';
 import { computed, toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
@@ -67,7 +68,7 @@ const displayName = computed(() => {
         </Popover>
 
         <span
-          v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
+          v-if="articleSalesPrice(product) !== articleListPrice(product) && articleListPrice(product) !== null && articleListPrice(product) !== undefined"
           class="rounded bg-red-200 px-2 py-0.5 text-center text-xs font-medium text-red-900 m-3"
         >
           ON SALE
@@ -107,13 +108,13 @@ const displayName = computed(() => {
       <div class="mt-2 flex items-center justify-between">
         <p>
           <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">
-            {{ $format(product.salesPrice) }}
+            {{ articleSalesPrice(product) == null ? 'Select article' : $format(articleSalesPrice(product)) }}
           </span>
           <span
-            v-if="product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined"
+            v-if="articleSalesPrice(product) !== articleListPrice(product) && articleListPrice(product) !== null && articleListPrice(product) !== undefined"
             class="text-slate-900 line-through"
           >
-            {{ $format(product.listPrice) }}
+            {{ $format(articleListPrice(product)) }}
           </span>
         </p>
       </div>

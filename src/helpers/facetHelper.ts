@@ -10,7 +10,7 @@ export function getFacets(
     facetBuilder: FacetBuilder,
     filters: Record<string, string | string[]>) {
 
-    const facetsToAdd = facetConfig.filter(x => x.contexts.includes(context));
+    const facetsToAdd = configuredFacets().filter(x => x.contexts.includes(context));
 
     facetsToAdd.forEach(facetToAdd => {
         switch (facetToAdd.type) {
@@ -46,24 +46,24 @@ export function getFacets(
             console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
         }
     });
-    if (context !== 'ContentSearch') addSelectedAdaptiveFacets(facetBuilder, filters);
+    if (context !== 'ContentSearch') addSelectedAdaptiveFacets(facetBuilder, filters, contextStore.context.value.variantOwnedData ? 'Variant' : 'Product');
 }
 
 export function getFacetSettings(facetResult: allFacetResultTypes, context?: FacetContext) {
     switch (facetResult.field) {
     case 'Brand':
-        return facetConfig.find(x => x.type === 'BrandFacet');
+        return configuredFacets().find(x => x.type === 'BrandFacet');
     case 'Category':
     {
         if(context === 'ContentSearch')
         {
-            return facetConfig.find(x => x.type === 'ContentCategory' && x.contexts.includes(context));
+            return configuredFacets().find(x => x.type === 'ContentCategory' && x.contexts.includes(context));
         }
                 
-        return facetConfig.find(x => x.type === 'Category');
+        return configuredFacets().find(x => x.type === 'Category');
     }
     case 'SalesPrice':
-        return facetConfig.find(x => x.type === 'SalesPrice');
+        return configuredFacets().find(x => x.type === 'SalesPrice');
     case 'Data':
         if (!('key' in facetResult)) {
             console.error('Could not find configuration for facet result');
@@ -75,12 +75,12 @@ export function getFacetSettings(facetResult: allFacetResultTypes, context?: Fac
                 contexts: ['Category', 'SearchOverlay', 'Brand'] as FacetContext[],
                 type: 'DataString' as const,
                 dataKey: facetResult.key,
-                dataSelectionStrategy: 'Product' as const,
+                dataSelectionStrategy: contextStore.context.value.variantOwnedData ? 'Variant' as const : 'Product' as const,
                 renderType: 'Checklist' as const,
                 label: attribute.key.replace(/[_-]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2'),
             };
         }
-        return facetConfig.find(x => facetResult.key === x.dataKey);
+        return configuredFacets().find(x => facetResult.key === x.dataKey);
     default:
         console.error(`Could not get facet configuration for result with field '${facetResult.field}'`);
     }
@@ -128,7 +128,7 @@ function addSalesPriceFacet(facetBuilder: FacetBuilder, filters: Record<string, 
     const lower = filters.price ? Number(filters.price[0]) : undefined;
     const upper = filters.price ? Number(filters.price[1]) : undefined;
 
-    facetBuilder.addSalesPriceRangeFacet('Product', lower, upper);
+    facetBuilder.addSalesPriceRangeFacet(contextStore.context.value.variantOwnedData ? 'Variant' : 'Product', lower, upper);
 }
 
 function addDataStringFacet(
@@ -146,7 +146,7 @@ function addDataStringFacet(
         ? filters[dataKey]
         : null;
 
-    facetBuilder.addProductDataStringValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
+    facetBuilder.addProductDataStringValueFacet(dataKey, contextStore.context.value.variantOwnedData ? 'Variant' : (dataSelectionStrategy ?? 'VariantWithFallbackToProduct'), selectedValues);
 }
 
 function addContentDataStringFacet(
@@ -181,7 +181,7 @@ function addDataDoubleFacet(
         ? filters[dataKey].map(value => Number(value)).filter(value => !isNaN(value))
         : null;
 
-    facetBuilder.addProductDataDoubleValueFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', selectedValues);
+    facetBuilder.addProductDataDoubleValueFacet(dataKey, contextStore.context.value.variantOwnedData ? 'Variant' : (dataSelectionStrategy ?? 'VariantWithFallbackToProduct'), selectedValues);
 }
 
 function addDataDoubleRangeFacet(
@@ -198,5 +198,8 @@ function addDataDoubleRangeFacet(
     const lower = filters[dataKey] ? Number(filters[dataKey][0]) : undefined;
     const upper = filters[dataKey] ? Number(filters[dataKey][1]) : undefined;
 
-    facetBuilder.addProductDataDoubleRangeFacet(dataKey, dataSelectionStrategy ?? 'VariantWithFallbackToProduct', lower, upper);
+    facetBuilder.addProductDataDoubleRangeFacet(dataKey, contextStore.context.value.variantOwnedData ? 'Variant' : (dataSelectionStrategy ?? 'VariantWithFallbackToProduct'), lower, upper);
+}
+function configuredFacets() {
+    return facetConfig;
 }
