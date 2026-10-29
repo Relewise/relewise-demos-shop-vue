@@ -63,3 +63,8 @@ type ContentFacetConfigWithData = BaseFacetConfigEntry & {
 };
 
 type FacetConfigEntry = FacetConfigWithData | FacetConfigWithoutData | ContentFacetConfigWithData;
+// Article-only facets never fall back to a parent value or combine sibling specifications.
+export const articleFacetConfig: FacetConfigEntry[] = ['material', 'length', 'diameter'].map(dataKey => ({
+    contexts: ['Category', 'SearchOverlay', 'Brand'], type: 'DataString', renderType: 'Checklist',
+    label: dataKey.charAt(0).toUpperCase() + dataKey.slice(1), dataKey, dataSelectionStrategy: 'Variant',
+}));

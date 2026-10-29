@@ -1,4 +1,5 @@
-import type { ILineItem } from './basket.service';
+import basketService, { type ILineItem } from './basket.service';
+import { articleSalesPrice } from '@/helpers/variantOwnedData';
 import contextStore from '../stores/context.store';
 import type { FeedItem } from '@relewise/client';
 
@@ -78,7 +79,7 @@ class TrackingService {
     }
 
     public async trackOrder(lineItems: ILineItem[]) {
-        if (!contextStore.tracking.value.enabled) return;
+        if (!contextStore.tracking.value.enabled || !basketService.canCheckout.value) return;
 
         const tracker = contextStore.getTracker();
 
@@ -105,7 +106,7 @@ class TrackingService {
             productId: x.product.productId ?? '',
             variantId: x.product.variant?.variantId ?? undefined,
             quantity: x.quantity,
-            lineTotal: x.quantity * (x.product.salesPrice ?? 0),
+            lineTotal: x.quantity * (articleSalesPrice(x.product) ?? 0),
         }));
     }
 

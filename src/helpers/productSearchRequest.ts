@@ -18,8 +18,9 @@ export function getVariantRequestSorting(dataset: Pick<IDataset, 'variantRequest
 
 export function applyVariantRequestSettings(
     builder: ProductSearchBuilder,
-    dataset: Pick<IDataset, 'maxVariantsPerProduct' | 'variantRequestSorting'>,
+    dataset: Pick<IDataset, 'maxVariantsPerProduct' | 'variantRequestSorting' | 'variantOwnedData'>,
 ) {
+    if (dataset.variantOwnedData) builder.searchConstraints(c => c.setResultMustHaveVariantConstraint({ exceptWhenProductHasNoVariants: false }));
     return builder.setVariantRequestSettings(settings => {
         settings
             .setMaxVariantsPerProduct(getMaxVariantsPerProduct(dataset))

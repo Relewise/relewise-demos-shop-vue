@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { articleSalesPrice, articleListPrice, isVariantOwned } from '@/helpers/variantOwnedData';
 import { computed, type PropType } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import type { ProductSearchResponse, ProductResult, VariantResult } from '@relewise/client';
@@ -102,10 +103,10 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
       <div class="col-span-2 flex lg:block w-full">
         <span class="lg:hidden inline-block w-1/3">Material: </span>
         <span
-          v-if="variant?.data?.Material"
+          v-if="(variant?.data?.material ?? variant?.data?.Material)"
           class="text-slate-900"
         >
-          {{ variant.data.Material.value }}
+          {{ (variant.data?.material ?? variant.data?.Material)?.value }}
         </span>
       </div>
       <hr class="lg:hidden">
@@ -125,16 +126,16 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
         <span
           v-else
           class="text-red-600"
-        >Sold Out</span>
+        >{{ isVariantOwned(product) ? 'Stock not verified' : 'Sold Out' }}</span>
       </div>
       <hr class="lg:hidden">
       <div class="col-span-2 font-semibold flex lg:block w-full">
         <span class="lg:hidden inline-block w-1/3">Price: </span>
         <span
-          v-if="variant?.listPrice ?? product.listPrice"
+          v-if="(variant?.salesPrice ?? articleSalesPrice(product)) != null"
           class="text-slate-900"
         >
-          {{ $format(variant?.listPrice ?? product.listPrice) }}
+          {{ $format(variant?.salesPrice ?? articleSalesPrice(product)) }}
         </span>
       </div>
     </div>

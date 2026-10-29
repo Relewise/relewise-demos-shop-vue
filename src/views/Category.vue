@@ -257,7 +257,7 @@ async function search() {
 
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({ allData: true })
+        .setSelectedVariantProperties({ allData: true, displayName: true, pricing: true })
         .setRetailMedia(rm => rm
             .setLocation({
                 key: 'PRODUCT_LISTING_PAGE',
@@ -286,10 +286,12 @@ async function search() {
                 s.sortByProductPopularity();
             }
             else if (filters.value.sort === 'SalesPriceDesc') {
-                s.sortByProductAttribute('SalesPrice', 'Descending');
+                if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Descending');
+                    else s.sortByProductAttribute('SalesPrice', 'Descending');
             }
             else if (filters.value.sort === 'SalesPriceAsc') {
-                s.sortByProductAttribute('SalesPrice', 'Ascending');
+                if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Ascending');
+                    else s.sortByProductAttribute('SalesPrice', 'Ascending');
             }
         }), contextStore.context.value)
         .build();

@@ -58,6 +58,7 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         showVariantsBadge: dataset.showVariantsBadge ?? false,
         similarProductsOnPdp: dataset.similarProductsOnPdp ?? false,
         variantBasedSearchOverlay,
+        variantOwnedData: dataset.variantOwnedData ?? false,
         variantResolutionImages: dataset.variantResolutionImages ?? false,
         maxVariantsPerProduct: normalizeMaxVariantsPerProduct(dataset.maxVariantsPerProduct),
         variantRequestSorting: dataset.variantRequestSorting === 'ByRelevance' ? 'ByRelevance' : defaultVariantRequestSorting,
