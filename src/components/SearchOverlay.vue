@@ -292,7 +292,7 @@ async function search() {
     const searcher = contextStore.getSearcher();
     let response;
     try {
-        response = await batchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), abortSignal);
+        response = await batchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), abortSignal, contextStore.context.value.variantOwnedData);
     } catch (error) {
         if (abortSignal.aborted) return;
         throw error;

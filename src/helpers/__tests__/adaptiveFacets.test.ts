@@ -565,3 +565,32 @@ describe('discovery cache', () => {
         expect(run).toHaveBeenCalledTimes(202);
     });
 });
+
+describe('variant-owned discovery', () => {
+    const rows = [
+        { productId: 'family-a', ...product({ forbidden_parent_only: 'one' }), variant: { variantId: 'article-a', ...product({ length: '293 mm', diameter: '20 mm', AvailableInMarkets: ['se'], SoldOut: false }) } },
+        { productId: 'family-a', ...product({ forbidden_parent_only: 'two' }), variant: { variantId: 'article-b', ...product({ length: '325 mm', diameter: '30 mm', AvailableInMarkets: ['fi'], SoldOut: true }) } },
+    ];
+    it('ranks physical article data without parent unions or operational fields', () => {
+        const keys = rankAttributes(rows, true);
+        expect(keys).toEqual(['__adaptive:String:diameter', '__adaptive:String:length']);
+        expect(rankAttributes([...rows, rows[0]], true)).toEqual(keys);
+        expect(rankAttributes([product({ material: 'steel' })], true)).toEqual([]);
+    });
+    it('requests article data and produces only variant-scoped generated controls', async() => {
+        const searcher = fakeSearcher(rows);
+        const prepared = await prepareProductSearch(request(), searcher as any, 'variant-catalogue', signal(), true);
+        const probe = searcher.searchProducts.mock.calls[0]![0] as any;
+        expect(probe.settings.selectedProductProperties.allData).toBe(false);
+        expect(probe.settings.selectedVariantProperties.allData).toBe(true);
+        expect(probe.settings.variantRequestSettings.maxVariantsPerProduct).toBe(5);
+        const attributes = prepared.request.facets!.items!.filter((item: any) => item.field === 'Data');
+        expect(attributes).toHaveLength(2);
+        expect(attributes.every((item: any) => item.dataSelectionStrategy === 'Variant')).toBe(true);
+        expect(attributes.map((item: any) => item.key)).not.toContain('__adaptive:String:forbidden_parent_only');
+    });
+    it('keeps selected article controls variant-scoped through API alias conversion', () => {
+        const built = new ProductSearchBuilder(settings).facets(f => addAdaptiveFacet(f, { key: 'length', type: 'String' }, ['293 mm'], 'Variant')).build();
+        expect(apiFacetRequest(built).facets.items[0]).toMatchObject({ key: 'length', dataSelectionStrategy: 'Variant', selected: ['293 mm'] });
+    });
+});

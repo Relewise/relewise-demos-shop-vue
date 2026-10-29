@@ -6,7 +6,7 @@ const article = (id: string, market: string, channel: string): VariantResult => 
     variantId: id, rank: 1, salesPrice: 125,
     data: { AvailableInMarkets: D.stringCollection([market]), AvailableInChannels: D.stringCollection([channel]), NotBuyableInMarkets: D.stringCollection([]), description: D.string('Native article copy') },
 });
-const family = (variant?: VariantResult): ProductResult => ({ productId: '100093', rank: 1, salesPrice: 999, variant, data: { DataModelVersion: D.string('variant-owned-v1'), Description: D.string('Family copy') } });
+const family = (variant?: VariantResult): ProductResult => ({ productId: 'family-1', rank: 1, salesPrice: 999, variant, data: { DataModelVersion: D.string('variant-owned-v1'), Description: D.string('Family copy') } });
 
 describe('article-owned data', () => {
     it('requires an explicitly selected, priced article and never falls back to the parent price', () => {
