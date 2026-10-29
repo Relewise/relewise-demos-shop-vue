@@ -12,6 +12,10 @@ The newest and unstable release of the demo shop can be found here: https://late
 
 In order to run the demo shop you need access to a dataset in Relewise.
 
+## Adaptive product facets
+
+Search results and category listings discover relevant attribute facets from the connected catalogue. See [adaptive facet behavior and verification](docs/adaptive-facets.md).
+
 ## Development setup
 
 1. git clone the repo

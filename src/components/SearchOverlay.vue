@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { batchWithAdaptiveFacets } from '@/helpers/adaptiveFacets';
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
@@ -35,6 +36,12 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
 let abortController = new AbortController();
+
+onUnmounted(() => abortController.abort());
+watch(contextStore.activeContextRevision, () => {
+    abortController.abort();
+    if (route.query.open === '1') search();
+});
 
 const productPageSize = 40;
 const contentPageSize = 10;
@@ -99,6 +106,7 @@ watch(breakpointService.active, () => {
 
 function showOrHide(show: boolean) {
     if (!show) {
+        abortController.abort();
         searchTerm.value = '';
         productSearchResult.value = null;
         contentSearchResult.value = null;
@@ -280,7 +288,13 @@ async function search() {
     abortController = new AbortController();
     const abortSignal = abortController.signal;
     const searcher = contextStore.getSearcher();
-    const response = await searcher.batch(request, { abortSignal });
+    let response;
+    try {
+        response = await batchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), abortSignal);
+    } catch (error) {
+        if (abortSignal.aborted) return;
+        throw error;
+    }
     contextStore.assertApiCall(response);
 
     if (response && response.responses) {

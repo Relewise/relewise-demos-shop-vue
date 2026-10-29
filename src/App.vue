@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { invalidateFacetDiscovery } from './helpers/adaptiveFacets';
 import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
@@ -31,7 +32,8 @@ onMounted(() => {
     notificationsStore.flushAfterReload();
 });
 
-watch(activeContextRevision, async() => {
+watch(activeContextRevision, async(_, previous) => {
+    if (previous !== undefined) invalidateFacetDiscovery();
     await refreshActiveContext();
 }, { immediate: true });
 

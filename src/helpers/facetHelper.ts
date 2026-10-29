@@ -1,3 +1,4 @@
+import { addSelectedAdaptiveFacets, attributeFromIdentity } from './adaptiveFacets';
 import { facetConfig, type FacetContext } from '@/facetConfig';
 import contextStore from '@/stores/context.store';
 import { type BrandFacetResult, type CategoryFacetResult, type CategoryHierarchyFacetResult, type CategoryNameAndId, type CategoryPath, type ContentAssortmentFacetResult, type ContentDataBooleanValueFacetResult, type ContentDataDoubleRangeFacetResult, type ContentDataDoubleRangesFacetResult, type ContentDataDoubleValueFacetResult, type ContentDataIntegerValueFacetResult, type ContentDataObjectFacetResult, type ContentDataStringValueFacetResult, type DataObjectBooleanValueFacetResult, type DataObjectDoubleRangeFacetResult, type DataObjectDoubleRangesFacetResult, type DataObjectDoubleValueFacetResult, type DataObjectFacetResult, type DataObjectStringValueFacetResult, type DataSelectionStrategy, type FacetBuilder, type PriceRangeFacetResult, type PriceRangesFacetResult, type ProductAssortmentFacetResult, type ProductCategoryAssortmentFacetResult, type ProductCategoryDataBooleanValueFacetResult, type ProductCategoryDataDoubleRangeFacetResult, type ProductCategoryDataDoubleRangesFacetResult, type ProductCategoryDataDoubleValueFacetResult, type ProductCategoryDataObjectFacetResult, type ProductCategoryDataStringValueFacetResult, type ProductDataBooleanValueFacetResult, type ProductDataDoubleRangeFacetResult, type ProductDataDoubleRangesFacetResult, type ProductDataDoubleValueFacetResult, type ProductDataIntegerValueFacetResult, type ProductDataObjectFacetResult, type ProductDataStringValueFacetResult, type RecentlyPurchasedFacetResult, type VariantSpecificationFacetResult } from '@relewise/client';
@@ -45,6 +46,7 @@ export function getFacets(
             console.error(`Could not handle facet configuration with type '${(facetToAdd as any).type}'`);
         }
     });
+    if (context !== 'ContentSearch') addSelectedAdaptiveFacets(facetBuilder, filters);
 }
 
 export function getFacetSettings(facetResult: allFacetResultTypes, context?: FacetContext) {
@@ -66,6 +68,17 @@ export function getFacetSettings(facetResult: allFacetResultTypes, context?: Fac
         if (!('key' in facetResult)) {
             console.error('Could not find configuration for facet result');
             return;
+        }
+        if (context !== 'ContentSearch') {
+            const attribute = attributeFromIdentity(facetResult.key ?? '');
+            if (attribute) return {
+                contexts: ['Category', 'SearchOverlay', 'Brand'] as FacetContext[],
+                type: 'DataString' as const,
+                dataKey: facetResult.key,
+                dataSelectionStrategy: 'Product' as const,
+                renderType: 'Checklist' as const,
+                label: attribute.key.replace(/[_-]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2'),
+            };
         }
         return facetConfig.find(x => facetResult.key === x.dataKey);
     default:
