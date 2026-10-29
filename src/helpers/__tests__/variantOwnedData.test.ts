@@ -38,6 +38,10 @@ describe('article-owned data', () => {
         const payload = JSON.stringify(request);
         expect(payload).not.toContain('ProductDataFilter');
         expect(payload.match(/VariantDataFilter/g)).toHaveLength(5);
+        const blocked = request.filters!.items!.find((filter: any) => filter.key === 'NotBuyableInMarkets') as any;
+        expect(blocked.negated ?? false).toBe(false);
+        expect(blocked.conditions.items[0].negated).toBe(true);
+        expect(blocked.filterOutIfKeyIsNotFound).toBe(false);
     });
     it('preserves legacy parent-price behavior', () => {
         expect(articleSalesPrice({ productId: 'legacy', rank: 1, salesPrice: 99 })).toBe(99);

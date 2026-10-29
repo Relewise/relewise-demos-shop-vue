@@ -28,7 +28,7 @@ export function articleDescription(product: ProductResult) {
 /** Request-level variant filters share one candidate variant; never filter parent unions. */
 export function addArticleEligibility(filters: FilterBuilder, market: string, channel?: string | null) {
     filters.addVariantDataFilter('AvailableInMarkets', c => c.addContainsCondition(DataValueFactory.string(market)));
-    filters.addVariantDataFilter('NotBuyableInMarkets', c => c.addContainsCondition(DataValueFactory.string(market)), true, false, true);
+    filters.addVariantDataFilter('NotBuyableInMarkets', c => c.addContainsCondition(DataValueFactory.string(market), 'All', true), true, false);
     filters.addVariantDataFilter('AvailableInChannels', c => c.addContainsCondition(DataValueFactory.string(channel ?? 'company-contract-denied')));
 }
 
