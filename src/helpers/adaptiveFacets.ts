@@ -64,7 +64,7 @@ function abortable<T>(task: Promise<T>, signal: AbortSignal): Promise<T> {
 }
 
 // Count a value once per base product, including scalar and wrapped list values.
-export function rankAttributes(products: any[], variantOwned = false): string[] {
+export function rankAttributes(products: any[], variantOwned = false, allowedKeys?: readonly string[]): string[] {
     if (variantOwned) products = [...new Map(products.filter(product => product.variant?.variantId).map(product =>
         [JSON.stringify([product.productId, product.variant.variantId]), product.variant])).values()];
     const keys = [
@@ -72,7 +72,7 @@ export function rankAttributes(products: any[], variantOwned = false): string[] 
             products.flatMap((product) => Object.keys(product.data ?? {})),
         ),
     ]
-        .filter((key) => !excluded.test(key.replace(/([a-z0-9])([A-Z])/g, '$1_$2')))
+        .filter((key) => (!allowedKeys || allowedKeys.includes(key)) && !excluded.test(key.replace(/([a-z0-9])([A-Z])/g, '$1_$2')))
         .sort();
     return keys
         .map((key, index) => {
@@ -391,6 +391,8 @@ const sessionStorageArea: StorageArea = {
     },
 };
 
+export type FacetPublicationPolicy = { dataKeys: string[]; includePriceFacets: boolean };
+
 type PreparedProductSearch = {
     request: ProductSearchRequest;
     restore(
@@ -403,9 +405,15 @@ export async function prepareProductSearch(
     namespace: string,
     signal: AbortSignal,
     variantOwned = false,
+    policy?: FacetPublicationPolicy,
 ): Promise<PreparedProductSearch> {
-    const original = request.facets?.items ?? [];
-    if (!original.length) return { request, restore: (response) => response };
+    const original = (request.facets?.items ?? []).filter((facet: any) => {
+        if (!policy) return true;
+        if (!policy.includePriceFacets && ['SalesPrice', 'ListPrice'].includes(facet.field)) return false;
+        const key = attributeFromIdentity(facet.key ?? '')?.key ?? facet.key;
+        return facet.field !== 'Data' || policy.dataKeys.includes(key);
+    });
+    if (!original.length) return { request: { ...request, facets: request.facets ? { ...request.facets, items: [] } : undefined }, restore: (response) => response };
     const pinned = original.filter(selected);
     const discoverySettings = new ProductSearchBuilder({
         user: UserFactory.anonymous(),
@@ -457,7 +465,7 @@ export async function prepareProductSearch(
     );
     if (!probe.term || probe.term.length >= 3) {
         cache ??= new FacetDiscoveryCache(sessionStorageArea);
-        const key = await discoveryKey(namespace, apiFacetRequest(probe));
+        const key = await discoveryKey(JSON.stringify([namespace, policy]), apiFacetRequest(probe));
         check(signal);
         identities = await cache.get(
             key,
@@ -470,12 +478,13 @@ export async function prepareProductSearch(
                 check(probeSignal);
                 if (!response || !Array.isArray(response.results))
                     throw new Error('Invalid discovery response');
-                return rankAttributes(response.results.slice(0, 50), variantOwned);
+                return rankAttributes(response.results.slice(0, 50), variantOwned, policy?.dataKeys);
             },
             (code, status) => console.debug('[adaptive-facets]', code, status),
         );
     }
     check(signal);
+    if (policy) identities = identities.filter(identity => policy.dataKeys.includes(attributeFromIdentity(identity)?.key ?? ''));
     const identityForFacet = (facet: any) => {
         if (typeof facet.key !== 'string') return undefined;
         if (attributeFromIdentity(facet.key)) return facet.key;
@@ -554,6 +563,7 @@ export async function searchWithAdaptiveFacets(
     namespace: string,
     signal: AbortSignal,
     variantOwned = false,
+    policy?: FacetPublicationPolicy,
 ) {
     const prepared = await prepareProductSearch(
         request,
@@ -561,6 +571,7 @@ export async function searchWithAdaptiveFacets(
         namespace,
         signal,
         variantOwned,
+        policy,
     );
     check(signal);
     const response = await searcher.searchProducts(
@@ -577,6 +588,7 @@ export async function batchWithAdaptiveFacets(
     namespace: string,
     signal: AbortSignal,
     variantOwned = false,
+    policy?: FacetPublicationPolicy,
 ) {
     const prepared = await Promise.all(
         request.requests.map((item) =>
@@ -587,6 +599,7 @@ export async function batchWithAdaptiveFacets(
                       namespace,
                       signal,
                       variantOwned,
+                      policy,
                   )
                 : { request: item, restore: (response: any) => response },
         ),

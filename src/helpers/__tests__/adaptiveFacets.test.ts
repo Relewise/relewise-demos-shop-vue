@@ -594,3 +594,18 @@ describe('variant-owned discovery', () => {
         expect(apiFacetRequest(built).facets.items[0]).toMatchObject({ key: 'length', dataSelectionStrategy: 'Variant', selected: ['293 mm'] });
     });
 });
+
+describe('explicit facet publication policy', () => {
+    it('keeps PDP-only attributes and price facets out of search controls', async() => {
+        const rows = [
+            { productId: 'family-a', ...product({}), variant: { variantId: 'a', ...product({ length_mm: 293, colour: 'White', pdp_only_specification: 'one', ...Object.fromEntries(Array.from({ length: 20 }, (_, i) => ['a_pdp_' + i, 'one'])) }) } },
+            { productId: 'family-b', ...product({}), variant: { variantId: 'b', ...product({ length_mm: 325, colour: 'Black', pdp_only_specification: 'two', ...Object.fromEntries(Array.from({ length: 20 }, (_, i) => ['a_pdp_' + i, 'two'])) }) } },
+        ];
+        const searcher = fakeSearcher(rows);
+        const prepared = await prepareProductSearch(request(), searcher as any, 'policy-catalogue', signal(), true, { dataKeys: ['length_mm'], includePriceFacets: false });
+        const facets = prepared.request.facets!.items! as any[];
+        expect(facets.some(facet => facet.field === 'SalesPrice')).toBe(false);
+        expect(facets.filter(facet => facet.field === 'Data').map(facet => facet.key)).toEqual(['__adaptive:Double:length_mm']);
+        expect(facets.some(facet => facet.key?.includes('pdp_only_specification'))).toBe(false);
+    });
+});

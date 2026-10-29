@@ -31,6 +31,8 @@ export interface IDataset {
     similarProductsOnPdp?: boolean;
     variantBasedSearchOverlay?: boolean;
     variantOwnedData?: boolean;
+    facetDataKeys?: string[];
+    commercialMode?: 'external-pricing';
     variantResolutionImages?: boolean;
     maxVariantsPerProduct?: number;
     variantRequestSorting?: VariantRequestSorting;

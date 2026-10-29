@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DataValueFactory as D, ProductSearchBuilder, type ProductResult, type VariantResult } from '@relewise/client';
-import { addArticleEligibility, articleDescription, articleSalesPrice, canBuyArticle, eligibleArticle } from '../variantOwnedData';
+import { addArticleEligibility, articleDescription, articleSalesPrice, canBuyArticle, eligibleArticle, missingArticlePriceText } from '../variantOwnedData';
 
 const article = (id: string, market: string, channel: string): VariantResult => ({
     variantId: id, rank: 1, salesPrice: 125,
@@ -46,4 +46,11 @@ describe('article-owned data', () => {
     it('preserves legacy parent-price behavior', () => {
         expect(articleSalesPrice({ productId: 'legacy', rank: 1, salesPrice: 99 })).toBe(99);
     });
+});
+
+it('labels externally priced articles without inventing a price or enabling checkout', () => {
+    const selected = family({ ...article('a', 'se', 'electrical'), salesPrice: null });
+    expect(missingArticlePriceText(selected, true)).toBe('Customer price fetched separately');
+    expect(missingArticlePriceText(family(), true)).toBe('Select an article');
+    expect(canBuyArticle(selected)).toBe(false);
 });

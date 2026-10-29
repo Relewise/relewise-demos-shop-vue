@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { articleSalesPrice, articleListPrice } from '@/helpers/variantOwnedData';
+import { articleSalesPrice, articleListPrice, missingArticlePriceText } from '@/helpers/variantOwnedData';
 import type { ProductResult } from '@relewise/client';
 import { computed, toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
@@ -108,7 +108,7 @@ const displayName = computed(() => {
       <div class="mt-2 flex items-center justify-between">
         <p>
           <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">
-            {{ articleSalesPrice(product) == null ? 'Select article' : $format(articleSalesPrice(product)) }}
+            {{ articleSalesPrice(product) == null ? missingArticlePriceText(product, contextStore.context.value.commercialMode === 'external-pricing') : $format(articleSalesPrice(product)) }}
           </span>
           <span
             v-if="articleSalesPrice(product) !== articleListPrice(product) && articleListPrice(product) !== null && articleListPrice(product) !== undefined"

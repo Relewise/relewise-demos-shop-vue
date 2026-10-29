@@ -92,7 +92,7 @@
 
             <div>
               <h3 class="text-2xl font-semibold text-slate-900 leading-none inline-block">
-                {{ articleSalesPrice(product) == null ? 'Select article for price' : $format(articleSalesPrice(product)) }}
+                {{ articleSalesPrice(product) == null ? missingArticlePriceText(product, contextStore.context.value.commercialMode === 'external-pricing') : $format(articleSalesPrice(product)) }}
               </h3>
               <span
                 v-if="articleSalesPrice(product) !== articleListPrice(product)"
@@ -212,7 +212,7 @@
 </template>
 
 <script lang="ts" setup>
-import { articleSalesPrice, articleListPrice, articleDescription, canBuyArticle, isVariantOwned } from '@/helpers/variantOwnedData';
+import { articleSalesPrice, articleListPrice, articleDescription, canBuyArticle, isVariantOwned, missingArticlePriceText } from '@/helpers/variantOwnedData';
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';

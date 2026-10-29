@@ -1,4 +1,5 @@
-import { articleSalesPrice, articleListPrice } from '@/helpers/variantOwnedData';
+import { articleSalesPrice, articleListPrice, missingArticlePriceText } from '@/helpers/variantOwnedData';
+import contextStore from '@/stores/context.store';
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { ProductTemplateExtensions } from '@relewise/web-components';
@@ -154,7 +155,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 </div>
                 <div class="price-container">
                     <p>
-                        <span class="sales-price">${articleSalesPrice(product) == null ? 'Select article' : helpers.formatPrice(articleSalesPrice(product))}</span>
+                        <span class="sales-price">${articleSalesPrice(product) == null ? missingArticlePriceText(product, contextStore.context.value.commercialMode === 'external-pricing') : helpers.formatPrice(articleSalesPrice(product))}</span>
                         ${articleSalesPrice(product) !== articleListPrice(product) && articleListPrice(product) !== null && articleListPrice(product) !== undefined ? html`<span class="list-price">${helpers.formatPrice(articleListPrice(product))}</span>` : ''}
                     </p>
                 </div>

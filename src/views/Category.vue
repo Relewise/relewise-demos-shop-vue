@@ -323,7 +323,7 @@ async function search() {
     const searcher = contextStore.getSearcher();
     let response: ProductSearchResponse | undefined;
     try {
-        response = await searchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), signal, contextStore.context.value.variantOwnedData);
+        response = await searchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), signal, contextStore.context.value.variantOwnedData, contextStore.context.value.facetDataKeys ? { dataKeys: contextStore.context.value.facetDataKeys, includePriceFacets: contextStore.context.value.commercialMode !== 'external-pricing' } : undefined);
     } catch (error) {
         if (signal.aborted) return;
         throw error;

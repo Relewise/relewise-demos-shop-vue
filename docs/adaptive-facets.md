@@ -33,3 +33,11 @@ Validation on this branch: type checking and production build pass; all 37 unit 
 The optional `variantOwnedData` dataset flag enables native-market and company eligibility on the same physical variant, selected-article prices and specification facets, and article-aware cart/tracking identity. Family pages require explicit selection before purchase. Missing article prices do not fall back to a parent price. Context changes invalidate previous offers; legacy baskets cannot bypass eligibility. The mode is preserved when importing shared preview configuration. Cache policy v2 separates the sampling settings and scopes.
 
 This draft is intended for deployment-preview testing. It does not require or authorize a production release.
+
+## Reviewed publication controls
+
+An optional `facetDataKeys` list limits adaptive controls independently of the specifications retained for product details. The allowlist is applied before ranking, so useful facet candidates cannot be crowded out by PDP-only fields. Selected/unselected data controls outside the list are omitted, and cache namespaces include the policy. Legacy datasets without the list retain discovery behavior.
+
+`commercialMode: external-pricing` removes price facets when a reviewed facet list is supplied and labels selected articles whose customer price is fetched separately. Missing prices never become zero prices or enable checkout. The purchased-with panel remains available: synthetic affinity tracking is separate from whether product offers are stored.
+
+Typed document/packaging/relationship ObjectLists render recursively rather than as object strings. StringList company data is displayed and retains its type when edited. Importer-only publication allowlists are not part of the storefront context.

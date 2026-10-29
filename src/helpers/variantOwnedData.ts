@@ -38,3 +38,8 @@ export function eligibleArticle(variant: VariantResult, market: string, channel?
         && !values('NotBuyableInMarkets').includes(market)
         && values('AvailableInChannels').includes(channel ?? 'company-contract-denied');
 }
+
+export function missingArticlePriceText(product: ProductResult, externalPricing = false) {
+    if (!product.variant?.variantId) return 'Select an article';
+    return externalPricing ? 'Customer price fetched separately' : 'Price unavailable';
+}
