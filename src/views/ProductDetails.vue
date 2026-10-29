@@ -48,6 +48,12 @@
               {{ product.displayName }}
             </h1>
 
+            <p
+              v-if="isVariantOwned(product) && product.variant && product.data?.Description?.value && articleDescription(product) !== product.data.Description.value"
+              class="mb-3 text-slate-600"
+            >
+              {{ product.data.Description.value }}
+            </p>
             <h2
               v-if="isVariantOwned(product) && product.variant"
               class="mb-3 text-xl"

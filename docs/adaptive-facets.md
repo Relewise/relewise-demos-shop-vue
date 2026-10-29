@@ -26,7 +26,7 @@ Run `npm run type-check`, `npm run test:unit -- --run`, `npm run lint` and `npm 
 
 Browser checks use synthetic data; no customer configuration is required. Verify search and category facet selection, independent mixed-type URL keys, clearing and reload, sort reuse, empty results with pinned controls, and desktop/mobile access. Actual relevance, coverage and cold/warm latency depend on the connected catalogue. This change makes no measured latency or request-byte reduction claim: generic discovery reads sample data, and the default shop originally had only three fixed facets.
 
-Validation on this branch: type checking and production build pass; all 35 unit tests pass. ESLint reports zero errors (eight pre-existing formatting warnings in `SearchNoProductsFound.vue`). Synthetic Chrome checks cover desktop/mobile search and category controls, mixed-type selection, clearing, selection restoration after reload, cache reuse on warm reload, and selected zero-hit facets. Catalogue-specific ranking and performance still require validation against the dataset used in the deploy preview.
+Validation on this branch: type checking and production build pass; all 37 unit tests pass. ESLint reports zero errors (eight pre-existing formatting warnings in `SearchNoProductsFound.vue`). Synthetic Chrome checks cover desktop/mobile search and category controls, mixed-type selection, clearing, selection restoration after reload, cache reuse on warm reload, and selected zero-hit facets. Catalogue-specific ranking and performance still require validation against the dataset used in the deploy preview.
 
 ## Article-owned model
 
