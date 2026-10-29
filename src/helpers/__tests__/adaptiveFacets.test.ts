@@ -83,6 +83,10 @@ describe('adaptive facet ranking', () => {
                 demo_marker: 'a',
                 empty: '',
                 id: 'a',
+                productId: 'a',
+                productLink: 'https://example.com/a',
+                manufacturerPartNumber: 'a',
+                internal_marker: 'a',
             }),
             product({
                 material: { $values: ['wood'] },
@@ -92,6 +96,10 @@ describe('adaptive facet ranking', () => {
                 demo_marker: 'b',
                 empty: null,
                 id: 'b',
+                productId: 'b',
+                productLink: 'https://example.com/b',
+                manufacturerPartNumber: 'b',
+                internal_marker: 'b',
             }),
         ]);
         expect(results).toEqual([

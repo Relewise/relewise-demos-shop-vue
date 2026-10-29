@@ -22,7 +22,7 @@ export const fallbackKeys = [
     'type',
 ];
 const excluded =
-    /^(?:demo_|source_|search_terms$|(?:additional_)?information$)|(?:article_numbers|product_ids|gtins?$|image|description|provenance|manufacturer_part_number|supplier_code|product_code|barcode|(?:^|_)(?:sku|ean|mpn)$|(?:^|_)urls?$|(?:^|_)ids?$|contract|search_config)/i;
+    /^(?:demo_|source_|internal_|search_terms$|(?:additional_)?information$)|(?:article_numbers?|product_numbers?|product_ids|gtins?$|image|link|description|provenance|manufacturer_part_number|supplier_code|product_code|barcode|(?:^|_)(?:sku|ean|mpn)$|(?:^|_)urls?$|(?:^|_)ids?$|contract|search_config)/i;
 const prefix = '__adaptive:';
 type AttributeType = 'String' | 'Double' | 'Boolean';
 type Attribute = { key: string; type: AttributeType };
@@ -70,7 +70,7 @@ export function rankAttributes(products: any[]): string[] {
             products.flatMap((product) => Object.keys(product.data ?? {})),
         ),
     ]
-        .filter((key) => !excluded.test(key))
+        .filter((key) => !excluded.test(key.replace(/([a-z0-9])([A-Z])/g, '$1_$2')))
         .sort();
     return keys
         .map((key, index) => {
