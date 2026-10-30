@@ -182,10 +182,25 @@ function searchFor(term: string) {
             :product-recommendations-title="noResultProductRecommendationsTitle"
           />
         </div>
-        <VariantBasedProductList
-          v-else-if="contextStore.context.value.variantBasedSearchOverlay"
-          :product-result="productSearchResult"
-        />
+        <template v-else-if="contextStore.context.value.variantBasedSearchOverlay">
+          <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <template
+              v-for="(promotion, index) in products?.filter(item => item.isPromotion)"
+              :key="index"
+            >
+              <ProductTile
+                v-if="promotion.product"
+                :product="promotion.product"
+                :is-promotion="true"
+              />
+              <div v-else-if="promotion.displayAd">
+                <span class="text-xs text-slate-500">Sponsored</span>
+                <DisplayAdTile :display-ad="promotion.displayAd" />
+              </div>
+            </template>
+          </div>
+          <VariantBasedProductList :product-result="productSearchResult" />
+        </template>
         <div v-else>
           <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <template

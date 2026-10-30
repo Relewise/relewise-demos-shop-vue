@@ -22,6 +22,8 @@ enum Tabs {
 }
 
 const open = ref(false);
+const loading = ref(false);
+const searchError = ref('');
 const searchTerm = ref<string>('');
 const productSearchResult = ref<ProductSearchResponse | null>(null);
 const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
@@ -63,9 +65,7 @@ watch(() => ({ ...route }), (value, oldValue) => {
         const newFilters: Record<string, string | string[]> = { term: '', sort: '', page: '1' };
         searchParams.forEach((value, key) => {
             if (key === 'term') {
-                if (oldValue.query.open !== '1') {
-                    searchTerm.value = value;
-                }
+                searchTerm.value = value;
 
                 newFilters.term = value;
                 return;
@@ -107,6 +107,8 @@ watch(breakpointService.active, () => {
 function showOrHide(show: boolean) {
     if (!show) {
         abortController.abort();
+        loading.value = false;
+        searchError.value = '';
         searchTerm.value = '';
         productSearchResult.value = null;
         contentSearchResult.value = null;
@@ -148,6 +150,13 @@ async function persistInUrl() {
 
 async function search() {
     abortController.abort();
+    loading.value = true;
+    searchError.value = '';
+    productSearchResult.value = null;
+    contentSearchResult.value = null;
+    contentRecommendationResult.value = null;
+    products.value = null;
+    predictionsList.value = [];
 
     window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
 
@@ -293,54 +302,64 @@ async function search() {
     let response;
     try {
         response = await batchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), abortSignal, contextStore.context.value.variantOwnedData, contextStore.context.value.facetDataKeys ? { dataKeys: contextStore.context.value.facetDataKeys, includePriceFacets: contextStore.context.value.commercialMode !== 'external-pricing' } : undefined);
-    } catch (error) {
         if (abortSignal.aborted) return;
-        throw error;
-    }
-    contextStore.assertApiCall(response);
+        contextStore.assertApiCall(response);
 
-    if (response && response.responses) {
-        trackBrandView(brandId, brandName);
+        if (response && response.responses) {
+            trackBrandView(brandId, brandName);
 
-        contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
-        productSearchResult.value = response.responses[0] as ProductSearchResponse;
-        products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
+            contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
+            productSearchResult.value = response.responses[0] as ProductSearchResponse;
+            products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
-        if (response.responses.length === 3) {
-            contentSearchResult.value = response.responses[2] as ContentSearchResponse;
-        }
+            if (response.responses.length === 3) {
+                contentSearchResult.value = response.responses[2] as ContentSearchResponse;
+            }
 
-        predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
-        if (productSearchResult.value.hits === 0) {
-            await recommendNoResultProducts(abortSignal).catch(error => {
-                if (!abortSignal.aborted) {
-                    throw error;
+            predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
+            if (productSearchResult.value.hits === 0) {
+                await recommendNoResultProducts(abortSignal).catch(error => {
+                    if (!abortSignal.aborted) {
+                        throw error;
+                    }
+                });
+                return;
+            }
+
+            const placement = productSearchResult.value.retailMedia?.placements?.TOP;
+            if (placement) {
+
+                if (placement?.results) {
+                    products.value = placement.results
+                        .map(x => ({
+                            isPromotion: true,
+                            product: x.promotedProduct?.result,
+                            displayAd: x.promotedDisplayAd,
+                        }) as ProductWithType)
+                        .concat(products.value ?? []);
                 }
-            });
-            return;
-        }
+            }
 
-        const placement = productSearchResult.value.retailMedia?.placements?.TOP;
-        if (placement) {
+            const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
+            if (rightPlacement) {
 
-            if (placement?.results) {
-                products.value = placement.results
-                    .map(x => ({
-                        isPromotion: true,
-                        product: x.promotedProduct?.result,
-                        displayAd: x.promotedDisplayAd,
-                    }) as ProductWithType)
-                    .concat(products.value ?? []);
+                if (rightPlacement?.results) {
+                    rightSide.value = rightPlacement.results;
+                }
             }
         }
-
-        const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
-        if (rightPlacement) {
-
-            if (rightPlacement?.results) {
-                rightSide.value = rightPlacement.results;
-            }
-        }
+    } catch {
+        if (abortSignal.aborted) return;
+        productSearchResult.value = null;
+        contentSearchResult.value = null;
+        contentRecommendationResult.value = null;
+        products.value = null;
+        predictionsList.value = [];
+        rightSide.value = null;
+        noResultProductRecommendations.value = null;
+        searchError.value = 'Search could not be loaded. Please try again.';
+    } finally {
+        if (!abortSignal.aborted) loading.value = false;
     }
 }
 
@@ -384,8 +403,9 @@ async function recommendNoResultSearchTermBasedProducts(term: string, abortSigna
 
     const searchTermBasedProductsRequest = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
         .setTerm(term)
+        .recommendVariant(contextStore.context.value.variantOwnedData ?? false)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({ allData: true })
+        .setSelectedVariantProperties({ allData: true, displayName: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
@@ -397,8 +417,9 @@ async function recommendNoResultPersonalProducts(abortSignal: AbortSignal) {
     const recommender = contextStore.getRecommender();
 
     const personalProductsRequest = new PersonalProductRecommendationBuilder(contextStore.defaultSettings)
+        .recommendVariant(contextStore.context.value.variantOwnedData ?? false)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({ allData: true })
+        .setSelectedVariantProperties({ allData: true, displayName: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
@@ -451,7 +472,27 @@ function trackBrandView(
       class="modal"
     >
       <div
-        v-if="productSearchResult || contentSearchResult"
+        v-if="loading"
+        class="container mx-auto p-6"
+        role="status"
+      >
+        Loading search results…
+      </div>
+      <div
+        v-else-if="searchError"
+        class="container mx-auto p-6"
+        role="alert"
+      >
+        <p>{{ searchError }}</p>
+        <button
+          class="mt-3"
+          @click="search"
+        >
+          Retry
+        </button>
+      </div>
+      <div
+        v-else-if="productSearchResult || contentSearchResult"
         class="container mx-auto pb-10 px-2 xl:px-0"
       >
         <div

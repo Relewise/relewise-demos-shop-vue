@@ -3,6 +3,7 @@ import { getCompanyDataDraft, getUserMetadataDraft } from '@/helpers/keyValueMet
 import { sanitizeUsers } from '@/helpers/userContext';
 import type { Company } from '@relewise/client';
 import { defaultVariantRequestSorting } from '@/helpers/productSearchRequest';
+import { normalizeDataRecord } from './dataValues';
 
 type DatasetNormalizationInput = Partial<IDataset> & {
     language?: string;
@@ -32,7 +33,7 @@ export function sanitizeCompanies(companies?: Company[]) {
         ...company,
         id: company.id?.trim() ?? '',
         parent: company.parent?.id?.trim() ? { id: company.parent.id.trim() } as Company : undefined,
-        data: company.data ? { ...company.data } : undefined,
+        data: normalizeDataRecord(company.data),
     }));
 }
 
