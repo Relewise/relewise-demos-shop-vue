@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { articleSalesPrice, isVariantOwned } from '@/helpers/variantOwnedData';
+import { dataValueText } from '@/helpers/dataValues';
 import { computed, type PropType } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import type { ProductSearchResponse, ProductResult, VariantResult } from '@relewise/client';
@@ -12,21 +14,21 @@ const router = useRouter();
 
 const groupedProducts = computed(() => {
     const result = props.productResult;
-    const groups: Record<string, ProductResult & { Variants: VariantResult[] }> = {};
+    const groups = new Map<string, ProductResult & { Variants: VariantResult[] }>();
 
     result.results?.forEach(product => {
         if (!product.productId) return;
 
-        if (!groups[product.productId]) {
-            groups[product.productId] = { ...product, Variants: [] };
+        if (!groups.has(product.productId)) {
+            groups.set(product.productId, { ...product, Variants: [] });
         } 
 
         if (product.variant) {
-            groups[product.productId]?.Variants.push(product.variant);
+            groups.get(product.productId)?.Variants.push(product.variant);
         }
     });
 
-    return groups;
+    return [...groups.values()];
 });
 
 function goToProductOrVariant(product: ProductResult, variant: VariantResult | null) {
@@ -46,7 +48,9 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
   >
     <h3 class="lg:text-lg font-semibold flex justify-between items-center mb-2">
       <RouterLink
-        :to="{ name: 'product', params: { id: product.productId } }"
+        :to="product.Variants.length === 1
+          ? { name: 'variant', params: { id: product.productId, variant: product.Variants[0].variantId } }
+          : { name: 'product', params: { id: product.productId } }"
         class="text-slate-900 hover:!text-blue-500"
       >
         <span v-html="product.displayName" />
@@ -80,7 +84,10 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
       class="lg:grid lg:grid-cols-12 text-sm py-2 px-2 border-b border-gray-200 cursor-pointer hover:bg-blue-50 transition items-center"
       :class="vIndex % 2 === 1 ? 'bg-gray-100': ''"
       tabindex="0"
+      role="link"
       @click="goToProductOrVariant(product, variant)"
+      @keydown.enter.prevent="goToProductOrVariant(product, variant)"
+      @keydown.space.prevent="goToProductOrVariant(product, variant)"
     >
       <div class="hidden lg:block col-span-1">
         <div class="w-fit">
@@ -102,10 +109,10 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
       <div class="col-span-2 flex lg:block w-full">
         <span class="lg:hidden inline-block w-1/3">Material: </span>
         <span
-          v-if="variant?.data?.Material"
+          v-if="(variant?.data?.material ?? variant?.data?.Material)"
           class="text-slate-900"
         >
-          {{ variant.data.Material.value }}
+          {{ dataValueText(variant.data?.material ?? variant.data?.Material) }}
         </span>
       </div>
       <hr class="lg:hidden">
@@ -125,16 +132,16 @@ function goToProductOrVariant(product: ProductResult, variant: VariantResult | n
         <span
           v-else
           class="text-red-600"
-        >Sold Out</span>
+        >{{ isVariantOwned(product) ? 'Stock not verified' : 'Sold Out' }}</span>
       </div>
       <hr class="lg:hidden">
       <div class="col-span-2 font-semibold flex lg:block w-full">
         <span class="lg:hidden inline-block w-1/3">Price: </span>
         <span
-          v-if="variant?.listPrice ?? product.listPrice"
+          v-if="(variant?.salesPrice ?? articleSalesPrice(product)) != null"
           class="text-slate-900"
         >
-          {{ $format(variant?.listPrice ?? product.listPrice) }}
+          {{ $format(variant?.salesPrice ?? articleSalesPrice(product)) }}
         </span>
       </div>
     </div>

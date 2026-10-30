@@ -1,5 +1,6 @@
 import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, type Company, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { computed, reactive } from 'vue';
+import { addArticleEligibility, languageMarkets } from '@/helpers/variantOwnedData';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
 import { buildContextUser } from '@/helpers/userContext';
@@ -29,6 +30,9 @@ export interface IDataset {
     showVariantsBadge?: boolean;
     similarProductsOnPdp?: boolean;
     variantBasedSearchOverlay?: boolean;
+    variantOwnedData?: boolean;
+    facetDataKeys?: string[];
+    commercialMode?: 'external-pricing';
     variantResolutionImages?: boolean;
     maxVariantsPerProduct?: number;
     variantRequestSorting?: VariantRequestSorting;
@@ -191,7 +195,8 @@ class AppContext {
             brand: true,
             categoryPaths: true,
             pricing: true,
-            allVariants: true,
+            allVariants: !this.context.value.variantOwnedData,
+            ...(this.context.value.variantOwnedData ? { filteredVariants: { inheritFiltersFromRequest: true } } : {}),
             score: {
                 adjusted: true,
                 relevance: true,
@@ -223,6 +228,10 @@ class AppContext {
     }
 
     public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
+        if (this.context.value.variantOwnedData) {
+            addArticleEligibility(filterBuilder, languageMarkets[this.language.value] ?? '', this.user.value.classifications?.channel);
+            return;
+        }
         if (!this.user.value.classifications || !this.context.value.userClassificationFilters) {
             return;
         }
@@ -352,7 +361,8 @@ class AppContext {
     }) {
         const currentDatasetId = this.hasActiveDataset.value ? this.context.value.datasetId : '';
         const currentUserIndex = this.selectedUserIndex.value;
-        const shouldClearBasket = datasetId !== currentDatasetId || selectedUserIndex !== currentUserIndex;
+        const shouldClearBasket = datasetId !== currentDatasetId || selectedUserIndex !== currentUserIndex
+            || Boolean(this.context.value.variantOwnedData && (language !== this.language.value || currencyCode !== this.currencyCode.value || selectedCompanyId !== this.selectedCompanyId.value));
         const nextDatasetIndex = this.state.datasets.findIndex((dataset) => dataset.datasetId === datasetId);
 
         if (nextDatasetIndex < 0) {
@@ -371,14 +381,17 @@ class AppContext {
     }
 
     public setLanguage(language: string) {
+        if (this.context.value.variantOwnedData) basketService.clear();
         this.state.selectedLanguage = language || undefined;
     }
 
     public setCurrency(currency: string) {
+        if (this.context.value.variantOwnedData) basketService.clear();
         this.state.selectedCurrencyCode = currency || undefined;
     }
 
     public setCompany(companyId: string) {
+        if (this.context.value.variantOwnedData) basketService.clear();
         this.state.selectedCompanyId = companyId || undefined;
         this.normalizeSessionSelections();
         this.persistState();

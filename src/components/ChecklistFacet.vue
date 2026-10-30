@@ -7,7 +7,7 @@
     >
       <label
         v-if="(facet.field == 'Category' || facet.field == 'Brand') && option.value && typeof option.value === 'object' && 'id' in option.value"
-        class="flex items-center cursor-pointer w-full"
+        class="flex items-center cursor-pointer w-full min-h-11 lg:min-h-0"
       >
         <input
           class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
@@ -23,14 +23,14 @@
 
       <label
         v-if="facet.field == 'Data' && 'key' in facet && typeof facet.key === 'string'"
-        class="flex items-center cursor-pointer w-full"
+        class="flex items-center cursor-pointer w-full min-h-11 lg:min-h-0"
       >
         <input
           class="accent-brand-500 mr-1 h-4 w-4 cursor-pointer shrink-0"
           type="checkbox"
           :value="option.value"
           :checked="option.selected"
-          @click="applyFacet(facet.key, option.value)"
+          @click="applyFacet(facet.key, String(option.value))"
         >
         {{ option.value }}
         <span class="flex-grow" />
