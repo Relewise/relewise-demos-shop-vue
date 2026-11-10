@@ -405,7 +405,7 @@ onBeforeUnmount(() => {
       v-if="open"
       class="shopping-assistant-modal"
     >
-      <section class="ml-auto flex h-full w-full max-w-6xl flex-col bg-slate-50 shadow-2xl">
+      <section class="mx-auto flex h-full w-full max-w-6xl flex-col bg-slate-50 shadow-2xl">
         <header class="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
           <div class="flex items-center gap-3">
             <div class="rounded-full bg-brand-50 p-2 text-brand-600">
