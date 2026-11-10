@@ -423,7 +423,7 @@ onBeforeUnmount(() => {
           <div class="flex items-center gap-2">
             <button
               type="button"
-              class="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+              class="rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
               title="Start over"
               @click="resetConversation"
             >
@@ -431,7 +431,7 @@ onBeforeUnmount(() => {
             </button>
             <button
               type="button"
-              class="rounded-full p-2 text-slate-500 hover:bg-slate-100"
+              class="rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
               title="Close"
               @click="close"
             >
@@ -482,7 +482,7 @@ onBeforeUnmount(() => {
                   <button
                     v-if="entry.content.result?.facets.length"
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-brand-300 hover:text-brand-600"
+                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-none hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
                     @click="filtersVisible[entry.id] = !filtersVisible[entry.id]"
                   >
                     <AdjustmentsHorizontalIcon class="h-4 w-4" /> Filters
@@ -520,7 +520,7 @@ onBeforeUnmount(() => {
                   </div>
                   <button
                     type="button"
-                    class="w-fit text-xs font-semibold text-brand-600 hover:text-brand-700"
+                    class="w-fit rounded-none bg-transparent p-0 text-xs font-semibold text-brand-600 shadow-none hover:text-brand-700"
                     :disabled="loading"
                     @click="refine(entry, { kind: 'clear' })"
                   >
@@ -683,7 +683,7 @@ onBeforeUnmount(() => {
                 :disabled="loading || !input.trim()"
                 title="Send"
               >
-                <PaperAirplaneIcon class="h-5 w-5" />
+                <PaperAirplaneIcon class="h-5 w-5 stroke-white" />
               </button>
             </div>
           </div>
