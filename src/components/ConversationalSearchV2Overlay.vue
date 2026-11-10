@@ -8,6 +8,7 @@ import {
     ChevronRightIcon,
     PaperAirplaneIcon,
     PhotoIcon,
+    ShoppingBagIcon,
     SparklesIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
@@ -217,11 +218,7 @@ function applyEvent(event: AgUiEvent) {
                 handledBagOperations.add(value.operationId);
             }
 
-            void basketService.addProduct({
-                product: toBasketProduct(value.product),
-                quantityDelta: Math.max(1, value.quantity ?? 1),
-            });
-            toast.success(`${value.product.name} added to the cart`);
+            addProductToBasket(value.product, Math.max(1, value.quantity ?? 1));
         }
     }
     else if (event.type === 'RUN_ERROR') {
@@ -310,6 +307,14 @@ function title(activity: ShoppingEntry) {
 
 function productRoute(product: ConversationalSearchV2Product) {
     return { name: 'product', params: { id: product.id } };
+}
+
+function addProductToBasket(product: ConversationalSearchV2Product, quantity = 1) {
+    void basketService.addProduct({
+        product: toBasketProduct(product),
+        quantityDelta: quantity,
+    });
+    toast.success(`${product.name} added to the cart`);
 }
 
 function toBasketProduct(product: ConversationalSearchV2Product) {
@@ -533,14 +538,16 @@ onBeforeUnmount(() => {
                   class="relative p-4 sm:p-5"
                 >
                   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <RouterLink
+                    <article
                       v-for="product in visibleProducts(entry)"
                       :key="product.id"
-                      :to="productRoute(product)"
                       class="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-100 bg-white text-slate-900 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
-                      @click="close"
                     >
-                      <div class="flex aspect-square items-center justify-center overflow-hidden bg-slate-50">
+                      <RouterLink
+                        :to="productRoute(product)"
+                        class="flex aspect-square items-center justify-center overflow-hidden bg-slate-50"
+                        @click="close"
+                      >
                         <img
                           v-if="product.image"
                           :src="product.image"
@@ -551,22 +558,37 @@ onBeforeUnmount(() => {
                           v-else
                           class="h-16 w-16 text-slate-300"
                         />
-                      </div>
+                      </RouterLink>
                       <div class="flex flex-1 flex-col p-3">
-                        <p
-                          v-if="product.brand"
-                          class="truncate text-xs text-slate-500"
+                        <RouterLink
+                          :to="productRoute(product)"
+                          class="text-slate-900"
+                          @click="close"
                         >
-                          {{ product.brand }}
-                        </p>
-                        <h4 class="mt-1 line-clamp-2 text-sm font-semibold leading-5 group-hover:text-brand-600">
-                          {{ product.name }}
-                        </h4>
+                          <p
+                            v-if="product.brand"
+                            class="truncate text-xs text-slate-500"
+                          >
+                            {{ product.brand }}
+                          </p>
+                          <h4 class="mt-1 line-clamp-2 text-sm font-semibold leading-5 group-hover:text-brand-600">
+                            {{ product.name }}
+                          </h4>
+                        </RouterLink>
                         <p class="mt-auto pt-3 font-semibold">
                           {{ formatPrice(product.price, entry.content.result?.currency ?? contextStore.currencyCode.value) }}
                         </p>
+                        <button
+                          type="button"
+                          class="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white shadow-none hover:bg-brand-700"
+                          :aria-label="`Add ${product.name} to basket`"
+                          @click="addProductToBasket(product)"
+                        >
+                          <ShoppingBagIcon class="h-4 w-4 stroke-white" />
+                          Add to basket
+                        </button>
                       </div>
-                    </RouterLink>
+                    </article>
                   </div>
                   <button
                     v-if="(carouselPositions[entry.id] ?? 0) > 0"
@@ -634,15 +656,25 @@ onBeforeUnmount(() => {
                       </dd>
                     </template>
                   </dl>
-                  <div class="mt-4 flex items-center justify-between">
+                  <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <strong>{{ formatPrice(entry.content.product.price, entry.content.currency) }}</strong>
-                    <RouterLink
-                      :to="productRoute(entry.content.product)"
-                      class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-                      @click="close"
-                    >
-                      View product
-                    </RouterLink>
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-none hover:bg-brand-700"
+                        @click="addProductToBasket(entry.content.product)"
+                      >
+                        <ShoppingBagIcon class="h-4 w-4 stroke-white" />
+                        Add to basket
+                      </button>
+                      <RouterLink
+                        :to="productRoute(entry.content.product)"
+                        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-300 hover:text-brand-600"
+                        @click="close"
+                      >
+                        View product
+                      </RouterLink>
+                    </div>
                   </div>
                 </div>
               </article>
