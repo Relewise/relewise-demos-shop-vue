@@ -18,36 +18,36 @@ import contextStore from '@/stores/context.store';
 import basketService from '@/services/basket.service';
 import {
     filterValue,
-    streamConversationalSearchV2,
+    streamConversationalSearch,
     type AgUiEvent,
-    type ConversationalSearchV2Filters,
-    type ConversationalSearchV2Message,
-    type ConversationalSearchV2Product,
-    type ConversationalSearchV2ProductDetailActivity,
-    type ConversationalSearchV2ShoppingAction,
-    type ConversationalSearchV2ShoppingActivity,
-    type ConversationalSearchV2State,
-} from '@/helpers/conversationalSearchV2Api';
+    type ConversationalSearchFilters,
+    type ConversationalSearchMessage,
+    type ConversationalSearchProduct,
+    type ConversationalSearchProductDetailActivity,
+    type ConversationalSearchShoppingAction,
+    type ConversationalSearchShoppingActivity,
+    type ConversationalSearchState,
+} from '@/helpers/conversationalSearchApi';
 
-type TextEntry = ConversationalSearchV2Message & { role: 'user' | 'assistant' };
+type TextEntry = ConversationalSearchMessage & { role: 'user' | 'assistant' };
 type ShoppingEntry = {
     id: string;
     role: 'activity';
     activityType: 'SHOPPING_RESULTS';
-    content: ConversationalSearchV2ShoppingActivity;
+    content: ConversationalSearchShoppingActivity;
 };
 type ProductDetailEntry = {
     id: string;
     role: 'activity';
     activityType: 'PRODUCT_DETAIL';
-    content: ConversationalSearchV2ProductDetailActivity;
+    content: ConversationalSearchProductDetailActivity;
 };
 type ChatEntry = TextEntry | ShoppingEntry | ProductDetailEntry;
 
 const open = ref(false);
 const input = ref('');
 const entries = ref<ChatEntry[]>([]);
-const state = ref<ConversationalSearchV2State>({ searchTerm: '', filters: {} });
+const state = ref<ConversationalSearchState>({ searchTerm: '', filters: {} });
 const loading = ref(false);
 const error = ref('');
 const filtersVisible = ref<Record<string, boolean>>({});
@@ -108,7 +108,7 @@ async function submit() {
     await run();
 }
 
-async function refine(activity: ShoppingEntry, action: ConversationalSearchV2ShoppingAction) {
+async function refine(activity: ShoppingEntry, action: ConversationalSearchShoppingAction) {
     if (loading.value) {
         return;
     }
@@ -116,7 +116,7 @@ async function refine(activity: ShoppingEntry, action: ConversationalSearchV2Sho
     await run(action, activity.id);
 }
 
-async function run(shoppingAction?: ConversationalSearchV2ShoppingAction, activityMessageId?: string) {
+async function run(shoppingAction?: ConversationalSearchShoppingAction, activityMessageId?: string) {
     error.value = '';
     loading.value = true;
     abortController.abort();
@@ -124,7 +124,7 @@ async function run(shoppingAction?: ConversationalSearchV2ShoppingAction, activi
     await scrollToBottom();
 
     try {
-        await streamConversationalSearchV2(contextStore.context.value.datasetId, {
+        await streamConversationalSearch(contextStore.context.value.datasetId, {
             threadId,
             runId: crypto.randomUUID(),
             messages: entries.value
@@ -190,7 +190,7 @@ function applyEvent(event: AgUiEvent) {
             id: event.messageId,
             role: 'activity',
             activityType: 'SHOPPING_RESULTS',
-            content: event.content as ConversationalSearchV2ShoppingActivity,
+            content: event.content as ConversationalSearchShoppingActivity,
         }, event.replace);
     }
     else if (event.type === 'ACTIVITY_SNAPSHOT' && event.messageId && event.activityType === 'PRODUCT_DETAIL') {
@@ -198,7 +198,7 @@ function applyEvent(event: AgUiEvent) {
             id: event.messageId,
             role: 'activity',
             activityType: 'PRODUCT_DETAIL',
-            content: event.content as ConversationalSearchV2ProductDetailActivity,
+            content: event.content as ConversationalSearchProductDetailActivity,
         }, event.replace);
     }
     else if (event.type === 'CUSTOM' && event.name === 'shopping.ui') {
@@ -210,7 +210,7 @@ function applyEvent(event: AgUiEvent) {
     else if (event.type === 'CUSTOM' && event.name === 'shopping.bag.add') {
         const value = event.value as {
             operationId?: string;
-            product?: ConversationalSearchV2Product;
+            product?: ConversationalSearchProduct;
             quantity?: number;
         };
         if (value.product && (!value.operationId || !handledBagOperations.has(value.operationId))) {
@@ -305,11 +305,11 @@ function title(activity: ShoppingEntry) {
     return term ? `${resultCount} results for “${term}”` : `${resultCount} products for you`;
 }
 
-function productRoute(product: ConversationalSearchV2Product) {
+function productRoute(product: ConversationalSearchProduct) {
     return { name: 'product', params: { id: product.id } };
 }
 
-function addProductToBasket(product: ConversationalSearchV2Product, quantity = 1) {
+function addProductToBasket(product: ConversationalSearchProduct, quantity = 1) {
     void basketService.addProduct({
         product: toBasketProduct(product),
         quantityDelta: quantity,
@@ -317,7 +317,7 @@ function addProductToBasket(product: ConversationalSearchV2Product, quantity = 1
     toast.success(`${product.name} added to the cart`);
 }
 
-function toBasketProduct(product: ConversationalSearchV2Product) {
+function toBasketProduct(product: ConversationalSearchProduct) {
     return {
         productId: product.id,
         displayName: product.name,

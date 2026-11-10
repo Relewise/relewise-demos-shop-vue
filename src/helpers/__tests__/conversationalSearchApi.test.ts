@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { consumeAgUiEvents, filterValue, withFacet } from '@/helpers/conversationalSearchV2Api';
+import { consumeAgUiEvents, filterValue, withFacet } from '@/helpers/conversationalSearchApi';
 
-describe('conversational search v2 API', () => {
+describe('conversational search API', () => {
     it('consumes AG-UI events split across arbitrary stream chunks', async() => {
         const receive = vi.fn();
         const encoder = new TextEncoder();

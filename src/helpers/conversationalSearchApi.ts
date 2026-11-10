@@ -1,6 +1,6 @@
 import type { SelectedProductPropertiesSettings, SelectedVariantPropertiesSettings, User } from '@relewise/client';
 
-export interface ConversationalSearchV2Product {
+export interface ConversationalSearchProduct {
     id: string;
     name: string;
     brand: string;
@@ -13,22 +13,22 @@ export interface ConversationalSearchV2Product {
     properties?: Record<string, string>;
 }
 
-export interface ConversationalSearchV2Facet {
+export interface ConversationalSearchFacet {
     key: string;
     values: string[];
     labels?: Record<string, string> | null;
     displayName?: string | null;
 }
 
-export interface ConversationalSearchV2Result {
-    products: ConversationalSearchV2Product[];
-    facets: ConversationalSearchV2Facet[];
-    recommendations: ConversationalSearchV2Product[];
+export interface ConversationalSearchResult {
+    products: ConversationalSearchProduct[];
+    facets: ConversationalSearchFacet[];
+    recommendations: ConversationalSearchProduct[];
     source: string;
     currency: string;
 }
 
-export interface ConversationalSearchV2Filters {
+export interface ConversationalSearchFilters {
     category?: string | null;
     brand?: string | null;
     minPrice?: number | null;
@@ -36,49 +36,49 @@ export interface ConversationalSearchV2Filters {
     properties?: Record<string, string | null>;
 }
 
-export interface ConversationalSearchV2State {
+export interface ConversationalSearchState {
     searchTerm: string;
-    filters?: ConversationalSearchV2Filters;
-    result?: ConversationalSearchV2Result | null;
+    filters?: ConversationalSearchFilters;
+    result?: ConversationalSearchResult | null;
 }
 
-export interface ConversationalSearchV2Message {
+export interface ConversationalSearchMessage {
     id: string;
     role: 'user' | 'assistant';
     content: string;
 }
 
-export interface ConversationalSearchV2ShoppingActivity {
+export interface ConversationalSearchShoppingActivity {
     status: 'searching' | 'ready' | 'error' | 'cancelled';
     searchTerm: string;
-    filters: ConversationalSearchV2Filters;
-    result?: ConversationalSearchV2Result | null;
+    filters: ConversationalSearchFilters;
+    result?: ConversationalSearchResult | null;
 }
 
-export interface ConversationalSearchV2ProductDetailActivity {
+export interface ConversationalSearchProductDetailActivity {
     status: 'searching' | 'ready' | 'error' | 'cancelled';
-    product: ConversationalSearchV2Product;
+    product: ConversationalSearchProduct;
     currency: string;
     sourceActivityId?: string;
     addedQuantity?: number;
 }
 
-export type ConversationalSearchV2ShoppingAction =
+export type ConversationalSearchShoppingAction =
     | { kind: 'facet'; key: string; value: string | null }
     | { kind: 'budget'; minPrice: number | null; maxPrice: number | null }
     | { kind: 'clear' };
 
-export interface ConversationalSearchV2PropertyDefinition {
+export interface ConversationalSearchPropertyDefinition {
     key: string;
     dataKey: string;
     displayName?: string;
 }
 
-export interface ConversationalSearchV2Request {
+export interface ConversationalSearchRequest {
     threadId: string;
     runId: string;
-    messages: Pick<ConversationalSearchV2Message, 'role' | 'content'>[];
-    state?: ConversationalSearchV2State;
+    messages: Pick<ConversationalSearchMessage, 'role' | 'content'>[];
+    state?: ConversationalSearchState;
     forwardedProps: {
         apiKey: string;
         shopContext: {
@@ -89,13 +89,13 @@ export interface ConversationalSearchV2Request {
         selectedProductProperties: SelectedProductPropertiesSettings;
         selectedVariantProperties: SelectedVariantPropertiesSettings;
         take: number;
-        shoppingAction?: ConversationalSearchV2ShoppingAction;
+        shoppingAction?: ConversationalSearchShoppingAction;
         activityMessageId?: string;
         productContext?: {
             productIds: string[];
             focusedProductId?: string;
         };
-        propertyDefinitions?: ConversationalSearchV2PropertyDefinition[];
+        propertyDefinitions?: ConversationalSearchPropertyDefinition[];
     };
 }
 
@@ -104,7 +104,7 @@ export interface AgUiEvent {
     messageId?: string;
     activityType?: string;
     content?: any;
-    snapshot?: ConversationalSearchV2State;
+    snapshot?: ConversationalSearchState;
     delta?: string;
     name?: string;
     value?: any;
@@ -112,13 +112,13 @@ export interface AgUiEvent {
     replace?: boolean;
 }
 
-const defaultApiBaseUrl = 'https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production';
+const conversationalSearchApiBaseUrl = 'https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production';
 const apiBaseUrl = (import.meta.env.VITE_CONVERSATIONAL_SEARCH_API_BASE_URL as string | undefined)?.replace(/\/$/, '')
-    ?? defaultApiBaseUrl;
+    ?? conversationalSearchApiBaseUrl;
 
-export async function streamConversationalSearchV2(
+export async function streamConversationalSearch(
     datasetId: string,
-    request: ConversationalSearchV2Request,
+    request: ConversationalSearchRequest,
     receive: (event: AgUiEvent) => void,
     abortSignal?: AbortSignal,
 ) {
@@ -199,7 +199,7 @@ export async function consumeAgUiEvents(
     }
 }
 
-export function filterValue(filters: ConversationalSearchV2Filters, key: string) {
+export function filterValue(filters: ConversationalSearchFilters, key: string) {
     if (key === 'brand' || key === 'category') {
         return filters[key] ?? null;
     }
@@ -208,10 +208,10 @@ export function filterValue(filters: ConversationalSearchV2Filters, key: string)
 }
 
 export function withFacet(
-    filters: ConversationalSearchV2Filters,
+    filters: ConversationalSearchFilters,
     key: string,
     value: string | null,
-): ConversationalSearchV2Filters {
+): ConversationalSearchFilters {
     if (key === 'brand' || key === 'category') {
         return { ...filters, [key]: value };
     }
