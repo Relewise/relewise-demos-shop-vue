@@ -44,6 +44,10 @@ type ProductDetailEntry = {
 };
 type ChatEntry = TextEntry | ShoppingEntry | ProductDetailEntry;
 
+const emit = defineEmits<{
+    openSearch: [query: string];
+}>();
+
 const open = ref(false);
 const input = ref('');
 const entries = ref<ChatEntry[]>([]);
@@ -63,20 +67,6 @@ const handledBagOperations = new Set<string>();
 
 const canUseConversationalSearch = computed(() => contextStore.isConfigured.value);
 
-function toggle() {
-    if (open.value) {
-        close();
-        return;
-    }
-
-    open.value = true;
-    error.value = '';
-
-    if (entries.value.length === 0) {
-        entries.value.push(welcomeMessage());
-    }
-}
-
 function openWithPrompt(prompt: string) {
     open.value = true;
     error.value = '';
@@ -95,6 +85,12 @@ function close() {
     open.value = false;
     abortController.abort();
     loading.value = false;
+}
+
+function switchToSearch() {
+    const query = input.value || state.value.searchTerm;
+    close();
+    emit('openSearch', query);
 }
 
 function resetConversation() {
@@ -407,18 +403,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="inline-flex h-[50px] w-[50px] shrink-0 items-center justify-center gap-1.5 rounded-full border text-sm font-semibold transition xl:w-auto xl:px-4"
-    :class="open ? 'border-brand-500 bg-brand-500 text-white' : 'border-brand-200 bg-brand-50 text-brand-700 hover:border-brand-400 hover:bg-white hover:text-brand-600'"
-    :disabled="!canUseConversationalSearch"
-    title="Open shopping assistant"
-    @click="toggle"
-  >
-    <SparklesIcon class="h-5 w-5" />
-    <span class="hidden xl:inline">Shopping Assistant</span>
-  </button>
-
   <Teleport to="#modal">
     <div
       v-if="open"
@@ -458,6 +442,34 @@ onBeforeUnmount(() => {
             </button>
           </div>
         </header>
+
+        <nav
+          class="border-b border-slate-200 bg-white px-4 py-2 sm:px-6"
+          aria-label="Discovery mode"
+        >
+          <div
+            class="mx-auto flex max-w-5xl gap-1 rounded-full bg-slate-100 p-1"
+            role="tablist"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              class="flex-1 rounded-full bg-transparent px-4 py-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-white hover:text-slate-900"
+              @click="switchToSearch"
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              class="flex-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm"
+            >
+              Shopping Assistant
+            </button>
+          </div>
+        </nav>
 
         <div
           ref="scrollContainer"

@@ -53,6 +53,23 @@ function close() {
     showOrHide(false);
 }
 
+function openWithPrompt(prompt = '') {
+    searchTerm.value = prompt.trim();
+    showOrHide(true);
+
+    if (searchTerm.value) {
+        typeAHeadSearch();
+    }
+}
+
+function switchToAssistant() {
+    const query = searchTerm.value;
+    close();
+    emit('openAssistant', query);
+}
+
+defineExpose({ openWithPrompt });
+
 watch(() => ({ ...route }), (value, oldValue) => {
     if (route.query.open === '1') {
         scrollTo({ top: 0 });
@@ -489,6 +506,7 @@ onBeforeUnmount(() => {
       type="text"
       placeholder="Search or describe what you need..."
       class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+      @focus="showOrHide(true)"
       @keyup="handleSearchKeyup"
     >
   </div>
@@ -499,6 +517,34 @@ onBeforeUnmount(() => {
       id="search-result-overlay"
       class="modal"
     >
+      <nav
+        v-if="contextStore.context.value.conversationalSearchEnabled"
+        class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2 py-2"
+        aria-label="Discovery mode"
+      >
+        <div
+          class="container mx-auto flex gap-1 rounded-full bg-slate-100 p-1 xl:px-0"
+          role="tablist"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected="true"
+            class="flex-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm"
+          >
+            Search
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            class="flex-1 rounded-full bg-transparent px-4 py-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-white hover:text-slate-900"
+            @click="switchToAssistant"
+          >
+            Shopping Assistant
+          </button>
+        </div>
+      </nav>
       <div
         v-if="productSearchResult || contentSearchResult"
         class="container mx-auto pb-10 px-2 xl:px-0"
