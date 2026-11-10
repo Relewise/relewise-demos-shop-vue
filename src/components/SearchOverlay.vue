@@ -55,11 +55,14 @@ function close() {
 
 function openWithPrompt(prompt = '') {
     searchTerm.value = prompt.trim();
-    showOrHide(true);
 
-    if (searchTerm.value) {
-        typeAHeadSearch();
+    if (!searchTerm.value) {
+        showOrHide(false);
+        return;
     }
+
+    showOrHide(true);
+    typeAHeadSearch();
 }
 
 function switchToAssistant() {
@@ -137,9 +140,11 @@ function showOrHide(show: boolean) {
 
     open.value = show;
     if (show) {
+        window.document.documentElement.classList.add('overflow-hidden');
         window.document.body.classList.add('overflow-hidden');
         window.document.body.classList.add('xl:pr-[17px]');
     } else {
+        window.document.documentElement.classList.remove('overflow-hidden');
         window.document.body.classList.remove('overflow-hidden');
         window.document.body.classList.remove('xl:pr-[17px]');
     }
@@ -506,7 +511,6 @@ onBeforeUnmount(() => {
       type="text"
       placeholder="Search or describe what you need..."
       class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-      @focus="showOrHide(true)"
       @keyup="handleSearchKeyup"
     >
   </div>
@@ -605,7 +609,7 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .modal {
     background-color: #fff;
-    overflow-y: scroll;
+    overflow-y: auto;
     position: fixed;
     z-index: 999;
     top: var(--header-height, 132px);
