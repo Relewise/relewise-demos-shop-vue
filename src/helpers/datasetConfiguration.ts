@@ -64,6 +64,13 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         contentSearch: dataset.contentSearch ?? false,
         searchHighlight: dataset.searchHighlight ?? false,
         conversationalSearchEnabled: dataset.conversationalSearchEnabled ?? false,
+        conversationalSearchProperties: (dataset.conversationalSearchProperties ?? [])
+            .filter(property => property.key.trim() && property.dataKey.trim())
+            .map(property => ({
+                key: property.key.trim(),
+                dataKey: property.dataKey.trim(),
+                displayName: property.displayName?.trim() || undefined,
+            })),
         shoppertainmentEnabled: dataset.shoppertainmentEnabled ?? false,
     };
 }

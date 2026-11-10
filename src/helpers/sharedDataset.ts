@@ -22,6 +22,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
     companies?: Company[];
     selectedUserIndex?: number;
     selectedCompanyId?: string | null;
+    conversationalSearchProperties?: IDataset['conversationalSearchProperties'];
 };
 
 export type SharedDatasetCoreFieldChange = {
@@ -137,6 +138,7 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         ...parseSharedFeatureFlags(entry),
         selectedUserIndex: normalizeOptionalUserIndex(entry.selectedUserIndex, users),
         selectedCompanyId: normalizeOptionalString(entry.selectedCompanyId),
+        conversationalSearchProperties: normalizeConversationalSearchProperties(entry.conversationalSearchProperties),
     };
 }
 
@@ -166,6 +168,7 @@ export function buildSharedDataset(dataset: IDataset, {
         ...buildSharedFeatureFlags(dataset),
         selectedUserIndex: normalizeOptionalUserIndex(selectedUserIndex, dataset.users),
         selectedCompanyId: normalizeOptionalString(selectedCompanyId),
+        conversationalSearchProperties: dataset.conversationalSearchProperties,
     };
 }
 
@@ -182,7 +185,33 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         users: sharedDataset.users,
         companies: sharedDataset.companies,
         trackingEnabled: sharedDataset.trackingEnabled,
+        conversationalSearchProperties: sharedDataset.conversationalSearchProperties,
         ...pickSharedFeatureFlags(sharedDataset),
+    });
+}
+
+function normalizeConversationalSearchProperties(value: unknown): IDataset['conversationalSearchProperties'] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.flatMap(property => {
+        if (!property || typeof property !== 'object') {
+            return [];
+        }
+
+        const entry = property as Record<string, unknown>;
+        const key = normalizeRequiredString(entry.key);
+        const dataKey = normalizeRequiredString(entry.dataKey);
+        if (!key || !dataKey) {
+            return [];
+        }
+
+        return [{
+            key,
+            dataKey,
+            displayName: normalizeOptionalString(entry.displayName) ?? undefined,
+        }];
     });
 }
 
@@ -226,6 +255,7 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
         dataset.displayName = sharedDataset.displayName ?? undefined;
         dataset.apiKey = sharedDataset.apiKey;
         dataset.serverUrl = sharedDataset.serverUrl ?? undefined;
+        dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
     }
 
     mergeSharedDatasetLocalesIntoExistingDataset(dataset, sharedDataset);
