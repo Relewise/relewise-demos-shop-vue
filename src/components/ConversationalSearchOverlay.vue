@@ -718,7 +718,7 @@ onBeforeUnmount(() => {
                 ref="inputElement"
                 v-model="input"
                 type="text"
-                class="!border-0 !bg-transparent !p-0 !shadow-none focus:!ring-0"
+                class="min-w-0 flex-1 !border-0 !bg-transparent !p-0 !shadow-none focus:!ring-0"
                 placeholder="Describe what you are looking for…"
                 :disabled="loading"
               >
@@ -727,8 +727,9 @@ onBeforeUnmount(() => {
                 class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:bg-slate-300"
                 :disabled="loading || !input.trim()"
                 title="Send"
+                aria-label="Send message"
               >
-                <PaperAirplaneIcon class="h-5 w-5 stroke-white" />
+                <PaperAirplaneIcon class="h-5 w-5 stroke-current" />
               </button>
             </div>
           </div>
