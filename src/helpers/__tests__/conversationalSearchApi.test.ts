@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { consumeAgUiEvents, filterValue, withFacet } from '@/helpers/conversationalSearchApi';
+import { consumeAgUiEvents, filterValue, routeConversationalSearch, withFacet } from '@/helpers/conversationalSearchApi';
 
 describe('conversational search API', () => {
     it('consumes AG-UI events split across arbitrary stream chunks', async() => {
@@ -40,5 +40,25 @@ describe('conversational search API', () => {
         expect(filterValue(filters, 'brand')).toBe('Relewise');
         expect(filterValue(filters, 'material')).toBe('Wool');
         expect(withFacet(filters, 'material', null).properties?.material).toBeNull();
+    });
+
+    it('routes a search field query through the intent endpoint', async() => {
+        vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
+            mode: 'conversation',
+            reason: 'AI classified shopper intent',
+            source: 'AI',
+            elapsedMs: 12,
+        }), { status: 200 }));
+
+        const route = await routeConversationalSearch('dataset-id', 'api-key', 'show me televisions');
+
+        expect(route.mode).toBe('conversation');
+        expect(fetch).toHaveBeenCalledWith(
+            expect.stringContaining('/api/dataset-id/conversational-search/route'),
+            expect.objectContaining({
+                method: 'POST',
+                body: JSON.stringify({ query: 'show me televisions', apiKey: 'api-key', inConversation: false }),
+            }),
+        );
     });
 });

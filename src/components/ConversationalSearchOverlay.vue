@@ -77,6 +77,20 @@ function toggle() {
     }
 }
 
+function openWithPrompt(prompt: string) {
+    open.value = true;
+    error.value = '';
+    input.value = prompt.trim();
+
+    if (entries.value.length === 0) {
+        entries.value.push(welcomeMessage());
+    }
+
+    focusInput();
+}
+
+defineExpose({ openWithPrompt });
+
 function close() {
     open.value = false;
     abortController.abort();

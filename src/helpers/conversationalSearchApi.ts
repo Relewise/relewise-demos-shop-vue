@@ -112,9 +112,38 @@ export interface AgUiEvent {
     replace?: boolean;
 }
 
+export interface ConversationalSearchRoute {
+    mode: 'search' | 'conversation';
+    reason: string;
+    source: string;
+    elapsedMs: number;
+}
+
 const conversationalSearchApiBaseUrl = 'https://cdn.relewise.com/relewisedemoshop-1131137e-b167-48e2-90a4-e7981e0dc391/production';
 const apiBaseUrl = (import.meta.env.VITE_CONVERSATIONAL_SEARCH_API_BASE_URL as string | undefined)?.replace(/\/$/, '')
     ?? conversationalSearchApiBaseUrl;
+
+export async function routeConversationalSearch(
+    datasetId: string,
+    apiKey: string,
+    query: string,
+    abortSignal?: AbortSignal,
+) {
+    const response = await fetch(`${apiBaseUrl}/api/${datasetId}/conversational-search/route`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query, apiKey, inConversation: false }),
+        signal: abortSignal,
+    });
+
+    if (!response.ok) {
+        throw new Error(`Conversational search routing failed with status ${response.status}.`);
+    }
+
+    return await response.json() as ConversationalSearchRoute;
+}
 
 export async function streamConversationalSearch(
     datasetId: string,

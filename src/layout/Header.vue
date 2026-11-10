@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BuildingOffice2Icon, ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
-import { computed, type PropType } from 'vue';
+import { computed, ref, type ComponentPublicInstance, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
 import ConversationalSearchOverlay from '@/components/ConversationalSearchOverlay.vue';
 import type { NavigationItem } from '@/App.vue';
@@ -18,6 +18,7 @@ defineProps({
 });
 
 const { open, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
+const conversationalSearch = ref<ComponentPublicInstance<{ openWithPrompt: (prompt: string) => void }> | null>(null);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 const currentUsers = computed(() => contextStore.context.value?.users ?? []);
 const activeUserLabel = computed(() => {
@@ -30,6 +31,10 @@ const activeUserDetails = computed(() => formatUserDetails(activeUser.value));
 const hasSelectedCompany = computed(() => !!contextStore.selectedCompany.value);
 const activeCompanyLabel = computed(() => contextStore.selectedCompany.value?.id ?? '');
 const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.selectedCompany.value));
+
+function openConversationalSearch(query: string) {
+    conversationalSearch.value?.openWithPrompt(query);
+}
 </script>
 
 <template>
@@ -64,9 +69,12 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
             class="flex min-w-0 flex-1 items-center gap-1 xl:items-center xl:gap-2"
           >
             <div class="min-w-0 flex-1">
-              <SearchOverlay />
+              <SearchOverlay @open-assistant="openConversationalSearch" />
             </div>
-            <ConversationalSearchOverlay v-if="contextStore.context.value.conversationalSearchEnabled" />
+            <ConversationalSearchOverlay
+              v-if="contextStore.context.value.conversationalSearchEnabled"
+              ref="conversationalSearch"
+            />
           </div>
           <div
             v-else

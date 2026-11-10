@@ -2,7 +2,7 @@
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
@@ -14,6 +14,11 @@ import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 import { applyVariantRequestSettings, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
+import { routeConversationalSearch } from '@/helpers/conversationalSearchApi';
+
+const emit = defineEmits<{
+    openAssistant: [query: string];
+}>();
 
 enum Tabs {
     Products,
@@ -35,6 +40,9 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
 let abortController = new AbortController();
+let intentAbortController = new AbortController();
+let intentTimer: number | undefined;
+let intentRevision = 0;
 
 const productPageSize = 40;
 const contentPageSize = 10;
@@ -125,6 +133,58 @@ function typeAHeadSearch() {
         // reset page to 1 when doing a type-ahead search
         filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
         persistInUrl();
+    }
+}
+
+function handleSearchKeyup(event: KeyboardEvent) {
+    window.clearTimeout(intentTimer);
+
+    const query = searchTerm.value.trim();
+    if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
+        intentAbortController.abort();
+        typeAHeadSearch();
+        return;
+    }
+
+    if (event.key === 'Enter') {
+        void routeSearchIntent(query);
+        return;
+    }
+
+    intentTimer = window.setTimeout(() => void routeSearchIntent(query), 450);
+}
+
+async function routeSearchIntent(query: string) {
+    const revision = ++intentRevision;
+    intentAbortController.abort();
+    const controller = new AbortController();
+    intentAbortController = controller;
+
+    try {
+        const route = await routeConversationalSearch(
+            contextStore.context.value.datasetId,
+            contextStore.context.value.apiKey,
+            query,
+            controller.signal,
+        );
+        if (revision !== intentRevision || query !== searchTerm.value.trim()) {
+            return;
+        }
+
+        if (route.mode === 'conversation') {
+            close();
+            emit('openAssistant', query);
+            return;
+        }
+
+        typeAHeadSearch();
+    }
+    catch (exception) {
+        if (controller.signal.aborted) {
+            return;
+        }
+
+        typeAHeadSearch();
     }
 }
 
@@ -407,6 +467,11 @@ function trackBrandView(
     trackedBrandId.value = brand;
 }
 
+onBeforeUnmount(() => {
+    window.clearTimeout(intentTimer);
+    intentAbortController.abort();
+});
+
 </script>
 
 <template>
@@ -422,9 +487,9 @@ function trackBrandView(
     <input
       v-model="searchTerm"
       type="text"
-      placeholder="Search..."
+      placeholder="Search or describe what you need..."
       class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-      @keyup="typeAHeadSearch()"
+      @keyup="handleSearchKeyup"
     >
   </div>
 
