@@ -9,7 +9,6 @@ import {
     PaperAirplaneIcon,
     PhotoIcon,
     ShoppingBagIcon,
-    SparklesIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import { DataValueFactory, type ProductResult, type SelectedVariantPropertiesSettings } from '@relewise/client';
@@ -406,27 +405,40 @@ onBeforeUnmount(() => {
   <Teleport to="#modal">
     <div
       v-if="open"
-      class="shopping-assistant-modal"
+      class="modal"
     >
-      <section class="mx-auto flex h-full w-full max-w-6xl flex-col bg-slate-50 shadow-2xl">
-        <header class="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-          <div class="flex items-center gap-3">
-            <div class="rounded-full bg-brand-50 p-2 text-brand-600">
-              <SparklesIcon class="h-5 w-5" />
+      <section class="flex h-full w-full flex-col bg-white">
+        <nav
+          class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2 py-2"
+          aria-label="Discovery mode"
+        >
+          <div class="container mx-auto flex items-center gap-2 xl:px-0">
+            <div
+              class="flex min-w-0 flex-1 gap-1 rounded-full bg-slate-100 p-1"
+              role="tablist"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected="false"
+                class="flex-1 rounded-full bg-transparent px-4 py-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-white hover:text-slate-900"
+                @click="switchToSearch"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected="true"
+                class="flex-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm"
+              >
+                <span class="sm:hidden">Assistant</span>
+                <span class="hidden sm:inline">Shopping Assistant</span>
+              </button>
             </div>
-            <div>
-              <h2 class="font-semibold text-slate-900">
-                Shopping assistant
-              </h2>
-              <p class="text-xs text-slate-500">
-                Powered by Relewise conversational search
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
             <button
               type="button"
-              class="rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
+              class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
               title="Start over"
               @click="resetConversation"
             >
@@ -434,48 +446,20 @@ onBeforeUnmount(() => {
             </button>
             <button
               type="button"
-              class="rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
+              class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
               title="Close"
               @click="close"
             >
               <XMarkIcon class="h-6 w-6" />
             </button>
           </div>
-        </header>
-
-        <nav
-          class="border-b border-slate-200 bg-white px-4 py-2 sm:px-6"
-          aria-label="Discovery mode"
-        >
-          <div
-            class="mx-auto flex max-w-5xl gap-1 rounded-full bg-slate-100 p-1"
-            role="tablist"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected="false"
-              class="flex-1 rounded-full bg-transparent px-4 py-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-white hover:text-slate-900"
-              @click="switchToSearch"
-            >
-              Search
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected="true"
-              class="flex-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm"
-            >
-              Shopping Assistant
-            </button>
-          </div>
         </nav>
 
         <div
           ref="scrollContainer"
-          class="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+          class="flex-1 overflow-y-auto"
         >
-          <div class="mx-auto flex max-w-5xl flex-col gap-5">
+          <div class="container mx-auto flex flex-col gap-5 px-2 py-6 xl:px-0">
             <template
               v-for="entry in entries"
               :key="entry.id"
@@ -563,7 +547,7 @@ onBeforeUnmount(() => {
                   v-if="visibleProducts(entry).length"
                   class="relative p-4 sm:p-5"
                 >
-                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div class="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
                     <article
                       v-for="product in visibleProducts(entry)"
                       :key="product.id"
@@ -716,10 +700,10 @@ onBeforeUnmount(() => {
         </div>
 
         <form
-          class="border-t border-slate-200 bg-white p-4 sm:px-6"
+          class="border-t border-slate-200 bg-white px-2 py-4"
           @submit.prevent="submit"
         >
-          <div class="mx-auto max-w-5xl">
+          <div class="container mx-auto xl:px-0">
             <p
               v-if="error"
               class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
@@ -752,20 +736,14 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.shopping-assistant-modal {
-    background: rgb(15 23 42 / 35%);
-    bottom: 0;
+.modal {
+    background-color: #fff;
+    height: calc(100% - var(--header-height, 132px));
     left: 0;
     overflow: hidden;
     position: fixed;
-    right: 0;
-    top: 67px;
-    z-index: 1000;
-}
-
-@media (min-width: 1280px) {
-    .shopping-assistant-modal {
-        top: 89px;
-    }
+    top: var(--header-height, 132px);
+    width: 100%;
+    z-index: 999;
 }
 </style>
