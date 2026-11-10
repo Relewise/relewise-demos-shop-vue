@@ -5,12 +5,12 @@ import {
     ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
-    PaperAirplaneIcon,
     PencilSquareIcon,
     PhotoIcon,
     ShoppingBagIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
+import { PaperAirplaneIcon as PaperAirplaneSolidIcon } from '@heroicons/vue/24/solid';
 import { DataValueFactory, type ProductResult, type SelectedVariantPropertiesSettings } from '@relewise/client';
 import { toast } from 'vue-sonner';
 import contextStore from '@/stores/context.store';
@@ -729,7 +729,10 @@ onBeforeUnmount(() => {
                 title="Send"
                 aria-label="Send message"
               >
-                <PaperAirplaneIcon class="h-5 w-5 stroke-current" />
+                <PaperAirplaneSolidIcon
+                  class="h-5 w-5"
+                  :class="loading || !input.trim() ? 'text-slate-600' : 'text-white'"
+                />
               </button>
             </div>
           </div>
