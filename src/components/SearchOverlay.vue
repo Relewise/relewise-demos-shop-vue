@@ -501,11 +501,6 @@ onBeforeUnmount(() => {
     <span class="flex items-center bg-slate-100 rounded-none px-3">
       <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
     </span>
-    <XMarkIcon
-      v-if="open"
-      class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer"
-      @click="close"
-    />
     <input
       v-model="searchTerm"
       type="text"
@@ -522,30 +517,41 @@ onBeforeUnmount(() => {
       class="modal"
     >
       <nav
-        v-if="contextStore.context.value.conversationalSearchEnabled"
-        class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2 py-2"
+        class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2"
         aria-label="Discovery mode"
       >
-        <div
-          class="container mx-auto flex gap-1 rounded-full bg-slate-100 p-1 xl:px-0"
-          role="tablist"
-        >
+        <div class="container mx-auto flex items-center gap-2 xl:px-0">
+          <div
+            class="flex min-w-0 flex-1"
+            role="tablist"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              class="flex-1 rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none"
+            >
+              Search
+            </button>
+            <button
+              v-if="contextStore.context.value.conversationalSearchEnabled"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
+              @click="switchToAssistant"
+            >
+              Shopping Assistant
+            </button>
+          </div>
           <button
             type="button"
-            role="tab"
-            aria-selected="true"
-            class="flex-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm"
+            class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
+            title="Close"
+            aria-label="Close search"
+            @click="close"
           >
-            Search
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected="false"
-            class="flex-1 rounded-full bg-transparent px-4 py-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-white hover:text-slate-900"
-            @click="switchToAssistant"
-          >
-            Shopping Assistant
+            <XMarkIcon class="h-6 w-6" />
           </button>
         </div>
       </nav>

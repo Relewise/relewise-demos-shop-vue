@@ -2,11 +2,11 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import {
     AdjustmentsHorizontalIcon,
-    ArrowPathIcon,
     ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
     PaperAirplaneIcon,
+    PencilSquareIcon,
     PhotoIcon,
     ShoppingBagIcon,
     XMarkIcon,
@@ -409,19 +409,19 @@ onBeforeUnmount(() => {
     >
       <section class="flex h-full w-full flex-col bg-white">
         <nav
-          class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2 py-2"
+          class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2"
           aria-label="Discovery mode"
         >
           <div class="container mx-auto flex items-center gap-2 xl:px-0">
             <div
-              class="flex min-w-0 flex-1 gap-1 rounded-full bg-slate-100 p-1"
+              class="flex min-w-0 flex-1"
               role="tablist"
             >
               <button
                 type="button"
                 role="tab"
                 aria-selected="false"
-                class="flex-1 rounded-full bg-transparent px-4 py-2 text-sm font-semibold text-slate-600 shadow-none hover:bg-white hover:text-slate-900"
+                class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
                 @click="switchToSearch"
               >
                 Search
@@ -430,7 +430,7 @@ onBeforeUnmount(() => {
                 type="button"
                 role="tab"
                 aria-selected="true"
-                class="flex-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm"
+                class="flex-1 rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none"
               >
                 <span class="sm:hidden">Assistant</span>
                 <span class="hidden sm:inline">Shopping Assistant</span>
@@ -438,16 +438,19 @@ onBeforeUnmount(() => {
             </div>
             <button
               type="button"
-              class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
-              title="Start over"
+              class="inline-flex shrink-0 items-center gap-2 rounded-full bg-transparent px-2 py-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800 sm:px-3"
+              title="New conversation"
+              aria-label="Start a new conversation"
               @click="resetConversation"
             >
-              <ArrowPathIcon class="h-5 w-5" />
+              <PencilSquareIcon class="h-5 w-5" />
+              <span class="hidden text-sm font-semibold sm:inline">New conversation</span>
             </button>
             <button
               type="button"
               class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
               title="Close"
+              aria-label="Close shopping assistant"
               @click="close"
             >
               <XMarkIcon class="h-6 w-6" />
