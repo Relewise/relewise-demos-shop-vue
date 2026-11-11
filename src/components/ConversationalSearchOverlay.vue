@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import {
-    AdjustmentsHorizontalIcon,
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
     PencilSquareIcon,
-    PhotoIcon,
-    ShoppingBagIcon,
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import { PaperAirplaneIcon as PaperAirplaneSolidIcon } from '@heroicons/vue/24/solid';
@@ -15,8 +9,9 @@ import { DataValueFactory, type ProductResult, type SelectedVariantPropertiesSet
 import { toast } from 'vue-sonner';
 import contextStore from '@/stores/context.store';
 import basketService from '@/services/basket.service';
+import ConversationalSearchProductDetail from '@/components/ConversationalSearchProductDetail.vue';
+import ConversationalSearchShoppingResults from '@/components/ConversationalSearchShoppingResults.vue';
 import {
-    filterValue,
     streamConversationalSearch,
     type AgUiEvent,
     type ConversationalSearchFilters,
@@ -54,7 +49,6 @@ const state = ref<ConversationalSearchState>({ searchTerm: '', filters: {} });
 const loading = ref(false);
 const error = ref('');
 const filtersVisible = ref<Record<string, boolean>>({});
-const carouselPositions = ref<Record<string, number>>({});
 const scrollContainer = ref<HTMLElement | null>(null);
 const inputElement = ref<HTMLInputElement | null>(null);
 
@@ -102,7 +96,6 @@ function resetConversation() {
     entries.value = [welcomeMessage()];
     state.value = { searchTerm: '', filters: {} };
     filtersVisible.value = {};
-    carouselPositions.value = {};
     focusInput();
 }
 
@@ -271,53 +264,6 @@ function productContext(activityId?: string) {
     return { productIds: shoppingEntry?.content.result?.products.map(product => product.id) ?? [] };
 }
 
-function activeProducts(activity: ShoppingEntry) {
-    return activity.content.result?.products.length
-        ? activity.content.result.products
-        : activity.content.result?.recommendations ?? [];
-}
-
-function visibleProducts(activity: ShoppingEntry) {
-    const products = activeProducts(activity);
-    const position = carouselPositions.value[activity.id] ?? 0;
-    return products.slice(position, position + 4);
-}
-
-function moveCarousel(activity: ShoppingEntry, amount: number) {
-    const max = Math.max(0, activeProducts(activity).length - 4);
-    carouselPositions.value[activity.id] = Math.min(max, Math.max(0, (carouselPositions.value[activity.id] ?? 0) + amount));
-}
-
-function facetLabel(activity: ShoppingEntry, key: string, value: string) {
-    return activity.content.result?.facets.find(facet => facet.key === key)?.labels?.[value] ?? value;
-}
-
-function formatFacetName(key: string, displayName?: string | null) {
-    if (displayName) {
-        return displayName;
-    }
-
-    return key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, value => value.toUpperCase());
-}
-
-function formatPrice(price: number | null, currency: string) {
-    if (price === null) {
-        return '';
-    }
-
-    return new Intl.NumberFormat(contextStore.language.value, { style: 'currency', currency }).format(price);
-}
-
-function title(activity: ShoppingEntry) {
-    const resultCount = activity.content.result?.products.length ?? 0;
-    const term = activity.content.searchTerm.trim();
-    return term ? `${resultCount} results for “${term}”` : `${resultCount} products for you`;
-}
-
-function productRoute(product: ConversationalSearchProduct) {
-    return { name: 'product', params: { id: product.id } };
-}
-
 function addProductToBasket(product: ConversationalSearchProduct, quantity = 1) {
     void basketService.addProduct({
         product: toBasketProduct(product),
@@ -481,216 +427,26 @@ onBeforeUnmount(() => {
                 </p>
               </article>
 
-              <article
+              <ConversationalSearchShoppingResults
                 v-else-if="entry.activityType === 'SHOPPING_RESULTS'"
-                class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-              >
-                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
-                  <div>
-                    <h3 class="font-semibold text-slate-900">
-                      {{ title(entry) }}
-                    </h3>
-                    <p
-                      v-if="entry.content.status === 'searching'"
-                      class="text-xs text-brand-600"
-                    >
-                      Updating results…
-                    </p>
-                  </div>
-                  <button
-                    v-if="entry.content.result?.facets.length"
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-none hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
-                    @click="filtersVisible[entry.id] = !filtersVisible[entry.id]"
-                  >
-                    <AdjustmentsHorizontalIcon class="h-4 w-4" /> Filters
-                    <ChevronDownIcon
-                      class="h-3 w-3"
-                      :class="filtersVisible[entry.id] ? 'rotate-180' : ''"
-                    />
-                  </button>
-                </div>
+                :activity="entry.content"
+                :currency="contextStore.currencyCode.value"
+                :language="contextStore.language.value"
+                :loading="loading"
+                :filters-visible="filtersVisible[entry.id] ?? false"
+                @update:filters-visible="filtersVisible[entry.id] = $event"
+                @refine="refine(entry, $event)"
+                @add="addProductToBasket"
+                @navigate="close"
+              />
 
-                <div
-                  v-if="filtersVisible[entry.id]"
-                  class="flex flex-col gap-4 border-b border-slate-100 bg-slate-50 p-4 sm:p-5"
-                >
-                  <div
-                    v-for="facet in entry.content.result?.facets"
-                    :key="facet.key"
-                  >
-                    <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      {{ formatFacetName(facet.key, facet.displayName) }}
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                      <button
-                        v-for="value in facet.values"
-                        :key="value"
-                        type="button"
-                        class="rounded-full border px-3 py-1.5 text-xs transition"
-                        :class="filterValue(entry.content.filters, facet.key) === value ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300'"
-                        :disabled="loading"
-                        @click="refine(entry, { kind: 'facet', key: facet.key, value: filterValue(entry.content.filters, facet.key) === value ? null : value })"
-                      >
-                        {{ facetLabel(entry, facet.key, value) }}
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    class="w-fit rounded-none bg-transparent p-0 text-xs font-semibold text-brand-600 shadow-none hover:text-brand-700"
-                    :disabled="loading"
-                    @click="refine(entry, { kind: 'clear' })"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-
-                <div
-                  v-if="visibleProducts(entry).length"
-                  class="relative p-4 sm:p-5"
-                >
-                  <div class="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-                    <article
-                      v-for="product in visibleProducts(entry)"
-                      :key="product.id"
-                      class="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-100 bg-white text-slate-900 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
-                    >
-                      <RouterLink
-                        :to="productRoute(product)"
-                        class="flex aspect-square items-center justify-center overflow-hidden bg-slate-50"
-                        @click="close"
-                      >
-                        <img
-                          v-if="product.image"
-                          :src="product.image"
-                          :alt="product.name"
-                          class="h-full w-full object-contain p-3"
-                        >
-                        <PhotoIcon
-                          v-else
-                          class="h-16 w-16 text-slate-300"
-                        />
-                      </RouterLink>
-                      <div class="flex flex-1 flex-col p-3">
-                        <RouterLink
-                          :to="productRoute(product)"
-                          class="text-slate-900"
-                          @click="close"
-                        >
-                          <p
-                            v-if="product.brand"
-                            class="truncate text-xs text-slate-500"
-                          >
-                            {{ product.brand }}
-                          </p>
-                          <h4 class="mt-1 line-clamp-2 text-sm font-semibold leading-5 group-hover:text-brand-600">
-                            {{ product.name }}
-                          </h4>
-                        </RouterLink>
-                        <p class="mt-auto pt-3 font-semibold">
-                          {{ formatPrice(product.price, entry.content.result?.currency ?? contextStore.currencyCode.value) }}
-                        </p>
-                        <button
-                          type="button"
-                          class="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white shadow-none hover:bg-brand-700"
-                          :aria-label="`Add ${product.name} to basket`"
-                          @click="addProductToBasket(product)"
-                        >
-                          <ShoppingBagIcon class="h-4 w-4 stroke-white" />
-                          Add to basket
-                        </button>
-                      </div>
-                    </article>
-                  </div>
-                  <button
-                    v-if="(carouselPositions[entry.id] ?? 0) > 0"
-                    type="button"
-                    class="absolute left-1 top-1/2 rounded-full border border-slate-200 bg-white p-2 text-slate-600 shadow"
-                    @click="moveCarousel(entry, -4)"
-                  >
-                    <ChevronLeftIcon class="h-5 w-5" />
-                  </button>
-                  <button
-                    v-if="(carouselPositions[entry.id] ?? 0) + 4 < activeProducts(entry).length"
-                    type="button"
-                    class="absolute right-1 top-1/2 rounded-full border border-slate-200 bg-white p-2 text-slate-600 shadow"
-                    @click="moveCarousel(entry, 4)"
-                  >
-                    <ChevronRightIcon class="h-5 w-5" />
-                  </button>
-                </div>
-                <div
-                  v-else-if="entry.content.status !== 'searching'"
-                  class="px-5 py-8 text-center text-sm text-slate-500"
-                >
-                  No matching products found. Try widening the filters or asking in another way.
-                </div>
-              </article>
-
-              <article
+              <ConversationalSearchProductDetail
                 v-else-if="entry.activityType === 'PRODUCT_DETAIL'"
-                class="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:grid-cols-[13rem_1fr]"
-              >
-                <div class="flex min-h-48 items-center justify-center bg-slate-50">
-                  <img
-                    v-if="entry.content.product.image"
-                    :src="entry.content.product.image"
-                    :alt="entry.content.product.name"
-                    class="h-48 w-full object-contain p-4"
-                  >
-                  <PhotoIcon
-                    v-else
-                    class="h-16 w-16 text-slate-300"
-                  />
-                </div>
-                <div class="p-5">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-brand-600">
-                    {{ entry.content.product.brand }}
-                  </p>
-                  <h3 class="mt-1 text-lg font-semibold text-slate-900">
-                    {{ entry.content.product.name }}
-                  </h3>
-                  <p class="mt-2 text-sm leading-6 text-slate-600">
-                    {{ entry.content.product.description }}
-                  </p>
-                  <dl
-                    v-if="Object.keys(entry.content.product.properties ?? {}).length"
-                    class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs"
-                  >
-                    <template
-                      v-for="(value, key) in entry.content.product.properties"
-                      :key="key"
-                    >
-                      <dt class="text-slate-500">
-                        {{ formatFacetName(key) }}
-                      </dt><dd class="font-medium text-slate-700">
-                        {{ value }}
-                      </dd>
-                    </template>
-                  </dl>
-                  <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <strong>{{ formatPrice(entry.content.product.price, entry.content.currency) }}</strong>
-                    <div class="flex items-center gap-2">
-                      <button
-                        type="button"
-                        class="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-none hover:bg-brand-700"
-                        @click="addProductToBasket(entry.content.product)"
-                      >
-                        <ShoppingBagIcon class="h-4 w-4 stroke-white" />
-                        Add to basket
-                      </button>
-                      <RouterLink
-                        :to="productRoute(entry.content.product)"
-                        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-300 hover:text-brand-600"
-                        @click="close"
-                      >
-                        View product
-                      </RouterLink>
-                    </div>
-                  </div>
-                </div>
-              </article>
+                :activity="entry.content"
+                :language="contextStore.language.value"
+                @add="addProductToBasket"
+                @navigate="close"
+              />
             </template>
 
             <div
