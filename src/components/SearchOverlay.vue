@@ -13,7 +13,6 @@ import { getFacets } from '@/helpers/facetHelper';
 import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
-import ConfirmationDialog from './ConfirmationDialog.vue';
 import { applyVariantRequestSettings, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
 import { routeConversationalSearch } from '@/helpers/conversationalSearchApi';
 
@@ -49,12 +48,8 @@ const productPageSize = 40;
 const contentPageSize = 10;
 
 const activeTab = ref(Tabs.Products);
-const assistantSuggestionVisible = ref(false);
-const assistantSuggestionQuery = ref('');
-let declinedAssistantQuery = '';
 
 function close() {
-    assistantSuggestionVisible.value = false;
     showOrHide(false);
 }
 
@@ -72,22 +67,8 @@ function openWithPrompt(prompt = '') {
 
 function switchToAssistant() {
     const query = searchTerm.value;
-    assistantSuggestionVisible.value = false;
     close();
     emit('openAssistant', query);
-}
-
-function acceptAssistantSuggestion() {
-    const query = assistantSuggestionQuery.value;
-    assistantSuggestionVisible.value = false;
-    close();
-    emit('openAssistant', query);
-}
-
-function declineAssistantSuggestion() {
-    declinedAssistantQuery = assistantSuggestionQuery.value;
-    assistantSuggestionVisible.value = false;
-    typeAHeadSearch();
 }
 
 defineExpose({ openWithPrompt });
@@ -183,13 +164,8 @@ function handleSearchKeyup(event: KeyboardEvent) {
     const query = searchTerm.value.trim();
     if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
         intentAbortController.abort();
-        assistantSuggestionVisible.value = false;
         typeAHeadSearch();
         return;
-    }
-
-    if (query !== declinedAssistantQuery) {
-        declinedAssistantQuery = '';
     }
 
     if (event.key === 'Enter') {
@@ -197,7 +173,7 @@ function handleSearchKeyup(event: KeyboardEvent) {
         return;
     }
 
-    intentTimer = window.setTimeout(() => void routeSearchIntent(query), 450);
+    intentTimer = window.setTimeout(() => void routeSearchIntent(query), 250);
 }
 
 async function routeSearchIntent(query: string) {
@@ -218,13 +194,8 @@ async function routeSearchIntent(query: string) {
         }
 
         if (route.mode === 'conversation') {
-            if (query === declinedAssistantQuery) {
-                typeAHeadSearch();
-                return;
-            }
-
-            assistantSuggestionQuery.value = query;
-            assistantSuggestionVisible.value = true;
+            close();
+            emit('openAssistant', query);
             return;
         }
 
@@ -538,18 +509,6 @@ onBeforeUnmount(() => {
       @keyup="handleSearchKeyup"
     >
   </div>
-
-  <ConfirmationDialog
-    v-model="assistantSuggestionVisible"
-    title="Use Shopping Assistant?"
-    description="This looks like a question or a request for help. Shopping Assistant can understand your needs and refine the results with you."
-    confirm-label="Switch to Shopping Assistant"
-    cancel-label="Keep searching"
-    confirm-tone="primary"
-    panel-class="!max-w-md"
-    @confirm="acceptAssistantSuggestion"
-    @cancel="declineAssistantSuggestion"
-  />
 
   <Teleport to="#modal">
     <div
