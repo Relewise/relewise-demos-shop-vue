@@ -76,8 +76,7 @@ defineExpose({ openWithPrompt });
 
 function close() {
     open.value = false;
-    abortController.abort();
-    loading.value = false;
+    clearConversation();
 }
 
 function switchToSearch() {
@@ -87,16 +86,21 @@ function switchToSearch() {
 }
 
 function resetConversation() {
+    clearConversation();
+    focusInput();
+}
+
+function clearConversation() {
     abortController.abort();
     abortController = new AbortController();
     threadId = crypto.randomUUID();
+    handledBagOperations.clear();
     input.value = '';
     error.value = '';
     loading.value = false;
     entries.value = [welcomeMessage()];
     state.value = { searchTerm: '', filters: {} };
     filtersVisible.value = {};
-    focusInput();
 }
 
 async function submit() {
@@ -122,7 +126,8 @@ async function run(shoppingAction?: ConversationalSearchShoppingAction, activity
     error.value = '';
     loading.value = true;
     abortController.abort();
-    abortController = new AbortController();
+    const controller = new AbortController();
+    abortController = controller;
     await scrollToBottom();
 
     try {
@@ -154,10 +159,10 @@ async function run(shoppingAction?: ConversationalSearchShoppingAction, activity
                 productContext: productContext(activityMessageId),
                 propertyDefinitions: contextStore.context.value.conversationalSearchProperties ?? [],
             },
-        }, applyEvent, abortController.signal);
+        }, applyEvent, controller.signal);
     }
     catch (exception) {
-        if (abortController.signal.aborted) {
+        if (controller.signal.aborted) {
             settleActivities('cancelled');
             return;
         }
@@ -166,7 +171,7 @@ async function run(shoppingAction?: ConversationalSearchShoppingAction, activity
         error.value = exception instanceof Error ? exception.message : 'Conversational search failed.';
     }
     finally {
-        if (!abortController.signal.aborted) {
+        if (!controller.signal.aborted) {
             loading.value = false;
             await scrollToBottom();
             focusInput();
