@@ -5,12 +5,15 @@ import {
     XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import { PaperAirplaneIcon as PaperAirplaneSolidIcon } from '@heroicons/vue/24/solid';
-import { DataValueFactory, type ProductResult, type SelectedVariantPropertiesSettings } from '@relewise/client';
+import { DataValueFactory, PurchasedWithProductBuilder, type ProductResult, type SelectedVariantPropertiesSettings } from '@relewise/client';
 import { toast } from 'vue-sonner';
 import contextStore from '@/stores/context.store';
 import basketService from '@/services/basket.service';
 import ConversationalSearchProductDetail from '@/components/ConversationalSearchProductDetail.vue';
+import ConversationalSearchPurchasedWith from '@/components/ConversationalSearchPurchasedWith.vue';
 import ConversationalSearchShoppingResults from '@/components/ConversationalSearchShoppingResults.vue';
+import { findImage } from '@/helpers/imageHelper';
+import { globalProductRecommendationFilters } from '@/stores/globalProductFilters';
 import {
     streamConversationalSearch,
     type AgUiEvent,
@@ -36,7 +39,17 @@ type ProductDetailEntry = {
     activityType: 'PRODUCT_DETAIL';
     content: ConversationalSearchProductDetailActivity;
 };
-type ChatEntry = TextEntry | ShoppingEntry | ProductDetailEntry;
+type PurchasedWithEntry = {
+    id: string;
+    role: 'activity';
+    activityType: 'PURCHASED_WITH';
+    content: {
+        status: 'ready';
+        products: ConversationalSearchProduct[];
+        currency: string;
+    };
+};
+type ChatEntry = TextEntry | ShoppingEntry | ProductDetailEntry | PurchasedWithEntry;
 
 const emit = defineEmits<{
     openSearch: [query: string];
@@ -56,6 +69,7 @@ let threadId = crypto.randomUUID();
 let abortController = new AbortController();
 let bodyScrollPosition = 0;
 let bodyScrollLocked = false;
+let pendingPurchasedWithProduct: ConversationalSearchProduct | undefined;
 const handledBagOperations = new Set<string>();
 
 const canUseConversationalSearch = computed(() => contextStore.isConfigured.value);
@@ -95,6 +109,7 @@ function clearConversation() {
     abortController = new AbortController();
     threadId = crypto.randomUUID();
     handledBagOperations.clear();
+    pendingPurchasedWithProduct = undefined;
     input.value = '';
     error.value = '';
     loading.value = false;
@@ -125,6 +140,7 @@ async function refine(activity: ShoppingEntry, action: ConversationalSearchShopp
 async function run(shoppingAction?: ConversationalSearchShoppingAction, activityMessageId?: string) {
     error.value = '';
     loading.value = true;
+    pendingPurchasedWithProduct = undefined;
     abortController.abort();
     const controller = new AbortController();
     abortController = controller;
@@ -160,6 +176,12 @@ async function run(shoppingAction?: ConversationalSearchShoppingAction, activity
                 propertyDefinitions: contextStore.context.value.conversationalSearchProperties ?? [],
             },
         }, applyEvent, controller.signal);
+
+        const purchasedProduct = pendingPurchasedWithProduct;
+        pendingPurchasedWithProduct = undefined;
+        if (purchasedProduct) {
+            void addPurchasedWithRecommendations(purchasedProduct);
+        }
     }
     catch (exception) {
         if (controller.signal.aborted) {
@@ -225,7 +247,8 @@ function applyEvent(event: AgUiEvent) {
                 handledBagOperations.add(value.operationId);
             }
 
-            addProductToBasket(value.product, Math.max(1, value.quantity ?? 1));
+            pendingPurchasedWithProduct = value.product;
+            void addProductToBasket(value.product, Math.max(1, value.quantity ?? 1));
         }
     }
     else if (event.type === 'RUN_ERROR') {
@@ -269,12 +292,79 @@ function productContext(activityId?: string) {
     return { productIds: shoppingEntry?.content.result?.products.map(product => product.id) ?? [] };
 }
 
-function addProductToBasket(product: ConversationalSearchProduct, quantity = 1) {
-    void basketService.addProduct({
+async function addProductToBasket(
+    product: ConversationalSearchProduct,
+    quantity = 1,
+) {
+    await basketService.addProduct({
         product: toBasketProduct(product),
         quantityDelta: quantity,
     });
     toast.success(`${product.name} added to the cart`);
+}
+
+async function addPurchasedWithRecommendations(product: ConversationalSearchProduct) {
+    const recommendationThreadId = threadId;
+    const signal = abortController.signal;
+    const request = new PurchasedWithProductBuilder(contextStore.defaultSettings)
+        .product({ productId: product.id })
+        .setSelectedProductProperties(contextStore.selectedProductProperties)
+        .setSelectedVariantProperties({ allData: true })
+        .setNumberOfRecommendations(4)
+        .allowProductsCurrentlyInCart(false)
+        .filters(builder => globalProductRecommendationFilters(builder))
+        .build();
+
+    try {
+        const response = await contextStore.getRecommender()
+            .recommendPurchasedWithProduct(request, { abortSignal: signal });
+        contextStore.assertApiCall(response);
+
+        if (signal.aborted || recommendationThreadId !== threadId) {
+            return;
+        }
+
+        const products = (response?.recommendations ?? [])
+            .map(toConversationalProduct)
+            .filter((recommendation): recommendation is ConversationalSearchProduct => recommendation !== null);
+        if (products.length === 0) {
+            return;
+        }
+
+        entries.value.push({
+            id: crypto.randomUUID(),
+            role: 'activity',
+            activityType: 'PURCHASED_WITH',
+            content: {
+                status: 'ready',
+                products,
+                currency: contextStore.currencyCode.value,
+            },
+        });
+        await scrollToBottom();
+    }
+    catch (exception) {
+        if (!signal.aborted) {
+            console.warn('Unable to load purchased-with recommendations.', exception);
+        }
+    }
+}
+
+function toConversationalProduct(product: ProductResult): ConversationalSearchProduct | null {
+    if (!product.productId) {
+        return null;
+    }
+
+    return {
+        id: product.productId,
+        name: product.displayName ?? product.productId,
+        brand: product.brand?.displayName ?? '',
+        brandId: product.brand?.id ?? undefined,
+        category: '',
+        price: product.salesPrice ?? null,
+        image: findImage(product),
+        description: '',
+    };
 }
 
 function toBasketProduct(product: ConversationalSearchProduct) {
@@ -448,6 +538,15 @@ onBeforeUnmount(() => {
               <ConversationalSearchProductDetail
                 v-else-if="entry.activityType === 'PRODUCT_DETAIL'"
                 :activity="entry.content"
+                :language="contextStore.language.value"
+                @add="addProductToBasket"
+                @navigate="close"
+              />
+
+              <ConversationalSearchPurchasedWith
+                v-else-if="entry.activityType === 'PURCHASED_WITH'"
+                :products="entry.content.products"
+                :currency="entry.content.currency"
                 :language="contextStore.language.value"
                 @add="addProductToBasket"
                 @navigate="close"
