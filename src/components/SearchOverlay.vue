@@ -174,7 +174,7 @@ function typeAHeadSearch() {
     }
 }
 
-function handleSearchKeyup(event: KeyboardEvent) {
+function handleSearchInput(event: Event) {
     window.clearTimeout(intentTimer);
 
     const query = searchTerm.value.trim();
@@ -182,18 +182,32 @@ function handleSearchKeyup(event: KeyboardEvent) {
         assistantSuggestion.value = null;
     }
 
+    typeAHeadSearch();
+
+    if ((event as InputEvent).isComposing) {
+        return;
+    }
+
     if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
         intentAbortController.abort();
-        typeAHeadSearch();
         return;
     }
 
-    if (event.key === 'Enter') {
-        void routeSearchIntent(query);
+    intentTimer = window.setTimeout(() => void routeSearchIntent(query), 150);
+}
+
+function handleSearchEnter(event: KeyboardEvent) {
+    if (event.isComposing) {
         return;
     }
 
-    intentTimer = window.setTimeout(() => void routeSearchIntent(query), 250);
+    const query = searchTerm.value.trim();
+    if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
+        return;
+    }
+
+    window.clearTimeout(intentTimer);
+    void routeSearchIntent(query);
 }
 
 async function routeSearchIntent(query: string) {
@@ -527,7 +541,8 @@ onBeforeUnmount(() => {
       type="text"
       placeholder="Search or describe what you need..."
       class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-      @keyup="handleSearchKeyup"
+      @input="handleSearchInput"
+      @keydown.enter="handleSearchEnter"
     >
   </div>
 
