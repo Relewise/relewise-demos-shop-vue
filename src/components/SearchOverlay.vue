@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import router from '@/router';
@@ -43,6 +43,8 @@ let abortController = new AbortController();
 let intentAbortController = new AbortController();
 let intentTimer: number | undefined;
 let intentRevision = 0;
+const assistantSuggestion = ref<string | null>(null);
+const dismissedAssistantQuery = ref<string | null>(null);
 
 const productPageSize = 40;
 const contentPageSize = 10;
@@ -69,6 +71,18 @@ function switchToAssistant() {
     const query = searchTerm.value;
     close();
     emit('openAssistant', query);
+}
+
+function acceptAssistantSuggestion() {
+    const query = assistantSuggestion.value ?? searchTerm.value.trim();
+    close();
+    emit('openAssistant', query);
+}
+
+function keepSearching() {
+    dismissedAssistantQuery.value = assistantSuggestion.value;
+    assistantSuggestion.value = null;
+    typeAHeadSearch();
 }
 
 defineExpose({ openWithPrompt });
@@ -135,6 +149,8 @@ function showOrHide(show: boolean) {
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
         trackedBrandId.value = null;
+        assistantSuggestion.value = null;
+        dismissedAssistantQuery.value = null;
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
 
@@ -162,6 +178,10 @@ function handleSearchKeyup(event: KeyboardEvent) {
     window.clearTimeout(intentTimer);
 
     const query = searchTerm.value.trim();
+    if (assistantSuggestion.value !== query) {
+        assistantSuggestion.value = null;
+    }
+
     if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
         intentAbortController.abort();
         typeAHeadSearch();
@@ -193,12 +213,13 @@ async function routeSearchIntent(query: string) {
             return;
         }
 
-        if (route.mode === 'conversation') {
-            close();
-            emit('openAssistant', query);
+        if (route.mode === 'conversation' && dismissedAssistantQuery.value !== query) {
+            assistantSuggestion.value = query;
+            typeAHeadSearch();
             return;
         }
 
+        assistantSuggestion.value = null;
         typeAHeadSearch();
     }
     catch (exception) {
@@ -555,6 +576,51 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </nav>
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="-translate-y-2 opacity-0"
+        enter-to-class="translate-y-0 opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="translate-y-0 opacity-100"
+        leave-to-class="-translate-y-2 opacity-0"
+      >
+        <section
+          v-if="assistantSuggestion"
+          class="fixed left-1/2 top-20 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
+          role="dialog"
+          aria-label="Switch to Shopping Assistant"
+        >
+          <div class="flex items-start gap-3">
+            <span class="rounded-full bg-brand-50 p-2 text-brand-600">
+              <SparklesIcon class="h-5 w-5" />
+            </span>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-base font-semibold text-slate-900">
+                Want help from the Shopping Assistant?
+              </h2>
+              <p class="mt-1 text-sm leading-5 text-slate-600">
+                This looks like a shopping request. The assistant can help narrow down the right products.
+              </p>
+              <div class="mt-4 flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+                  @click="keepSearching"
+                >
+                  Keep searching
+                </button>
+                <button
+                  type="button"
+                  class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                  @click="acceptAssistantSuggestion"
+                >
+                  Use Shopping Assistant
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Transition>
       <div
         v-if="productSearchResult || contentSearchResult"
         class="container mx-auto pb-10 px-2 xl:px-0"
