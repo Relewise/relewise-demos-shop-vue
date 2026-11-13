@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import contextStore from '@/stores/context.store';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
@@ -14,6 +14,11 @@ import { useRoute, type LocationQueryValue } from 'vue-router';
 import ContentSearchOverlayResult from './ContentSearchOverlayResult.vue';
 import ProductSearchOverlayResult from './ProductSearchOverlayResult.vue';
 import { applyVariantRequestSettings, selectedProductPropertiesForTermSearch } from '@/helpers/productSearchRequest';
+import { routeConversationalSearch } from '@/helpers/conversationalSearchApi';
+
+const emit = defineEmits<{
+    openAssistant: [query: string];
+}>();
 
 enum Tabs {
     Products,
@@ -35,6 +40,11 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
 let abortController = new AbortController();
+let intentAbortController = new AbortController();
+let intentTimer: number | undefined;
+let intentRevision = 0;
+const assistantSuggestion = ref<string | null>(null);
+const dismissedAssistantQuery = ref<string | null>(null);
 
 const productPageSize = 40;
 const contentPageSize = 10;
@@ -44,6 +54,38 @@ const activeTab = ref(Tabs.Products);
 function close() {
     showOrHide(false);
 }
+
+function openWithPrompt(prompt = '') {
+    searchTerm.value = prompt.trim();
+
+    if (!searchTerm.value) {
+        showOrHide(false);
+        return;
+    }
+
+    showOrHide(true);
+    typeAHeadSearch();
+}
+
+function switchToAssistant() {
+    const query = searchTerm.value;
+    close();
+    emit('openAssistant', query);
+}
+
+function acceptAssistantSuggestion() {
+    const query = assistantSuggestion.value ?? searchTerm.value.trim();
+    close();
+    emit('openAssistant', query);
+}
+
+function keepSearching() {
+    dismissedAssistantQuery.value = assistantSuggestion.value;
+    assistantSuggestion.value = null;
+    typeAHeadSearch();
+}
+
+defineExpose({ openWithPrompt });
 
 watch(() => ({ ...route }), (value, oldValue) => {
     if (route.query.open === '1') {
@@ -107,14 +149,18 @@ function showOrHide(show: boolean) {
         predictionsList.value = [];
         filters.value = { term: '', sort: '' };
         trackedBrandId.value = null;
+        assistantSuggestion.value = null;
+        dismissedAssistantQuery.value = null;
         router.push({ path: router.currentRoute.value.path, query: {} });
     }
 
     open.value = show;
     if (show) {
+        window.document.documentElement.classList.add('overflow-hidden');
         window.document.body.classList.add('overflow-hidden');
         window.document.body.classList.add('xl:pr-[17px]');
     } else {
+        window.document.documentElement.classList.remove('overflow-hidden');
         window.document.body.classList.remove('overflow-hidden');
         window.document.body.classList.remove('xl:pr-[17px]');
     }
@@ -125,6 +171,77 @@ function typeAHeadSearch() {
         // reset page to 1 when doing a type-ahead search
         filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
         persistInUrl();
+    }
+}
+
+function handleSearchInput(event: Event) {
+    window.clearTimeout(intentTimer);
+
+    const query = searchTerm.value.trim();
+    if (assistantSuggestion.value !== query) {
+        assistantSuggestion.value = null;
+    }
+
+    typeAHeadSearch();
+
+    if ((event as InputEvent).isComposing) {
+        return;
+    }
+
+    if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
+        intentAbortController.abort();
+        return;
+    }
+
+    intentTimer = window.setTimeout(() => void routeSearchIntent(query), 150);
+}
+
+function handleSearchEnter(event: KeyboardEvent) {
+    if (event.isComposing) {
+        return;
+    }
+
+    const query = searchTerm.value.trim();
+    if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
+        return;
+    }
+
+    window.clearTimeout(intentTimer);
+    void routeSearchIntent(query);
+}
+
+async function routeSearchIntent(query: string) {
+    const revision = ++intentRevision;
+    intentAbortController.abort();
+    const controller = new AbortController();
+    intentAbortController = controller;
+
+    try {
+        const route = await routeConversationalSearch(
+            contextStore.context.value.datasetId,
+            contextStore.context.value.apiKey,
+            query,
+            controller.signal,
+        );
+        if (revision !== intentRevision || query !== searchTerm.value.trim()) {
+            return;
+        }
+
+        if (route.mode === 'conversation' && dismissedAssistantQuery.value !== query) {
+            assistantSuggestion.value = query;
+            typeAHeadSearch();
+            return;
+        }
+
+        assistantSuggestion.value = null;
+        typeAHeadSearch();
+    }
+    catch (exception) {
+        if (controller.signal.aborted) {
+            return;
+        }
+
+        typeAHeadSearch();
     }
 }
 
@@ -407,6 +524,11 @@ function trackBrandView(
     trackedBrandId.value = brand;
 }
 
+onBeforeUnmount(() => {
+    window.clearTimeout(intentTimer);
+    intentAbortController.abort();
+});
+
 </script>
 
 <template>
@@ -414,17 +536,13 @@ function trackBrandView(
     <span class="flex items-center bg-slate-100 rounded-none px-3">
       <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
     </span>
-    <XMarkIcon
-      v-if="open"
-      class="h-6 w-6 text-slate-600 absolute right-4 top-2.5 cursor-pointer"
-      @click="close"
-    />
     <input
       v-model="searchTerm"
       type="text"
-      placeholder="Search..."
+      placeholder="Search or describe what you need..."
       class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-      @keyup="typeAHeadSearch()"
+      @input="handleSearchInput"
+      @keydown.enter="handleSearchEnter"
     >
   </div>
 
@@ -434,6 +552,90 @@ function trackBrandView(
       id="search-result-overlay"
       class="modal"
     >
+      <nav
+        class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2"
+        aria-label="Discovery mode"
+      >
+        <div class="container mx-auto flex items-center gap-2 xl:px-0">
+          <div
+            class="flex min-w-0 flex-1"
+            role="tablist"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              class="flex-1 rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none"
+            >
+              Search
+            </button>
+            <button
+              v-if="contextStore.context.value.conversationalSearchEnabled"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
+              @click="switchToAssistant"
+            >
+              Shopping Assistant
+            </button>
+          </div>
+          <button
+            type="button"
+            class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
+            title="Close"
+            aria-label="Close search"
+            @click="close"
+          >
+            <XMarkIcon class="h-6 w-6" />
+          </button>
+        </div>
+      </nav>
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="-translate-y-2 opacity-0"
+        enter-to-class="translate-y-0 opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="translate-y-0 opacity-100"
+        leave-to-class="-translate-y-2 opacity-0"
+      >
+        <section
+          v-if="assistantSuggestion"
+          class="fixed left-1/2 top-20 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
+          role="dialog"
+          aria-label="Switch to Shopping Assistant"
+        >
+          <div class="flex items-start gap-3">
+            <span class="rounded-full bg-brand-50 p-2 text-brand-600">
+              <SparklesIcon class="h-5 w-5" />
+            </span>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-base font-semibold text-slate-900">
+                Want help from the Shopping Assistant?
+              </h2>
+              <p class="mt-1 text-sm leading-5 text-slate-600">
+                This looks like a shopping request. The assistant can help narrow down the right products.
+              </p>
+              <div class="mt-4 flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+                  @click="keepSearching"
+                >
+                  Keep searching
+                </button>
+                <button
+                  type="button"
+                  class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                  @click="acceptAssistantSuggestion"
+                >
+                  Use Shopping Assistant
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Transition>
       <div
         v-if="productSearchResult || contentSearchResult"
         class="container mx-auto pb-10 px-2 xl:px-0"
@@ -494,7 +696,7 @@ function trackBrandView(
 <style scoped lang="scss">
 .modal {
     background-color: #fff;
-    overflow-y: scroll;
+    overflow-y: auto;
     position: fixed;
     z-index: 999;
     top: var(--header-height, 132px);

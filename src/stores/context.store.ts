@@ -6,6 +6,7 @@ import { buildContextUser } from '@/helpers/userContext';
 import { createRecommenderForDataset, createSearcherForDataset, createTrackerForDataset, initializeWebComponentsForDataset } from '@/helpers/contextApi';
 import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSessionSelectionsForDataset, type SessionSelections } from '@/helpers/contextSession';
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
+import type { ConversationalSearchPropertyDefinition } from '@/helpers/conversationalSearchApi';
 import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
 
 export type VariantRequestSorting = 'GroupedByProduct' | 'ByRelevance';
@@ -35,6 +36,7 @@ export interface IDataset {
     contentSearch?: boolean;
     searchHighlight?: boolean;
     conversationalSearchEnabled?: boolean;
+    conversationalSearchProperties?: ConversationalSearchPropertyDefinition[];
     shoppertainmentEnabled?: boolean;
 }
 
