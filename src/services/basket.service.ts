@@ -1,9 +1,12 @@
 import type { ProductResult } from '@relewise/client';
 import { computed, reactive } from 'vue';
+import contextStore from '@/stores/context.store';
+import { canBuyArticle, articleSalesPrice, isVariantOwned, eligibleArticle, languageMarkets } from '@/helpers/variantOwnedData';
 
 export interface ILineItem {
     product: ProductResult;
-    quantity: number
+    quantity: number;
+    offerCurrency?: string;
 }
 
 export interface IBasket {
@@ -41,7 +44,13 @@ class BasketService {
 
     get subtotal() {
         return computed(() => this.state.model.lineItems
-            .reduce((sum, item) => sum + (item.product.salesPrice ?? 0) * item.quantity, 0));
+            .reduce((sum, item) => sum + (articleSalesPrice(item.product) ?? 0) * item.quantity, 0));
+    }
+
+    get canCheckout() {
+        return computed(() => !contextStore.context.value.variantOwnedData || this.model.value.lineItems.every(item =>
+            isVariantOwned(item.product) && canBuyArticle(item.product) && item.offerCurrency === contextStore.currencyCode.value
+            && Boolean(item.product.variant && eligibleArticle(item.product.variant, languageMarkets[contextStore.language.value] ?? '', contextStore.user.value.classifications?.channel))));
     }
 
     get hasItems() {
@@ -49,6 +58,8 @@ class BasketService {
     }
 
     async addProduct({ product, quantityDelta }: { product: ProductResult, quantityDelta: number }) {
+        if (!canBuyArticle(product)) return;
+        if (contextStore.context.value.variantOwnedData && (!isVariantOwned(product) || !product.variant || !eligibleArticle(product.variant, languageMarkets[contextStore.language.value] ?? '', contextStore.user.value.classifications?.channel))) return;
         const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId
             && x.product.variant?.variantId === product.variant?.variantId);
 
@@ -59,7 +70,7 @@ class BasketService {
                 this.state.model.lineItems.splice(productIndex, 1);
             }
         } else {
-            this.model.value.lineItems.push({ product: product, quantity: quantityDelta });
+            this.model.value.lineItems.push({ product: product, quantity: quantityDelta, offerCurrency: contextStore.currencyCode.value });
         }
 
         this.basketModified();

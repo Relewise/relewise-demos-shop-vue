@@ -1,4 +1,5 @@
 import type { Company, User } from '@relewise/client';
+import { normalizeDataRecord } from './dataValues';
 
 export type DemoUser = User & {
     companyIds?: string[];
@@ -43,7 +44,7 @@ export function sanitizeUser(user: User) {
         ...user,
         classifications: user.classifications ? { ...user.classifications } : undefined,
         identifiers: user.identifiers ? { ...user.identifiers } : undefined,
-        data: user.data ? { ...user.data } : undefined,
+        data: normalizeDataRecord(user.data),
         companyIds: getUserCompanyIds(user),
     };
 
@@ -73,7 +74,7 @@ function buildRuntimeCompany(company: Company | undefined, companies: Company[])
     const normalizedCompany: Company = {
         ...company,
         id: company.id?.trim() ?? '',
-        data: company.data ? { ...company.data } : undefined,
+        data: normalizeDataRecord(company.data),
     };
 
     const parentId = company.parent?.id?.trim();
@@ -87,7 +88,7 @@ function buildRuntimeCompany(company: Company | undefined, companies: Company[])
         ? {
             ...parentCompany,
             id: parentCompany.id?.trim() ?? '',
-            data: parentCompany.data ? { ...parentCompany.data } : undefined,
+            data: normalizeDataRecord(parentCompany.data),
             parent: undefined,
         } as Company
         : { id: parentId } as Company;

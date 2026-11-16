@@ -52,7 +52,7 @@ export function initializeWebComponentsForDataset({
             },
             selectedPropertiesSettings: {
                 product: selectedProductProperties,
-                variant: { allData: true },
+                variant: { allData: true, displayName: true, pricing: true },
             },
             templates: {
                 product: (product, extentions) => {

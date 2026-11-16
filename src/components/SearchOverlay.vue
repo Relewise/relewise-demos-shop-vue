@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { batchWithAdaptiveFacets } from '@/helpers/adaptiveFacets';
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
-import { ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import router from '@/router';
 import type { ProductWithType } from '@/types';
 import breakpointService from '@/services/breakpoint.service';
@@ -21,6 +22,8 @@ enum Tabs {
 }
 
 const open = ref(false);
+const loading = ref(false);
+const searchError = ref('');
 const searchTerm = ref<string>('');
 const productSearchResult = ref<ProductSearchResponse | null>(null);
 const contentRecommendationResult = ref<ContentSearchResponse | null>(null);
@@ -35,6 +38,12 @@ const predictionsList = ref<SearchTermPredictionResult[]>([]);
 const filters = ref<Record<string, string | string[]>>({ term: '', sort: '', page: '1' });
 const route = useRoute();
 let abortController = new AbortController();
+
+onUnmounted(() => abortController.abort());
+watch(contextStore.activeContextRevision, () => {
+    abortController.abort();
+    if (route.query.open === '1') search();
+});
 
 const productPageSize = 40;
 const contentPageSize = 10;
@@ -56,9 +65,7 @@ watch(() => ({ ...route }), (value, oldValue) => {
         const newFilters: Record<string, string | string[]> = { term: '', sort: '', page: '1' };
         searchParams.forEach((value, key) => {
             if (key === 'term') {
-                if (oldValue.query.open !== '1') {
-                    searchTerm.value = value;
-                }
+                searchTerm.value = value;
 
                 newFilters.term = value;
                 return;
@@ -99,6 +106,9 @@ watch(breakpointService.active, () => {
 
 function showOrHide(show: boolean) {
     if (!show) {
+        abortController.abort();
+        loading.value = false;
+        searchError.value = '';
         searchTerm.value = '';
         productSearchResult.value = null;
         contentSearchResult.value = null;
@@ -140,6 +150,13 @@ async function persistInUrl() {
 
 async function search() {
     abortController.abort();
+    loading.value = true;
+    searchError.value = '';
+    productSearchResult.value = null;
+    contentSearchResult.value = null;
+    contentRecommendationResult.value = null;
+    products.value = null;
+    predictionsList.value = [];
 
     window.document.getElementById('search-result-overlay')?.scrollTo({ top: 0 });
 
@@ -197,10 +214,12 @@ async function search() {
                     s.sortByProductPopularity();
                 }
                 else if (filters.value.sort === 'SalesPriceDesc') {
-                    s.sortByProductAttribute('SalesPrice', 'Descending');
+                    if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Descending');
+                    else s.sortByProductAttribute('SalesPrice', 'Descending');
                 }
                 else if (filters.value.sort === 'SalesPriceAsc') {
-                    s.sortByProductAttribute('SalesPrice', 'Ascending');
+                    if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Ascending');
+                    else s.sortByProductAttribute('SalesPrice', 'Ascending');
                 }
             })
             .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
@@ -280,51 +299,67 @@ async function search() {
     abortController = new AbortController();
     const abortSignal = abortController.signal;
     const searcher = contextStore.getSearcher();
-    const response = await searcher.batch(request, { abortSignal });
-    contextStore.assertApiCall(response);
+    let response;
+    try {
+        response = await batchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), abortSignal, contextStore.context.value.variantOwnedData, contextStore.context.value.facetDataKeys ? { dataKeys: contextStore.context.value.facetDataKeys, includePriceFacets: contextStore.context.value.commercialMode !== 'external-pricing' } : undefined);
+        if (abortSignal.aborted) return;
+        contextStore.assertApiCall(response);
 
-    if (response && response.responses) {
-        trackBrandView(brandId, brandName);
+        if (response && response.responses) {
+            trackBrandView(brandId, brandName);
 
-        contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
-        productSearchResult.value = response.responses[0] as ProductSearchResponse;
-        products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
+            contentRecommendationResult.value = response.responses[2] as ContentSearchResponse;
+            productSearchResult.value = response.responses[0] as ProductSearchResponse;
+            products.value = productSearchResult.value.results?.map(x => ({ isPromotion: false, product: x })) ?? [];
 
-        if (response.responses.length === 3) {
-            contentSearchResult.value = response.responses[2] as ContentSearchResponse;
-        }
+            if (response.responses.length === 3) {
+                contentSearchResult.value = response.responses[2] as ContentSearchResponse;
+            }
 
-        predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
-        if (productSearchResult.value.hits === 0) {
-            await recommendNoResultProducts(abortSignal).catch(error => {
-                if (!abortSignal.aborted) {
-                    throw error;
+            predictionsList.value = (response.responses[1] as SearchTermPredictionResponse)?.predictions ?? [];
+            if (productSearchResult.value.hits === 0) {
+                await recommendNoResultProducts(abortSignal).catch(error => {
+                    if (!abortSignal.aborted) {
+                        throw error;
+                    }
+                });
+                return;
+            }
+
+            const placement = productSearchResult.value.retailMedia?.placements?.TOP;
+            if (placement) {
+
+                if (placement?.results) {
+                    products.value = placement.results
+                        .map(x => ({
+                            isPromotion: true,
+                            product: x.promotedProduct?.result,
+                            displayAd: x.promotedDisplayAd,
+                        }) as ProductWithType)
+                        .concat(products.value ?? []);
                 }
-            });
-            return;
-        }
+            }
 
-        const placement = productSearchResult.value.retailMedia?.placements?.TOP;
-        if (placement) {
+            const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
+            if (rightPlacement) {
 
-            if (placement?.results) {
-                products.value = placement.results
-                    .map(x => ({
-                        isPromotion: true,
-                        product: x.promotedProduct?.result,
-                        displayAd: x.promotedDisplayAd,
-                    }) as ProductWithType)
-                    .concat(products.value ?? []);
+                if (rightPlacement?.results) {
+                    rightSide.value = rightPlacement.results;
+                }
             }
         }
-
-        const rightPlacement = productSearchResult.value.retailMedia?.placements?.RIGHT;
-        if (rightPlacement) {
-
-            if (rightPlacement?.results) {
-                rightSide.value = rightPlacement.results;
-            }
-        }
+    } catch {
+        if (abortSignal.aborted) return;
+        productSearchResult.value = null;
+        contentSearchResult.value = null;
+        contentRecommendationResult.value = null;
+        products.value = null;
+        predictionsList.value = [];
+        rightSide.value = null;
+        noResultProductRecommendations.value = null;
+        searchError.value = 'Search could not be loaded. Please try again.';
+    } finally {
+        if (!abortSignal.aborted) loading.value = false;
     }
 }
 
@@ -368,8 +403,9 @@ async function recommendNoResultSearchTermBasedProducts(term: string, abortSigna
 
     const searchTermBasedProductsRequest = new SearchTermBasedProductRecommendationBuilder(contextStore.defaultSettings)
         .setTerm(term)
+        .recommendVariant(contextStore.context.value.variantOwnedData ?? false)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({ allData: true })
+        .setSelectedVariantProperties({ allData: true, displayName: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
@@ -381,8 +417,9 @@ async function recommendNoResultPersonalProducts(abortSignal: AbortSignal) {
     const recommender = contextStore.getRecommender();
 
     const personalProductsRequest = new PersonalProductRecommendationBuilder(contextStore.defaultSettings)
+        .recommendVariant(contextStore.context.value.variantOwnedData ?? false)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({ allData: true })
+        .setSelectedVariantProperties({ allData: true, displayName: true })
         .setNumberOfRecommendations(contextStore.numberOfProductsToRecommend)
         .filters(builder => globalProductRecommendationFilters(builder))
         .build();
@@ -435,7 +472,27 @@ function trackBrandView(
       class="modal"
     >
       <div
-        v-if="productSearchResult || contentSearchResult"
+        v-if="loading"
+        class="container mx-auto p-6"
+        role="status"
+      >
+        Loading search results…
+      </div>
+      <div
+        v-else-if="searchError"
+        class="container mx-auto p-6"
+        role="alert"
+      >
+        <p>{{ searchError }}</p>
+        <button
+          class="mt-3"
+          @click="search"
+        >
+          Retry
+        </button>
+      </div>
+      <div
+        v-else-if="productSearchResult || contentSearchResult"
         class="container mx-auto pb-10 px-2 xl:px-0"
       >
         <div

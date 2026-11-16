@@ -32,6 +32,9 @@ const route = useRoute();
 
 const emit = defineEmits(['search', 'update:sort', 'search-for']);
 
+const filtersExpanded = ref(false);
+const showFacetSidebar = computed(() => hasProductResults.value || Object.entries(props.filters).some(([key, value]) =>
+    !['term', 'sort', 'page', 'open', 'brand', 'brandName'].includes(key) && Array.isArray(value) && value.length > 0));
 const sortValue = ref(props.sort);
 // derive local numeric page value from filters.page (filters holds page as string)
 const pageValue = ref(Number((props.filters && (props.filters as any).page) ?? 1));
@@ -94,10 +97,22 @@ function searchFor(term: string) {
         type="Product"
       />
     </div>
-    <div :class="hasProductResults ? 'flex gap-10' : ''">
+    <button
+      v-if="showFacetSidebar"
+      type="button"
+      class="lg:hidden min-h-11 mb-4 px-4 border border-slate-300 rounded text-slate-900"
+      :aria-expanded="filtersExpanded"
+      aria-controls="search-filters"
+      @click="filtersExpanded = !filtersExpanded"
+    >
+      {{ filtersExpanded ? 'Hide filters' : 'Filters' }}
+    </button>
+    <div :class="showFacetSidebar ? 'flex flex-col lg:flex-row gap-6 lg:gap-10' : ''">
       <div
-        v-if="hasProductResults"
-        class="hidden lg:block lg:w-1/5"
+        v-if="showFacetSidebar"
+        id="search-filters"
+        class="w-full lg:w-1/5"
+        :class="filtersExpanded ? 'block' : 'hidden lg:block'"
       >
         <div
           v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
@@ -141,7 +156,7 @@ function searchFor(term: string) {
           </div>
         </div>
       </div>
-      <div :class="hasProductResults ? 'w-full lg:w-4/5' : 'w-full'">
+      <div :class="showFacetSidebar ? 'w-full lg:w-4/5' : 'w-full'">
         <div
           v-if="productSearchResult && productSearchResult?.redirects && productSearchResult.redirects.length > 0"
           class="mb-3 p-3 bg-white"
@@ -167,10 +182,25 @@ function searchFor(term: string) {
             :product-recommendations-title="noResultProductRecommendationsTitle"
           />
         </div>
-        <VariantBasedProductList
-          v-else-if="contextStore.context.value.variantBasedSearchOverlay"
-          :product-result="productSearchResult"
-        />
+        <template v-else-if="contextStore.context.value.variantBasedSearchOverlay">
+          <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <template
+              v-for="(promotion, index) in products?.filter(item => item.isPromotion)"
+              :key="index"
+            >
+              <ProductTile
+                v-if="promotion.product"
+                :product="promotion.product"
+                :is-promotion="true"
+              />
+              <div v-else-if="promotion.displayAd">
+                <span class="text-xs text-slate-500">Sponsored</span>
+                <DisplayAdTile :display-ad="promotion.displayAd" />
+              </div>
+            </template>
+          </div>
+          <VariantBasedProductList :product-result="productSearchResult" />
+        </template>
         <div v-else>
           <div class="grid gap-2 xl:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <template

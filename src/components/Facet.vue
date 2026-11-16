@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="config?.contexts.includes(context)" 
+    v-if="config?.contexts.includes(context) && showFacet"
     class="bg-white mb-6 border-b border-solid border-slate-300 pb-6 flex flex-col gap-1"
   >
     <h4 class="font-semibold text-lg">
@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult, FacetResult } from '@relewise/client';
 import { computed, type PropType } from 'vue';
+import { attributeFromIdentity } from '@/helpers/adaptiveFacets';
 import { getFacetSettings } from '@/helpers/facetHelper';
 import type { FacetContext } from '@/facetConfig';
 import CategoryFacet from './CategoryFacet.vue';
@@ -54,6 +55,12 @@ const props = defineProps({
 defineEmits<{
     (e: 'search', payload: { name: string, value: string | null | undefined, clearSubsequentEntries?: boolean, handlefilters?: boolean }): void
 }>();
+
+const showFacet = computed(() => {
+    const facet = props.facet as any;
+    if (!attributeFromIdentity(facet.key ?? '')) return true;
+    return facet.available?.length > 0 || (Array.isArray(facet.selected) && facet.selected.length > 0);
+});
 
 const config = computed(() => getFacetSettings(props.facet, props.context));
 </script>

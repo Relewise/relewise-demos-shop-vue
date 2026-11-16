@@ -17,6 +17,14 @@
             :entries="objectEntries(value)"
             nested
           />
+          <template v-else-if="value.type === 'ObjectList'">
+            <DataValueList
+              v-for="(object, index) in objectList(value)"
+              :key="index"
+              :entries="Object.entries(object.data ?? {})"
+              nested
+            />
+          </template>
           <template v-else-if="value.value?.$values">
             {{ value.value.$values.join(', ') }}
           </template>
@@ -50,6 +58,10 @@ defineProps<{
 
 function objectEntries(value: DataValue): DataValueEntry[] {
   return Object.entries(value.value?.data ?? {});
+}
+
+function objectList(value: DataValue): Array<{ data?: Record<string, DataValue> }> {
+    return Array.isArray(value.value) ? value.value : value.value?.$values ?? [];
 }
 
 function isUrl(value: unknown): value is string {

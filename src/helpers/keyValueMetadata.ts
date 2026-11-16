@@ -25,7 +25,7 @@ export function keyValuesFromStringRecord(record?: Record<string, string | null>
 export function keyValuesFromDataRecord(record?: Record<string, DataValue>) {
     return Object.entries(record ?? {}).map(([key, value]) => ({
         key,
-        value: value?.type === 'String' ? String(value.value) : null,
+        value: value?.type === 'String' ? String(value.value) : value?.type === 'StringList' ? JSON.stringify(value.value.$values) : null,
     }));
 }
 
@@ -42,7 +42,7 @@ export function keyValueArrayToStringRecord(items: KeyValue[]) {
     }, {} as Record<string, string | null>);
 }
 
-export function keyValueArrayToDataRecord(items: KeyValue[]) {
+export function keyValueArrayToDataRecord(items: KeyValue[], original?: Record<string, DataValue>) {
     return items.reduce((acc, entry) => {
         const key = entry.key.trim();
         const value = entry.value?.trim() ?? '';
@@ -50,6 +50,15 @@ export function keyValueArrayToDataRecord(items: KeyValue[]) {
             return acc;
         }
 
+        if (original?.[key]?.type === 'StringList') {
+            try {
+                const parsed = JSON.parse(value);
+                if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+                    acc[key] = DataValueFactory.stringCollection(parsed);
+                    return acc;
+                }
+            } catch { /* Preserve invalid drafts as text for the existing validation flow. */ }
+        }
         acc[key] = DataValueFactory.string(value);
         return acc;
     }, {} as Record<string, DataValue>);

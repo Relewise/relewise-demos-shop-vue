@@ -3,6 +3,8 @@ import { computed, type PropType } from 'vue';
 import type { ProductRecommendationResponse } from '@relewise/client';
 import PopularCategories from '@/components/PopularCategories.vue';
 import ProductTile from '@/components/ProductTile.vue';
+import contextStore from '@/stores/context.store';
+import { eligibleArticle, languageMarkets } from '@/helpers/variantOwnedData';
 
 const props = defineProps({
   term: { type: [String, Array] as PropType<string | string[]>, required: true },
@@ -11,7 +13,13 @@ const props = defineProps({
 });
 
 const termLabel = computed(() => Array.isArray(props.term) ? props.term.join(' ') : props.term);
-const products = computed(() => props.productRecommendations?.recommendations ?? []);
+const products = computed(() => (props.productRecommendations?.recommendations ?? []).filter(product =>
+    !contextStore.context.value.variantOwnedData || (product.variant && eligibleArticle(
+        product.variant,
+        languageMarkets[contextStore.language.value] ?? '',
+        contextStore.user.value.classifications?.channel,
+    )),
+));
 </script>
 
 <template>

@@ -1,3 +1,5 @@
+import { articleSalesPrice, articleListPrice, missingArticlePriceText } from '@/helpers/variantOwnedData';
+import contextStore from '@/stores/context.store';
 import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { ProductTemplateExtensions } from '@relewise/web-components';
@@ -141,7 +143,7 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
             <app-product-favorite-button floating .product=${product}></app-product-favorite-button>
             <div class="image-container">
                 <img src="${findImage(product)}" class="image"/>
-                ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
+                ${articleSalesPrice(product) !== articleListPrice(product) && articleListPrice(product) !== null && articleListPrice(product) !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
                 ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
             </div>
             <div class="padding">
@@ -153,8 +155,8 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
                 </div>
                 <div class="price-container">
                     <p>
-                        <span class="sales-price">${helpers.formatPrice(product.salesPrice)}</span>
-                        ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="list-price">${helpers.formatPrice(product.listPrice)}</span>` : ''}
+                        <span class="sales-price">${articleSalesPrice(product) == null ? missingArticlePriceText(product, contextStore.context.value.commercialMode === 'external-pricing') : helpers.formatPrice(articleSalesPrice(product))}</span>
+                        ${articleSalesPrice(product) !== articleListPrice(product) && articleListPrice(product) !== null && articleListPrice(product) !== undefined ? html`<span class="list-price">${helpers.formatPrice(articleListPrice(product))}</span>` : ''}
                     </p>
                 </div>
             </div>

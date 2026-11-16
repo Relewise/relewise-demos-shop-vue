@@ -27,10 +27,22 @@
       />
     </div>
 
-    <div class="flex gap-10">
+    <button
+      v-if="result?.facets"
+      type="button"
+      class="lg:hidden min-h-11 mb-4 px-4 border border-slate-300 rounded text-slate-900"
+      :aria-expanded="filtersExpanded"
+      aria-controls="category-filters"
+      @click="filtersExpanded = !filtersExpanded"
+    >
+      {{ filtersExpanded ? 'Hide filters' : 'Filters' }}
+    </button>
+    <div class="flex flex-col lg:flex-row gap-6 lg:gap-10">
       <div
         v-if="result?.facets || (childCategories?.length ?? 0) > 0"
-        class="hidden lg:block w-1/5"
+        id="category-filters"
+        class="w-full lg:w-1/5"
+        :class="filtersExpanded ? 'block' : 'hidden lg:block'"
       >
         <div
           v-if="(childCategories?.length ?? 0) > 0"
@@ -127,9 +139,10 @@
 <script lang="ts" setup>
 import Pagination from '../components/Pagination.vue';
 import ProductTile from '../components/ProductTile.vue';
+import { searchWithAdaptiveFacets } from '@/helpers/adaptiveFacets';
 import Breadcrumb from '../components/Breadcrumb.vue';
 import Facets from '../components/Facets.vue';
-import { ref, type Ref, watch } from 'vue';
+import { onUnmounted, ref, type Ref, watch } from 'vue';
 import { ProductSearchBuilder, type ProductSearchResponse, ProductCategorySearchBuilder, type ProductCategorySearchResponse, type CategoryResult, type CategoryHierarchyFacetResult, type CategoryHierarchyFacetResultCategoryNode, type CategoryNameAndIdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
 import contextStore from '@/stores/context.store';
 import { useRoute } from 'vue-router';
@@ -147,6 +160,7 @@ import DisplayAdTile from '@/components/DisplayAds/DisplayAd-Tile.vue';
 import { sortCategories } from '@/helpers/sortCategories';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
+const filtersExpanded = ref(false);
 const products = ref<ProductWithType[] | null>(null);
 const rightSide = ref<RetailMediaResultPlacementResultEntity[] | null>(null);
 const route = useRoute();
@@ -160,6 +174,9 @@ const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+
+let abortController = new AbortController();
+onUnmounted(() => abortController.abort());
 
 async function init() {
     const id = route.params.id;
@@ -177,6 +194,7 @@ async function init() {
     if (id && !Array.isArray(id) && id !== categoryId.value) {
         trackingService.trackProductCategoryView(id);
 
+        filters.value = { sort: '' };
         const facets = new URLSearchParams(window.location.search);
         facets.forEach((value, key) => {
             if (key === 'sort') { filters.value.sort = value; return; }
@@ -252,12 +270,15 @@ watch(breakpointService.active, () => {
 });
 
 async function search() {
+    abortController.abort();
+    abortController = new AbortController();
+    const signal = abortController.signal;
     const variationName = breakpointService.active.value.toUpperCase();
     scrollTo({ top: 0 });
 
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
-        .setSelectedVariantProperties({ allData: true })
+        .setSelectedVariantProperties({ allData: true, displayName: true, pricing: true })
         .setRetailMedia(rm => rm
             .setLocation({
                 key: 'PRODUCT_LISTING_PAGE',
@@ -286,10 +307,12 @@ async function search() {
                 s.sortByProductPopularity();
             }
             else if (filters.value.sort === 'SalesPriceDesc') {
-                s.sortByProductAttribute('SalesPrice', 'Descending');
+                if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Descending');
+                    else s.sortByProductAttribute('SalesPrice', 'Descending');
             }
             else if (filters.value.sort === 'SalesPriceAsc') {
-                s.sortByProductAttribute('SalesPrice', 'Ascending');
+                if (contextStore.context.value.variantOwnedData) s.sortByProductVariantAttribute('SalesPrice', 'Ascending');
+                    else s.sortByProductAttribute('SalesPrice', 'Ascending');
             }
         }), contextStore.context.value)
         .build();
@@ -298,7 +321,13 @@ async function search() {
     await router.push({ path: route.path, query: query, replace: true });
 
     const searcher = contextStore.getSearcher();
-    const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);
+    let response: ProductSearchResponse | undefined;
+    try {
+        response = await searchWithAdaptiveFacets(searcher, request, JSON.stringify([contextStore.context.value.serverUrl, contextStore.context.value.datasetId]), signal, contextStore.context.value.variantOwnedData, contextStore.context.value.facetDataKeys ? { dataKeys: contextStore.context.value.facetDataKeys, includePriceFacets: contextStore.context.value.commercialMode !== 'external-pricing' } : undefined);
+    } catch (error) {
+        if (signal.aborted) return;
+        throw error;
+    }
     contextStore.assertApiCall(response);
 
     if (response && response.facets && response.facets.items) {

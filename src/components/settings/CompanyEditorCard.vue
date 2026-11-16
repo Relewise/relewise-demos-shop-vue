@@ -224,7 +224,7 @@ function syncCompanyMetadata() {
     });
 
     props.company.parent = props.companies.find((company) => company.id === parentCompanyId.value);
-    props.company.data = keyValueArrayToDataRecord(data.value);
+    props.company.data = keyValueArrayToDataRecord(data.value, props.company.data);
 }
 
 function setCompanyId(value: string) {
