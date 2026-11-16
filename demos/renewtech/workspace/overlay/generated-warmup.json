@@ -1,0 +1,12 @@
+{
+  "id": "generated-customer-warmup",
+  "repetitions": 1,
+  "requestTypes": [
+    "popular-products",
+    "popular-products-on-sale",
+    "popular-brands",
+    "popular-product-categories",
+    "b2b-product-search"
+  ],
+  "b2bSearchTerm": "Lenovo System x3650 M5"
+}

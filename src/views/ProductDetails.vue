@@ -56,6 +56,10 @@
               :selected-variant-id="variantId ?? undefined"
             />
           </div>
+          <RenewtechProductFacts
+            v-if="isRenewtechDemo"
+            :product="product"
+          />
           <div class="mt-6">
             <div class="mb-2 flex gap-2">
               <span
@@ -85,7 +89,10 @@
             </div>
           </div>
 
-          <div class="text-left mt-5">
+          <div
+            v-if="!isRenewtechDemo || productText(product, 'SourceKind') !== 'config'"
+            class="text-left mt-5"
+          >
             <button
               class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700"
               :class="buttonClass"
@@ -95,7 +102,10 @@
             </button>
           </div>
 
-          <div class="mt-5">
+          <div
+            v-if="!isRenewtechDemo"
+            class="mt-5"
+          >
             <h3 class="text-xl inline-block">
               Highlighed details
             </h3>
@@ -116,15 +126,38 @@
         </div>
       </div>
     </div>
+    <RenewtechListedOptions
+      v-if="isRenewtechDemo && product"
+      :key="product.productId ?? undefined"
+      :product="product"
+    />
+    <details
+      v-if="isRenewtechDemo && product"
+      class="mb-16 border-t border-slate-200 pt-6"
+    >
+      <summary class="cursor-pointer text-xl font-semibold">
+        Sample purchasing journeys
+      </summary>
+      <p class="my-4 text-slate-700">
+        Recommendations use seeded demo journeys, not Renewtech order history. They do not establish compatibility with a selected configuration.
+      </p>
+      <relewise-purchased-with-product
+        :key="productId"
+        class="flex flex-row gap-3 overflow-x-auto"
+        :number-of-recommendations="contextStore.numberOfProductsToRecommend"
+        displayed-at-location="Renewtech - Seeded purchasing journeys"
+        :product-id="productId"
+      />
+    </details>
     <div
-      v-if="product?.data
+      v-if="!isRenewtechDemo && product?.data
         && product.data.SoldOut
         && product.data.SoldOut.value === 'true'
         && contextStore.context.value.similarProductsOnPdp"
     >
       <SimilarProductsRecommendation :product="product" />
     </div>
-    <relewise-product-recommendation-batcher v-else>
+    <relewise-product-recommendation-batcher v-else-if="!isRenewtechDemo">
       <div class="mb-16 scrollbar">
         <h2 class="text-2xl mb-2 font-semibold">
           Purchased with the product
@@ -169,7 +202,7 @@
     </div>
 
     <div
-      v-if="product"
+      v-if="product && !isRenewtechDemo"
       class="mt-10"
     >
       <h3 class="text-xl inline-block">
@@ -193,6 +226,9 @@
 </template>
 
 <script lang="ts" setup>
+import RenewtechListedOptions from '@/components/RenewtechListedOptions.vue';
+import RenewtechProductFacts from '@/components/RenewtechProductFacts.vue';
+import { isRenewtechDemo, productText } from '@/helpers/renewtechDemo';
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';

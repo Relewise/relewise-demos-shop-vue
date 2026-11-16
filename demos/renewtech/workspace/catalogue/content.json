@@ -1,0 +1,129 @@
+[
+  {
+    "id": "generated-guide-category-ibm",
+    "headline": {
+      "en-gb": "Explore IBM"
+    },
+    "summary": {
+      "en-gb": "A practical guide to the ibm collection."
+    },
+    "body": {
+      "en-gb": "Discover selected ibm products and find the right fit for your needs."
+    },
+    "mainCategoryId": "category-ibm",
+    "mainCategoryName": {
+      "en-gb": "IBM",
+      "da-dk": "IBM"
+    },
+    "subcategories": [
+      {
+        "id": "subcategory-ibm-cpu-processors-vrm",
+        "name": {
+          "en-gb": "CPU Processors Vrm",
+          "da-dk": "CPU Processors Vrm"
+        }
+      }
+    ],
+    "relevantProductIds": [
+      "184527"
+    ],
+    "imageUrl": "https://www.renewtech.com/media/catalog/product/4/3/4360_1_7.jpg",
+    "generated": true,
+    "order": 0
+  },
+  {
+    "id": "generated-guide-category-dell",
+    "headline": {
+      "en-gb": "Explore Dell"
+    },
+    "summary": {
+      "en-gb": "A practical guide to the dell collection."
+    },
+    "body": {
+      "en-gb": "Discover selected dell products and find the right fit for your needs."
+    },
+    "mainCategoryId": "category-dell",
+    "mainCategoryName": {
+      "en-gb": "Dell",
+      "da-dk": "Dell"
+    },
+    "subcategories": [
+      {
+        "id": "subcategory-dell-other-dell",
+        "name": {
+          "en-gb": "Other Dell"
+        }
+      }
+    ],
+    "relevantProductIds": [
+      "184551"
+    ],
+    "imageUrl": "https://www.renewtech.com/media/catalog/product/1/2/123W8_1.jpg",
+    "generated": true,
+    "order": 1
+  },
+  {
+    "id": "generated-guide-category-lenovo",
+    "headline": {
+      "en-gb": "Explore Lenovo"
+    },
+    "summary": {
+      "en-gb": "A practical guide to the lenovo collection."
+    },
+    "body": {
+      "en-gb": "Discover selected lenovo products and find the right fit for your needs."
+    },
+    "mainCategoryId": "category-lenovo",
+    "mainCategoryName": {
+      "en-gb": "Lenovo",
+      "da-dk": "Lenovo"
+    },
+    "subcategories": [
+      {
+        "id": "subcategory-lenovo-power-supply-units",
+        "name": {
+          "en-gb": "Power Supply Units",
+          "da-dk": "Power Supply Units"
+        }
+      }
+    ],
+    "relevantProductIds": [
+      "184561"
+    ],
+    "imageUrl": "https://www.renewtech.com/media/catalog/product/1/2/12J4483_1.jpg",
+    "generated": true,
+    "order": 2
+  },
+  {
+    "id": "generated-guide-category-hpe",
+    "headline": {
+      "en-gb": "Explore HPE"
+    },
+    "summary": {
+      "en-gb": "A practical guide to the hpe collection."
+    },
+    "body": {
+      "en-gb": "Discover selected hpe products and find the right fit for your needs."
+    },
+    "mainCategoryId": "category-hpe",
+    "mainCategoryName": {
+      "en-gb": "HPE",
+      "da-dk": "HPE"
+    },
+    "subcategories": [
+      {
+        "id": "subcategory-hpe-harddrives",
+        "name": {
+          "en-gb": "Harddrives",
+          "da-dk": "Harddrives"
+        }
+      }
+    ],
+    "relevantProductIds": [
+      "187862"
+    ],
+    "imageUrl": "https://www.renewtech.com/media/catalog/product/3/7/376597-001_1.jpg",
+    "generated": true,
+    "order": 3
+  }
+]

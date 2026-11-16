@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isRenewtechDemo } from '@/helpers/renewtechDemo';
 import { BuildingOffice2Icon, ChevronDownIcon, HeartIcon, MagnifyingGlassIcon, ShoppingBagIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { computed, type PropType } from 'vue';
 import SearchOverlay from '../components/SearchOverlay.vue';
@@ -52,7 +53,12 @@ const activeCompanyDetails = computed(() => formatCompanyDetails(contextStore.se
             to="/"
             class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150"
           >
+            <span
+              v-if="isRenewtechDemo"
+              class="text-xl normal-case"
+            >Renewtech<span class="block text-xs font-normal text-slate-600">Relewise demo</span></span>
             <img
+              v-else
               src="/demoshopwise.png"
               style="height: 40px;"
             >

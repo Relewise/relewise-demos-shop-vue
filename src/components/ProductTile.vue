@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import RenewtechProductFacts from '@/components/RenewtechProductFacts.vue';
+import { isRenewtechDemo } from '@/helpers/renewtechDemo';
 import type { ProductResult } from '@relewise/client';
 import { computed, toRefs, type PropType } from 'vue';
 import Image from './Image.vue';
@@ -104,6 +106,10 @@ const displayName = computed(() => {
           <span v-html="displayName" />
         </h5>
       </div>
+      <RenewtechProductFacts
+        v-if="isRenewtechDemo"
+        :product="product"
+      />
       <div class="mt-2 flex items-center justify-between">
         <p>
           <span class="text-lg font-semibold text-slate-900 mr-1 leading-none">

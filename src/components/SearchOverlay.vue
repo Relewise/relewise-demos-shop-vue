@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isRenewtechDemo } from '@/helpers/renewtechDemo';
 import contextStore from '@/stores/context.store';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { type ProductSearchResponse, SearchCollectionBuilder, ProductSearchBuilder, SearchTermPredictionBuilder, PersonalProductRecommendationBuilder, SearchTermBasedProductRecommendationBuilder, type ProductRecommendationResponse, type SearchTermPredictionResponse, ContentSearchBuilder, type ContentSearchResponse, type SearchTermPredictionResult, type RetailMediaResultPlacementResultEntityDisplayAd, type DisplayAdResult, type RetailMediaResultPlacementResultEntity } from '@relewise/client';
@@ -422,7 +423,7 @@ function trackBrandView(
     <input
       v-model="searchTerm"
       type="text"
-      placeholder="Search..."
+      :placeholder="isRenewtechDemo ? 'Search by part number, model or description…' : 'Search...'"
       class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
       @keyup="typeAHeadSearch()"
     >

@@ -1,0 +1,58 @@
+{
+  "groups": [
+    {
+      "id": "lenovo-server-expansion",
+      "name": "Expand a Lenovo System x3650 M5",
+      "anchorProductId": "330177",
+      "companionProductIds": [
+        "228129",
+        "263593",
+        "266163",
+        "190377",
+        "257902"
+      ],
+      "accessoryProductIds": [
+        "266152",
+        "269878",
+        "210552"
+      ],
+      "rationale": "One CPU, memory, SFF drive, controller and network adapter, with power, riser and RAID upgrade. All are listed options for this server. Slot, chassis and option dependencies still require validation."
+    },
+    {
+      "id": "dell-server-refresh",
+      "name": "Refresh a Dell PowerEdge R730",
+      "anchorProductId": "351867",
+      "companionProductIds": [
+        "282692",
+        "257278",
+        "224876",
+        "222281",
+        "211029"
+      ],
+      "accessoryProductIds": [
+        "241166",
+        "224046",
+        "234902"
+      ],
+      "rationale": "One CPU, memory, SFF drive, controller and network adapter, with power, rails and bezel. Listed server options form a sample procurement journey, not a validated build."
+    },
+    {
+      "id": "hp-server-maintenance",
+      "name": "Maintain an HP ProLiant DL380 G9",
+      "anchorProductId": "344416",
+      "companionProductIds": [
+        "256988",
+        "226821",
+        "201970",
+        "242494",
+        "192333"
+      ],
+      "accessoryProductIds": [
+        "202006",
+        "263509",
+        "297138"
+      ],
+      "rationale": "One CPU, memory, SFF drive, controller and network adapter, with power, rails and cable management. Listed server options form a sample maintenance journey, pending configuration checks."
+    }
+  ]
+}

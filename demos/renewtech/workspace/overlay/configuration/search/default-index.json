@@ -1,0 +1,436 @@
+{
+  "endpoint": "/v1/SaveSearchIndexRequest",
+  "id": "customer-renewtech_search_index_setup",
+  "name": "Setup Renewtech search index",
+  "payload": {
+    "$type": "Relewise.Client.Requests.Search.SaveSearchIndexRequest, Relewise.Client",
+    "CreatedBy": "Relewise Demo Generator",
+    "index": {
+      "configuration": {
+        "content": {
+          "category": {
+            "unspecified": {
+              "data": null,
+              "displayName": {
+                "included": false,
+                "matchTypeSettings": {
+                  "compound": true,
+                  "endsWith": true,
+                  "exact": true,
+                  "fuzzy": true,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": false
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 1
+              },
+              "id": {
+                "included": false,
+                "matchTypeSettings": {
+                  "compound": false,
+                  "endsWith": false,
+                  "exact": true,
+                  "fuzzy": false,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": false
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 1
+              }
+            }
+          },
+          "data": {
+            "keys": {
+              "Body": {
+                "included": true,
+                "matchTypeSettings": {
+                  "compound": true,
+                  "endsWith": true,
+                  "exact": true,
+                  "fuzzy": true,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": false
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 2
+              },
+              "byLine": {
+                "included": true,
+                "matchTypeSettings": {
+                  "compound": true,
+                  "endsWith": true,
+                  "exact": true,
+                  "fuzzy": true,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": false
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 2
+              },
+              "Summary": {
+                "included": true,
+                "matchTypeSettings": {
+                  "compound": true,
+                  "endsWith": true,
+                  "exact": true,
+                  "fuzzy": true,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": false
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 2
+              }
+            },
+            "unspecified": null
+          },
+          "displayName": {
+            "included": true,
+            "matchTypeSettings": {
+              "compound": true,
+              "endsWith": true,
+              "exact": true,
+              "fuzzy": true,
+              "startsWith": true
+            },
+            "parser": null,
+            "predictionConfiguration": {
+              "includeInPredictions": true
+            },
+            "predictionSourceType": "Disabled",
+            "weight": 5
+          },
+          "id": {
+            "included": false,
+            "matchTypeSettings": {
+              "compound": false,
+              "endsWith": false,
+              "exact": true,
+              "fuzzy": false,
+              "startsWith": true
+            },
+            "parser": null,
+            "predictionConfiguration": {
+              "includeInPredictions": false
+            },
+            "predictionSourceType": "Disabled",
+            "weight": 1
+          }
+        },
+        "language": {
+          "languages": [
+            {
+              "included": true,
+              "isO639_1": null,
+              "language": {
+                "value": "da-dk"
+              }
+            },
+            {
+              "included": true,
+              "isO639_1": null,
+              "language": {
+                "value": "en-gb"
+              }
+            }
+          ]
+        },
+        "product": {
+          "brand": {
+            "displayName": {
+              "included": true,
+              "matchTypeSettings": {
+                "compound": true,
+                "endsWith": true,
+                "exact": true,
+                "fuzzy": true,
+                "startsWith": true
+              },
+              "parser": null,
+              "predictionConfiguration": {
+                "includeInPredictions": true
+              },
+              "predictionSourceType": "Disabled",
+              "weight": 3
+            },
+            "id": {
+              "included": false,
+              "matchTypeSettings": {
+                "compound": false,
+                "endsWith": false,
+                "exact": true,
+                "fuzzy": false,
+                "startsWith": true
+              },
+              "parser": null,
+              "predictionConfiguration": {
+                "includeInPredictions": false
+              },
+              "predictionSourceType": "Disabled",
+              "weight": 1
+            }
+          },
+          "category": {
+            "unspecified": {
+              "data": null,
+              "displayName": {
+                "included": true,
+                "matchTypeSettings": {
+                  "compound": true,
+                  "endsWith": true,
+                  "exact": true,
+                  "fuzzy": true,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": true
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 4
+              },
+              "id": {
+                "included": false,
+                "matchTypeSettings": {
+                  "compound": false,
+                  "endsWith": false,
+                  "exact": true,
+                  "fuzzy": false,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": false
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 1
+              }
+            }
+          },
+          "data": {
+            "keys": {
+              "Description": {
+                "included": true,
+                "matchTypeSettings": {
+                  "compound": true,
+                  "endsWith": true,
+                  "exact": true,
+                  "fuzzy": true,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": true
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 1
+              },
+              "MPN": {
+                "included": true,
+                "matchTypeSettings": {
+                  "compound": false,
+                  "endsWith": false,
+                  "exact": true,
+                  "fuzzy": false,
+                  "startsWith": true
+                },
+                "parser": null,
+                "predictionConfiguration": {
+                  "includeInPredictions": true
+                },
+                "predictionSourceType": "Disabled",
+                "weight": 20
+              }
+            },
+            "unspecified": null
+          },
+          "displayName": {
+            "included": true,
+            "matchTypeSettings": {
+              "compound": true,
+              "endsWith": true,
+              "exact": true,
+              "fuzzy": true,
+              "startsWith": true
+            },
+            "parser": null,
+            "predictionConfiguration": {
+              "includeInPredictions": true
+            },
+            "predictionSourceType": "Disabled",
+            "weight": 5
+          },
+          "id": {
+            "included": true,
+            "matchTypeSettings": {
+              "compound": false,
+              "endsWith": false,
+              "exact": true,
+              "fuzzy": false,
+              "startsWith": true
+            },
+            "parser": null,
+            "predictionConfiguration": {
+              "includeInPredictions": true
+            },
+            "predictionSourceType": "Disabled",
+            "weight": 5
+          },
+          "variants": {
+            "data": {
+              "keys": {
+                "color": {
+                  "included": true,
+                  "matchTypeSettings": {
+                    "compound": true,
+                    "endsWith": true,
+                    "exact": true,
+                    "fuzzy": true,
+                    "startsWith": true
+                  },
+                  "parser": null,
+                  "predictionConfiguration": {
+                    "includeInPredictions": true
+                  },
+                  "predictionSourceType": "Disabled",
+                  "weight": 4
+                },
+                "material": {
+                  "included": true,
+                  "matchTypeSettings": {
+                    "compound": true,
+                    "endsWith": true,
+                    "exact": true,
+                    "fuzzy": true,
+                    "startsWith": true
+                  },
+                  "parser": null,
+                  "predictionConfiguration": {
+                    "includeInPredictions": true
+                  },
+                  "predictionSourceType": "Disabled",
+                  "weight": 4
+                }
+              },
+              "unspecified": null
+            },
+            "displayName": {
+              "included": true,
+              "matchTypeSettings": {
+                "compound": true,
+                "endsWith": true,
+                "exact": true,
+                "fuzzy": true,
+                "startsWith": true
+              },
+              "parser": null,
+              "predictionConfiguration": {
+                "includeInPredictions": true
+              },
+              "predictionSourceType": "Disabled",
+              "weight": 4
+            },
+            "id": {
+              "included": false,
+              "matchTypeSettings": {
+                "compound": false,
+                "endsWith": false,
+                "exact": true,
+                "fuzzy": false,
+                "startsWith": true
+              },
+              "parser": null,
+              "predictionConfiguration": {
+                "includeInPredictions": false
+              },
+              "predictionSourceType": "Disabled",
+              "weight": 1
+            },
+            "specifications": {
+              "keys": {},
+              "unspecified": null
+            }
+          }
+        },
+        "productCategory": {
+          "unspecified": {
+            "data": {
+              "keys": {},
+              "unspecified": null
+            },
+            "displayName": {
+              "included": false,
+              "matchTypeSettings": {
+                "compound": true,
+                "endsWith": true,
+                "exact": true,
+                "fuzzy": true,
+                "startsWith": true
+              },
+              "parser": null,
+              "predictionConfiguration": {
+                "includeInPredictions": false
+              },
+              "predictionSourceType": "Disabled",
+              "weight": 1
+            },
+            "id": {
+              "included": false,
+              "matchTypeSettings": {
+                "compound": false,
+                "endsWith": false,
+                "exact": true,
+                "fuzzy": false,
+                "startsWith": true
+              },
+              "parser": null,
+              "predictionConfiguration": {
+                "includeInPredictions": false
+              },
+              "predictionSourceType": "Disabled",
+              "weight": 1
+            }
+          }
+        }
+      },
+      "created": "2025-03-05T12:45:36.165165+00:00",
+      "createdBy": "Relewise Demo Generator",
+      "custom": null,
+      "description": "The default index",
+      "enabled": true,
+      "id": "default",
+      "isDefault": true,
+      "modified": "2025-03-10T10:27:46.2335744+00:00",
+      "modifiedBy": "607",
+      "rebuildStatus": {
+        "isBuilt": true,
+        "isPartial": false,
+        "isRebuilding": false,
+        "isStale": true,
+        "lastMarkedAsStale": "2025-03-10T10:27:46.2335744+00:00",
+        "lastRebuildCompleted": "2025-03-10T09:53:50.1472274+00:00",
+        "lastRebuildDuration": "00:00:00.1523653",
+        "lastRebuildOpportunity": "2025-03-10T10:27:37.1674007+00:00",
+        "lastRebuildStarted": "2025-03-10T09:53:49.994852+00:00",
+        "lastStaleDuration": "00:00:00.8842191",
+        "staleDuration": "00:00:07.5397424"
+      }
+    },
+    "ModifiedBy": "Relewise Demo Generator"
+  },
+  "sourceDocumentId": "25d99df9-f98e-4100-9987-12e40a246cc9"
+}

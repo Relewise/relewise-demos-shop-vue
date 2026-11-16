@@ -1,0 +1,224 @@
+{
+  "generated.journey.lenovo-server-expansion.hero": {
+    "productIds": [
+      "330177"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.companion-a": {
+    "productIds": [
+      "228129"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.companion-b": {
+    "productIds": [
+      "263593"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.companion-c": {
+    "productIds": [
+      "266163"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.companion-d": {
+    "productIds": [
+      "190377"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.companion-e": {
+    "productIds": [
+      "257902"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.accessory-a": {
+    "productIds": [
+      "266152"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.accessory-b": {
+    "productIds": [
+      "269878"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.accessory-c": {
+    "productIds": [
+      "210552"
+    ]
+  },
+  "generated.journey.lenovo-server-expansion.repeat-purchase": {
+    "productIds": [
+      "228129"
+    ]
+  },
+  "generated.journey.dell-server-refresh.hero": {
+    "productIds": [
+      "351867"
+    ]
+  },
+  "generated.journey.dell-server-refresh.companion-a": {
+    "productIds": [
+      "282692"
+    ]
+  },
+  "generated.journey.dell-server-refresh.companion-b": {
+    "productIds": [
+      "257278"
+    ]
+  },
+  "generated.journey.dell-server-refresh.companion-c": {
+    "productIds": [
+      "224876"
+    ]
+  },
+  "generated.journey.dell-server-refresh.companion-d": {
+    "productIds": [
+      "222281"
+    ]
+  },
+  "generated.journey.dell-server-refresh.companion-e": {
+    "productIds": [
+      "211029"
+    ]
+  },
+  "generated.journey.dell-server-refresh.accessory-a": {
+    "productIds": [
+      "241166"
+    ]
+  },
+  "generated.journey.dell-server-refresh.accessory-b": {
+    "productIds": [
+      "224046"
+    ]
+  },
+  "generated.journey.dell-server-refresh.accessory-c": {
+    "productIds": [
+      "234902"
+    ]
+  },
+  "generated.journey.dell-server-refresh.repeat-purchase": {
+    "productIds": [
+      "282692"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.hero": {
+    "productIds": [
+      "344416"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.companion-a": {
+    "productIds": [
+      "256988"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.companion-b": {
+    "productIds": [
+      "226821"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.companion-c": {
+    "productIds": [
+      "201970"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.companion-d": {
+    "productIds": [
+      "242494"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.companion-e": {
+    "productIds": [
+      "192333"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.accessory-a": {
+    "productIds": [
+      "202006"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.accessory-b": {
+    "productIds": [
+      "263509"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.accessory-c": {
+    "productIds": [
+      "297138"
+    ]
+  },
+  "generated.journey.hp-server-maintenance.repeat-purchase": {
+    "productIds": [
+      "256988"
+    ]
+  },
+  "generated.category.1": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-ibm"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.2": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-dell"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.3": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-lenovo"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.4": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-hpe"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.5": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-netapp"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.6": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-cisco"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.7": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-emc"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.8": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-servers"
+      },
+      "take": 1
+    }
+  },
+  "generated.category.9": {
+    "selector": {
+      "where": {
+        "mainCategoryId": "category-storage"
+      },
+      "take": 1
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "id": "customer-renewtech-parts-discovery",
+  "version": "1.0.0",
+  "displayName": "Renewtech parts discovery",
+  "catalogue": {
+    "id": "customer-renewtech",
+    "version": "2026.10.28",
+    "displayName": "Renewtech",
+    "products": "catalogue/products.json",
+    "content": "catalogue/content.json",
+    "provenance": "catalogue/product-provenance.json"
+  },
+  "profiles": [
+    {
+      "id": "commerce-base",
+      "version": "1.0.0",
+      "selection": "required"
+    },
+    {
+      "id": "b2b",
+      "version": "1.0.0",
+      "selection": "required"
+    },
+    {
+      "id": "retail-media",
+      "version": "1.0.0",
+      "selection": "required"
+    }
+  ],
+  "overlay": {
+    "id": "customer-renewtech-overlay",
+    "version": "1.0.0",
+    "displayName": "Renewtech demo stories",
+    "components": {
+      "configuration": [
+        "overlay/configuration/search/default-index.json",
+        "overlay/configuration/merchandising/boost-category.json",
+        "overlay/configuration/merchandising/pin-hero.json",
+        "overlay/configuration/redirects/inspiration.json",
+        "overlay/configuration/retail-media/advertiser.json",
+        "overlay/configuration/retail-media/campaign.json"
+      ],
+      "behavior": [
+        "overlay/behavior/generated-customer-stories.json"
+      ],
+      "productRoles": "overlay/product-roles.json",
+      "variants": "overlay/variants.json",
+      "users": "overlay/users.json",
+      "browser": "overlay/browser.json",
+      "verification": "overlay/verification.json",
+      "warmup": "overlay/generated-warmup.json"
+    }
+  },
+  "requiredRunnerCapabilities": [
+    "configuration-v1",
+    "behavior-seeding-v4",
+    "embedded-catalogue-v1",
+    "semantic-product-roles-v1",
+    "warmup-v1",
+    "maintenance-jobs-v1"
+  ],
+  "maintenanceJobs": [
+    {
+      "id": "seed-behavior",
+      "displayName": "Refresh demo behavior",
+      "operations": [
+        "seed-behavior"
+      ]
+    },
+    {
+      "id": "warm-up",
+      "displayName": "Warm up recommendations",
+      "operations": [
+        "warm-up"
+      ]
+    }
+  ],
+  "stages": [
+    "validate",
+    "load-catalogue",
+    "load-content",
+    "materialize-catalogue",
+    "import-catalogue",
+    "await-catalogue-readiness",
+    "import-content",
+    "apply-configuration",
+    "seed-behavior",
+    "warm-up",
+    "verify",
+    "generate-demo-link"
+  ]
+}

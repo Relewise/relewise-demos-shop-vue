@@ -1,0 +1,14 @@
+{
+  "catalogue": {
+    "minimumProducts": 1554,
+    "minimumContent": 4,
+    "minimumSubcategories": 83
+  },
+  "behavior": {
+    "personaScenarios": 0,
+    "journeyCohorts": 24
+  },
+  "warmup": {
+    "expectedRequests": 0
+  }
+}
