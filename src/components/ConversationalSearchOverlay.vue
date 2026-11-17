@@ -605,12 +605,13 @@ onBeforeUnmount(() => {
 <style scoped>
 .modal {
     background-color: #fff;
-    height: calc(100% - var(--header-height, 132px));
+    height: calc(100% - var(--header-height, 132px) + 1px);
+    isolation: isolate;
     left: 0;
     overflow: hidden;
     position: fixed;
-    top: var(--header-height, 132px);
+    top: calc(var(--header-height, 132px) - 1px);
     width: 100%;
-    z-index: 999;
+    z-index: 1001;
 }
 </style>
