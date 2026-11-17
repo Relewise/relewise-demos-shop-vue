@@ -18,6 +18,7 @@ import { routeConversationalSearch } from '@/helpers/conversationalSearchApi';
 
 const emit = defineEmits<{
     openAssistant: [query: string];
+    closed: [];
 }>();
 
 enum Tabs {
@@ -43,6 +44,7 @@ let abortController = new AbortController();
 let intentAbortController = new AbortController();
 let intentTimer: number | undefined;
 let intentRevision = 0;
+let preserveAssistantOnRouteClose = false;
 const assistantSuggestion = ref<string | null>(null);
 const dismissedAssistantQuery = ref<string | null>(null);
 
@@ -53,6 +55,7 @@ const activeTab = ref(Tabs.Products);
 
 function close() {
     showOrHide(false);
+    emit('closed');
 }
 
 function openWithPrompt(prompt = '') {
@@ -69,13 +72,15 @@ function openWithPrompt(prompt = '') {
 
 function switchToAssistant() {
     const query = searchTerm.value;
-    close();
+    preserveAssistantOnRouteClose = true;
+    showOrHide(false);
     emit('openAssistant', query);
 }
 
 function acceptAssistantSuggestion() {
     const query = assistantSuggestion.value ?? searchTerm.value.trim();
-    close();
+    preserveAssistantOnRouteClose = true;
+    showOrHide(false);
     emit('openAssistant', query);
 }
 
@@ -130,6 +135,11 @@ watch(() => ({ ...route }), (value, oldValue) => {
         search();
         return;
     } else if (value.query.open !== '1' && oldValue.query.open === '1') {
+        if (preserveAssistantOnRouteClose) {
+            preserveAssistantOnRouteClose = false;
+            return;
+        }
+
         close();
     }
 });

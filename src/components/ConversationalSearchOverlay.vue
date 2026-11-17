@@ -86,7 +86,7 @@ function openWithPrompt(prompt: string) {
     focusInput();
 }
 
-defineExpose({ openWithPrompt });
+defineExpose({ openWithPrompt, resetConversation });
 
 function close() {
     open.value = false;
@@ -95,7 +95,7 @@ function close() {
 
 function switchToSearch() {
     const query = input.value || state.value.searchTerm;
-    close();
+    open.value = false;
     emit('openSearch', query);
 }
 

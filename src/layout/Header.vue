@@ -19,7 +19,10 @@ defineProps({
 
 const { open, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
 const productSearch = ref<ComponentPublicInstance<{ openWithPrompt: (prompt?: string) => void }> | null>(null);
-const conversationalSearch = ref<ComponentPublicInstance<{ openWithPrompt: (prompt: string) => void }> | null>(null);
+const conversationalSearch = ref<ComponentPublicInstance<{
+    openWithPrompt: (prompt: string) => void;
+    resetConversation: () => void;
+}> | null>(null);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
 const currentUsers = computed(() => contextStore.context.value?.users ?? []);
 const activeUserLabel = computed(() => {
@@ -39,6 +42,10 @@ function openConversationalSearch(query: string) {
 
 function openProductSearch(query: string) {
     productSearch.value?.openWithPrompt(query);
+}
+
+function resetConversationalSearch() {
+    conversationalSearch.value?.resetConversation();
 }
 </script>
 
@@ -77,6 +84,7 @@ function openProductSearch(query: string) {
               <SearchOverlay
                 ref="productSearch"
                 @open-assistant="openConversationalSearch"
+                @closed="resetConversationalSearch"
               />
             </div>
             <ConversationalSearchOverlay
