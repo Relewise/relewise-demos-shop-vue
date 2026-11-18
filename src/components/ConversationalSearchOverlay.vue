@@ -96,6 +96,7 @@ function close() {
 function switchToSearch() {
     const query = input.value || state.value.searchTerm;
     open.value = false;
+    unlockBodyScroll();
     emit('openSearch', query);
 }
 
@@ -407,6 +408,7 @@ function lockBodyScroll() {
     bodyScrollLocked = true;
     window.document.documentElement.classList.add('overflow-hidden');
     window.document.body.classList.add('overflow-hidden');
+    window.document.body.classList.add('xl:pr-[17px]');
     window.document.body.style.position = 'fixed';
     window.document.body.style.top = `-${bodyScrollPosition}px`;
     window.document.body.style.width = '100%';
@@ -420,6 +422,7 @@ function unlockBodyScroll() {
     bodyScrollLocked = false;
     window.document.documentElement.classList.remove('overflow-hidden');
     window.document.body.classList.remove('overflow-hidden');
+    window.document.body.classList.remove('xl:pr-[17px]');
     window.document.body.style.removeProperty('position');
     window.document.body.style.removeProperty('top');
     window.document.body.style.removeProperty('width');
