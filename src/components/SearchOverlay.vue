@@ -706,12 +706,13 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .modal {
     background-color: #fff;
+    height: calc(100% - var(--header-height, 132px) + 1px);
+    isolation: isolate;
+    left: 0;
     overflow-y: auto;
     position: fixed;
-    z-index: 999;
-    top: var(--header-height, 132px);
-    left: 0;
+    top: calc(var(--header-height, 132px) - 1px);
     width: 100%;
-    height: calc(100% - var(--header-height, 132px));
+    z-index: 1001;
 }
 </style>

@@ -613,6 +613,7 @@ onBeforeUnmount(() => {
     left: 0;
     overflow: hidden;
     position: fixed;
+    scrollbar-gutter: stable;
     top: calc(var(--header-height, 132px) - 1px);
     width: 100%;
     z-index: 1001;
