@@ -542,165 +542,103 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
-    <span class="flex items-center bg-slate-100 rounded-none px-3">
-      <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
-    </span>
-    <input
-      v-model="searchTerm"
-      type="text"
-      placeholder="Search or describe what you need..."
-      class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
-      @input="handleSearchInput"
-      @keydown.enter="handleSearchEnter"
-    >
-  </div>
-
-  <Teleport to="#modal">
-    <div
-      v-if="open"
-      id="search-result-overlay"
-      class="modal"
-    >
-      <nav
-        class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2"
-        aria-label="Discovery mode"
-      >
-        <div class="container mx-auto flex items-center gap-2 xl:px-0">
-          <div
-            class="flex min-w-0 flex-1"
-            role="tablist"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected="true"
-              class="flex-1 rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none"
-            >
-              Search
-            </button>
-            <button
-              v-if="contextStore.context.value.conversationalSearchEnabled"
-              type="button"
-              role="tab"
-              aria-selected="false"
-              class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
-              @click="switchToAssistant"
-            >
-              Shopping Assistant
-            </button>
-          </div>
-          <button
-            type="button"
-            class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
-            title="Close"
-            aria-label="Close search"
-            @click="close"
-          >
-            <XMarkIcon class="h-6 w-6" />
-          </button>
-        </div>
-      </nav>
-      <Transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="-translate-y-2 opacity-0"
-        enter-to-class="translate-y-0 opacity-100"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="translate-y-0 opacity-100"
-        leave-to-class="-translate-y-2 opacity-0"
-      >
-        <section
-          v-if="assistantSuggestion"
-          class="fixed left-1/2 top-20 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
-          role="dialog"
-          aria-label="Switch to Shopping Assistant"
-        >
-          <div class="flex items-start gap-3">
-            <span class="rounded-full bg-brand-50 p-2 text-brand-600">
-              <SparklesIcon class="h-5 w-5" />
-            </span>
-            <div class="min-w-0 flex-1">
-              <h2 class="text-base font-semibold text-slate-900">
-                Want help from the Shopping Assistant?
-              </h2>
-              <p class="mt-1 text-sm leading-5 text-slate-600">
-                This looks like a shopping request. The assistant can help narrow down the right products.
-              </p>
-              <div class="mt-4 flex flex-wrap justify-end gap-2">
-                <button
-                  type="button"
-                  class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
-                  @click="keepSearching"
-                >
-                  Keep searching
-                </button>
-                <button
-                  type="button"
-                  class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-                  @click="acceptAssistantSuggestion"
-                >
-                  Use Shopping Assistant
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </Transition>
-      <div
-        v-if="productSearchResult || contentSearchResult"
-        class="container mx-auto pb-10 px-2 xl:px-0"
-      >
-        <div
-          v-if="contextStore.context.value.contentSearch && !route.query.brandName"
-          class="mb-6 flex border-b border-slate-200"
-        >
-          <div
-            :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
-            @click="() => activeTab = Tabs.Products"
-          >
-            Products ({{ productSearchResult?.hits }})
-          </div>
-          <div
-            :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
-            @click="() => activeTab = Tabs.Content"
-          >
-            Content ({{ contentSearchResult?.hits }})
-          </div>
-        </div>
-
-        <ProductSearchOverlayResult
-          v-if="activeTab === Tabs.Products
-            && productSearchResult"
-          v-model:sort="filters.sort!"
-          :page-size="productPageSize"
-          :term="filters.term ?? ''"
-          :product-search-result="productSearchResult"
-          :content-recommendation-result="contentRecommendationResult"
-          :no-result-product-recommendations="noResultProductRecommendations"
-          :no-result-product-recommendations-title="noResultProductRecommendationsTitle"
-          :products="products"
-          :predictions-list="predictionsList"
-          :filters="filters"
-          :right-side="rightSide"
-          @search-for="searchFor"
-          @search="persistInUrl"
-        />
-        <ContentSearchOverlayResult
-          v-else-if="activeTab === Tabs.Content
-            && contextStore.context.value.contentSearch
-            && contentSearchResult"
-          v-model:sort="filters.sort!"
-          :content-search-result="contentSearchResult"
-          :page-size="contentPageSize"
-          :term="filters.term ?? ''"
-          :predictions-list="predictionsList"
-          :filters="filters"
-          @search-for="searchFor"
-          @search="persistInUrl"
-        />
-      </div>
+    <div class="inline-flex overflow-hidden rounded-full w-full xl:max-w-xl relative">
+        <span class="flex items-center bg-slate-100 rounded-none px-3">
+            <MagnifyingGlassIcon class="h-6 w-6 text-slate-600" />
+        </span>
+        <input v-model="searchTerm" type="text" placeholder="Search or describe what you need..."
+            class="!rounded-r-full !shadow-none !pl-0 !bg-slate-100 !border-slate-100 focus:!border-slate-100 focus:!ring-0"
+            @input="handleSearchInput" @keydown.enter="handleSearchEnter">
     </div>
-  </Teleport>
+
+    <Teleport to="#modal">
+        <div v-if="open" id="search-result-overlay" class="modal">
+            <nav class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2" aria-label="Discovery mode">
+                <div class="container mx-auto flex items-center gap-2 xl:px-0">
+                    <div class="flex min-w-0" role="tablist">
+                        <button type="button" role="tab" aria-selected="true"
+                            class="flex-1 rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none">
+                            Search
+                        </button>
+                        <button v-if="contextStore.context.value.conversationalSearchEnabled" type="button" role="tab"
+                            aria-selected="false"
+                            class="flex-1 whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
+                            @click="switchToAssistant">
+                            Shopping Assistant
+                        </button>
+                    </div>
+                    <div class="grow"></div>
+                    <button type="button"
+                        class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
+                        title="Close" aria-label="Close search" @click="close">
+                        <XMarkIcon class="h-6 w-6" />
+                    </button>
+                </div>
+            </nav>
+            <Transition enter-active-class="transition duration-200 ease-out"
+                enter-from-class="-translate-y-2 opacity-0" enter-to-class="translate-y-0 opacity-100"
+                leave-active-class="transition duration-150 ease-in" leave-from-class="translate-y-0 opacity-100"
+                leave-to-class="-translate-y-2 opacity-0">
+                <section v-if="assistantSuggestion"
+                    class="fixed left-1/2 top-20 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
+                    role="dialog" aria-label="Switch to Shopping Assistant">
+                    <div class="flex items-start gap-3">
+                        <span class="rounded-full bg-brand-50 p-2 text-brand-600">
+                            <SparklesIcon class="h-5 w-5" />
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-base font-semibold text-slate-900">
+                                Want help from the Shopping Assistant?
+                            </h2>
+                            <p class="mt-1 text-sm leading-5 text-slate-600">
+                                This looks like a shopping request. The assistant can help narrow down the right
+                                products.
+                            </p>
+                            <div class="mt-4 flex flex-wrap justify-end gap-2">
+                                <button type="button"
+                                    class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+                                    @click="keepSearching">
+                                    Keep searching
+                                </button>
+                                <button type="button"
+                                    class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                                    @click="acceptAssistantSuggestion">
+                                    Use Shopping Assistant
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </Transition>
+            <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pb-10 px-2 xl:px-0">
+                <div v-if="contextStore.context.value.contentSearch && !route.query.brandName"
+                    class="mb-6 flex border-b border-slate-200">
+                    <div :class="(activeTab == Tabs.Products ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                        @click="() => activeTab = Tabs.Products">
+                        Products ({{ productSearchResult?.hits }})
+                    </div>
+                    <div :class="(activeTab == Tabs.Content ? 'border-b-2 border-solid border-brand-500' : '') + ' text-black rounded-t cursor-pointer w-36 h-10 flex items-center justify-center text-center'"
+                        @click="() => activeTab = Tabs.Content">
+                        Content ({{ contentSearchResult?.hits }})
+                    </div>
+                </div>
+
+                <ProductSearchOverlayResult v-if="activeTab === Tabs.Products
+                    && productSearchResult" v-model:sort="filters.sort!" :page-size="productPageSize"
+                    :term="filters.term ?? ''" :product-search-result="productSearchResult"
+                    :content-recommendation-result="contentRecommendationResult"
+                    :no-result-product-recommendations="noResultProductRecommendations"
+                    :no-result-product-recommendations-title="noResultProductRecommendationsTitle" :products="products"
+                    :predictions-list="predictionsList" :filters="filters" :right-side="rightSide"
+                    @search-for="searchFor" @search="persistInUrl" />
+                <ContentSearchOverlayResult v-else-if="activeTab === Tabs.Content
+                    && contextStore.context.value.contentSearch
+                    && contentSearchResult" v-model:sort="filters.sort!" :content-search-result="contentSearchResult"
+                    :page-size="contentPageSize" :term="filters.term ?? ''" :predictions-list="predictionsList"
+                    :filters="filters" @search-for="searchFor" @search="persistInUrl" />
+            </div>
+        </div>
+    </Teleport>
 </template>
 
 <style scoped lang="scss">

@@ -446,163 +446,96 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Teleport to="#modal">
-    <div
-      v-if="open"
-      class="modal"
-    >
-      <section class="flex h-full w-full flex-col bg-white">
-        <nav
-          class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2"
-          aria-label="Discovery mode"
-        >
-          <div class="container mx-auto flex items-center gap-2 xl:px-0">
-            <div
-              class="flex min-w-0 flex-1"
-              role="tablist"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected="false"
-                class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
-                @click="switchToSearch"
-              >
-                Search
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected="true"
-                class="flex-1 rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none"
-              >
-                <span class="sm:hidden">Assistant</span>
-                <span class="hidden sm:inline">Shopping Assistant</span>
-              </button>
-            </div>
-            <button
-              type="button"
-              class="inline-flex shrink-0 items-center gap-2 rounded-full bg-transparent px-2 py-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800 sm:px-3"
-              title="New conversation"
-              aria-label="Start a new conversation"
-              @click="resetConversation"
-            >
-              <PencilSquareIcon class="h-5 w-5" />
-              <span class="hidden text-sm font-semibold sm:inline">New conversation</span>
-            </button>
-            <button
-              type="button"
-              class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
-              title="Close"
-              aria-label="Close shopping assistant"
-              @click="close"
-            >
-              <XMarkIcon class="h-6 w-6" />
-            </button>
-          </div>
-        </nav>
+    <Teleport to="#modal">
+        <div v-if="open" class="modal">
+            <section class="flex h-full w-full flex-col bg-white">
+                <nav class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2" aria-label="Discovery mode">
+                    <div class="container mx-auto flex items-center gap-2 xl:px-0">
+                        <div class="flex min-w-0" role="tablist">
+                            <button type="button" role="tab" aria-selected="false"
+                                class="flex-1 rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-semibold text-slate-600 shadow-none hover:border-slate-300 hover:text-slate-900"
+                                @click="switchToSearch">
+                                Search
+                            </button>
+                            <button type="button" role="tab" aria-selected="true"
+                                class="flex-1 whitespace-nowrap rounded-none border-b-2 border-brand-500 bg-transparent px-4 py-3 text-sm font-semibold text-brand-700 shadow-none">
+                                <span class="sm:hidden">Assistant</span>
+                                <span class="hidden sm:inline">Shopping Assistant</span>
+                            </button>
+                        </div>
+                        <div class="grow"></div>
+                        <button type="button"
+                            class="inline-flex shrink-0 items-center gap-2 rounded-full bg-transparent px-2 py-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800 sm:px-3"
+                            title="New conversation" aria-label="Start a new conversation" @click="resetConversation">
+                            <PencilSquareIcon class="h-5 w-5" />
+                            <span class="hidden text-sm font-semibold sm:inline">New conversation</span>
+                        </button>
+                        <button type="button"
+                            class="shrink-0 rounded-full bg-transparent p-2 text-slate-500 shadow-none hover:bg-slate-100 hover:text-slate-800"
+                            title="Close" aria-label="Close shopping assistant" @click="close">
+                            <XMarkIcon class="h-6 w-6" />
+                        </button>
+                    </div>
+                </nav>
 
-        <div
-          ref="scrollContainer"
-          class="flex-1 overflow-y-auto"
-        >
-          <div class="container mx-auto flex flex-col gap-5 px-2 py-6 xl:px-0">
-            <template
-              v-for="entry in entries"
-              :key="entry.id"
-            >
-              <article
-                v-if="entry.role !== 'activity'"
-                class="flex"
-                :class="entry.role === 'user' ? 'justify-end' : 'justify-start'"
-              >
-                <p
-                  v-if="entry.content"
-                  class="max-w-[min(38rem,90%)] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm"
-                  :class="entry.role === 'user' ? 'rounded-br-sm bg-brand-600 text-white' : 'rounded-bl-sm bg-white text-slate-700'"
-                >
-                  {{ entry.content }}
-                </p>
-              </article>
+                <div ref="scrollContainer" class="flex-1 overflow-y-auto">
+                    <div class="container mx-auto flex flex-col gap-5 px-2 py-6 xl:px-0">
+                        <template v-for="entry in entries" :key="entry.id">
+                            <article v-if="entry.role !== 'activity'" class="flex"
+                                :class="entry.role === 'user' ? 'justify-end' : 'justify-start'">
+                                <p v-if="entry.content"
+                                    class="max-w-[min(38rem,90%)] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm"
+                                    :class="entry.role === 'user' ? 'rounded-br-sm bg-brand-600 text-white' : 'rounded-bl-sm bg-white text-slate-700'">
+                                    {{ entry.content }}
+                                </p>
+                            </article>
 
-              <ConversationalSearchShoppingResults
-                v-else-if="entry.activityType === 'SHOPPING_RESULTS'"
-                :activity="entry.content"
-                :currency="contextStore.currencyCode.value"
-                :language="contextStore.language.value"
-                :loading="loading"
-                :filters-visible="filtersVisible[entry.id] ?? false"
-                @update:filters-visible="filtersVisible[entry.id] = $event"
-                @refine="refine(entry, $event)"
-                @add="addProductToBasket"
-                @navigate="close"
-              />
+                            <ConversationalSearchShoppingResults v-else-if="entry.activityType === 'SHOPPING_RESULTS'"
+                                :activity="entry.content" :currency="contextStore.currencyCode.value"
+                                :language="contextStore.language.value" :loading="loading"
+                                :filters-visible="filtersVisible[entry.id] ?? false"
+                                @update:filters-visible="filtersVisible[entry.id] = $event"
+                                @refine="refine(entry, $event)" @add="addProductToBasket" @navigate="close" />
 
-              <ConversationalSearchProductDetail
-                v-else-if="entry.activityType === 'PRODUCT_DETAIL'"
-                :activity="entry.content"
-                :language="contextStore.language.value"
-                @add="addProductToBasket"
-                @navigate="close"
-              />
+                            <ConversationalSearchProductDetail v-else-if="entry.activityType === 'PRODUCT_DETAIL'"
+                                :activity="entry.content" :language="contextStore.language.value"
+                                @add="addProductToBasket" @navigate="close" />
 
-              <ConversationalSearchPurchasedWith
-                v-else-if="entry.activityType === 'PURCHASED_WITH'"
-                :products="entry.content.products"
-                :currency="entry.content.currency"
-                :language="contextStore.language.value"
-                @add="addProductToBasket"
-                @navigate="close"
-              />
-            </template>
+                            <ConversationalSearchPurchasedWith v-else-if="entry.activityType === 'PURCHASED_WITH'"
+                                :products="entry.content.products" :currency="entry.content.currency"
+                                :language="contextStore.language.value" @add="addProductToBasket" @navigate="close" />
+                        </template>
 
-            <div
-              v-if="loading && !entries.some(entry => entry.role === 'assistant' && !entry.content)"
-              class="flex w-fit items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm text-slate-500 shadow-sm"
-            >
-              <span class="h-2 w-2 animate-pulse rounded-full bg-brand-500" /> Thinking…
-            </div>
-          </div>
+                        <div v-if="loading && !entries.some(entry => entry.role === 'assistant' && !entry.content)"
+                            class="flex w-fit items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm text-slate-500 shadow-sm">
+                            <span class="h-2 w-2 animate-pulse rounded-full bg-brand-500" /> Thinking…
+                        </div>
+                    </div>
+                </div>
+
+                <form class="border-t border-slate-200 bg-white px-2 py-4" @submit.prevent="submit">
+                    <div class="container mx-auto xl:px-0">
+                        <p v-if="error"
+                            class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            {{ error }}
+                        </p>
+                        <div
+                            class="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1.5 pl-4 shadow-sm focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100">
+                            <input ref="inputElement" v-model="input" type="text"
+                                class="min-w-0 flex-1 !border-0 !bg-transparent !p-0 !shadow-none focus:!ring-0"
+                                placeholder="Describe what you are looking for…" :disabled="loading">
+                            <button type="submit"
+                                class="inline-flex shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:bg-slate-300"
+                                :disabled="loading || !input.trim()" title="Send" aria-label="Send message">
+                                <PaperAirplaneSolidIcon class="h-5 w-5"
+                                    :class="loading || !input.trim() ? 'text-slate-600' : 'text-white'" />
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
         </div>
-
-        <form
-          class="border-t border-slate-200 bg-white px-2 py-4"
-          @submit.prevent="submit"
-        >
-          <div class="container mx-auto xl:px-0">
-            <p
-              v-if="error"
-              class="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-            >
-              {{ error }}
-            </p>
-            <div class="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1.5 pl-4 shadow-sm focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100">
-              <input
-                ref="inputElement"
-                v-model="input"
-                type="text"
-                class="min-w-0 flex-1 !border-0 !bg-transparent !p-0 !shadow-none focus:!ring-0"
-                placeholder="Describe what you are looking for…"
-                :disabled="loading"
-              >
-              <button
-                type="submit"
-                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700 disabled:bg-slate-300"
-                :disabled="loading || !input.trim()"
-                title="Send"
-                aria-label="Send message"
-              >
-                <PaperAirplaneSolidIcon
-                  class="h-5 w-5"
-                  :class="loading || !input.trim() ? 'text-slate-600' : 'text-white'"
-                />
-              </button>
-            </div>
-          </div>
-        </form>
-      </section>
-    </div>
-  </Teleport>
+    </Teleport>
 </template>
 
 <style scoped>
