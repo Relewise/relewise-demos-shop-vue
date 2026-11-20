@@ -21,6 +21,10 @@ const emit = defineEmits<{
     closed: [];
 }>();
 
+const props = defineProps<{
+    assistantActive?: boolean;
+}>();
+
 enum Tabs {
     Products,
     Content
@@ -198,7 +202,7 @@ function handleSearchInput(event: Event) {
         return;
     }
 
-    if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
+    if (props.assistantActive || !contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
         intentAbortController.abort();
         return;
     }
@@ -212,7 +216,7 @@ function handleSearchEnter(event: KeyboardEvent) {
     }
 
     const query = searchTerm.value.trim();
-    if (!contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
+    if (props.assistantActive || !contextStore.context.value.conversationalSearchEnabled || !query || !query.includes(' ')) {
         return;
     }
 
@@ -221,6 +225,10 @@ function handleSearchEnter(event: KeyboardEvent) {
 }
 
 async function routeSearchIntent(query: string) {
+    if (props.assistantActive) {
+        return;
+    }
+
     const revision = ++intentRevision;
     intentAbortController.abort();
     const controller = new AbortController();
@@ -233,7 +241,7 @@ async function routeSearchIntent(query: string) {
             query,
             controller.signal,
         );
-        if (revision !== intentRevision || query !== searchTerm.value.trim()) {
+        if (props.assistantActive || revision !== intentRevision || query !== searchTerm.value.trim()) {
             return;
         }
 
@@ -522,6 +530,17 @@ watch(activeTab, () => {
     filters.value = { term: searchTerm.value, sort: '', open: '1', page: '1' };
 });
 
+watch(() => props.assistantActive, active => {
+    if (!active) {
+        return;
+    }
+
+    window.clearTimeout(intentTimer);
+    intentRevision++;
+    intentAbortController.abort();
+    assistantSuggestion.value = null;
+});
+
 function trackBrandView(
     brand: LocationQueryValue | LocationQueryValue[] | undefined,
     brandName: LocationQueryValue | LocationQueryValue[] | undefined,
@@ -579,7 +598,7 @@ onBeforeUnmount(() => {
                 enter-from-class="-translate-y-2 opacity-0" enter-to-class="translate-y-0 opacity-100"
                 leave-active-class="transition duration-150 ease-in" leave-from-class="translate-y-0 opacity-100"
                 leave-to-class="-translate-y-2 opacity-0">
-                <section v-if="assistantSuggestion"
+                <section v-if="assistantSuggestion && !props.assistantActive"
                     class="fixed left-1/2 top-20 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
                     role="dialog" aria-label="Switch to Shopping Assistant">
                     <div class="flex items-start gap-3">
