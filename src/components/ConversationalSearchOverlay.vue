@@ -53,6 +53,7 @@ type ChatEntry = TextEntry | ShoppingEntry | ProductDetailEntry | PurchasedWithE
 
 const emit = defineEmits<{
     openSearch: [query: string];
+    closed: [];
 }>();
 
 const open = ref(false);
@@ -91,6 +92,7 @@ defineExpose({ openWithPrompt, resetConversation });
 function close() {
     open.value = false;
     clearConversation();
+    emit('closed');
 }
 
 function switchToSearch() {
