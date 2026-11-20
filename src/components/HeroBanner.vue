@@ -37,7 +37,7 @@
         />
         <path
           d="M219 625.5L233 582"
-          stroke="#FFC1D7"
+          stroke="var(--shop-secondary)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="45.69737243652344"
@@ -53,7 +53,7 @@
         />
         <path
           d="M89 554.5L109.5 533"
-          stroke="#2152C1"
+          stroke="var(--shop-primary, #2152C1)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="29.70690155029297"
@@ -77,7 +77,7 @@
         />
         <path
           d="M42.5 344L77.5 342"
-          stroke="#2152C1"
+          stroke="var(--shop-primary, #2152C1)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="35.05709457397461"
@@ -85,7 +85,7 @@
         />
         <path
           d="M57.5 302.5L8.5 299"
-          stroke="#FFC1D7"
+          stroke="var(--shop-secondary)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="49.124839782714844"
@@ -101,7 +101,7 @@
         />
         <path
           d="M82.5 179.5L53 164.5"
-          stroke="#2152C1"
+          stroke="var(--shop-primary, #2152C1)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="33.09456253051758"
@@ -133,7 +133,7 @@
         />
         <path
           d="M275 54L267.5 9"
-          stroke="#FFC1D7"
+          stroke="var(--shop-secondary)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="45.62071990966797"
@@ -141,7 +141,7 @@
         />
         <path
           d="M358.5 72.5L368.5 9"
-          stroke="#2152C1"
+          stroke="var(--shop-primary, #2152C1)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="64.28257751464844"
@@ -165,7 +165,7 @@
         />
         <path
           d="M515.5 123.5L547 90.5"
-          stroke="#FFC1D7"
+          stroke="var(--shop-secondary)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="45.62071990966797"
@@ -181,7 +181,7 @@
         />
         <path
           d="M601.5 218.5L632.5 207"
-          stroke="#2152C1"
+          stroke="var(--shop-primary, #2152C1)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="33.0643310546875"
@@ -221,7 +221,7 @@
         />
         <path
           d="M524.5 532L501 508"
-          stroke="#2152C1"
+          stroke="var(--shop-primary, #2152C1)"
           stroke-width="16"
           stroke-linecap="round"
           stroke-dasharray="33.58943176269531"

@@ -23,7 +23,7 @@
       <span
         v-for="(categoryLink, filterOptionIndex) in options"
         :key="filterOptionIndex"
-        class="block cursor-pointer hover:!text-brand-500"
+        class="block cursor-pointer hover:!text-brand-link"
         @click.prevent="applyFacet('category', categoryLink.category.categoryId)"
       >
         {{ categoryLink.category?.displayName ?? categoryLink.category?.categoryId }}
