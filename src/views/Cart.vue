@@ -67,7 +67,7 @@
               </p>
               <RouterLink
                 :to="productRoute(item)"
-                class="mt-2 block text-lg font-semibold leading-snug text-slate-900 transition hover:text-brand-500 sm:text-xl"
+                class="mt-2 block text-lg font-semibold leading-snug text-slate-900 transition hover:text-brand-link sm:text-xl"
               >
                 {{ item.product.displayName }}
               </RouterLink>

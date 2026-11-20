@@ -87,7 +87,7 @@
 
           <div class="text-left mt-5">
             <button
-              class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700"
+              class="shop-cart-action w-full text-lg bg-slate-900 text-white transition-transform duration-300 hover:bg-slate-700"
               :class="buttonClass"
               @click="addToBasket"
             >
@@ -106,7 +106,7 @@
               >
                 <RouterLink
                   :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-                  class="text-brand-500 hover:underline"
+                  class="text-brand-link hover:underline"
                 >
                   {{ product.brand.displayName }}
                 </RouterLink>
@@ -182,7 +182,7 @@
         >
           <RouterLink
             :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-            class="text-brand-500 hover:underline"
+            class="text-brand-link hover:underline"
           >
             {{ product.brand.displayName }}
           </RouterLink>

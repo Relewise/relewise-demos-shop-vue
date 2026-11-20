@@ -14,10 +14,36 @@
     --color-brand-900: #112F82;
 }
 
+@theme inline {
+    --color-brand-link: var(--shop-primary-ink, var(--color-brand-500));
+    --color-on-primary: var(--shop-on-primary, #fff);
+}
+
 :root {
+    --shop-secondary: #FFC1D7;
     --slider-tooltip-bg: #334155;
     --slider-connect-bg: #334155;
     --slider-handle-ring-color: rgba(55, 100, 228, .188);
+}
+
+:root[data-shop-primary] {
+    /* Derive the existing Tailwind shades from one editable color, keeping the default palette intact. */
+    --color-brand-50: color-mix(in srgb, var(--shop-primary) 9%, white);
+    --color-brand-100: color-mix(in srgb, var(--shop-primary) 33%, white);
+    --color-brand-200: color-mix(in srgb, var(--shop-primary) 49%, white);
+    --color-brand-300: color-mix(in srgb, var(--shop-primary) 65%, white);
+    --color-brand-400: color-mix(in srgb, var(--shop-primary) 82%, white);
+    --color-brand-500: var(--shop-primary);
+    --color-brand-600: color-mix(in srgb, var(--shop-primary-ink, var(--shop-primary)), black 12%);
+    --color-brand-700: color-mix(in srgb, var(--color-brand-600), black 11%);
+    --color-brand-800: color-mix(in srgb, var(--color-brand-600), black 22%);
+    --color-brand-900: color-mix(in srgb, var(--color-brand-600), black 34%);
+    --slider-handle-ring-color: color-mix(in srgb, var(--shop-primary) 19%, transparent);
+}
+
+:root[data-shop-light-primary] {
+    /* Pale brand colors work on button fills but need a darker shade for links on white. */
+    --shop-primary-ink: color-mix(in srgb, var(--shop-primary) 45%, black);
 }
 
 html,
@@ -51,7 +77,7 @@ body {
     }
 
     button {
-        @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded-lg shadow-xs;
+        @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-on-primary rounded-lg shadow-xs;
     }
 
     button:not(:disabled),
@@ -68,7 +94,7 @@ body {
     }
 
     a {
-        @apply text-brand-500;
+        @apply text-brand-link;
     }
 
     select {
@@ -114,11 +140,11 @@ h4 {
 }
 
 .text-brand1 {
-    color: #3764E4;
+    color: var(--shop-primary-ink, var(--color-brand-500));
 }
 
 .text-brand2 {
-    color: #FFC1D7;
+    color: var(--shop-secondary);
 }
 
 .underline--yellow {
@@ -141,11 +167,11 @@ h4 {
 }
 
 .brand1 {
-    background-color: #3764E4;
+    background-color: var(--color-brand-500);
 }
 
 .brand2 {
-    background-color: #FFC1D7;
+    background-color: var(--shop-secondary);
 }
 
 .brand3 {
@@ -183,7 +209,40 @@ h4 {
 
 .waves-pink {
     height: 88px;
-    background-image: url("/waves-pink.svg");
+    background-color: var(--shop-secondary);
+    mask-image: url("/waves-pink.svg");
+}
+
+.shop-footer {
+    background-color: var(--shop-secondary);
+    color: var(--shop-on-secondary, var(--shop-primary-ink, var(--color-brand-500)));
+}
+
+.shop-footer a {
+    color: var(--shop-on-secondary, var(--shop-primary-ink, var(--color-brand-500)));
+}
+
+.shop-footer .footer-divider {
+    border-color: color-mix(in srgb, var(--shop-secondary), black 10%);
+}
+
+:root[data-shop-secondary] .footer-attribution span {
+    color: var(--shop-on-secondary);
+}
+
+:root[data-shop-primary] .shop-cart-action {
+    background-color: var(--shop-primary);
+    color: var(--shop-on-primary);
+}
+
+:root[data-shop-primary] .shop-cart-action:hover {
+    background-color: color-mix(in srgb, var(--shop-primary), var(--shop-on-primary) 8%);
+}
+
+:root[data-shop-secondary] .shop-selected-filter {
+    background-color: var(--shop-secondary);
+    border-color: var(--shop-secondary);
+    color: var(--shop-on-secondary);
 }
 
 .reverse-waves {

@@ -58,14 +58,14 @@ const brandClass = computed(() => {
 
 <style scoped>
 .brand1 {
-    background-color: #FFC1D7;
-    border-color: #FFC1D7;
-    color: #0f172a;
+    background-color: var(--shop-secondary);
+    border-color: var(--shop-secondary);
+    color: var(--shop-on-secondary, #0f172a);
 }
 
 .brand2 {
-    background-color: #FFC1D7;
-    color: #0f172a;
+    background-color: var(--shop-secondary);
+    color: var(--shop-on-secondary, #0f172a);
 }
 
 .brand3 {

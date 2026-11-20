@@ -105,6 +105,14 @@
     </SettingsAccordionSection>
 
     <SettingsAccordionSection
+      title="Branding"
+      :open="openSections.branding"
+      @toggle="toggleSection('branding')"
+    >
+      <SettingsDatasetBranding v-model="editableDataset.branding" />
+    </SettingsAccordionSection>
+
+    <SettingsAccordionSection
       title="Features"
       :open="openSections.features"
       @toggle="toggleSection('features')"
@@ -200,6 +208,7 @@ import type { DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import Personalization from '@/components/Personalization.vue';
 import SecretInput from '@/components/SecretInput.vue';
 import SettingsAccordionSection from '@/components/settings/SettingsAccordionSection.vue';
+import SettingsDatasetBranding from '@/components/settings/SettingsDatasetBranding.vue';
 import SettingsStickyActions from '@/components/settings/SettingsStickyActions.vue';
 import { useDatasetConfigurationForm } from '@/composables/useDatasetConfigurationForm';
 import { defaultMaxVariantsPerProduct } from '@/helpers/productSearchRequest';

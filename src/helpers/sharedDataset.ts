@@ -1,4 +1,5 @@
 import { formatCompanyDetails, formatUserDetails } from '@/helpers/contextSummary';
+import { brandingFields, normalizeDatasetBranding, type DatasetBranding } from '@/helpers/datasetBranding';
 import { normalizeDatasetConfiguration, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { datasetFeatureFields, type DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import { displayUser } from '@/helpers/userHelper';
@@ -18,6 +19,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
     currencyCode?: string | null;
     allCurrencies?: string[];
     serverUrl?: string | null;
+    branding?: DatasetBranding | null;
     users?: User[];
     companies?: Company[];
     selectedUserIndex?: number;
@@ -26,7 +28,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
 };
 
 export type SharedDatasetCoreFieldChange = {
-    key: 'displayName' | 'apiKey' | 'serverUrl';
+    key: 'displayName' | 'apiKey' | 'serverUrl' | keyof DatasetBranding;
     label: string;
     currentValue: string;
     nextValue: string;
@@ -132,6 +134,7 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         currencyCode: normalizeOptionalCurrency(entry.currencyCode),
         allCurrencies: normalizeOptionalCurrencyArray(entry.allCurrencies),
         serverUrl: normalizeOptionalString(entry.serverUrl),
+        branding: entry.branding === null ? null : normalizeDatasetBranding(entry.branding),
         users,
         companies: normalizeOptionalCompanies(entry.companies),
         trackingEnabled: normalizeOptionalBoolean(entry.trackingEnabled),
@@ -162,6 +165,8 @@ export function buildSharedDataset(dataset: IDataset, {
         currencyCode: normalizeOptionalCurrency(currencyCode),
         allCurrencies: uniqueNormalizedStrings(dataset.allCurrencies ?? [], { uppercase: true }),
         serverUrl: normalizeOptionalString(dataset.serverUrl),
+        // A null value shares the defaults. Older links omit the property and preserve local branding.
+        branding: normalizeDatasetBranding(dataset.branding) ?? null,
         users: sanitizeUsers(dataset.users),
         companies: sanitizeCompanies(dataset.companies),
         trackingEnabled: dataset.trackingEnabled ?? false,
@@ -182,6 +187,7 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         currencyCode: sharedDataset.currencyCode ?? undefined,
         allCurrencies: sharedDataset.allCurrencies ?? [],
         serverUrl: sharedDataset.serverUrl ?? undefined,
+        branding: sharedDataset.branding ?? undefined,
         users: sharedDataset.users,
         companies: sharedDataset.companies,
         trackingEnabled: sharedDataset.trackingEnabled,
@@ -255,6 +261,9 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
         dataset.displayName = sharedDataset.displayName ?? undefined;
         dataset.apiKey = sharedDataset.apiKey;
         dataset.serverUrl = sharedDataset.serverUrl ?? undefined;
+        if (sharedDataset.branding !== undefined) {
+            dataset.branding = normalizeDatasetBranding(sharedDataset.branding);
+        }
         dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
     }
 
@@ -342,6 +351,17 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
             currentValue: currentServerUrl,
             nextValue: nextServerUrl,
         });
+    }
+
+    if (sharedDataset.branding !== undefined) {
+        const localBranding = normalizeDatasetBranding(dataset.branding);
+        for (const { key, label } of brandingFields) {
+            const currentValue = localBranding?.[key] ?? '';
+            const nextValue = sharedDataset.branding?.[key] ?? '';
+            if (currentValue !== nextValue) {
+                changes.push({ key, label, currentValue, nextValue });
+            }
+        }
     }
 
     return changes;

@@ -103,7 +103,7 @@ function title() {
             :key="value"
             type="button"
             class="rounded-full border px-3 py-1.5 text-xs transition"
-            :class="filterValue(activity.filters, facet.key) === value ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300'"
+            :class="filterValue(activity.filters, facet.key) === value ? 'shop-selected-filter border-brand-600 bg-brand-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300'"
             :disabled="loading"
             @click="emit('refine', { kind: 'facet', key: facet.key, value: filterValue(activity.filters, facet.key) === value ? null : value })"
           >

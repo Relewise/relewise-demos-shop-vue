@@ -69,7 +69,7 @@ function searchFor(term: string) {
           <a
             v-for="(prediction) in predictionsList"
             :key="prediction.term ?? ''"
-            class="block cursor-pointer text-slate-900 hover:!text-brand-500"
+            class="block cursor-pointer text-slate-900 hover:!text-brand-link"
             @click.prevent="searchFor(prediction.term ?? '')"
           >
             {{ prediction.term }}

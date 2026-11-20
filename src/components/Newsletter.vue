@@ -19,7 +19,7 @@
         @keyup.enter="subscribe"
       >
       <button
-        class="bg-brand-500 text-white"
+        class="bg-brand-500 text-on-primary"
         :disabled="!trackingEnabled || (!isValidEmail && email.length > 0)"
         @click="subscribe"
       >

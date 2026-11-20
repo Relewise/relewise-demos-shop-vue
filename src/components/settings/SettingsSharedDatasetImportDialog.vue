@@ -37,7 +37,7 @@
                 Core Fields
               </h4>
               <p class="mt-1 text-sm text-slate-600">
-                Name, API key, and server URL differ between the local dataset and the imported dataset.
+                Compare settings for the local and imported dataset.
               </p>
             </div>
             <div class="shrink-0">
@@ -106,7 +106,7 @@
                       Use imported core fields
                     </p>
                     <p class="mt-1 text-sm text-slate-600">
-                      Replace the local name, API key, and server URL with the imported values.
+                      Apply the imported values shown above.
                     </p>
                   </div>
                 </div>
@@ -128,7 +128,7 @@
                       Keep local core fields
                     </p>
                     <p class="mt-1 text-sm text-slate-600">
-                      Ignore the incoming name, API key, and server URL changes.
+                      Keep the local values shown above.
                     </p>
                   </div>
                 </div>
