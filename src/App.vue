@@ -34,14 +34,27 @@ onMounted(() => {
 });
 
 watchEffect(() => {
+    // The overlays teleport outside #app and inherit the same theme from the document.
     const root = document.documentElement;
     const { primaryColor, secondaryColor } = branding.value ?? {};
-    const onPrimary = primaryColor ? brandForeground(primaryColor) : null;
-    // The overlays teleport outside #app and inherit the same theme from the document.
-    root.style.setProperty('--shop-primary', primaryColor ?? null);
-    root.style.setProperty('--shop-on-primary', onPrimary);
-    root.style.setProperty('--shop-secondary', secondaryColor ?? null);
-    root.style.setProperty('--shop-on-secondary', secondaryColor ? brandForeground(secondaryColor) : null);
+    const onPrimary = primaryColor ? brandForeground(primaryColor) : undefined;
+    const colorProperties = {
+        '--shop-primary': primaryColor,
+        '--shop-on-primary': onPrimary,
+        '--shop-secondary': secondaryColor,
+        '--shop-on-secondary': secondaryColor ? brandForeground(secondaryColor) : undefined,
+    };
+
+    for (const [property, value] of Object.entries(colorProperties)) {
+        if (value === undefined) {
+            // Removing the inline override restores the stylesheet default.
+            root.style.removeProperty(property);
+        }
+        else {
+            root.style.setProperty(property, value);
+        }
+    }
+
     root.toggleAttribute('data-shop-primary', !!primaryColor);
     root.toggleAttribute('data-shop-light-primary', onPrimary === '#000');
     root.toggleAttribute('data-shop-secondary', !!secondaryColor);

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import { createDatasetSnapshot, normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import { applySharedDatasetImportDecision, buildSharedDataset, createDatasetFromSharedDataset, getDefaultSharedDatasetImportDecision, getSharedDatasetDiff, parseSharedDataset } from '@/helpers/sharedDataset';
 import { decodeSharePayload, encodeSharePayload } from '@/helpers/shareEncoding';
@@ -38,7 +38,8 @@ describe('dataset branding', () => {
 
     it('round-trips branding through the share payload and reviews changes to an existing dataset', () => {
         const shared = buildSharedDataset({ ...dataset, branding });
-        const imported = parseSharedDataset(JSON.parse(decodeSharePayload(encodeSharePayload(JSON.stringify(shared)))))!;
+        const imported = parseSharedDataset(JSON.parse(decodeSharePayload(encodeSharePayload(JSON.stringify(shared)))));
+        assert.isNotNull(imported, 'Expected the shared dataset to parse after encoding and decoding');
         expect(createDatasetFromSharedDataset(imported).branding).toEqual(branding);
 
         const diff = getSharedDatasetDiff(dataset, imported);
@@ -52,8 +53,10 @@ describe('dataset branding', () => {
 
     it('keeps local branding for older links and imports an explicit reset from a new link', () => {
         const local = { ...dataset, branding };
-        const legacy = parseSharedDataset(dataset)!;
-        const reset = parseSharedDataset(buildSharedDataset(dataset))!;
+        const legacy = parseSharedDataset(dataset);
+        assert.isNotNull(legacy, 'Expected the legacy share payload to parse');
+        const reset = parseSharedDataset(buildSharedDataset(dataset));
+        assert.isNotNull(reset, 'Expected the share payload with default branding to parse');
         const decision = getDefaultSharedDatasetImportDecision();
 
         expect(applySharedDatasetImportDecision({ ...local }, legacy, decision).branding).toEqual(branding);
