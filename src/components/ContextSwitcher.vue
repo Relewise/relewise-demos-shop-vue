@@ -269,7 +269,7 @@ async function applyContextChanges() {
         </RouterLink>
         <button
           v-close-popper
-          class="ml-auto"
+          class="brand-action ml-auto"
           :disabled="!isDraftSelectionValid"
           :class="!isDraftSelectionValid ? 'cursor-not-allowed opacity-60' : ''"
           @click="applyContextChanges"

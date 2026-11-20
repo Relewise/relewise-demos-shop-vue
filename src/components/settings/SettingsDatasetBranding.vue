@@ -65,14 +65,23 @@
             </template>
           </StorefrontLogo>
         </div>
-        <div class="flex flex-wrap gap-2 text-sm">
+        <div
+          class="shop-branding-preview flex flex-wrap items-center gap-2 text-sm"
+          :data-shop-primary="primaryColor ? '' : undefined"
+          :data-shop-light-primary="onPrimary === '#000' ? '' : undefined"
+          :data-shop-secondary="secondaryColor ? '' : undefined"
+          :style="{
+            '--shop-primary': primaryColor,
+            '--shop-on-primary': onPrimary,
+            '--shop-secondary': secondaryColor,
+            '--shop-on-secondary': onSecondary,
+          }"
+        >
           <span
-            class="rounded-lg px-3 py-2 font-semibold"
-            :style="{ backgroundColor: primaryColor, color: brandForeground(primaryColor) }"
+            class="shop-cart-action rounded-lg px-3 py-2 font-semibold"
           >Add to cart</span>
           <span
-            class="rounded-lg px-3 py-2"
-            :style="{ backgroundColor: secondaryColor, color: brandForeground(secondaryColor) }"
+            class="shop-selected-filter rounded-full border px-3 py-1.5 text-xs"
           >Selected filter</span>
         </div>
       </div>
@@ -87,11 +96,13 @@ import { brandForeground, defaultPrimaryColor, defaultSecondaryColor, normalizeB
 import { computed, ref, watch } from 'vue';
 
 const branding = defineModel<DatasetBranding | undefined>();
-const primaryColor = computed(() => normalizeBrandColor(branding.value?.primaryColor) ?? defaultPrimaryColor);
-const secondaryColor = computed(() => normalizeBrandColor(branding.value?.secondaryColor) ?? defaultSecondaryColor);
+const primaryColor = computed(() => normalizeBrandColor(branding.value?.primaryColor));
+const secondaryColor = computed(() => normalizeBrandColor(branding.value?.secondaryColor));
+const onPrimary = computed(() => primaryColor.value ? brandForeground(primaryColor.value) : undefined);
+const onSecondary = computed(() => secondaryColor.value ? brandForeground(secondaryColor.value) : undefined);
 const colorFields = computed(() => [
-    { key: 'primaryColor', label: 'Primary color', defaultColor: defaultPrimaryColor, previewColor: primaryColor.value },
-    { key: 'secondaryColor', label: 'Secondary color', defaultColor: defaultSecondaryColor, previewColor: secondaryColor.value },
+    { key: 'primaryColor', label: 'Primary color', defaultColor: defaultPrimaryColor, previewColor: primaryColor.value ?? defaultPrimaryColor },
+    { key: 'secondaryColor', label: 'Secondary color', defaultColor: defaultSecondaryColor, previewColor: secondaryColor.value ?? defaultSecondaryColor },
 ] as const);
 const previewLogoUrl = ref(normalizeLogoUrl(branding.value?.logoUrl));
 

@@ -42,7 +42,7 @@ const displayName = computed(() => {
         <Popover
           v-if="isPromotion"
           placement="bottom-start"
-          class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3"
+          class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-slate-900 flex items-center gap-1 rounded m-3"
         >
           <span @click="(e) => e.preventDefault()">PROMOTED</span>
           <ExclamationCircleIcon

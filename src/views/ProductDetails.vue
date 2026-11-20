@@ -87,7 +87,7 @@
 
           <div class="text-left mt-5">
             <button
-              class="shop-cart-action w-full text-lg bg-slate-900 text-white transition-transform duration-300 hover:bg-slate-700"
+              class="shop-cart-action w-full text-lg transition-transform duration-300"
               :class="buttonClass"
               @click="addToBasket"
             >

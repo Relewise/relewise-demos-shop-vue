@@ -15,6 +15,7 @@
 
       <template #actions>
         <button
+          class="brand-action"
           :disabled="!isDirty"
           :class="!isDirty ? 'cursor-not-allowed opacity-60' : ''"
           @click="saveChanges"
