@@ -25,6 +25,7 @@ describe('datasetConfiguration', () => {
 
 describe('dataset branding', () => {
     const branding = { logoUrl: 'https://example.com/logo.svg', primaryColor: '#12AB34', secondaryColor: '#FFD93B' };
+    const assistantProperties = [{ key: 'finish', dataKey: 'Finish', displayName: 'Surface finish' }];
 
     it('normalizes optional local fields and tracks invalid drafts for save validation', () => {
         expect(normalizeDatasetConfiguration(dataset).branding).toBeUndefined();
@@ -62,5 +63,36 @@ describe('dataset branding', () => {
         expect(applySharedDatasetImportDecision({ ...local }, legacy, decision).branding).toEqual(branding);
         expect(getSharedDatasetDiff(local, reset).requiresReview).toBe(true);
         expect(applySharedDatasetImportDecision({ ...local }, reset, decision).branding).toBeUndefined();
+    });
+
+    it('preserves local assistant properties when a branding link omits them', () => {
+        const local = { ...dataset, conversationalSearchProperties: assistantProperties };
+        const incoming = parseSharedDataset({ ...dataset, branding });
+        assert.isNotNull(incoming, 'Expected the branding-only share payload to parse');
+
+        expect(getSharedDatasetDiff(local, incoming).coreFieldChanges.map(change => change.key))
+            .toEqual(['logoUrl', 'primaryColor', 'secondaryColor']);
+        const imported = applySharedDatasetImportDecision(local, incoming, getDefaultSharedDatasetImportDecision());
+        expect(imported.branding).toEqual(branding);
+        expect(imported.conversationalSearchProperties).toEqual(assistantProperties);
+    });
+
+    it('shows an explicit assistant reset in the review and applies it with incoming core fields', () => {
+        const local = { ...dataset, conversationalSearchProperties: assistantProperties };
+        const incoming = parseSharedDataset(buildSharedDataset({ ...dataset, branding, conversationalSearchProperties: [] }));
+        assert.isNotNull(incoming, 'Expected the share payload with an assistant reset to parse');
+
+        const diff = getSharedDatasetDiff(local, incoming);
+        expect(diff.requiresReview).toBe(true);
+        expect(diff.coreFieldChanges).toContainEqual({
+            key: 'conversationalSearchProperties',
+            label: 'Shopping Assistant properties',
+            currentValue: 'Surface finish (finish → Finish)',
+            nextValue: 'None',
+        });
+        const decision = getDefaultSharedDatasetImportDecision();
+        expect(applySharedDatasetImportDecision({ ...local }, incoming, { ...decision, coreFields: 'local' }).conversationalSearchProperties)
+            .toEqual(assistantProperties);
+        expect(applySharedDatasetImportDecision({ ...local }, incoming, decision).conversationalSearchProperties).toEqual([]);
     });
 });

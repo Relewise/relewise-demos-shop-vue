@@ -16,6 +16,7 @@
 
 @theme inline {
     --color-brand-link: var(--shop-primary-ink, var(--color-brand-500));
+    --color-brand-focus-ring: var(--shop-primary-ink, var(--color-brand-200));
 }
 
 @utility brand-action {
@@ -90,7 +91,7 @@ body {
     }
 
     input[type="text"] {
-        @apply block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-hidden;
+        @apply block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-link focus:ring-2 focus:ring-brand-focus-ring focus:outline-hidden;
     }
 
     input[type="text"].small {
@@ -125,7 +126,7 @@ body {
     }
 
     select {
-        @apply mt-1 block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-hidden;
+        @apply mt-1 block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-link focus:ring-2 focus:ring-brand-focus-ring focus:outline-hidden;
     }
 
     select:disabled {
@@ -241,12 +242,18 @@ h4 {
 }
 
 .shop-footer {
+    --shop-footer-foreground: var(--shop-on-secondary, var(--shop-default-primary));
     background-color: var(--shop-secondary);
-    color: var(--shop-on-secondary, var(--shop-primary-ink, var(--color-brand-500)));
+    color: var(--shop-footer-foreground);
+}
+
+:root[data-shop-primary] .shop-footer {
+    /* The default pink footer needs dark text even when only the primary color is customized. */
+    --shop-footer-foreground: var(--shop-on-secondary, var(--color-slate-900));
 }
 
 .shop-footer a {
-    color: var(--shop-on-secondary, var(--shop-primary-ink, var(--color-brand-500)));
+    color: var(--shop-footer-foreground);
 }
 
 .shop-footer .footer-divider {

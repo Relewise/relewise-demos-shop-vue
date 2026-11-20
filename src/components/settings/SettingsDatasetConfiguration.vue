@@ -157,7 +157,7 @@
               type="number"
               min="1"
               step="1"
-              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-200"
+              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-link focus:outline-hidden focus:ring-2 focus:ring-brand-focus-ring"
               @update:model-value="editableDataset.maxVariantsPerProduct = Number($event)"
             />
 

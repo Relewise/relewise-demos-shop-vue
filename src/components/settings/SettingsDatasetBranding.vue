@@ -81,8 +81,14 @@
             class="shop-cart-action rounded-lg px-3 py-2 font-semibold"
           >Add to cart</span>
           <span
-            class="shop-selected-filter rounded-full border px-3 py-1.5 text-xs"
-          >Selected filter</span>
+            class="shop-selected-filter inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs"
+          >
+            <CheckIcon
+              class="size-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            Selected filter
+          </span>
         </div>
       </div>
     </div>
@@ -93,6 +99,7 @@
 import InputText from '@/components/form/InputText.vue';
 import StorefrontLogo from '@/components/StorefrontLogo.vue';
 import { brandForeground, defaultPrimaryColor, defaultSecondaryColor, normalizeBrandColor, normalizeLogoUrl, type DatasetBranding } from '@/helpers/datasetBranding';
+import { CheckIcon } from '@heroicons/vue/24/outline';
 import { computed, ref, watch } from 'vue';
 
 const branding = defineModel<DatasetBranding | undefined>();

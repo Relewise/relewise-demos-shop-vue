@@ -69,7 +69,10 @@
                     </p>
                     <p
                       class="mt-1 break-all font-mono text-sm text-slate-700"
-                      :class="change.key === 'apiKey' && !isApiKeyComparisonVisible ? 'masked-secret' : ''"
+                      :class="{
+                        'masked-secret': change.key === 'apiKey' && !isApiKeyComparisonVisible,
+                        'whitespace-pre-line': change.key === 'conversationalSearchProperties',
+                      }"
                     >
                       {{ formatFieldValue(change.currentValue) }}
                     </p>
@@ -80,7 +83,10 @@
                     </p>
                     <p
                       class="mt-1 break-all font-mono text-sm text-slate-900"
-                      :class="change.key === 'apiKey' && !isApiKeyComparisonVisible ? 'masked-secret' : ''"
+                      :class="{
+                        'masked-secret': change.key === 'apiKey' && !isApiKeyComparisonVisible,
+                        'whitespace-pre-line': change.key === 'conversationalSearchProperties',
+                      }"
                     >
                       {{ formatFieldValue(change.nextValue) }}
                     </p>

@@ -28,7 +28,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
 };
 
 export type SharedDatasetCoreFieldChange = {
-    key: 'displayName' | 'apiKey' | 'serverUrl' | keyof DatasetBranding;
+    key: 'displayName' | 'apiKey' | 'serverUrl' | 'conversationalSearchProperties' | keyof DatasetBranding;
     label: string;
     currentValue: string;
     nextValue: string;
@@ -198,7 +198,8 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
 
 function normalizeConversationalSearchProperties(value: unknown): IDataset['conversationalSearchProperties'] {
     if (!Array.isArray(value)) {
-        return [];
+        // An omitted field preserves local settings. An explicit empty array clears them after review.
+        return undefined;
     }
 
     return value.flatMap(property => {
@@ -264,7 +265,9 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
         if (sharedDataset.branding !== undefined) {
             dataset.branding = normalizeDatasetBranding(sharedDataset.branding);
         }
-        dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
+        if (sharedDataset.conversationalSearchProperties !== undefined) {
+            dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
+        }
     }
 
     mergeSharedDatasetLocalesIntoExistingDataset(dataset, sharedDataset);
@@ -364,7 +367,26 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
         }
     }
 
+    const incomingProperties = sharedDataset.conversationalSearchProperties;
+    if (incomingProperties !== undefined) {
+        const localProperties = normalizeConversationalSearchProperties(dataset.conversationalSearchProperties) ?? [];
+        if (JSON.stringify(localProperties) !== JSON.stringify(incomingProperties)) {
+            changes.push({
+                key: 'conversationalSearchProperties',
+                label: 'Shopping Assistant properties',
+                currentValue: formatConversationalSearchProperties(localProperties),
+                nextValue: formatConversationalSearchProperties(incomingProperties),
+            });
+        }
+    }
+
     return changes;
+}
+
+function formatConversationalSearchProperties(properties: NonNullable<IDataset['conversationalSearchProperties']>) {
+    return properties
+        .map(({ key, dataKey, displayName }) => displayName ? `${displayName} (${key} → ${dataKey})` : `${key} → ${dataKey}`)
+        .join('\n') || 'None';
 }
 
 function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset) {

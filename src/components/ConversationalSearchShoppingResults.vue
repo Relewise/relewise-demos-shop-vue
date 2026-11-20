@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
+import { AdjustmentsHorizontalIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
 import {
     filterValue,
     type ConversationalSearchProduct,
@@ -102,11 +102,17 @@ function title() {
             v-for="value in facet.values"
             :key="value"
             type="button"
-            class="rounded-full border px-3 py-1.5 text-xs transition"
+            class="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs transition"
             :class="filterValue(activity.filters, facet.key) === value ? 'shop-selected-filter' : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300'"
+            :aria-pressed="filterValue(activity.filters, facet.key) === value"
             :disabled="loading"
             @click="emit('refine', { kind: 'facet', key: facet.key, value: filterValue(activity.filters, facet.key) === value ? null : value })"
           >
+            <CheckIcon
+              v-if="filterValue(activity.filters, facet.key) === value"
+              class="size-3.5 shrink-0"
+              aria-hidden="true"
+            />
             {{ facetLabel(facet.key, value) }}
           </button>
         </div>
