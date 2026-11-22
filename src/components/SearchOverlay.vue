@@ -268,7 +268,12 @@ function searchFor(term: string) {
     typeAHeadSearch();
 }
 
-async function persistInUrl() {
+async function persistInUrl(page?: number) {
+    // Persist pagination and facet changes together so the route watcher searches once.
+    if (page !== undefined) {
+        filters.value.page = String(page);
+    }
+
     const query = { ...filters.value };
     await router.push({ path: route.path, query: query, replace: true });
 }

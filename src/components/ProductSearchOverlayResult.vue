@@ -11,7 +11,6 @@ import ContentTile from './ContentTile.vue';
 import Facets from './Facets.vue';
 import VariantBasedProductList from './VariantBasedProductList.vue';
 import DisplayAdTile from './DisplayAds/DisplayAd-Tile.vue';
-import router from '@/router';
 import SearchNoProductsFound from '@/components/SearchNoProductsFound.vue';
 
 const props = defineProps({
@@ -19,7 +18,7 @@ const props = defineProps({
     noResultProductRecommendations: { type: Object as PropType<ProductRecommendationResponse | null>, required: false },
     noResultProductRecommendationsTitle: { type: String, required: true },
     products: { type: Array as PropType<ProductWithType[] | null>, required: true },
-    rightSide: { type: Array as PropType<RetailMediaResultPlacementResultEntity[] | null>, required: true },
+    rightSide: { type: [Array, null] as PropType<RetailMediaResultPlacementResultEntity[] | null>, required: true },
     contentRecommendationResult: { type: Object as PropType<ContentSearchResponse | null>, required: true },
     pageSize: { type: Number, required: true },
     term: { type: [String, Array] as PropType<string | string[]>, required: true },
@@ -33,8 +32,7 @@ const route = useRoute();
 const emit = defineEmits(['search', 'update:sort', 'search-for']);
 
 const sortValue = ref(props.sort);
-// derive local numeric page value from filters.page (filters holds page as string)
-const pageValue = ref(Number((props.filters && (props.filters as any).page) ?? 1));
+const pageValue = computed(() => Number(props.filters.page ?? 1));
 
 const hasProductResults = computed(() => props.productSearchResult.hits > 0);
 const contentResults = computed(() => props.contentRecommendationResult?.results?.slice(0, 10));
@@ -43,19 +41,6 @@ watch(sortValue, (newVal) => {
     emit('update:sort', newVal);
     emit('search');
 });
-
-watch(pageValue, (newVal) => {
-    // update filters object with new page as string
-    if (props.filters) {
-        (props.filters as any).page = String(newVal);
-        // push to URL so page is reflected in query params
-        router.push({ path: route.path, query: { ...(props.filters as any) }, replace: true });
-    }
-});
-
-function search() {
-    emit('search');
-}
 
 function searchFor(term: string) {
     emit('search-for', term);
@@ -94,14 +79,11 @@ function searchFor(term: string) {
         type="Product"
       />
     </div>
-    <div :class="hasProductResults ? 'flex gap-10' : ''">
-      <div
-        v-if="hasProductResults"
-        class="hidden lg:block lg:w-1/5"
-      >
+    <div :class="hasProductResults ? 'lg:flex lg:gap-10' : ''">
+      <div :class="{ 'lg:w-1/5': hasProductResults }">
         <div
-          v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
-          class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1"
+          v-if="hasProductResults && predictionsList.length > 0 && filters.term && filters.term.length > 0"
+          class="hidden pb-6 bg-white mb-6 border-b border-solid border-slate-300 lg:flex flex-col gap-1"
         >
           <h3 class="font-semibold text-lg">
             Suggestions
@@ -116,17 +98,15 @@ function searchFor(term: string) {
           </a>
         </div>
         <Facets
-          v-if="productSearchResult.facets"
           :filters="filters"
-          :facets="productSearchResult.facets"
+          :facets="hasProductResults ? productSearchResult.facets : null"
           :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
-          @search="() => {
-            pageValue = 1;
-            search();
-          }"
+          @search="emit('search', 1)"
+          @reset="emit('search', 1)"
         />
         <div
-          v-if="contentRecommendationResult && contentRecommendationResult.results && contentRecommendationResult.results.length > 0"
+          v-if="hasProductResults && contentResults?.length"
+          class="hidden lg:block"
         >
           <h4 class="font-semibold text-lg mb-1">
             Content
@@ -195,9 +175,10 @@ function searchFor(term: string) {
           class="py-3 flex justify-center"
         >
           <Pagination
-            v-model.sync="pageValue"
+            :model-value="pageValue"
             :total="productSearchResult.hits"
             :page-size="pageSize"
+            @update:model-value="emit('search', $event)"
           />
         </div>
       </div>
