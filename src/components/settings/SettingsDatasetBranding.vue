@@ -13,7 +13,7 @@
       />
 
       <div
-        v-for="{ key, label, defaultColor, previewColor } in colorFields"
+        v-for="{ key, label, help, defaultColor, previewColor } in colorFields"
         :key="key"
       >
         <label
@@ -25,6 +25,7 @@
             type="color"
             class="h-11 w-12 cursor-pointer rounded-md border border-slate-300 bg-white p-1"
             :aria-label="'Pick ' + label.toLowerCase()"
+            :aria-describedby="'branding-' + key + '-help'"
             :value="previewColor"
             @input="updateField(key, ($event.target as HTMLInputElement).value)"
           >
@@ -32,10 +33,17 @@
             :id="'branding-' + key"
             :model-value="branding?.[key]"
             :placeholder="defaultColor"
+            :aria-describedby="'branding-' + key + '-help'"
             spellcheck="false"
             @update:model-value="updateField(key, $event)"
           />
         </div>
+        <p
+          :id="'branding-' + key + '-help'"
+          class="mt-2 text-sm text-slate-600"
+        >
+          {{ help }}
+        </p>
       </div>
 
       <button
@@ -108,8 +116,20 @@ const secondaryColor = computed(() => normalizeBrandColor(branding.value?.second
 const onPrimary = computed(() => primaryColor.value ? brandForeground(primaryColor.value) : undefined);
 const onSecondary = computed(() => secondaryColor.value ? brandForeground(secondaryColor.value) : undefined);
 const colorFields = computed(() => [
-    { key: 'primaryColor', label: 'Primary color', defaultColor: defaultPrimaryColor, previewColor: primaryColor.value ?? defaultPrimaryColor },
-    { key: 'secondaryColor', label: 'Secondary color', defaultColor: defaultSecondaryColor, previewColor: secondaryColor.value ?? defaultSecondaryColor },
+    {
+        key: 'primaryColor',
+        label: 'Primary color',
+        help: 'The main brand color across the storefront. The shop uses it for key actions and links and derives shades for hover and keyboard focus.',
+        defaultColor: defaultPrimaryColor,
+        previewColor: primaryColor.value ?? defaultPrimaryColor,
+    },
+    {
+        key: 'secondaryColor',
+        label: 'Secondary color',
+        help: 'A supporting brand color for highlights and backgrounds. It appears in places like selected filters, the footer, and homepage accents.',
+        defaultColor: defaultSecondaryColor,
+        previewColor: secondaryColor.value ?? defaultSecondaryColor,
+    },
 ] as const);
 const previewLogoUrl = ref(normalizeLogoUrl(branding.value?.logoUrl));
 
