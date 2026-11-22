@@ -33,8 +33,9 @@ onMounted(() => {
     notificationsStore.flushAfterReload();
 });
 
+// Apply the active dataset's colors at startup and update them when branding changes or the dataset switches.
+// Set the CSS variables on <html> so overlays teleported outside #app inherit the storefront theme.
 watchEffect(() => {
-    // The overlays teleport outside #app and inherit the same theme from the document.
     const root = document.documentElement;
     const { primaryColor, secondaryColor } = branding.value ?? {};
     const onPrimary = primaryColor ? brandForeground(primaryColor) : undefined;
