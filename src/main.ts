@@ -8,9 +8,12 @@ import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
 import { defineCustomElement } from 'vue';
 import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
+import ImageWithFallback from './components/ImageWithFallback.vue';
 
 const FavoriteVueElement = defineCustomElement(ProductFavoriteButton);
 customElements.define('app-product-favorite-button', FavoriteVueElement);
+// Use the recommendation template's styles for the same image renderer used by Vue cards.
+customElements.define('app-image-with-fallback', defineCustomElement(ImageWithFallback, { shadowRoot: false }));
 
 declare module 'vue' {
     interface ComponentCustomProperties {

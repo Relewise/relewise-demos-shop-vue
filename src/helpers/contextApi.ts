@@ -55,8 +55,8 @@ export function initializeWebComponentsForDataset({
                 variant: { allData: true },
             },
             templates: {
-                product: (product, extentions) => {
-                    return WebComponentProductTemplate(product, extentions);
+                product: (product, extensions) => {
+                    return WebComponentProductTemplate(product, extensions, dataset.productPlaceholderImageUrl);
                 },
             },
             filters: {

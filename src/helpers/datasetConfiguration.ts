@@ -46,6 +46,8 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         allLanguages: uniqueNormalizedStrings([...(dataset.allLanguages ?? []), dataset.language]),
         allCurrencies: uniqueNormalizedStrings([...(dataset.allCurrencies ?? []), dataset.currencyCode], { uppercase: true }),
         serverUrl: dataset.serverUrl?.trim() ?? '',
+        productPlaceholderImageUrl: dataset.productPlaceholderImageUrl?.trim() || undefined,
+        categoryPlaceholderImageUrl: dataset.categoryPlaceholderImageUrl?.trim() || undefined,
         users: sanitizeUsers(dataset.users),
         companies: sanitizeCompanies(dataset.companies),
         trackingEnabled: dataset.trackingEnabled ?? false,

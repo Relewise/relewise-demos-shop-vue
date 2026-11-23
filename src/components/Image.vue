@@ -1,44 +1,48 @@
 <template>
   <div class="image-container">
-    <img
-      v-if="image && !error"
-      class="object-cover w-full"
+    <ImageWithFallback
       :src="image"
-      alt="product image"
-      @error="error = true"
-    >
-    <PhotoIcon
-      v-else
-      class="h-full w-full text-slate-300"
+      :fallback="placeholder"
+      :alt="'displayName' in entity ? entity.displayName ?? '' : ''"
+      image-class="object-cover w-full"
+      placeholder-class="h-full w-full text-slate-300"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { PhotoIcon } from '@heroicons/vue/24/outline';
+import ImageWithFallback from '@/components/ImageWithFallback.vue';
 import type { CategoryResult, ContentResult, ProductResult, VariantResult } from '@relewise/client';
-import { ref, toRefs, type PropType } from 'vue';
 import { findImage, findTermMatchedVariantImage } from '@/helpers/imageHelper';
+import contextStore from '@/stores/context.store';
 import { computed } from 'vue';
 
-const props = defineProps({
-    entity: { type: Object as PropType<ProductResult | ContentResult | CategoryResult | VariantResult>, required: true },
-});
-
-const { entity: entity } = toRefs(props);
+const props = defineProps<{
+    entity: ProductResult | ContentResult | CategoryResult | VariantResult;
+}>();
 
 const image = computed(() => {
-    if ('variantResolution' in entity.value) {
-        const variantResolutionImage = findTermMatchedVariantImage(entity.value);
+    const { entity } = props;
+    if ('variantResolution' in entity) {
+        const variantResolutionImage = findTermMatchedVariantImage(entity);
         if (variantResolutionImage) {
             return variantResolutionImage;
         }
     }
 
-    return findImage(entity.value);
+    return findImage(entity);
 });
 
-const error = ref(false);
+const placeholder = computed(() => {
+    const dataset = contextStore.context.value;
+    if ('categoryId' in props.entity) {
+        return dataset.categoryPlaceholderImageUrl;
+    }
+    if ('productId' in props.entity || 'variantId' in props.entity) {
+        return dataset.productPlaceholderImageUrl;
+    }
+    return undefined;
+});
 </script>
 <style lang="css" scoped>
 .image-container {

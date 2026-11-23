@@ -2,7 +2,11 @@ import { findImage } from '@/helpers/imageHelper';
 import type { ProductResult } from '@relewise/client';
 import type { ProductTemplateExtensions } from '@relewise/web-components';
 
-export const WebComponentProductTemplate = (product: ProductResult, { html, helpers }: ProductTemplateExtensions) => {
+export const WebComponentProductTemplate = (
+    product: ProductResult,
+    { html, helpers }: ProductTemplateExtensions,
+    placeholder?: string,
+) => {
     let path = `/product/${product.productId}`;
 
     if (product.variant?.variantId) {
@@ -57,6 +61,16 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
 
             .image {
                 object-fit: cover;
+            }
+
+            app-image-with-fallback {
+                display: contents;
+            }
+
+            .image-placeholder {
+                width: 100%;
+                height: 100%;
+                color: #cbd5e1;
             }
 
             .on-sale {
@@ -140,7 +154,13 @@ export const WebComponentProductTemplate = (product: ProductResult, { html, help
         <a href="${path}" class="product-link">
             <app-product-favorite-button floating .product=${product}></app-product-favorite-button>
             <div class="image-container">
-                <img src="${findImage(product)}" class="image"/>
+                <app-image-with-fallback
+                    .src=${findImage(product)}
+                    .fallback=${placeholder}
+                    .alt=${product.displayName ?? ''}
+                    image-class="image"
+                    placeholder-class="image-placeholder"
+                ></app-image-with-fallback>
                 ${product.salesPrice !== product.listPrice && product.listPrice !== null && product.listPrice !== undefined ? html`<span class="on-sale">ON SALE</span>` : html``}
                 ${product.data && product.data.SoldOut && product.data.SoldOut.value === 'true' ? html`<span class="sold-out">SOLD OUT</span>` : html``}
             </div>

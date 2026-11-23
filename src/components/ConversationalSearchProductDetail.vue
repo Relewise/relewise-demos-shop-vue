@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { PhotoIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import ImageWithFallback from '@/components/ImageWithFallback.vue';
 import type { ConversationalSearchProductDetailActivity, ConversationalSearchProduct } from '@/helpers/conversationalSearchApi';
+import contextStore from '@/stores/context.store';
 
 const props = defineProps<{
     activity: ConversationalSearchProductDetailActivity;
@@ -29,15 +31,12 @@ function formatPrice() {
 <template>
   <article class="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:grid-cols-[13rem_1fr]">
     <div class="flex min-h-48 items-center justify-center bg-slate-50">
-      <img
-        v-if="activity.product.image"
+      <ImageWithFallback
         :src="activity.product.image"
+        :fallback="contextStore.context.value.productPlaceholderImageUrl"
         :alt="activity.product.name"
-        class="h-48 w-full object-contain p-4"
-      >
-      <PhotoIcon
-        v-else
-        class="h-16 w-16 text-slate-300"
+        image-class="h-48 w-full object-contain p-4"
+        placeholder-class="h-16 w-16 text-slate-300"
       />
     </div>
     <div class="p-5">
