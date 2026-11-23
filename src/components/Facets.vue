@@ -1,8 +1,9 @@
 <template>
+  <!-- The shared outline button style disables the default focus outline. -->
   <button
     v-if="hasSelectedFilters"
     type="button"
-    class="outline mb-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+    class="outline mb-4 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2"
     @click="resetFilters"
   >
     Reset filters

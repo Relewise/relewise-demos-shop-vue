@@ -55,6 +55,12 @@ vi.mock('@/services/breakpoint.service', async() => {
 
 const noProducts = { hits: 0, results: [] };
 const withProducts = { hits: 85, results: [] };
+const categoryPriceFacets = {
+    items: [{ field: 'Category', nodes: [] }, {
+        field: 'SalesPrice',
+        available: { value: { lowerBoundInclusive: 0, upperBoundInclusive: 100 } },
+    }],
+};
 let wrapper: VueWrapper | undefined;
 
 function searchResponse(products = noProducts, content = noProducts) {
@@ -160,15 +166,49 @@ describe('Reset filters', () => {
         expect(resetButton(wrapper)).toBeUndefined();
     });
 
-    it('restores the price slider and searches once when resetting from a later category page', async() => {
-        const facets = {
-            items: [{ field: 'Category', nodes: [] }, {
-                field: 'SalesPrice',
-                available: { value: { lowerBoundInclusive: 0, upperBoundInclusive: 100 } },
-            }],
-        };
+    it('commits decimal price bounds on change and preserves drafts during result updates', async() => {
+        const result = { ...withProducts, facets: categoryPriceFacets };
+        let resolvePreviousSearch!: (response: typeof result) => void;
+        const previousSearch = new Promise<typeof result>(resolve => { resolvePreviousSearch = resolve; });
         api.searchProductCategories.mockResolvedValue({ results: [{ categoryId: 'outdoor' }] });
-        api.searchProducts.mockResolvedValue({ ...withProducts, facets });
+        api.searchProducts
+            .mockResolvedValueOnce(structuredClone(result))
+            .mockReturnValueOnce(previousSearch)
+            .mockResolvedValue(structuredClone(result));
+        await router.push('/category/outdoor?price=5&price=100');
+        wrapper = mount(Category, { global: { plugins: [router], stubs: { Breadcrumb: true } } });
+        await flushPromises();
+
+        const [minimum, maximum] = wrapper.findAll('input');
+        minimum!.element.value = '9.';
+        await minimum!.trigger('input');
+        await flushPromises();
+        expect(minimum!.element.value).toBe('9.');
+        expect(router.currentRoute.value.query.price).toEqual(['5', '100']);
+        expect(api.searchProducts).toHaveBeenCalledTimes(1);
+
+        await minimum!.setValue('9.5');
+        await flushPromises();
+        expect(api.searchProducts).toHaveBeenCalledTimes(2);
+
+        maximum!.element.value = '85.';
+        await maximum!.trigger('input');
+        resolvePreviousSearch(structuredClone(result));
+        await flushPromises();
+
+        expect(maximum!.element.value).toBe('85.');
+        expect(router.currentRoute.value.query.price).toEqual(['9.5', '100']);
+        expect(api.searchProducts).toHaveBeenCalledTimes(2);
+
+        await maximum!.setValue('85.5');
+        await flushPromises();
+        expect(router.currentRoute.value.query.price).toEqual(['9.5', '85.5']);
+        expect(api.searchProducts).toHaveBeenCalledTimes(3);
+    });
+
+    it('restores the price slider and searches once when resetting from a later category page', async() => {
+        api.searchProductCategories.mockResolvedValue({ results: [{ categoryId: 'outdoor' }] });
+        api.searchProducts.mockResolvedValue({ ...withProducts, facets: categoryPriceFacets });
         await router.push('/category/outdoor');
         wrapper = mount(Category, { global: { plugins: [router], stubs: { Breadcrumb: true } } });
         await flushPromises();

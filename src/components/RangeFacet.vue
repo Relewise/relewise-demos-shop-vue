@@ -2,16 +2,20 @@
   <div v-if="filterKey">
     <div class="w-full flex items-center justify-between mb-5 gap-2">
       <input 
-        :value="min"
+        :value="draftBounds.min ?? min"
         type="text" 
         class="small"
-        @input="updateBound('min', $event)"
+        @input="trackBoundDraft('min', $event)"
+        @change="updateBound('min', $event)"
+        @blur="delete draftBounds.min"
       > - 
       <input
-        :value="max"
+        :value="draftBounds.max ?? max"
         type="text"
         class="small"
-        @input="updateBound('max', $event)"
+        @input="trackBoundDraft('max', $event)"
+        @change="updateBound('max', $event)"
+        @blur="delete draftBounds.max"
       >
     </div>
     <div 
@@ -31,7 +35,7 @@
 
 <script setup lang="ts">
 import type { PriceRangeFacetResult, ProductDataDoubleRangeFacetResult } from '@relewise/client';
-import { computed, ref, toRefs, watch, type PropType } from 'vue';
+import { computed, reactive, ref, toRefs, watch, type PropType } from 'vue';
 import Slider from '@vueform/slider';
 import { getFacetSettings } from '@/helpers/facetHelper';
 
@@ -42,6 +46,8 @@ const props = defineProps({
 
 const min = ref<number | string>(0);
 const max = ref<number | string>(0);
+// Facet responses can refresh the applied range while the shopper is typing in another field.
+const draftBounds = reactive<{ min?: string; max?: string }>({});
 
 const sliderModel = ref<number[]>([0, 0]);
 
@@ -66,7 +72,7 @@ function calculateFilterKey() {
 }
 
 // Reset the controls as soon as the selection clears, even before new facet data arrives.
-// Only input handlers submit changes, so restoring the controls does not issue another search.
+// Only user edits submit changes, so restoring the controls does not issue another search.
 watch([facet, () => !selectedRange.value], () => {
     const range = selectedRange.value;
     min.value = range ? Math.max(availableMin.value, Number(range[0])) : availableMin.value;
@@ -90,9 +96,14 @@ function applyRange() {
     emit('search', { name: facet.value.field, value: null });
 }
 
+function trackBoundDraft(name: 'min' | 'max', event: Event) {
+    draftBounds[name] = (event.target as HTMLInputElement).value;
+}
+
 function updateBound(name: 'min' | 'max', event: Event) {
     const bound = name === 'min' ? min : max;
     bound.value = (event.target as HTMLInputElement).value;
+    delete draftBounds[name];
     applyRange();
 }
 
