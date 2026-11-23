@@ -17,6 +17,9 @@ import { findImage, findTermMatchedVariantImage } from '@/helpers/imageHelper';
 import contextStore from '@/stores/context.store';
 import { computed } from 'vue';
 
+// Reuse the computed ref while keeping the active dataset reactive.
+const dataset = contextStore.context;
+
 const props = defineProps<{
     entity: ProductResult | ContentResult | CategoryResult | VariantResult;
 }>();
@@ -34,12 +37,11 @@ const image = computed(() => {
 });
 
 const placeholder = computed(() => {
-    const dataset = contextStore.context.value;
     if ('categoryId' in props.entity) {
-        return dataset.categoryPlaceholderImageUrl;
+        return dataset.value.categoryPlaceholderImageUrl;
     }
     if ('productId' in props.entity || 'variantId' in props.entity) {
-        return dataset.productPlaceholderImageUrl;
+        return dataset.value.productPlaceholderImageUrl;
     }
     return undefined;
 });

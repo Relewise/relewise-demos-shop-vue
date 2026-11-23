@@ -5,9 +5,10 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { defineCustomElement, nextTick } from 'vue';
 
-vi.mock('@/stores/context.store', () => ({
-    default: { context: { value: { productPlaceholderImageUrl: '/placeholder.png' } } },
-}));
+vi.mock('@/stores/context.store', async() => {
+    const { ref } = await import('vue');
+    return { default: { context: ref({ productPlaceholderImageUrl: '/placeholder.png' }) } };
+});
 
 describe('ImageWithFallback', () => {
     it('uses the configured image for missing sources and retries when the source changes', async() => {

@@ -19,7 +19,7 @@ import { computed, ref, watch } from 'vue';
 
 const props = withDefaults(defineProps<{
     src?: string | null;
-    fallback?: string;
+    fallback?: string | null;
     alt: string;
     imageClass?: string;
     placeholderClass?: string;
@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<{
 });
 
 const failedSources = ref<string[]>([]);
-const source = computed(() => [props.src?.trim(), props.fallback.trim()]
+const source = computed(() => [props.src?.trim(), props.fallback?.trim()]
     .find(url => url && !failedSources.value.includes(url)));
 
 // A reused card must try the new product's image and fallback even after a previous load failed.

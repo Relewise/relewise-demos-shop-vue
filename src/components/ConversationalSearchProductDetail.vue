@@ -4,6 +4,8 @@ import ImageWithFallback from '@/components/ImageWithFallback.vue';
 import type { ConversationalSearchProductDetailActivity, ConversationalSearchProduct } from '@/helpers/conversationalSearchApi';
 import contextStore from '@/stores/context.store';
 
+const dataset = contextStore.context;
+
 const props = defineProps<{
     activity: ConversationalSearchProductDetailActivity;
     language: string;
@@ -33,7 +35,7 @@ function formatPrice() {
     <div class="flex min-h-48 items-center justify-center bg-slate-50">
       <ImageWithFallback
         :src="activity.product.image"
-        :fallback="contextStore.context.value.productPlaceholderImageUrl"
+        :fallback="dataset.productPlaceholderImageUrl"
         :alt="activity.product.name"
         image-class="h-48 w-full object-contain p-4"
         placeholder-class="h-16 w-16 text-slate-300"
