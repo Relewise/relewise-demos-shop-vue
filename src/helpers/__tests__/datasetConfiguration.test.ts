@@ -20,7 +20,7 @@ describe('datasetConfiguration', () => {
         }).conversationalSearchEnabled).toBe(true);
     });
 
-    it('trims configured store keys without changing their case and treats blank keys as defaults', () => {
+    it('trims configured store keys without changing their case and omits blank keys', () => {
         expect(normalizeDatasetConfiguration({
             ...dataset,
             storeQuantityDataKey: '  InventoryByLocation ',

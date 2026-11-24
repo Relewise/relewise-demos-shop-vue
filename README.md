@@ -20,7 +20,7 @@ In order to run the demo shop you need access to a dataset in Relewise.
 
 ### Demo stock availability
 
-In the dataset's **Features → Stock availability** settings, enter the case-sensitive **Stock data key** you want the product page to use. The display follows the field type.
+In the dataset's **Features → Stock availability** settings, enter the case-sensitive **Stock data key** you want the product page to use. Leave the field blank to hide stock availability. The display follows the field type.
 
 | Data Value type | Example | Display |
 | --- | --- | --- |
@@ -28,9 +28,11 @@ In the dataset's **Features → Stock availability** settings, enter the case-se
 | Double | `StockAmount` | Quantity in stock, or Out of stock for zero or less |
 | Object | `StoreQuantities` | Quantities by store |
 
-Map each store to a stable location ID. Use an Object with the location IDs as keys and display names as String values. The default key is `StoreNames`. The map defines which stores to show. With quantities alone, the shop uses the location IDs as labels.
+Map each store to a stable location ID. To show store names, set **Store name data key** to an Object with those IDs as keys and display names as String values. The map defines which stores to show. Without a store name key, the shop uses the location IDs as labels.
 
-Use a second Object with the same IDs as keys and stock counts as Double values. The default key is `StoreQuantities`, with Silvan's `StoreQuanteties` as a fallback. Store names and stock counts can be stored on the product or its variants. A map from the returned variant takes precedence over the corresponding product map.
+For stock by store, set **Stock data key** to an Object with the same IDs as keys and stock counts as Double values. Store names and stock counts can be stored on the product or its variants. A map from the returned variant takes precedence over the corresponding product map.
+
+Use the product-level stock field only for inventory shared by all variants. The shop falls back to that field when the selected variant has no value for the configured key. An invalid variant value displays stock as unavailable. If the product carries an aggregate total across variants, keep that total in a separate Data Key and configure the shop to read the variant stock field.
 
 #### Customer PoC import example
 
@@ -84,7 +86,7 @@ If the customer's counts are variant-specific, group by product and variant ID a
 
 1. Import **Workshop Drill** and **Tool Organizer** into the demo dataset using the product IDs and Data Values above. When reusing a customer's existing compatible Objects, use their existing Data Keys.
 2. Open the dataset selector in the Demo Shop header, choose the imported dataset, and click **Apply**. Reopen the selector and go to **Configure Demo → Features → Stock availability**.
-3. Leave **Stock data key** and **Store name data key** blank for this example to use `StoreQuantities` and `StoreNames`. For other Data Keys, enter their exact names. Click **Save changes** after editing.
+3. Enter `StoreQuantities` as **Stock data key** and `StoreNames` as **Store name data key** for this example, then click **Save changes**. For other Data Keys, enter their exact names.
 4. Open Workshop Drill at `/product/demo-shop-store-stock-drill`. Show **Aarhus · 8 in stock**, **Odense · Out of stock**, and **Aalborg · Stock unknown**. If the customer data includes variant-specific stock, select a variant and show its counts.
 5. Open Tool Organizer at `/product/demo-shop-store-stock-organizer`. Show **Store stock information is unavailable** when the product has store names and all its counts are unknown.
 

@@ -30,14 +30,14 @@ describe('stock availability', () => {
             variant: {
                 rank: 1,
                 data: {
-                    StoreQuanteties: DataValueFactory.object({
+                    StoreQuantities: DataValueFactory.object({
                         Store_aarhus: DataValueFactory.number(8),
                         Store_odense: DataValueFactory.number(0),
                         Store_distribution: DataValueFactory.number(50),
                     }),
                 },
             },
-        });
+        }, { storeQuantityDataKey: 'StoreQuantities', storeNameDataKey: 'StoreNames' });
 
         expect(availability).toEqual({
             kind: 'stores',
@@ -49,10 +49,30 @@ describe('stock availability', () => {
         });
     });
 
-    it('uses product stock and falls back to location IDs when names are absent', () => {
+    it('uses location IDs when the store name key is unset even if name data exists', () => {
         expect(getStockAvailability({
-            data: { StoreQuantities: DataValueFactory.object({ Store_137: DataValueFactory.number(4) }) },
-        })).toEqual({ kind: 'stores', stores: [{ id: 'Store_137', name: 'Store 137', quantity: 4 }] });
+            data: {
+                StoreQuantities: DataValueFactory.object({ Store_aarhus: DataValueFactory.number(4) }),
+                StoreNames: storeNames,
+            },
+        }, { storeQuantityDataKey: 'StoreQuantities' })).toEqual({
+            kind: 'stores',
+            stores: [{ id: 'Store_aarhus', name: 'Store aarhus', quantity: 4 }],
+        });
+    });
+
+    it('reports unavailable stock for an invalid variant value even when the product has stock', () => {
+        expect(getStockAvailability({
+            data: { Stock: DataValueFactory.number(100) },
+            variant: { rank: 1, data: { Stock: DataValueFactory.string('0') } },
+        }, { storeQuantityDataKey: 'Stock' })).toEqual({ kind: 'unavailable', byStore: false });
+    });
+
+    it('reports unavailable store stock when configured store names exist without quantities', () => {
+        expect(getStockAvailability(
+            { data: { StoreNames: storeNames } },
+            { storeQuantityDataKey: 'StoreQuantities', storeNameDataKey: 'StoreNames' },
+        )).toEqual({ kind: 'unavailable', byStore: true });
     });
 
     it('reads the configured keys and uses a variant map when present', () => {
@@ -73,13 +93,13 @@ describe('stock availability', () => {
         expect(availability).toEqual({ kind: 'stores', stores: [{ id: 'Store_aarhus', name: 'Aarhus Central', quantity: 8 }] });
     });
 
-    it('reports unavailable store stock when the configured key is absent despite legacy counts', () => {
+    it('reports unavailable store stock when the configured key is absent despite counts at another key', () => {
         const availability = getStockAvailability({
             data: {
                 StoreNames: storeNames,
-                StoreQuanteties: DataValueFactory.object({ Store_aarhus: DataValueFactory.number(8) }),
+                StoreQuantities: DataValueFactory.object({ Store_aarhus: DataValueFactory.number(8) }),
             },
-        }, { storeQuantityDataKey: 'ExistingCounts' });
+        }, { storeQuantityDataKey: 'ExistingCounts', storeNameDataKey: 'StoreNames' });
 
         expect(availability).toEqual({ kind: 'unavailable', byStore: true });
     });
@@ -89,6 +109,14 @@ describe('stock availability', () => {
             { data: { Stock: DataValueFactory.string('100') } },
             { storeQuantityDataKey: 'Stock' },
         )).toEqual({ kind: 'unavailable', byStore: false });
-        expect(getStockAvailability({})).toBeUndefined();
+    });
+
+    it('hides stock until the dataset configures a stock key', () => {
+        expect(getStockAvailability({
+            data: {
+                StoreQuantities: DataValueFactory.object({ Store_aarhus: DataValueFactory.number(8) }),
+                StoreNames: storeNames,
+            },
+        }, { storeNameDataKey: 'StoreNames' })).toBeUndefined();
     });
 });

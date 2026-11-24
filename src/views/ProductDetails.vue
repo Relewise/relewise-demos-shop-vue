@@ -279,6 +279,7 @@ const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const dataset = contextStore.context;
 const availability = computed(() => product.value ? getStockAvailability(product.value, dataset.value) : undefined);
+let requestSequence = 0;
 
 const details = computed(() => {
   if (!product.value) return [];
@@ -331,6 +332,7 @@ const productData = computed<DataValueEntry[]>(() => {
 });
 
 async function init() {
+  const sequence = ++requestSequence;
   const id = route.params.id;
   const variantIdFromRoute = route.params.variant;
 
@@ -361,8 +363,8 @@ async function init() {
 
     const searcher = contextStore.getSearcher();
     const result = (await searcher.searchProducts(request))?.results?.[0];
-    // A slow response for a previous product or variant must not replace the displayed stock.
-    if (productId.value !== id || variantId.value !== requestedVariantId) return;
+    // Returning to a variant can leave multiple requests for the same ID in flight.
+    if (sequence !== requestSequence) return;
     product.value = result;
     if (product.value?.categoryPaths) {
       // Taking the first path on the product to render the breadcrumb
