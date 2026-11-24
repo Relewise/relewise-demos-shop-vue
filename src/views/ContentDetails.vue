@@ -88,7 +88,7 @@ async function init() {
     if (id && !Array.isArray(id)) {
         contentId.value = id;
 
-        trackingService.trackProductView(id);
+        trackingService.trackContentView(id);
 
         const request = new ContentSearchBuilder(contextStore.defaultSettings)
             .setContentProperties(contextStore.selectedContentProperties)

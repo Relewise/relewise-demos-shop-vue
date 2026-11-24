@@ -264,18 +264,14 @@ const productData = computed<DataValueEntry[]>(() => {
   ];
 });
 
-async function init() {
-  const id = route.params.id;
-  const variantIdFromRoute = route.params.variant;
+watch([() => route.params.id, () => route.params.variant], async([id, variantIdFromRoute], _previous, onCleanup) => {
+  let active = true;
+  onCleanup(() => { active = false; });
 
   if (id && !Array.isArray(id)) {
     productId.value = id;
-
-    if (variantIdFromRoute && !Array.isArray(variantIdFromRoute)) {
-      variantId.value = variantIdFromRoute;
-    }
-
-    trackingService.trackProductView(id, variantId.value ?? undefined);
+    const selectedVariantId = typeof variantIdFromRoute === 'string' ? variantIdFromRoute : undefined;
+    variantId.value = selectedVariantId ?? null;
 
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
       .setSelectedProductProperties(contextStore.selectedProductProperties)
@@ -283,8 +279,8 @@ async function init() {
       .filters(f => {
         f.addProductIdFilter([id]);
 
-        if (variantId.value) {
-          f.addVariantIdFilter(variantId.value);
+        if (selectedVariantId) {
+          f.addVariantIdFilter(selectedVariantId);
         }
 
         contextStore.userClassificationBasedFilters(f);
@@ -293,19 +289,17 @@ async function init() {
       .build();
 
     const searcher = contextStore.getSearcher();
-    product.value = (await searcher.searchProducts(request))?.results![0];
-    if (product.value?.categoryPaths) {
-      // Taking the first path on the product to render the breadcrumb
-      breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
+    const response = await searcher.searchProducts(request);
+    // An earlier request may finish after the shopper has moved to another product or left the page.
+    if (!active) return;
+
+    product.value = response?.results?.[0];
+    breadcrumb.value = product.value?.categoryPaths?.[0]?.pathFromRoot ?? [];
+    if (product.value) {
+      void trackingService.trackProductView(id, selectedVariantId, product.value.displayName);
     }
   }
-}
-
-init();
-
-watch(route, () => {
-  init();
-});
+}, { immediate: true });
 
 function addToBasket() {
   if (!product.value) return;

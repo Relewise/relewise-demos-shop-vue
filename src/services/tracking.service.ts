@@ -1,6 +1,7 @@
 import type { ILineItem } from './basket.service';
 import contextStore from '../stores/context.store';
 import type { FeedItem } from '@relewise/client';
+import { rememberTrackingProductName } from '@/helpers/sessionTracking';
 
 class TrackingService {
     public trackProductCategoryView(id: string) {
@@ -19,12 +20,19 @@ class TrackingService {
         tracker.trackBrandView({ brandId: id, user: contextStore.user.value });
     }
 
-    public async trackProductView(id: string, variantId?: string) {
+    public async trackProductView(id: string, variantId?: string, displayName?: string | null) {
         if (!contextStore.tracking.value.enabled) return;
 
-        const tracker = contextStore.getTracker();
-
-        tracker.trackProductView({ productId: id, variantId: variantId, user: contextStore.user.value });
+        if (displayName) {
+            rememberTrackingProductName(contextStore.context.value.datasetId, id, displayName);
+        }
+        try {
+            await contextStore.getTracker().trackProductView({ productId: id, variantId, user: contextStore.user.value });
+        }
+        catch (error) {
+            console.warn('Could not track product view.', error);
+            return;
+        }
     }
 
     public async trackContentView(id: string) {

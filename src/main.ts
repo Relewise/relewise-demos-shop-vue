@@ -6,6 +6,9 @@ import 'vue-sonner/style.css';
 import formatting from './plugins/formatting';
 import FloatingVue from 'floating-vue';
 import notificationsStore from './stores/notifications.store';
+import contextStore from './stores/context.store';
+import { describeSessionTrackingRequest } from './helpers/sessionTracking';
+import { getSessionTrackingGeneration, recordSessionTrackingSignal } from './stores/sessionCockpit';
 import { defineCustomElement } from 'vue';
 import ProductFavoriteButton from './components/ProductFavoriteButton.ce.vue';
 
@@ -32,12 +35,20 @@ app.mount('#app');
 
 function addNetworkInterceptors() {
     const { fetch: originalFetch } = window;
+    const datasets = contextStore.datasets;
 
     window.fetch = async(...args) => {
         const [resource, options] = args;
+        // Both the storefront tracker and Relewise web components send tracking through fetch.
+        const trackingSignal = describeSessionTrackingRequest(resource, options, datasets.value);
+        const requestGeneration = getSessionTrackingGeneration();
 
         try {
             const response = await originalFetch(resource, options);
+
+            if (response.ok && trackingSignal) {
+                void recordSessionTrackingSignal(trackingSignal, requestGeneration);
+            }
 
             if (response.status !== 200) {
                 notificationsStore.push({
