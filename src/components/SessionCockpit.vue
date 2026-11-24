@@ -7,8 +7,21 @@ import { sessionCockpit, setSessionCockpitOpen } from '@/stores/sessionCockpit';
 const dataset = contextStore.context;
 const tracking = contextStore.tracking;
 const trigger = ref<HTMLButtonElement>();
+const closeButton = ref<HTMLButtonElement>();
 const signals = computed(() => sessionCockpit.value.signals.filter(signal => signal.datasetId === dataset.value?.datasetId));
 const timeFormat = new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' });
+
+async function toggle() {
+    if (sessionCockpit.value.open) {
+        await close();
+        return;
+    }
+
+    setSessionCockpitOpen(true);
+    await nextTick();
+    // The teleported panel follows the storefront in tab order. Move focus only on explicit open.
+    closeButton.value?.focus({ preventScroll: true });
+}
 
 async function close() {
     setSessionCockpitOpen(false);
@@ -26,7 +39,7 @@ async function close() {
     aria-label="Session cockpit"
     :aria-expanded="sessionCockpit.open"
     aria-controls="session-cockpit"
-    @click="setSessionCockpitOpen(!sessionCockpit.open)"
+    @click="toggle"
   >
     <ChartBarIcon class="h-8 w-8" />
     <span class="mt-1 text-[9px] font-bold">COCKPIT</span>
@@ -53,6 +66,7 @@ async function close() {
           </p>
         </div>
         <button
+          ref="closeButton"
           type="button"
           aria-label="Close session cockpit"
           class="rounded-lg bg-transparent p-1 text-slate-600 shadow-none hover:bg-slate-100"
@@ -72,8 +86,10 @@ async function close() {
       </div>
 
       <div
+        role="region"
         aria-label="Session tracking activity"
         aria-live="polite"
+        tabindex="0"
         class="overflow-y-auto px-5 py-4"
       >
         <p

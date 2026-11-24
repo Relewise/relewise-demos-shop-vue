@@ -47,7 +47,7 @@ function addNetworkInterceptors() {
             const response = await originalFetch(resource, options);
 
             if (response.ok && trackingSignal) {
-                recordSessionTrackingSignal(trackingSignal, requestGeneration);
+                void recordSessionTrackingSignal(trackingSignal, requestGeneration);
             }
 
             if (response.status !== 200) {
