@@ -7,6 +7,7 @@ import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
 import ContextSwitcher from '@/components/ContextSwitcher.vue';
+import SessionCockpit from '@/components/SessionCockpit.vue';
 import contextStore from '@/stores/context.store';
 import { formatCompanyDetails, formatUserDetails, getSelectedUser, getSelectedUserLabel } from '@/helpers/contextSummary';
 import { useHeaderInteraction } from '@/composables/useHeaderInteraction';
@@ -190,6 +191,7 @@ function resetConversationalSearch() {
               </div>
             </div>
           </div>
+          <SessionCockpit v-if="hasActiveDataset" />
           <component
             :is="hasActiveDataset ? 'RouterLink' : 'div'"
             :to="hasActiveDataset ? '/favorites' : undefined"
