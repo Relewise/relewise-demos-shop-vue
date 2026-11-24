@@ -57,6 +57,8 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         B2bRecommendations: dataset.B2bRecommendations ?? false,
         showVariantsBadge: dataset.showVariantsBadge ?? false,
         similarProductsOnPdp: dataset.similarProductsOnPdp ?? false,
+        storeQuantityDataKey: normalizeStoreDataKey(dataset.storeQuantityDataKey),
+        storeNameDataKey: normalizeStoreDataKey(dataset.storeNameDataKey),
         variantBasedSearchOverlay,
         variantResolutionImages: dataset.variantResolutionImages ?? false,
         maxVariantsPerProduct: normalizeMaxVariantsPerProduct(dataset.maxVariantsPerProduct),
@@ -73,6 +75,10 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
             })),
         shoppertainmentEnabled: dataset.shoppertainmentEnabled ?? false,
     };
+}
+
+function normalizeStoreDataKey(value: unknown) {
+    return typeof value === 'string' ? value.trim() || undefined : undefined;
 }
 
 function normalizeMaxVariantsPerProduct(value: number | undefined) {

@@ -116,6 +116,30 @@
       </template>
 
       <div class="space-y-4">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 class="mb-4 text-base font-semibold text-slate-900">
+            Stock availability
+          </h3>
+          <div class="grid gap-5 xl:grid-cols-2">
+            <InputText
+              id="store-quantity-data-key"
+              v-model="editableDataset.storeQuantityDataKey"
+              label="Stock data key"
+              :placeholder="defaultStoreQuantityDataKey"
+              help="Use a Boolean, a number, or an Object of counts by store ID. Leave blank to use StoreQuantities or StoreQuanteties."
+              spellcheck="false"
+            />
+            <InputText
+              id="store-name-data-key"
+              v-model="editableDataset.storeNameDataKey"
+              label="Store name data key"
+              :placeholder="defaultStoreNameDataKey"
+              help="Used for stock Objects. Names must use the same store IDs. Leave blank to use StoreNames."
+              spellcheck="false"
+            />
+          </div>
+        </div>
+
         <template
           v-for="feature in featureFields"
           :key="feature.key"
@@ -203,6 +227,7 @@ import SettingsAccordionSection from '@/components/settings/SettingsAccordionSec
 import SettingsStickyActions from '@/components/settings/SettingsStickyActions.vue';
 import { useDatasetConfigurationForm } from '@/composables/useDatasetConfigurationForm';
 import { defaultMaxVariantsPerProduct } from '@/helpers/productSearchRequest';
+import { defaultStoreNameDataKey, defaultStoreQuantityDataKey } from '@/helpers/storeAvailability';
 import type { IDataset } from '@/stores/context.store';
 import { toRef } from 'vue';
 
