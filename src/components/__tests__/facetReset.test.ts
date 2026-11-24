@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import router from '@/router';
 import SearchOverlay from '@/components/SearchOverlay.vue';
 import Category from '@/views/Category.vue';
+import { facetConfig } from '@/facetConfig';
 
 const api = vi.hoisted(() => ({
     batch: vi.fn<(request: SearchRequestCollection) => Promise<unknown>>(),
@@ -231,5 +232,52 @@ describe('Reset filters', () => {
         expect(api.searchProducts.mock.lastCall?.[0].skip).toBe(0);
         expect(wrapper.findAll('input').map(input => input.element.value)).toEqual(['0', '100']);
         expect(resetButton(wrapper)).toBeUndefined();
+    });
+});
+
+describe('Numeric facet selections', () => {
+    it('selects and deselects zero and decimal values across URL updates', async() => {
+        facetConfig.push({
+            contexts: ['SearchOverlay'],
+            type: 'DataDouble',
+            renderType: 'Checklist',
+            label: 'Weight',
+            dataKey: 'Weight',
+            dataSelectionStrategy: 'VariantWithFallbackToProduct',
+        });
+
+        try {
+            api.batch.mockImplementation(async request => {
+                const productRequest = request.requests?.[0] as ProductSearchRequest | undefined;
+                const weight = productRequest?.facets?.items?.find(facet => 'key' in facet && facet.key === 'Weight');
+                const selected: unknown[] = weight && 'selected' in weight && Array.isArray(weight.selected) ? weight.selected : [];
+                const available = [0, 2.5].map(value => ({ value, selected: selected.some(option => option === value), hits: 1 }));
+                const facets = { items: [{ field: 'Data', key: 'Weight', available }] };
+                const products = { ...withProducts, facets };
+                return searchResponse(products);
+            });
+            wrapper = mountSearch();
+            await router.push('/?open=1&term=boots');
+            await flushPromises();
+
+            for (const value of [0, 2.5]) {
+                const selector = `input[type="checkbox"][value="${value}"]`;
+                await wrapper.get(selector).trigger('click');
+                await flushPromises();
+                expect(new URLSearchParams(window.location.search).getAll('Weight')).toEqual([String(value)]);
+                expect(api.batch.mock.lastCall?.[0].requests?.[0]).toMatchObject({
+                    facets: { items: expect.arrayContaining([expect.objectContaining({ key: 'Weight', selected: [value] })]) },
+                });
+
+                await wrapper.get(selector).trigger('click');
+                await flushPromises();
+                expect(new URLSearchParams(window.location.search).has('Weight')).toBe(false);
+                expect(api.batch.mock.lastCall?.[0].requests?.[0]).toMatchObject({
+                    facets: { items: expect.arrayContaining([expect.objectContaining({ key: 'Weight', selected: null })]) },
+                });
+            }
+        } finally {
+            facetConfig.pop();
+        }
     });
 });
