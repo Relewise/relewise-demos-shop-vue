@@ -113,7 +113,7 @@
 
           <div class="mt-5">
             <h3 class="text-xl inline-block">
-              Highlighed details
+              Highlighted details
             </h3>
             <DataValueList :entries="highlightedDetails">
               <template
