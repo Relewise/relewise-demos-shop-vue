@@ -1,6 +1,4 @@
 import type { IDataset } from '@/stores/context.store';
-import { getUserCompanyIds } from '@/helpers/userContext';
-import type { User } from '@relewise/client';
 
 export interface SessionSelections {
     selectedLanguage?: string;
@@ -77,36 +75,13 @@ export function normalizeSessionSelectionsForDataset(dataset: IDataset | undefin
         normalizedSelections.selectedUserIndex = undefined;
     }
 
-    if (normalizedSelections.selectedUserIndex === undefined) {
-        normalizedSelections.selectedCompanyId = undefined;
-        return normalizedSelections;
-    }
-
-    const selectedUser = users[normalizedSelections.selectedUserIndex];
-    const validCompanyIds = getSelectableCompanyIdsForUser(selectedUser, dataset);
-    if (validCompanyIds.length === 0) {
-        normalizedSelections.selectedCompanyId = undefined;
-        return normalizedSelections;
-    }
-
-    if (normalizedSelections.selectedCompanyId && !validCompanyIds.includes(normalizedSelections.selectedCompanyId)) {
+    // Company is a separate demo selection and can also apply to anonymous users.
+    if (normalizedSelections.selectedCompanyId
+        && !dataset.companies?.some((company) => company.id === normalizedSelections.selectedCompanyId)) {
         normalizedSelections.selectedCompanyId = undefined;
     }
 
     return normalizedSelections;
-}
-
-export function getSelectableCompanyIdsForUser(user: User | undefined, dataset?: IDataset) {
-    if (!user || !dataset) {
-        return [];
-    }
-
-    const knownCompanyIds = new Set((dataset.companies ?? []).map((company) => company.id).filter(Boolean));
-    return getUserCompanyIds(user).filter((companyId) => knownCompanyIds.has(companyId));
-}
-
-export function hasSelectableCompaniesForUser(user: User | undefined, dataset?: IDataset) {
-    return getSelectableCompanyIdsForUser(user, dataset).length > 0;
 }
 
 function getDefaultUserSelection(dataset: IDataset) {
