@@ -3,13 +3,24 @@
     id="product-page"
     class="container entity-page mx-auto px-2 lg:p-0"
   >
-    <p
+    <div
       v-if="loadFailed"
-      class="my-4 text-sm text-red-700"
-      role="status"
+      class="my-4 flex flex-wrap items-center gap-3"
     >
-      {{ variantId ? 'This variant could not be loaded.' : 'This product could not be loaded.' }}
-    </p>
+      <p
+        class="text-sm text-red-700"
+        role="status"
+      >
+        {{ variantId ? 'This variant could not be loaded.' : 'This product could not be loaded.' }}
+      </p>
+      <button
+        type="button"
+        class="outline"
+        @click="retryAttempt++"
+      >
+        Retry
+      </button>
+    </div>
     <div
       v-if="product || variants.length"
       class="mb-16"
@@ -243,6 +254,8 @@ const variants = shallowRef<VariantResult[]>([]);
 const buttonClass = ref('');
 const isLoading = ref(false);
 const loadFailed = ref(false);
+// Retry reruns the existing loader and its stale-response guard without changing the URL.
+const retryAttempt = ref(0);
 const language = contextStore.language;
 const defaultSettings = contextStore.defaultSettings;
 const dimensionKeys = computed(() => contextStore.context.value.variantDimensionKeys ?? []);
@@ -303,7 +316,7 @@ const productData = computed<DataValueEntry[]>(() => {
   ];
 });
 
-watch([productId, variantId], async([id, selectedId], previousRoute, onCleanup) => {
+watch([productId, variantId, retryAttempt], async([id, selectedId], previousRoute, onCleanup) => {
   let active = true;
   onCleanup(() => { active = false; });
   // Keep the same product's options usable during navigation without showing the previous variant's details.

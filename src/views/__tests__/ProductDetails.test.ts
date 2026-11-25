@@ -29,10 +29,10 @@ const variants: VariantResult[] = [
     { variantId: 'c', rank: 3, displayName: 'Variant C', specification: { Size: 'Large' }, salesPrice: 33 },
 ];
 
-function response(variant?: VariantResult): { status: number; results: ProductResult[] } {
+function response(variant?: VariantResult | null): { status: number; results: ProductResult[] } {
     return {
         status: 200,
-        results: variant ? [{
+        results: variant !== undefined ? [{
             productId: 'demo-product', displayName: 'Demo product', variant, rank: 1, salesPrice: 100, listPrice: 110,
             filteredVariants: variants, allVariants: variants,
         }] : [],
@@ -49,12 +49,15 @@ function pendingResponse() {
     return { promise, resolve, reject };
 }
 
-async function mountVariantPage() {
+async function mountProductPage(path = '/product/demo-product/variant/a') {
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ name: 'variant', path: '/product/:id/variant/:variant', component: ProductDetails }],
+        routes: [
+            { name: 'product', path: '/product/:id', component: ProductDetails },
+            { name: 'variant', path: '/product/:id/variant/:variant', component: ProductDetails },
+        ],
     });
-    await router.push('/product/demo-product/variant/a');
+    await router.push(path);
     const wrapper = mount(ProductDetails, {
         global: { plugins: [router], mocks: { $format: (value: number) => `EUR ${value}` }, stubs: { Image: true } },
     });
@@ -71,10 +74,11 @@ describe('product variant details', () => {
         contextStore.context.value.variantDimensionKeys = ['Size'];
     });
 
-    it.each(['empty result', 'rejected request'])('keeps the selector and hides the previous variant after an %s', async(failure) => {
+    it.each(['empty result', 'rejected request'])('hides stale details and allows retry after a failed variant request (%s)', async(failure) => {
         const request = pendingResponse();
-        mocks.searchProducts.mockResolvedValueOnce(response(variants[0])).mockReturnValueOnce(request.promise);
-        const { router, wrapper } = await mountVariantPage();
+        mocks.searchProducts.mockResolvedValueOnce(response(variants[0]))
+            .mockReturnValueOnce(request.promise).mockResolvedValueOnce(response(variants[1]));
+        const { router, wrapper } = await mountProductPage();
         expect(wrapper.text()).toContain('Variant A');
         expect(wrapper.text()).toContain('EUR 11');
 
@@ -95,13 +99,40 @@ describe('product variant details', () => {
         expect(wrapper.get('[role="status"]').text()).toBe('This variant could not be loaded.');
         expect(wrapper.get('fieldset').text()).toContain('Large');
         expect(wrapper.text()).not.toMatch(/Variant A|EUR 11|Add to cart/);
+
+        const retry = wrapper.get('[role="status"] + button');
+        expect(retry.text()).toBe('Retry');
+        await retry.trigger('click');
+        await flushPromises();
+
+        expect(mocks.searchProducts).toHaveBeenCalledTimes(3);
+        expect(router.currentRoute.value.path).toBe('/product/demo-product/variant/b');
+        expect(wrapper.find('[role="status"]').exists()).toBe(false);
+        expect(wrapper.text()).toContain('Variant B');
+        expect(wrapper.text()).toContain('EUR 22');
+    });
+
+    it('retries a failed first load on the product URL', async() => {
+        mocks.searchProducts.mockResolvedValueOnce(response()).mockResolvedValueOnce(response(null));
+        const path = '/product/demo-product';
+        const { router, wrapper } = await mountProductPage(path);
+        expect(wrapper.get('[role="status"]').text()).toBe('This product could not be loaded.');
+
+        await wrapper.get('[role="status"] + button').trigger('click');
+        await flushPromises();
+
+        expect(mocks.searchProducts).toHaveBeenCalledTimes(2);
+        expect(router.currentRoute.value.path).toBe(path);
+        expect(wrapper.find('[role="status"]').exists()).toBe(false);
+        expect(wrapper.get('h1').text()).toBe('Demo product');
+        expect(wrapper.get('fieldset').text()).toContain('Small');
     });
 
     it('uses the latest route when an older variant response arrives last', async() => {
         const older = pendingResponse();
         mocks.searchProducts.mockResolvedValueOnce(response(variants[0]))
             .mockReturnValueOnce(older.promise).mockResolvedValueOnce(response(variants[2]));
-        const { router, wrapper } = await mountVariantPage();
+        const { router, wrapper } = await mountProductPage();
         await router.push('/product/demo-product/variant/b');
         await router.push('/product/demo-product/variant/c');
         await flushPromises();
@@ -121,7 +152,7 @@ describe('product variant details', () => {
     it('uses the selected variant price with an unconfigured selector', async() => {
         contextStore.context.value.variantDimensionKeys = [];
         mocks.searchProducts.mockResolvedValueOnce(response(variants[0]));
-        const { wrapper } = await mountVariantPage();
+        const { wrapper } = await mountProductPage();
 
         expect(wrapper.text()).toContain('EUR 11');
         expect(wrapper.text()).not.toContain('EUR 110');
