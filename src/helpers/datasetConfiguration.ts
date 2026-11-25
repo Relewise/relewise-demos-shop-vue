@@ -36,6 +36,13 @@ export function sanitizeCompanies(companies?: Company[]) {
     }));
 }
 
+export function normalizeVariantDimensionKeys(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+
+    // Relewise Data Keys and specification keys are case-sensitive.
+    return [...new Set(value.flatMap(key => typeof key === 'string' && key.trim() ? [key.trim()] : []))];
+}
+
 export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput): IDataset {
     const variantBasedSearchOverlay = dataset.variantBasedSearchOverlay ?? false;
 
@@ -61,6 +68,7 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         variantResolutionImages: dataset.variantResolutionImages ?? false,
         maxVariantsPerProduct: normalizeMaxVariantsPerProduct(dataset.maxVariantsPerProduct),
         variantRequestSorting: dataset.variantRequestSorting === 'ByRelevance' ? 'ByRelevance' : defaultVariantRequestSorting,
+        variantDimensionKeys: normalizeVariantDimensionKeys(dataset.variantDimensionKeys),
         contentSearch: dataset.contentSearch ?? false,
         searchHighlight: dataset.searchHighlight ?? false,
         conversationalSearchEnabled: dataset.conversationalSearchEnabled ?? false,

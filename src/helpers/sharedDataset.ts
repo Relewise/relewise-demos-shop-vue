@@ -1,5 +1,5 @@
 import { formatCompanyDetails, formatUserDetails } from '@/helpers/contextSummary';
-import { normalizeDatasetConfiguration, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
+import { normalizeDatasetConfiguration, normalizeVariantDimensionKeys, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { datasetFeatureFields, type DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import { displayUser } from '@/helpers/userHelper';
 import { getUserCompanyIds, sanitizeUser, sanitizeUsers } from '@/helpers/userContext';
@@ -23,6 +23,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
     selectedUserIndex?: number;
     selectedCompanyId?: string | null;
     conversationalSearchProperties?: IDataset['conversationalSearchProperties'];
+    variantDimensionKeys?: string[];
 };
 
 export type SharedDatasetCoreFieldChange = {
@@ -139,6 +140,7 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         selectedUserIndex: normalizeOptionalUserIndex(entry.selectedUserIndex, users),
         selectedCompanyId: normalizeOptionalString(entry.selectedCompanyId),
         conversationalSearchProperties: normalizeConversationalSearchProperties(entry.conversationalSearchProperties),
+        variantDimensionKeys: Array.isArray(entry.variantDimensionKeys) ? normalizeVariantDimensionKeys(entry.variantDimensionKeys) : undefined,
     };
 }
 
@@ -169,6 +171,7 @@ export function buildSharedDataset(dataset: IDataset, {
         selectedUserIndex: normalizeOptionalUserIndex(selectedUserIndex, dataset.users),
         selectedCompanyId: normalizeOptionalString(selectedCompanyId),
         conversationalSearchProperties: dataset.conversationalSearchProperties,
+        variantDimensionKeys: normalizeVariantDimensionKeys(dataset.variantDimensionKeys),
     };
 }
 
@@ -186,6 +189,7 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         companies: sharedDataset.companies,
         trackingEnabled: sharedDataset.trackingEnabled,
         conversationalSearchProperties: sharedDataset.conversationalSearchProperties,
+        variantDimensionKeys: sharedDataset.variantDimensionKeys,
         ...pickSharedFeatureFlags(sharedDataset),
     });
 }
@@ -230,6 +234,8 @@ export function getSharedDatasetDiff(existingDataset: IDataset, sharedDataset: S
     const userChanges = getSharedDatasetUserChanges(existingDataset, sharedDataset);
     const companyChanges = getSharedDatasetCompanyChanges(existingDataset, sharedDataset);
     const sharedSelection = getSharedDatasetSelectionSummary(sharedDataset);
+    const variantDimensionsChanged = sharedDataset.variantDimensionKeys !== undefined
+        && JSON.stringify(existingDataset.variantDimensionKeys ?? []) !== JSON.stringify(sharedDataset.variantDimensionKeys);
 
     return {
         coreFieldChanges,
@@ -239,6 +245,7 @@ export function getSharedDatasetDiff(existingDataset: IDataset, sharedDataset: S
         sharedSelection,
         hasChanges: coreFieldChanges.length > 0
             || featureChanges.length > 0
+            || variantDimensionsChanged
             || userChanges.additions.length > 0
             || userChanges.conflicts.length > 0
             || companyChanges.additions.length > 0
@@ -260,6 +267,12 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
 
     mergeSharedDatasetLocalesIntoExistingDataset(dataset, sharedDataset);
     applySharedDatasetFeatureDecision(dataset, sharedDataset, decision.features);
+    if (sharedDataset.variantDimensionKeys !== undefined && decision.features !== 'local') {
+        // Older links omit the setting, so importing one preserves the local dimension order.
+        if (decision.features === 'replace' || !dataset.variantDimensionKeys?.length) {
+            dataset.variantDimensionKeys = [...sharedDataset.variantDimensionKeys];
+        }
+    }
     applySharedDatasetUsers(dataset, sharedDataset, decision.users);
     applySharedDatasetCompanies(dataset, sharedDataset, decision.companies);
 

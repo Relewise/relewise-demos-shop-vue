@@ -19,4 +19,11 @@ describe('datasetConfiguration', () => {
             conversationalSearchEnabled: true,
         }).conversationalSearchEnabled).toBe(true);
     });
+
+    it('preserves the order and case of valid variant dimension keys', () => {
+        expect(normalizeDatasetConfiguration({
+            ...dataset,
+            variantDimensionKeys: [' Color ', 'size', 'Color', '', 'color'],
+        }).variantDimensionKeys).toEqual(['Color', 'size', 'color']);
+    });
 });

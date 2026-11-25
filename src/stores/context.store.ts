@@ -33,6 +33,7 @@ export interface IDataset {
     variantResolutionImages?: boolean;
     maxVariantsPerProduct?: number;
     variantRequestSorting?: VariantRequestSorting;
+    variantDimensionKeys?: string[];
     contentSearch?: boolean;
     searchHighlight?: boolean;
     conversationalSearchEnabled?: boolean;

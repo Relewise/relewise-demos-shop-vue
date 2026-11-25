@@ -3,6 +3,13 @@
     id="product-page"
     class="container entity-page mx-auto px-2 lg:p-0"
   >
+    <p
+      v-if="loadFailed"
+      class="my-4 text-sm text-red-700"
+      role="status"
+    >
+      {{ variantId ? 'This variant could not be loaded.' : 'This product could not be loaded.' }}
+    </p>
     <div
       v-if="product"
       class="mb-16"
@@ -41,6 +48,12 @@
             <h1 class="text-4xl mb-4 font-semibold">
               {{ product.displayName }}
             </h1>
+            <p
+              v-if="dimensionKeys.length && variantId && product.variant?.variantId === variantId && product.variant?.displayName !== product.displayName"
+              class="mb-3 text-slate-600"
+            >
+              {{ product.variant?.displayName }}
+            </p>
 
             <div
               v-if="product.data && ((product.data.description && product.data.description.value) || (product.data.Description && product.data.Description.value))"
@@ -50,12 +63,14 @@
               </p>
             </div>
           </div>
-          <div v-if="product.allVariants">
-            <ProductVariants
-              :product="product"
-              :selected-variant-id="variantId ?? undefined"
-            />
-          </div>
+          <ProductVariants
+            v-if="variants.length"
+            :product-id="productId"
+            :variants="variants"
+            :dimension-keys="dimensionKeys"
+            :selected-variant-id="variantId ?? undefined"
+            :language="language"
+          />
           <div class="mt-6">
             <div class="mb-2 flex gap-2">
               <span
@@ -87,8 +102,9 @@
 
           <div class="text-left mt-5">
             <button
-              class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700"
+              class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               :class="buttonClass"
+              :disabled="!canAddToBasket"
               @click="addToBasket"
             >
               Add to cart
@@ -159,7 +175,7 @@
 
 
     <div
-      v-if="product?.variant && variantId"
+      v-if="product?.variant && product.variant.variantId === variantId"
       class="mt-10"
     >
       <h3 class="text-xl inline-block">
@@ -196,7 +212,7 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { DataValueFactory, ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
+import { DataValueFactory, FilterBuilder, ProductSearchBuilder, type ProductResult } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
@@ -206,13 +222,23 @@ import SimilarProductsRecommendation from '../components/SimilarProductsRecommen
 import DataValueList, { type DataValueEntry } from '../components/DataValueList.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 
-const productId = ref<string>('');
-const variantId = ref<string | null>(null);
-const product = ref<ProductResult | null | undefined>(null);
 const route = useRoute();
+const productId = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
+const variantId = computed(() => typeof route.params.variant === 'string' ? route.params.variant : null);
+const product = ref<ProductResult>();
 const buttonClass = ref('');
-const defaultSettings = ref(contextStore.defaultSettings);
-const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const isLoading = ref(false);
+const loadFailed = ref(false);
+const language = contextStore.language;
+const defaultSettings = contextStore.defaultSettings;
+const dimensionKeys = computed(() => contextStore.context.value.variantDimensionKeys ?? []);
+const variants = computed(() => (dimensionKeys.value.length ? product.value?.filteredVariants : product.value?.allVariants) ?? []);
+const breadcrumb = computed(() => product.value?.categoryPaths?.[0]?.pathFromRoot ?? undefined);
+const canAddToBasket = computed(() => {
+  if (isLoading.value || loadFailed.value || product.value?.productId !== productId.value) return false;
+  if (variantId.value) return product.value?.variant?.variantId === variantId.value;
+  return dimensionKeys.value.length === 0 || variants.value.length === 0;
+});
 
 const details = computed(() => {
   if (!product.value) return [];
@@ -264,51 +290,65 @@ const productData = computed<DataValueEntry[]>(() => {
   ];
 });
 
-async function init() {
-  const id = route.params.id;
-  const variantIdFromRoute = route.params.variant;
+watch([productId, variantId], async([id, selectedId], _, onCleanup) => {
+  let active = true;
+  onCleanup(() => { active = false; });
+  if (product.value?.productId !== id) product.value = undefined;
+  if (!id) return;
 
-  if (id && !Array.isArray(id)) {
-    productId.value = id;
+  isLoading.value = true;
+  loadFailed.value = false;
+  const hasDimensions = dimensionKeys.value.length > 0;
 
-    if (variantIdFromRoute && !Array.isArray(variantIdFromRoute)) {
-      variantId.value = variantIdFromRoute;
+  try {
+    const selectedProperties = { ...contextStore.selectedProductProperties };
+    if (hasDimensions) {
+      // Apply the contextual filters without inheriting the URL's variant ID filter in the option list.
+      const variantFilters = new FilterBuilder();
+      contextStore.userClassificationBasedFilters(variantFilters);
+      selectedProperties.allVariants = false;
+      selectedProperties.filteredVariants = { filters: variantFilters.build(), inheritFiltersFromRequest: false };
     }
-
-    trackingService.trackProductView(id, variantId.value ?? undefined);
-
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
-      .setSelectedProductProperties(contextStore.selectedProductProperties)
-      .setSelectedVariantProperties({ allData: true, displayName: true })
+      .setSelectedProductProperties(selectedProperties)
+      .setSelectedVariantProperties({ allData: true, displayName: true, allSpecifications: hasDimensions, pricing: hasDimensions })
       .filters(f => {
         f.addProductIdFilter([id]);
-
-        if (variantId.value) {
-          f.addVariantIdFilter(variantId.value);
-        }
-
+        if (selectedId) f.addVariantIdFilter(selectedId);
         contextStore.userClassificationBasedFilters(f);
       })
       .pagination(p => p.setPageSize(1)), contextStore.context.value)
       .build();
 
-    const searcher = contextStore.getSearcher();
-    product.value = (await searcher.searchProducts(request))?.results![0];
-    if (product.value?.categoryPaths) {
-      // Taking the first path on the product to render the breadcrumb
-      breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
+    const response = await contextStore.getSearcher().searchProducts(request);
+    // A slower request for a previous route must never overwrite the result used for add-to-cart.
+    if (!active) return;
+    if (response) contextStore.assertApiCall(response);
+    const result = response?.results?.[0];
+    if (!result || (selectedId && result.variant?.variantId !== selectedId)) {
+      loadFailed.value = true;
+      return;
+    }
+    product.value = hasDimensions && selectedId && result.variant ? {
+      ...result,
+      salesPrice: result.variant.salesPrice ?? result.salesPrice,
+      listPrice: result.variant.listPrice ?? result.listPrice,
+    } : result;
+    trackingService.trackProductView(id, selectedId ?? undefined);
+  }
+  catch (error) {
+    if (active) {
+      loadFailed.value = true;
+      console.error('Could not load product details.', error);
     }
   }
-}
-
-init();
-
-watch(route, () => {
-  init();
-});
+  finally {
+    if (active) isLoading.value = false;
+  }
+}, { immediate: true });
 
 function addToBasket() {
-  if (!product.value) return;
+  if (!canAddToBasket.value || !product.value) return;
 
   basketService.addProduct({
     product: product.value,

@@ -3,6 +3,7 @@
     <label
       v-if="label"
       class="block text-sm text-slate-700"
+      :for="inputId"
     >
       {{ label }}
     </label>
@@ -40,6 +41,7 @@
         </span>
 
         <input
+          :id="inputId"
           v-model="newItem"
           type="text"
           :placeholder="placeholder"
@@ -60,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId } from 'vue';
 
 const props = withDefaults(defineProps<{
     modelValue: string[];
@@ -69,6 +71,7 @@ const props = withDefaults(defineProps<{
     minItems?: number;
     placeholder?: string;
     uppercase?: boolean;
+    caseSensitive?: boolean;
 }>(), {
     label: '',
     help: '',
@@ -82,6 +85,7 @@ const emit = defineEmits<{
 }>();
 
 const newItem = ref('');
+const inputId = useId();
 
 const normalizedItems = computed(() => normalizeItems(props.modelValue ?? []));
 
@@ -134,6 +138,6 @@ function normalizeValue(value: string) {
 }
 
 function isSameValue(left: string, right: string) {
-    return left.toLowerCase() === right.toLowerCase();
+    return props.caseSensitive ? left === right : left.toLowerCase() === right.toLowerCase();
 }
 </script>

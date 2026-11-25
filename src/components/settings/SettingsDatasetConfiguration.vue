@@ -168,6 +168,18 @@
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <FormTags
+            :model-value="editableDataset.variantDimensionKeys ?? []"
+            label="Product page variant dimensions"
+            placeholder="Add a variant key and press Enter"
+            help="Enter case-sensitive variant data or specification keys in selection order. Leave empty to show the variant list."
+            :min-items="0"
+            case-sensitive
+            @update:model-value="editableDataset.variantDimensionKeys = $event"
+          />
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <InputText
             :model-value="editableDataset.recommendationsMinutesAgo"
             label="Recommendations lookback in minutes"

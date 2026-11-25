@@ -44,7 +44,7 @@
       <div>
         <div
           v-for="item in model.lineItems"
-          :key="item.product.productId ?? ''"
+          :key="JSON.stringify([item.product.productId, item.product.variant?.variantId])"
           class="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5"
         >
           <div class="flex flex-col gap-4 sm:grid sm:grid-cols-[auto,minmax(0,1fr),8.5rem,9rem,4rem] sm:items-center sm:gap-5">
@@ -363,10 +363,8 @@ function productRoute(item: ILineItem) {
 
 function productMeta(item: ILineItem) {
     const variantName = item.product.variant?.displayName?.trim();
-    if (!variantName || variantName === item.product.displayName)
-        return '';
-
-    return `Variant: ${variantName}`;
+    const label = variantName && variantName !== item.product.displayName ? variantName : item.product.variant?.variantId;
+    return label ? `Variant: ${label}` : '';
 }
 
 function lineTotal(item: ILineItem) {
