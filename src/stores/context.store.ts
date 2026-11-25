@@ -1,4 +1,4 @@
-import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, type Company, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
+import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
@@ -8,6 +8,7 @@ import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSes
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import type { ConversationalSearchPropertyDefinition } from '@/helpers/conversationalSearchApi';
 import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
+import type { DemoCompany } from '@/helpers/companyAssortments';
 
 export type VariantRequestSorting = 'GroupedByProduct' | 'ByRelevance';
 
@@ -20,7 +21,7 @@ export interface IDataset {
     trackingEnabled?: boolean;
     serverUrl?: string;
     users?: User[];
-    companies?: Company[];
+    companies?: DemoCompany[];
     allowThirdLevelCategories?: boolean;
     hideSoldOutProducts?: boolean;
     userClassificationFilters?: boolean;
@@ -224,7 +225,19 @@ class AppContext {
         return AppContext.numberOfProductsToRecommend;
     }
 
-    public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
+    public companyAssortmentFilter(filterBuilder: FilterBuilder) {
+        const assortmentIds = this.selectedCompany.value?.assortmentIds;
+        if (assortmentIds?.length) {
+            filterBuilder.addProductAssortmentFilter(assortmentIds);
+        }
+    }
+
+    public productAvailabilityFilters(filterBuilder: FilterBuilder) {
+        this.companyAssortmentFilter(filterBuilder);
+        this.userClassificationBasedFilters(filterBuilder);
+    }
+
+    private userClassificationBasedFilters(filterBuilder: FilterBuilder) {
         if (!this.user.value.classifications || !this.context.value.userClassificationFilters) {
             return;
         }

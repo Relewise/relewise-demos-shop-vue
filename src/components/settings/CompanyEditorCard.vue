@@ -99,7 +99,14 @@
           v-model="data"
           title="Data"
         />
-        <div class="hidden xl:block" />
+        <FormTags
+          v-model="assortments"
+          label="Assortments"
+          placeholder="Add assortment ID"
+          help="Press Enter to add a whole-number ID. Leave empty to show all assortments."
+          :min-items="0"
+          :validate-item="validateAssortmentId"
+        />
       </div>
     </div>
   </article>
@@ -108,11 +115,13 @@
 <script setup lang="ts">
 /* eslint-disable vue/no-mutating-props */
 import InlineActionInput from '@/components/InlineActionInput.vue';
+import FormTags from '@/components/form/FormTags.vue';
 import InputSelect from '@/components/form/InputSelect.vue';
 import TrashCanButton from '@/components/form/TrashCanButton.vue';
 import KeyValues, { type KeyValue } from '@/components/KeyValues.vue';
 import { keyValueArrayToDataRecord, keyValuesFromDataRecord, setCompanyDataDraft } from '@/helpers/keyValueMetadata';
 import { getUserCompanyIds, setUserCompanyIds } from '@/helpers/userContext';
+import { normalizeCompanyAssortmentIds, parseAssortmentId, type DemoCompany } from '@/helpers/companyAssortments';
 import contextStore from '@/stores/context.store';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 import type { Company, User } from '@relewise/client';
@@ -120,7 +129,7 @@ import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     companies: Company[];
-    company: Company;
+    company: DemoCompany;
     expanded: boolean;
     isActive: boolean;
     users: User[];
@@ -134,6 +143,16 @@ defineEmits<{
 const companyId = ref('');
 const parentCompanyId = ref('');
 const data = ref<KeyValue[]>([]);
+const assortments = computed({
+    get: () => (props.company.assortmentIds ?? []).map(String),
+    set: (values: string[]) => {
+        props.company.assortmentIds = normalizeCompanyAssortmentIds(values.map(parseAssortmentId));
+    },
+});
+
+function validateAssortmentId(value: string) {
+    return parseAssortmentId(value) === undefined ? 'Enter a valid whole-number assortment ID.' : undefined;
+}
 
 const companyIdActionLabel = computed(() => companyId.value.trim() ? 'Regenerate' : 'Generate');
 const hasChildCompanies = computed(() => {
@@ -174,6 +193,9 @@ const summaryBadges = computed(() => {
 
     if (parentCompanyId.value.trim()) {
         badges.push(`Parent: ${parentCompanyId.value.trim()}`);
+    }
+    if (assortments.value.length) {
+        badges.push(`Assortments: ${assortments.value.join(', ')}`);
     }
 
     const dataBadges = data.value

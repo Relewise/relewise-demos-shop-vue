@@ -116,6 +116,12 @@
         </div>
       </div>
     </div>
+    <p
+      v-else-if="product === undefined"
+      class="py-10 text-slate-600"
+    >
+      Product unavailable.
+    </p>
     <div
       v-if="product?.data
         && product.data.SoldOut
@@ -124,7 +130,7 @@
     >
       <SimilarProductsRecommendation :product="product" />
     </div>
-    <relewise-product-recommendation-batcher v-else>
+    <relewise-product-recommendation-batcher v-else-if="product">
       <div class="mb-16 scrollbar">
         <h2 class="text-2xl mb-2 font-semibold">
           Purchased with the product
@@ -287,13 +293,13 @@ async function init() {
           f.addVariantIdFilter(variantId.value);
         }
 
-        contextStore.userClassificationBasedFilters(f);
+        contextStore.productAvailabilityFilters(f);
       })
       .pagination(p => p.setPageSize(1)), contextStore.context.value)
       .build();
 
     const searcher = contextStore.getSearcher();
-    product.value = (await searcher.searchProducts(request))?.results![0];
+    product.value = (await searcher.searchProducts(request))?.results?.[0];
     if (product.value?.categoryPaths) {
       // Taking the first path on the product to render the breadcrumb
       breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
