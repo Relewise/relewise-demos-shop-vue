@@ -33,12 +33,19 @@ export type SharedDatasetCoreFieldChange = {
     nextValue: string;
 };
 
-export type SharedDatasetFeatureChange = {
+type SharedDatasetToggleChange = {
     key: SharedDatasetFeatureKey;
     label: string;
     description: string;
     currentValue: boolean;
     nextValue: boolean;
+};
+
+export type SharedDatasetFeatureChange = SharedDatasetToggleChange | {
+    key: 'variantDimensionKeys';
+    label: string;
+    currentValue: string[];
+    nextValue: string[];
 };
 
 export type SharedDatasetUserAddition = {
@@ -234,8 +241,6 @@ export function getSharedDatasetDiff(existingDataset: IDataset, sharedDataset: S
     const userChanges = getSharedDatasetUserChanges(existingDataset, sharedDataset);
     const companyChanges = getSharedDatasetCompanyChanges(existingDataset, sharedDataset);
     const sharedSelection = getSharedDatasetSelectionSummary(sharedDataset);
-    const variantDimensionsChanged = sharedDataset.variantDimensionKeys !== undefined
-        && JSON.stringify(existingDataset.variantDimensionKeys ?? []) !== JSON.stringify(sharedDataset.variantDimensionKeys);
 
     return {
         coreFieldChanges,
@@ -245,7 +250,6 @@ export function getSharedDatasetDiff(existingDataset: IDataset, sharedDataset: S
         sharedSelection,
         hasChanges: coreFieldChanges.length > 0
             || featureChanges.length > 0
-            || variantDimensionsChanged
             || userChanges.additions.length > 0
             || userChanges.conflicts.length > 0
             || companyChanges.additions.length > 0
@@ -267,12 +271,6 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
 
     mergeSharedDatasetLocalesIntoExistingDataset(dataset, sharedDataset);
     applySharedDatasetFeatureDecision(dataset, sharedDataset, decision.features);
-    if (sharedDataset.variantDimensionKeys !== undefined && decision.features !== 'local') {
-        // Older links omit the setting, so importing one preserves the local dimension order.
-        if (decision.features === 'replace' || !dataset.variantDimensionKeys?.length) {
-            dataset.variantDimensionKeys = [...sharedDataset.variantDimensionKeys];
-        }
-    }
     applySharedDatasetUsers(dataset, sharedDataset, decision.users);
     applySharedDatasetCompanies(dataset, sharedDataset, decision.companies);
 
@@ -360,8 +358,8 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
     return changes;
 }
 
-function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset) {
-    return getSharedFeatureDefinitions()
+function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset): SharedDatasetFeatureChange[] {
+    const changes: SharedDatasetFeatureChange[] = getSharedFeatureDefinitions()
         .map((feature) => ({
             key: feature.key,
             label: feature.label,
@@ -369,7 +367,7 @@ function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: Shared
             currentValue: Boolean(dataset[feature.key]),
             nextValue: sharedDataset[feature.key],
         }))
-        .filter((feature): feature is SharedDatasetFeatureChange => typeof feature.nextValue === 'boolean' && feature.currentValue !== feature.nextValue)
+        .filter((feature): feature is SharedDatasetToggleChange => typeof feature.nextValue === 'boolean' && feature.currentValue !== feature.nextValue)
         .map((feature) => ({
             key: feature.key,
             label: feature.label,
@@ -377,6 +375,19 @@ function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: Shared
             currentValue: feature.currentValue,
             nextValue: feature.nextValue,
         }));
+
+    const currentKeys = dataset.variantDimensionKeys ?? [];
+    const incomingKeys = sharedDataset.variantDimensionKeys;
+    if (incomingKeys && (incomingKeys.length !== currentKeys.length || incomingKeys.some((key, index) => key !== currentKeys[index]))) {
+        changes.push({
+            key: 'variantDimensionKeys',
+            label: 'Product page variant dimensions',
+            currentValue: currentKeys,
+            nextValue: incomingKeys,
+        });
+    }
+
+    return changes;
 }
 
 function getSharedDatasetUserChanges(dataset: IDataset, sharedDataset: SharedDataset): SharedDatasetUserChanges {
@@ -513,6 +524,11 @@ function applySharedDatasetFeatureDecision(
         if (nextValue) {
             dataset[feature.key] = true;
         }
+    }
+
+    // Older links omit the setting. Merging adopts the imported order only if the local list is empty.
+    if (sharedDataset.variantDimensionKeys && (decision === 'replace' || !dataset.variantDimensionKeys?.length)) {
+        dataset.variantDimensionKeys = [...sharedDataset.variantDimensionKeys];
     }
 }
 

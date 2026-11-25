@@ -6,7 +6,7 @@ export async function fetchProduct(id: string) {
     try {
         const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
             .setSelectedProductProperties(contextStore.selectedProductProperties)
-            .setSelectedVariantProperties({ allData: true, displayName: true })
+            .setSelectedVariantProperties({ allData: true, displayName: true, pricing: true })
             .filters(f => {
                 f.addProductIdFilter([id]);
                 contextStore.userClassificationBasedFilters(f);

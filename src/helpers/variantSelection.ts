@@ -1,6 +1,7 @@
 import type { Multilingual, VariantResult } from '@relewise/client';
 
 type NamedVariant = VariantResult & { variantId: string };
+type VariantRow = { variant: NamedVariant; values: (string | undefined)[] };
 
 export function getVariantSelection(
     variants: VariantResult[],
@@ -12,7 +13,12 @@ export function getVariantSelection(
         .map(variant => ({ variant, values: keys.map(key => dimensionValue(variant, key, language)) }));
     const dimensions = keys.map((key, index) => ({ key, index }))
         .filter(({ index }) => rows.some(row => row.values[index] !== undefined));
-    const complete = rows.filter(row => dimensions.every(({ index }) => row.values[index] !== undefined));
+    const complete: VariantRow[] = [];
+    const incomplete: NamedVariant[] = [];
+    for (const row of rows) {
+        if (dimensions.every(({ index }) => row.values[index] !== undefined)) complete.push(row);
+        else incomplete.push(row.variant);
+    }
 
     if (dimensions.length === 0 || complete.length === 0) {
         return { groups: [], otherVariants: rows.map(row => row.variant), matchingVariants: [] };
@@ -21,17 +27,18 @@ export function getVariantSelection(
     const selected = complete.find(row => row.variant.variantId === selectedVariantId);
     let matchingPrefix = complete;
     const groups = dimensions.map(({ key, index }) => {
-        const available = new Map<string, string>();
+        const available = new Map<string, VariantRow>();
         for (const row of matchingPrefix) {
             const value = row.values[index]!;
-            // Retain later choices when an exact match exists. Otherwise choose a real combination for the new prefix.
-            if (!available.has(value) || selected?.values.slice(index + 1).every((later, i) => later === row.values[index + 1 + i])) {
-                available.set(value, row.variant.variantId);
+            const current = available.get(value);
+            if (!current || (selected && preservesMoreChoices(row, current, selected, index + 1))) {
+                available.set(value, row);
             }
         }
 
         const selectedValue = selected?.values[index];
-        if (selectedValue !== undefined) {
+        if (selected && selectedValue !== undefined) {
+            available.set(selectedValue, selected);
             matchingPrefix = matchingPrefix.filter(row => row.values[index] === selectedValue);
         }
 
@@ -40,7 +47,7 @@ export function getVariantSelection(
             selectedValue,
             options: [...new Set(complete.map(row => row.values[index]!))].map(value => ({
                 value,
-                variantId: value === selectedValue ? selected?.variant.variantId : available.get(value),
+                variantId: available.get(value)?.variant.variantId,
             })),
         };
     });
@@ -48,9 +55,25 @@ export function getVariantSelection(
     return {
         groups,
         // Show individual variants when a configured value is missing or several SKUs share the same values.
-        otherVariants: rows.filter(row => !dimensions.every(({ index }) => row.values[index] !== undefined)).map(row => row.variant),
+        otherVariants: incomplete,
         matchingVariants: selected && matchingPrefix.length > 1 ? matchingPrefix.map(row => row.variant) : [],
     };
+}
+
+function preservesMoreChoices(candidate: VariantRow, current: VariantRow, selected: VariantRow, start: number) {
+    let difference = 0;
+    let firstDifference = 0;
+    for (let index = start; index < selected.values.length; index++) {
+        const selectedValue = selected.values[index];
+        if (selectedValue === undefined) continue;
+
+        const matchDifference = Number(candidate.values[index] === selectedValue) - Number(current.values[index] === selectedValue);
+        difference += matchDifference;
+        firstDifference ||= matchDifference;
+    }
+
+    // The configured dimension order breaks ties, with API order preserved for equivalent variants.
+    return (difference || firstDifference) > 0;
 }
 
 function dimensionValue(variant: VariantResult, key: string, language: string) {

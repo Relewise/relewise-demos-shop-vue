@@ -11,25 +11,28 @@
       {{ variantId ? 'This variant could not be loaded.' : 'This product could not be loaded.' }}
     </p>
     <div
-      v-if="product"
+      v-if="product || variants.length"
       class="mb-16"
     >
       <Breadcrumb
-        v-if="breadcrumb"
+        v-if="product && breadcrumb"
         :breadcrumb="breadcrumb"
         :product="product"
       />
 
       <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
-        <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center items-center">
+        <div
+          v-if="product"
+          class="relative flex overflow-hidden w-full xl:w-1/2 justify-center items-center"
+        >
           <Image
             :entity="product"
             class="!h-[300px] xl:!h-[600px] !w-auto"
           />
         </div>
 
-        <div class="bg-white w-full xl:w-1/2 relative">
-          <div>
+        <div class="bg-white w-full xl:ml-auto xl:w-1/2 relative">
+          <div v-if="product">
             <div
               class="flex items-center gap-2 mb-1"
               :class="product.brand ? 'justify-between' : 'items-end'"
@@ -71,7 +74,10 @@
             :selected-variant-id="variantId ?? undefined"
             :language="language"
           />
-          <div class="mt-6">
+          <div
+            v-if="product"
+            class="mt-6"
+          >
             <div class="mb-2 flex gap-2">
               <span
                 v-if="product.salesPrice !== product.listPrice"
@@ -100,7 +106,10 @@
             </div>
           </div>
 
-          <div class="text-left mt-5">
+          <div
+            v-if="product"
+            class="text-left mt-5"
+          >
             <button
               class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               :class="buttonClass"
@@ -111,7 +120,10 @@
             </button>
           </div>
 
-          <div class="mt-5">
+          <div
+            v-if="product"
+            class="mt-5"
+          >
             <h3 class="text-xl inline-block">
               Highlighted details
             </h3>
@@ -140,7 +152,7 @@
     >
       <SimilarProductsRecommendation :product="product" />
     </div>
-    <relewise-product-recommendation-batcher v-else>
+    <relewise-product-recommendation-batcher v-else-if="product">
       <div class="mb-16 scrollbar">
         <h2 class="text-2xl mb-2 font-semibold">
           Purchased with the product
@@ -212,8 +224,9 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
-import { DataValueFactory, FilterBuilder, ProductSearchBuilder, type ProductResult } from '@relewise/client';
-import { computed, ref, watch } from 'vue';
+import { withVariantPricing } from '@/helpers/productPricing';
+import { DataValueFactory, FilterBuilder, ProductSearchBuilder, type ProductResult, type VariantResult } from '@relewise/client';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
@@ -226,13 +239,13 @@ const route = useRoute();
 const productId = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
 const variantId = computed(() => typeof route.params.variant === 'string' ? route.params.variant : null);
 const product = ref<ProductResult>();
+const variants = shallowRef<VariantResult[]>([]);
 const buttonClass = ref('');
 const isLoading = ref(false);
 const loadFailed = ref(false);
 const language = contextStore.language;
 const defaultSettings = contextStore.defaultSettings;
 const dimensionKeys = computed(() => contextStore.context.value.variantDimensionKeys ?? []);
-const variants = computed(() => (dimensionKeys.value.length ? product.value?.filteredVariants : product.value?.allVariants) ?? []);
 const breadcrumb = computed(() => product.value?.categoryPaths?.[0]?.pathFromRoot ?? undefined);
 const canAddToBasket = computed(() => {
   if (isLoading.value || loadFailed.value || product.value?.productId !== productId.value) return false;
@@ -290,10 +303,12 @@ const productData = computed<DataValueEntry[]>(() => {
   ];
 });
 
-watch([productId, variantId], async([id, selectedId], _, onCleanup) => {
+watch([productId, variantId], async([id, selectedId], previousRoute, onCleanup) => {
   let active = true;
   onCleanup(() => { active = false; });
-  if (product.value?.productId !== id) product.value = undefined;
+  // Keep the same product's options usable during navigation without showing the previous variant's details.
+  product.value = undefined;
+  if (previousRoute?.[0] !== id) variants.value = [];
   if (!id) return;
 
   isLoading.value = true;
@@ -311,7 +326,7 @@ watch([productId, variantId], async([id, selectedId], _, onCleanup) => {
     }
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
       .setSelectedProductProperties(selectedProperties)
-      .setSelectedVariantProperties({ allData: true, displayName: true, allSpecifications: hasDimensions, pricing: hasDimensions })
+      .setSelectedVariantProperties({ allData: true, displayName: true, allSpecifications: hasDimensions, pricing: true })
       .filters(f => {
         f.addProductIdFilter([id]);
         if (selectedId) f.addVariantIdFilter(selectedId);
@@ -325,15 +340,12 @@ watch([productId, variantId], async([id, selectedId], _, onCleanup) => {
     if (!active) return;
     if (response) contextStore.assertApiCall(response);
     const result = response?.results?.[0];
-    if (!result || (selectedId && result.variant?.variantId !== selectedId)) {
+    if (result?.productId !== id || (selectedId && result.variant?.variantId !== selectedId)) {
       loadFailed.value = true;
       return;
     }
-    product.value = hasDimensions && selectedId && result.variant ? {
-      ...result,
-      salesPrice: result.variant.salesPrice ?? result.salesPrice,
-      listPrice: result.variant.listPrice ?? result.listPrice,
-    } : result;
+    variants.value = (hasDimensions ? result.filteredVariants : result.allVariants) ?? [];
+    product.value = withVariantPricing(result);
     trackingService.trackProductView(id, selectedId ?? undefined);
   }
   catch (error) {
