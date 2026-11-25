@@ -36,6 +36,7 @@ export function sanitizeCompanies(companies?: Company[]) {
     }));
 }
 
+/** Cleans saved or imported dimension keys while preserving the order shoppers choose them. */
 export function normalizeVariantDimensionKeys(value: unknown): string[] {
     if (!Array.isArray(value)) return [];
 

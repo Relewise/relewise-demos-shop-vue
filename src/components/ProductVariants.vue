@@ -77,10 +77,12 @@ function variantRoute(variantId: string) {
 }
 
 function selectVariant(variantId: string | undefined) {
+    // The route drives the selected variant's details and preserves the selection for reload and back navigation.
     if (variantId && variantId !== props.selectedVariantId) void router.push(variantRoute(variantId));
 }
 
 function dimensionLabel(key: string) {
+    // Format the heading for display while retaining the exact key for data lookups.
     const words = key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/_/g, ' ');
     return words.charAt(0).toUpperCase() + words.slice(1);
 }

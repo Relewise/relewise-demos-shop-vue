@@ -263,6 +263,7 @@ const breadcrumb = computed(() => product.value?.categoryPaths?.[0]?.pathFromRoo
 const canAddToBasket = computed(() => {
   if (isLoading.value || loadFailed.value || product.value?.productId !== productId.value) return false;
   if (variantId.value) return product.value?.variant?.variantId === variantId.value;
+  // Require an explicit variant on the product route when the configured picker has options.
   return dimensionKeys.value.length === 0 || variants.value.length === 0;
 });
 

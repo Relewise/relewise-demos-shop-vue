@@ -24,6 +24,7 @@ class BasketService {
         const storedBasket = localStorage.getItem('basket');
         if (storedBasket !== null) {
             const basket = JSON.parse(storedBasket) as IBasket;
+            // Stored rows may predate variant pricing. Reuse any SKU price available in their saved data.
             this.state.model = {
                 lineItems: basket.lineItems.map(item => ({ ...item, product: withVariantPricing(item.product) })),
             };
