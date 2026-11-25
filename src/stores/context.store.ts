@@ -367,7 +367,7 @@ class AppContext {
     }) {
         const currentDatasetId = this.hasActiveDataset.value ? this.context.value.datasetId : '';
         const currentUserIndex = this.selectedUserIndex.value;
-        const shouldClearBasket = datasetId !== currentDatasetId || selectedUserIndex !== currentUserIndex;
+        const currentCompanyId = this.selectedCompany.value?.id;
         const nextDatasetIndex = this.state.datasets.findIndex((dataset) => dataset.datasetId === datasetId);
 
         if (nextDatasetIndex < 0) {
@@ -382,6 +382,10 @@ class AppContext {
             selectedCompanyId: selectedCompanyId || undefined,
         });
 
+        // Basket lines store product snapshots, so they are not subject to the new company's filters.
+        const shouldClearBasket = datasetId !== currentDatasetId
+            || selectedUserIndex !== currentUserIndex
+            || this.selectedCompany.value?.id !== currentCompanyId;
         this.refreshActiveContext({ clearBasket: shouldClearBasket });
     }
 

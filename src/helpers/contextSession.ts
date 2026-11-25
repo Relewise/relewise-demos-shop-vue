@@ -33,13 +33,11 @@ export function createSessionSelectionsForDataset(dataset?: IDataset): SessionSe
 
     reportMissingLocaleConfiguration(dataset);
 
-    const validUserSelection = getDefaultUserSelection(dataset);
-
     return {
-        selectedLanguage: dataset.allLanguages?.[0] ?? undefined,
-        selectedCurrencyCode: dataset.allCurrencies?.[0] ?? undefined,
-        selectedUserIndex: validUserSelection.selectedUserIndex,
-        selectedCompanyId: validUserSelection.selectedCompanyId,
+        selectedLanguage: dataset.allLanguages?.[0],
+        selectedCurrencyCode: dataset.allCurrencies?.[0],
+        selectedUserIndex: dataset.users?.length ? 0 : undefined,
+        selectedCompanyId: undefined,
     };
 }
 
@@ -82,19 +80,4 @@ export function normalizeSessionSelectionsForDataset(dataset: IDataset | undefin
     }
 
     return normalizedSelections;
-}
-
-function getDefaultUserSelection(dataset: IDataset) {
-    const users = dataset.users ?? [];
-    if (users.length > 0) {
-        return {
-            selectedUserIndex: 0,
-            selectedCompanyId: undefined,
-        };
-    }
-
-    return {
-        selectedUserIndex: undefined,
-        selectedCompanyId: undefined,
-    };
 }

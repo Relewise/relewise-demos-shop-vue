@@ -72,4 +72,33 @@ describe('company assortments', () => {
         selectCompany('different-dataset');
         expect(context.user.value.company).toBeUndefined();
     });
+
+    it('clears the persisted basket on a company change with the same user', async() => {
+        const { default: context } = await import('@/stores/context.store');
+        const { default: basket } = await import('@/services/basket.service');
+        context.addDataset({
+            datasetId: 'demo',
+            apiKey: 'fixture-key',
+            allLanguages: ['en'],
+            allCurrencies: ['EUR'],
+            users: [{ temporaryId: 'shopper' }],
+            companies: [{ id: 'workshop' }, { id: 'safety' }],
+        });
+        const selectCompany = (selectedCompanyId?: string) => context.applySessionContext({
+            datasetId: 'demo', language: 'en', currencyCode: 'EUR', selectedUserIndex: 0, selectedCompanyId,
+        });
+
+        selectCompany('workshop');
+        await basket.addProduct({ product: { productId: 'drill', rank: 1 }, quantityDelta: 1 });
+        selectCompany('workshop');
+        expect(basket.itemsCount.value).toBe(1);
+
+        selectCompany('safety');
+        expect(basket.model.value.lineItems).toEqual([]);
+        expect(JSON.parse(localStorage.getItem('basket')!)).toEqual({ lineItems: [] });
+
+        await basket.addProduct({ product: { productId: 'gloves', rank: 1 }, quantityDelta: 1 });
+        selectCompany();
+        expect(basket.itemsCount.value).toBe(0);
+    });
 });

@@ -164,7 +164,11 @@ export function buildSharedDataset(dataset: IDataset, {
         allCurrencies: uniqueNormalizedStrings(dataset.allCurrencies ?? [], { uppercase: true }),
         serverUrl: normalizeOptionalString(dataset.serverUrl),
         users: sanitizeUsers(dataset.users),
-        companies: sanitizeCompanies(dataset.companies),
+        // An empty array clears restrictions on import. Older links omitted the field.
+        companies: sanitizeCompanies(dataset.companies).map(company => ({
+            ...company,
+            assortmentIds: company.assortmentIds ?? [],
+        })),
         trackingEnabled: dataset.trackingEnabled ?? false,
         ...buildSharedFeatureFlags(dataset),
         selectedUserIndex: normalizeOptionalUserIndex(selectedUserIndex, dataset.users),

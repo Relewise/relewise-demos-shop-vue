@@ -247,13 +247,18 @@ async function initialize(): Promise<void> {
     if (idParam && !Array.isArray(idParam)) {
         const path = route.path ?? '';
         if (path.includes('/product-feed/') || path.includes('product-feed')) {
-            // fetch product details to show at the top
-            topProduct.value = await fetchProduct(idParam);
-            builder.seed({
-                productAndVariantIds: [{ productId: idParam }],
-            });
+            const contextRevision = contextStore.activeContextRevision.value;
+            const product = await fetchProduct(idParam);
+            // The old route or company may have changed during the product lookup.
+            if (path !== route.path || contextRevision !== contextStore.activeContextRevision.value) return;
 
-            trackingService.trackProductView(idParam);
+            topProduct.value = product;
+            if (product) {
+                builder.seed({
+                    productAndVariantIds: [{ productId: idParam }],
+                });
+                trackingService.trackProductView(idParam);
+            }
         } else if (path.includes('/content-feed/') || path.includes('content-feed')) {
             topContent.value = await fetchContent(idParam);
             builder.seed({
