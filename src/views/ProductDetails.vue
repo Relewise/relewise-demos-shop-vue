@@ -319,6 +319,7 @@ const productData = computed<DataValueEntry[]>(() => {
 
 watch([productId, variantId, retryAttempt], async([id, selectedId], previousRoute, onCleanup) => {
   let active = true;
+  // Vue runs cleanup before the watcher reruns or stops, so a late response can't overwrite the current variant.
   onCleanup(() => { active = false; });
   // Keep the same product's options usable during navigation without showing the previous variant's details.
   product.value = undefined;
@@ -350,7 +351,6 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
       .build();
 
     const response = await contextStore.getSearcher().searchProducts(request);
-    // A slower request for a previous route must never overwrite the result used for add-to-cart.
     if (!active) return;
     if (response) contextStore.assertApiCall(response);
     const result = response?.results?.[0];
