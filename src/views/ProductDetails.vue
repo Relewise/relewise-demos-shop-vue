@@ -351,6 +351,7 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
       .build();
 
     const response = await contextStore.getSearcher().searchProducts(request);
+    // A slower request for a previous route must never overwrite the result used for add-to-cart.
     if (!active) return;
     if (response) contextStore.assertApiCall(response);
     const result = response?.results?.[0];
