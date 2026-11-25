@@ -133,18 +133,23 @@
           </div>
         </template>
 
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <h3 class="mb-4 text-base font-semibold text-slate-900">
-            Variant Request Settings
+        <section
+          aria-labelledby="variant-settings-heading"
+          class="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4"
+        >
+          <h3
+            id="variant-settings-heading"
+            class="text-sm font-semibold text-slate-900"
+          >
+            Variants
           </h3>
 
-          <div
-            class="grid gap-5 xl:grid-cols-2"
-          >
+          <div class="grid gap-x-5 gap-y-4 xl:grid-cols-2">
             <InputText
+              id="max-variants-per-product"
               :model-value="editableDataset.maxVariantsPerProduct ?? defaultMaxVariantsPerProduct"
               label="Max variants per product"
-              help="Defaults to 1 and applies everywhere VariantRequestSettings is used."
+              help="Defaults to 1 for requests that use this setting."
               type="number"
               min="1"
               step="1"
@@ -153,6 +158,7 @@
             />
 
             <InputSelect
+              id="variant-sorting"
               v-model="editableDataset.variantRequestSorting"
               label="Variant sorting"
               help="Controls how variants are sorted in product search responses."
@@ -164,30 +170,42 @@
                 By relevance
               </option>
             </InputSelect>
+
+            <FormTags
+              :model-value="editableDataset.variantDimensionKeys ?? []"
+              label="Product page variant dimensions"
+              placeholder="Add a variant key and press Enter"
+              help="Enter case-sensitive variant data or specification keys in selection order. Leave empty to show the variant list."
+              class="xl:col-span-2"
+              :min-items="0"
+              case-sensitive
+              @update:model-value="editableDataset.variantDimensionKeys = $event"
+            />
           </div>
-        </div>
+        </section>
 
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <FormTags
-            :model-value="editableDataset.variantDimensionKeys ?? []"
-            label="Product page variant dimensions"
-            placeholder="Add a variant key and press Enter"
-            help="Enter case-sensitive variant data or specification keys in selection order. Leave empty to show the variant list."
-            :min-items="0"
-            case-sensitive
-            @update:model-value="editableDataset.variantDimensionKeys = $event"
-          />
-        </div>
+        <section
+          aria-labelledby="recommendation-settings-heading"
+          class="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4"
+        >
+          <h3
+            id="recommendation-settings-heading"
+            class="text-sm font-semibold text-slate-900"
+          >
+            Recommendations
+          </h3>
 
-        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <InputText
-            :model-value="editableDataset.recommendationsMinutesAgo"
-            label="Recommendations lookback in minutes"
-            help="Default is 20160 minutes, equivalent to 14 days."
-            type="text"
-            @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
-          />
-        </div>
+          <div class="grid gap-x-5 gap-y-4 xl:grid-cols-2">
+            <InputText
+              id="recommendations-lookback"
+              :model-value="editableDataset.recommendationsMinutesAgo"
+              label="Lookback (minutes)"
+              help="Defaults to 14 days (20,160 minutes)."
+              type="text"
+              @update:model-value="editableDataset.recommendationsMinutesAgo = Number($event)"
+            />
+          </div>
+        </section>
       </div>
     </SettingsAccordionSection>
 
