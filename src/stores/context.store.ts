@@ -31,6 +31,7 @@ export interface IDataset {
     similarProductsOnPdp?: boolean;
     variantBasedSearchOverlay?: boolean;
     variantResolutionImages?: boolean;
+    organicSearchOnly?: boolean;
     maxVariantsPerProduct?: number;
     variantRequestSorting?: VariantRequestSorting;
     contentSearch?: boolean;

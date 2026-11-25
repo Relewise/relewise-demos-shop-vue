@@ -8,6 +8,7 @@ export type DatasetBooleanKey =
     | 'similarProductsOnPdp'
     | 'variantBasedSearchOverlay'
     | 'variantResolutionImages'
+    | 'organicSearchOnly'
     | 'searchHighlight'
     | 'contentSearch'
     | 'conversationalSearchEnabled'
@@ -53,6 +54,11 @@ export const datasetFeatureFields: Array<{ key: DatasetBooleanKey; label: string
         key: 'variantBasedSearchOverlay',
         label: 'Variant-based search overlay',
         description: 'Group and display variants beneath each search result product.',
+    },
+    {
+        key: 'organicSearchOnly',
+        label: 'Organic search only',
+        description: 'Exclude Retail Media placements from search overlay requests.',
     },
     {
         key: 'searchHighlight',

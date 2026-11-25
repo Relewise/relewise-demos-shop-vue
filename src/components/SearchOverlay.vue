@@ -303,8 +303,21 @@ async function search() {
     const productTerm = filters.value.term.length > 0 ? filters.value.term : null;
     const useVariantResolutionImages = !!productTerm && (contextStore.context.value.variantResolutionImages ?? false);
 
+    const productSearch = new ProductSearchBuilder(contextStore.defaultSettings);
+    if (!contextStore.context.value.organicSearchOnly) {
+        productSearch.setRetailMedia(rm => rm
+            .setLocation({
+                key: 'SEARCH_RESULTS_PAGE',
+                placements: [{ key: 'RIGHT' }, { key: 'TOP' }],
+                variation: { key: variationName },
+            })
+            .setSelectedDisplayAdProperties({
+                allData: true,
+            }));
+    }
+
     const request = new SearchCollectionBuilder()
-        .addRequest(applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+        .addRequest(applyVariantRequestSettings(productSearch
             .setSelectedProductProperties(selectedProductPropertiesForTermSearch(contextStore.selectedProductProperties, useVariantResolutionImages))
             .setSelectedVariantProperties({
                 displayName: true,
@@ -339,15 +352,6 @@ async function search() {
                 }
             })
             .pagination(p => p.setPageSize(productPageSize).setPage(Number(filters.value.page)))
-            .setRetailMedia(rm => rm
-                .setLocation({
-                    key: 'SEARCH_RESULTS_PAGE',
-                    placements: [{ key: 'RIGHT' }, { key: 'TOP' }],
-                    variation: { key: variationName },
-                })
-                .setSelectedDisplayAdProperties({
-                    allData: true,
-                }))
             .highlighting(h =>
                 h.enabled(contextStore.context.value.searchHighlight ?? false)
                     .setHighlightable({
