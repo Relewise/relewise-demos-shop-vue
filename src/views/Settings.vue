@@ -100,6 +100,10 @@ async function init() {
     }
 
     const shareParam = params.get('share')!;
+    const recommendationMode = params.get('recommendations');
+    const homeRoute = recommendationMode === 'popular' || recommendationMode === 'personal'
+        ? { name: 'home', query: { recommendations: recommendationMode } }
+        : { name: 'home' };
 
     params.delete('share');
     const url = new URL(window.location.href);
@@ -124,7 +128,7 @@ async function init() {
         contextStore.addDataset(importedDataset);
         activateImportedDataset(importedDataset.datasetId, sharedDataset);
         await reloadAtRoute(
-            { name: 'settings-dataset', params: { datasetId: importedDataset.datasetId } },
+            homeRoute,
             { type: 'success', title: 'Dataset imported.' },
         );
         return;
@@ -139,7 +143,7 @@ async function init() {
         await reloadAtRoute(
             diff.hasChanges
                 ? { name: 'settings-dataset', params: { datasetId: existingDataset.datasetId } }
-                : { name: 'home' },
+                : homeRoute,
             { type: 'success', title: diff.hasChanges ? 'Shared dataset applied.' : 'Dataset already up to date.' },
         );
         return;
