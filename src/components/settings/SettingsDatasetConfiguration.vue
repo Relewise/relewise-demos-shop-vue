@@ -15,6 +15,7 @@
 
       <template #actions>
         <button
+          class="brand-action"
           :disabled="!isDirty"
           :class="!isDirty ? 'cursor-not-allowed opacity-60' : ''"
           @click="saveChanges"
@@ -102,6 +103,34 @@
           </div>
         </div>
       </div>
+
+      <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <h3 class="mb-4 text-base font-semibold text-slate-900">
+          Placeholder images
+        </h3>
+        <div class="grid gap-5 xl:grid-cols-2">
+          <InputText
+            id="product-placeholder-image-url"
+            v-model="editableDataset.productPlaceholderImageUrl"
+            label="Product placeholder image URL"
+            help="Used when a product or variant image is unavailable. Leave blank to use the default."
+          />
+          <InputText
+            id="category-placeholder-image-url"
+            v-model="editableDataset.categoryPlaceholderImageUrl"
+            label="Category placeholder image URL"
+            help="Used when a category image is unavailable. Leave blank to use the default."
+          />
+        </div>
+      </div>
+    </SettingsAccordionSection>
+
+    <SettingsAccordionSection
+      title="Branding"
+      :open="openSections.branding"
+      @toggle="toggleSection('branding')"
+    >
+      <SettingsDatasetBranding v-model="editableDataset.branding" />
     </SettingsAccordionSection>
 
     <SettingsAccordionSection
@@ -148,7 +177,7 @@
               type="number"
               min="1"
               step="1"
-              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-200"
+              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-link focus:outline-hidden focus:ring-2 focus:ring-brand-focus-ring"
               @update:model-value="editableDataset.maxVariantsPerProduct = Number($event)"
             />
 
@@ -200,6 +229,7 @@ import type { DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import Personalization from '@/components/Personalization.vue';
 import SecretInput from '@/components/SecretInput.vue';
 import SettingsAccordionSection from '@/components/settings/SettingsAccordionSection.vue';
+import SettingsDatasetBranding from '@/components/settings/SettingsDatasetBranding.vue';
 import SettingsStickyActions from '@/components/settings/SettingsStickyActions.vue';
 import { useDatasetConfigurationForm } from '@/composables/useDatasetConfigurationForm';
 import { defaultMaxVariantsPerProduct } from '@/helpers/productSearchRequest';

@@ -216,7 +216,7 @@ async function applyContextChanges() {
         <RouterLink
           v-close-popper
           :to="configureDemoRoute"
-          class="mr-auto inline-flex w-fit items-center whitespace-nowrap text-slate-600 hover:text-brand-500"
+          class="mr-auto inline-flex w-fit items-center whitespace-nowrap text-slate-600 hover:text-brand-link"
         >
           <div class="flex items-center justify-center">
             <Cog6ToothIcon class="mr-1 h-5 w-5" /> Configure Demo
@@ -224,7 +224,7 @@ async function applyContextChanges() {
         </RouterLink>
         <button
           v-close-popper
-          class="ml-auto"
+          class="brand-action ml-auto"
           :disabled="!draftDataset"
           :class="!draftDataset ? 'cursor-not-allowed opacity-60' : ''"
           @click="applyContextChanges"

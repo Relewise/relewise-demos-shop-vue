@@ -46,7 +46,7 @@
             >
               <RouterLink
                 :to="{ name: parentCategoryId ? 'sub-sub-category' : 'sub-category', params: { grand: parentCategoryId, parent: categoryId, id: childCategory.category.categoryId } }"
-                class="text-slate-700 hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                class="text-slate-700 hover:text-brand-link transitions ease-in-out delay-150 cursor-pointer"
               >
                 {{ childCategory.category.displayName ?? childCategory.category.categoryId }}
               </RouterLink>
