@@ -1,13 +1,20 @@
 import { formatCompanyDetails, formatUserDetails } from '@/helpers/contextSummary';
+import { brandingFields, normalizeDatasetBranding, type DatasetBranding } from '@/helpers/datasetBranding';
 import { normalizeDatasetConfiguration, normalizeVariantDimensionKeys, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { datasetFeatureFields, type DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import { displayUser } from '@/helpers/userHelper';
 import { getUserCompanyIds, sanitizeUser, sanitizeUsers } from '@/helpers/userContext';
 import type { IDataset } from '@/stores/context.store';
 import type { Company, DataValue, User } from '@relewise/client';
+import type { DemoCompany } from '@/helpers/companyAssortments';
 
 type SharedDatasetFeatureState = Partial<Pick<IDataset, DatasetBooleanKey | 'trackingEnabled'>>;
 type SharedDatasetFeatureKey = DatasetBooleanKey | 'trackingEnabled';
+
+const sharedPlaceholderFields = [
+    { key: 'productPlaceholderImageUrl', label: 'Product placeholder image URL' },
+    { key: 'categoryPlaceholderImageUrl', label: 'Category placeholder image URL' },
+] as const;
 
 export type SharedDataset = SharedDatasetFeatureState & {
     datasetId: string;
@@ -18,8 +25,11 @@ export type SharedDataset = SharedDatasetFeatureState & {
     currencyCode?: string | null;
     allCurrencies?: string[];
     serverUrl?: string | null;
+    productPlaceholderImageUrl?: string | null;
+    categoryPlaceholderImageUrl?: string | null;
+    branding?: DatasetBranding | null;
     users?: User[];
-    companies?: Company[];
+    companies?: DemoCompany[];
     selectedUserIndex?: number;
     selectedCompanyId?: string | null;
     conversationalSearchProperties?: IDataset['conversationalSearchProperties'];
@@ -27,7 +37,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
 };
 
 export type SharedDatasetCoreFieldChange = {
-    key: 'displayName' | 'apiKey' | 'serverUrl';
+    key: 'displayName' | 'apiKey' | 'serverUrl' | 'conversationalSearchProperties' | keyof DatasetBranding | (typeof sharedPlaceholderFields)[number]['key'];
     label: string;
     currentValue: string;
     nextValue: string;
@@ -140,6 +150,9 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         currencyCode: normalizeOptionalCurrency(entry.currencyCode),
         allCurrencies: normalizeOptionalCurrencyArray(entry.allCurrencies),
         serverUrl: normalizeOptionalString(entry.serverUrl),
+        productPlaceholderImageUrl: normalizeSharedPlaceholder(entry.productPlaceholderImageUrl),
+        categoryPlaceholderImageUrl: normalizeSharedPlaceholder(entry.categoryPlaceholderImageUrl),
+        branding: entry.branding === null ? null : normalizeDatasetBranding(entry.branding),
         users,
         companies: normalizeOptionalCompanies(entry.companies),
         trackingEnabled: normalizeOptionalBoolean(entry.trackingEnabled),
@@ -171,8 +184,16 @@ export function buildSharedDataset(dataset: IDataset, {
         currencyCode: normalizeOptionalCurrency(currencyCode),
         allCurrencies: uniqueNormalizedStrings(dataset.allCurrencies ?? [], { uppercase: true }),
         serverUrl: normalizeOptionalString(dataset.serverUrl),
+        productPlaceholderImageUrl: normalizeOptionalString(dataset.productPlaceholderImageUrl),
+        categoryPlaceholderImageUrl: normalizeOptionalString(dataset.categoryPlaceholderImageUrl),
+        // A null value shares the defaults. Older links omit the property and preserve local branding.
+        branding: normalizeDatasetBranding(dataset.branding) ?? null,
         users: sanitizeUsers(dataset.users),
-        companies: sanitizeCompanies(dataset.companies),
+        // An empty array clears restrictions on import. Older links omitted the field.
+        companies: sanitizeCompanies(dataset.companies).map(company => ({
+            ...company,
+            assortmentIds: company.assortmentIds ?? [],
+        })),
         trackingEnabled: dataset.trackingEnabled ?? false,
         ...buildSharedFeatureFlags(dataset),
         selectedUserIndex: normalizeOptionalUserIndex(selectedUserIndex, dataset.users),
@@ -192,6 +213,9 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         currencyCode: sharedDataset.currencyCode ?? undefined,
         allCurrencies: sharedDataset.allCurrencies ?? [],
         serverUrl: sharedDataset.serverUrl ?? undefined,
+        productPlaceholderImageUrl: sharedDataset.productPlaceholderImageUrl ?? undefined,
+        categoryPlaceholderImageUrl: sharedDataset.categoryPlaceholderImageUrl ?? undefined,
+        branding: sharedDataset.branding ?? undefined,
         users: sharedDataset.users,
         companies: sharedDataset.companies,
         trackingEnabled: sharedDataset.trackingEnabled,
@@ -203,7 +227,8 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
 
 function normalizeConversationalSearchProperties(value: unknown): IDataset['conversationalSearchProperties'] {
     if (!Array.isArray(value)) {
-        return [];
+        // An omitted field preserves local settings. An explicit empty array clears them after review.
+        return undefined;
     }
 
     return value.flatMap(property => {
@@ -266,7 +291,17 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
         dataset.displayName = sharedDataset.displayName ?? undefined;
         dataset.apiKey = sharedDataset.apiKey;
         dataset.serverUrl = sharedDataset.serverUrl ?? undefined;
-        dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
+        for (const { key } of sharedPlaceholderFields) {
+            if (sharedDataset[key] !== undefined) {
+                dataset[key] = sharedDataset[key] ?? undefined;
+            }
+        }
+        if (sharedDataset.branding !== undefined) {
+            dataset.branding = normalizeDatasetBranding(sharedDataset.branding);
+        }
+        if (sharedDataset.conversationalSearchProperties !== undefined) {
+            dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
+        }
     }
 
     mergeSharedDatasetLocalesIntoExistingDataset(dataset, sharedDataset);
@@ -355,7 +390,46 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
         });
     }
 
+    for (const { key, label } of sharedPlaceholderFields) {
+        const incoming = sharedDataset[key];
+        const currentValue = normalizeOptionalString(dataset[key]) ?? '';
+        const nextValue = incoming ?? '';
+        if (incoming !== undefined && currentValue !== nextValue) {
+            changes.push({ key, label, currentValue, nextValue });
+        }
+    }
+
+    if (sharedDataset.branding !== undefined) {
+        const localBranding = normalizeDatasetBranding(dataset.branding);
+        for (const { key, label } of brandingFields) {
+            const currentValue = localBranding?.[key] ?? '';
+            const nextValue = sharedDataset.branding?.[key] ?? '';
+            if (currentValue !== nextValue) {
+                changes.push({ key, label, currentValue, nextValue });
+            }
+        }
+    }
+
+    const incomingProperties = sharedDataset.conversationalSearchProperties;
+    if (incomingProperties !== undefined) {
+        const localProperties = normalizeConversationalSearchProperties(dataset.conversationalSearchProperties) ?? [];
+        if (JSON.stringify(localProperties) !== JSON.stringify(incomingProperties)) {
+            changes.push({
+                key: 'conversationalSearchProperties',
+                label: 'Shopping Assistant properties',
+                currentValue: formatConversationalSearchProperties(localProperties),
+                nextValue: formatConversationalSearchProperties(incomingProperties),
+            });
+        }
+    }
+
     return changes;
+}
+
+function formatConversationalSearchProperties(properties: NonNullable<IDataset['conversationalSearchProperties']>) {
+    return properties
+        .map(({ key, dataKey, displayName }) => displayName ? `${displayName} (${key} → ${dataKey})` : `${key} → ${dataKey}`)
+        .join('\n') || 'None';
 }
 
 function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset): SharedDatasetFeatureChange[] {
@@ -468,7 +542,8 @@ function getSharedDatasetCompanyChanges(dataset: IDataset, sharedDataset: Shared
             continue;
         }
 
-        if (createComparableCompanyKey(existingCompany) === createComparableCompanyKey(sharedCompany)) {
+        const incomingCompany = preserveUnspecifiedAssortments(existingCompany, sharedCompany);
+        if (createComparableCompanyKey(existingCompany) === createComparableCompanyKey(incomingCompany)) {
             matchedCount += 1;
             continue;
         }
@@ -476,7 +551,7 @@ function getSharedDatasetCompanyChanges(dataset: IDataset, sharedDataset: Shared
         conflicts.push({
             companyId: sharedCompany.id,
             currentDetails: formatCompanyDetails(existingCompany),
-            nextDetails: formatCompanyDetails(sharedCompany),
+            nextDetails: formatCompanyDetails(incomingCompany),
         });
     }
 
@@ -571,16 +646,23 @@ function applySharedDatasetCompanies(dataset: IDataset, sharedDataset: SharedDat
             continue;
         }
 
-        if (createComparableCompanyKey(nextCompanies[existingCompanyIndex]!) === createComparableCompanyKey(sharedCompany)) {
+        const existingCompany = nextCompanies[existingCompanyIndex]!;
+        const incomingCompany = preserveUnspecifiedAssortments(existingCompany, sharedCompany);
+        if (createComparableCompanyKey(existingCompany) === createComparableCompanyKey(incomingCompany)) {
             continue;
         }
 
         if (decision === 'shared') {
-            nextCompanies[existingCompanyIndex] = sharedCompany;
+            nextCompanies[existingCompanyIndex] = incomingCompany;
         }
     }
 
     dataset.companies = nextCompanies;
+}
+
+function preserveUnspecifiedAssortments(existing: DemoCompany, incoming: DemoCompany): DemoCompany {
+    // Older share links omit the property. An explicitly empty list clears it.
+    return { ...incoming, assortmentIds: incoming.assortmentIds ?? existing.assortmentIds };
 }
 
 function getSharedFeatureDefinitions() {
@@ -627,6 +709,11 @@ function normalizeOptionalString(value: unknown) {
 
     const trimmedValue = value.trim();
     return trimmedValue || null;
+}
+
+function normalizeSharedPlaceholder(value: unknown) {
+    // Older share links omit this field, while new links can explicitly clear it with null.
+    return typeof value === 'string' || value === null ? normalizeOptionalString(value) : undefined;
 }
 
 function normalizeOptionalCurrency(value: unknown) {
@@ -742,13 +829,14 @@ function getUserConflictKeys(user: User) {
     return conflictKeys;
 }
 
-function createComparableCompanyKey(company: Company) {
+function createComparableCompanyKey(company: DemoCompany) {
     const [normalizedCompany] = sanitizeCompanies([company]);
 
     return JSON.stringify({
         id: normalizedCompany?.id ?? '',
         parentId: normalizeOptionalString(normalizedCompany?.parent?.id),
         data: normalizeComparableDataRecord(normalizedCompany?.data),
+        assortmentIds: normalizedCompany?.assortmentIds ?? [],
     });
 }
 

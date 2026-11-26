@@ -36,8 +36,29 @@ export const facetConfig: FacetConfigEntry[] = [
 
 export type FacetContext = 'Category' | 'SearchOverlay' | 'Brand' | 'ContentSearch';
 
+export function getFacetFilterKeys(context: FacetContext): string[] {
+    // Category listings add their category facet outside the shared configuration.
+    const keys = context === 'Category' ? ['category'] : [];
+
+    for (const facet of facetConfig) {
+        if (facet.contexts.includes(context)) {
+            keys.push(facet.dataKey ?? facetFilterKeys[facet.type]);
+        }
+    }
+
+    return keys;
+}
+
 type FacetType = 'BrandFacet' | 'Category' | 'DataString' | 'ContentDataString' | 'SalesPrice' | 'DataDouble' | 'DataDoubleRange' | 'ContentCategory';
 type FacetRenderType = 'Checklist' | 'Range';
+type FacetTypeWithoutData = Exclude<FacetType, 'DataString' | 'ContentDataString' | 'DataDouble' | 'DataDoubleRange'>;
+
+const facetFilterKeys: Record<FacetTypeWithoutData, string> = {
+    BrandFacet: 'Brand',
+    Category: 'category',
+    ContentCategory: 'Category',
+    SalesPrice: 'price',
+};
 
 type BaseFacetConfigEntry = {
     contexts: FacetContext[];
@@ -52,7 +73,7 @@ type FacetConfigWithData = BaseFacetConfigEntry & {
 };
 
 type FacetConfigWithoutData = BaseFacetConfigEntry & {
-    type: Exclude<FacetType, 'DataString' | 'DataDouble' | 'DataDoubleRange'>;
+    type: FacetTypeWithoutData;
     dataKey?: never;
     dataSelectionStrategy?: never;
 };

@@ -9,7 +9,7 @@ export async function fetchProduct(id: string) {
             .setSelectedVariantProperties({ allData: true, displayName: true, pricing: true })
             .filters(f => {
                 f.addProductIdFilter([id]);
-                contextStore.userClassificationBasedFilters(f);
+                contextStore.productAvailabilityFilters(f);
             })
             .pagination(p => p.setPageSize(1)), contextStore.context.value)
             .build();

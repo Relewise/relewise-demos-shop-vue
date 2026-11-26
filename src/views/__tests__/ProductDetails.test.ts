@@ -12,10 +12,11 @@ vi.mock('@/stores/context.store', async() => {
     const { UserFactory } = await import('@relewise/client');
     return { default: {
         context: ref({ variantDimensionKeys: ['Size'] }),
+        activeContextRevision: ref(0),
         language: ref('en-gb'),
         defaultSettings: { language: 'en-gb', currency: 'EUR', displayedAtLocation: 'test', user: UserFactory.anonymous() },
         selectedProductProperties: { allVariants: true, pricing: true },
-        userClassificationBasedFilters: vi.fn(),
+        productAvailabilityFilters: vi.fn(),
         assertApiCall: vi.fn(),
         getSearcher: () => ({ searchProducts: mocks.searchProducts }),
     } };
@@ -71,6 +72,7 @@ describe('product variant details', () => {
     beforeEach(() => {
         mocks.searchProducts.mockReset();
         mocks.addProduct.mockReset();
+        vi.mocked(contextStore.productAvailabilityFilters).mockReset();
         contextStore.context.value.variantDimensionKeys = ['Size'];
     });
 
@@ -116,7 +118,7 @@ describe('product variant details', () => {
         mocks.searchProducts.mockResolvedValueOnce(response()).mockResolvedValueOnce(response(null));
         const path = '/product/demo-product';
         const { router, wrapper } = await mountProductPage(path);
-        expect(wrapper.get('[role="status"]').text()).toBe('This product could not be loaded.');
+        expect(wrapper.get('[role="status"]').text()).toBe('Product unavailable.');
 
         await wrapper.get('[role="status"] + button').trigger('click');
         await flushPromises();
@@ -151,6 +153,9 @@ describe('product variant details', () => {
 
     it('requests specifications and lets shoppers select a variant with no configured data keys', async() => {
         contextStore.context.value.variantDimensionKeys = [];
+        vi.mocked(contextStore.productAvailabilityFilters).mockImplementation(builder => {
+            builder.addProductAssortmentFilter([15]);
+        });
         mocks.searchProducts.mockResolvedValueOnce(response(null)).mockResolvedValueOnce(response(variants[0]));
         const { router, wrapper } = await mountProductPage('/product/demo-product');
 
@@ -165,9 +170,14 @@ describe('product variant details', () => {
         expect(addButton().attributes('disabled')).toBeUndefined();
         expect(wrapper.text()).toContain('EUR 11');
         expect(wrapper.text()).not.toContain('EUR 110');
+        const companyFilter = expect.arrayContaining([expect.objectContaining({ assortments: [15] })]);
         expect(mocks.searchProducts.mock.lastCall?.[0]).toMatchObject({
+            filters: { items: companyFilter },
             settings: {
-                selectedProductProperties: { allVariants: false, filteredVariants: { inheritFiltersFromRequest: false } },
+                selectedProductProperties: {
+                    allVariants: false,
+                    filteredVariants: { inheritFiltersFromRequest: false, filters: { items: companyFilter } },
+                },
                 selectedVariantProperties: { allSpecifications: true, pricing: true },
             },
         });

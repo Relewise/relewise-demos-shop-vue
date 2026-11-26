@@ -46,7 +46,7 @@
           </button>
           <button
             type="button"
-            :class="confirmTone === 'primary' ? '!bg-brand-500 hover:!bg-brand-600' : '!bg-red-600 hover:!bg-red-700'"
+            :class="confirmTone === 'primary' ? 'brand-action hover:bg-brand-600 hover:text-white' : 'bg-red-600 text-white hover:bg-red-700'"
             @click="confirmAction"
           >
             {{ confirmLabel }}

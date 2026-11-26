@@ -11,7 +11,7 @@
         class="text-sm text-red-700"
         role="status"
       >
-        {{ variantId ? 'This variant could not be loaded.' : 'This product could not be loaded.' }}
+        {{ variantId ? 'This variant could not be loaded.' : 'Product unavailable.' }}
       </p>
       <button
         type="button"
@@ -121,7 +121,7 @@
             class="text-left mt-5"
           >
             <button
-              class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              class="shop-cart-action w-full text-lg transition-transform duration-300 disabled:cursor-not-allowed disabled:opacity-50"
               :class="buttonClass"
               :disabled="!canAddToBasket"
               @click="addToBasket"
@@ -144,7 +144,7 @@
               >
                 <RouterLink
                   :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-                  class="text-brand-500 hover:underline"
+                  class="text-brand-link hover:underline"
                 >
                   {{ product.brand.displayName }}
                 </RouterLink>
@@ -220,7 +220,7 @@
         >
           <RouterLink
             :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-            class="text-brand-500 hover:underline"
+            class="text-brand-link hover:underline"
           >
             {{ product.brand.displayName }}
           </RouterLink>
@@ -321,8 +321,11 @@ const productData = computed<DataValueEntry[]>(() => {
 
 watch([productId, variantId, retryAttempt], async([id, selectedId], previousRoute, onCleanup) => {
   let active = true;
-  // Vue runs cleanup before the watcher reruns or stops, so a late response can't overwrite the current variant.
   onCleanup(() => { active = false; });
+  const contextRevision = contextStore.activeContextRevision;
+  const requestRevision = contextRevision.value;
+  // Route cleanup and context revisions both invalidate results before they can reach tracking or the cart.
+  const isCurrentRequest = () => active && requestRevision === contextRevision.value;
   // Keep the same product's options usable during navigation without showing the previous variant's details.
   product.value = undefined;
   if (previousRoute?.[0] !== id) variants.value = [];
@@ -333,7 +336,7 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
   try {
     // Apply contextual filters to the option list independently of the variant selected in the URL.
     const variantFilters = new FilterBuilder();
-    contextStore.userClassificationBasedFilters(variantFilters);
+    contextStore.productAvailabilityFilters(variantFilters);
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
       .setSelectedProductProperties({
         ...contextStore.selectedProductProperties,
@@ -344,14 +347,13 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
       .filters(f => {
         f.addProductIdFilter([id]);
         if (selectedId) f.addVariantIdFilter(selectedId);
-        contextStore.userClassificationBasedFilters(f);
+        contextStore.productAvailabilityFilters(f);
       })
       .pagination(p => p.setPageSize(1)), contextStore.context.value)
       .build();
 
     const response = await contextStore.getSearcher().searchProducts(request);
-    // A slower request for a previous route must never overwrite the result used for add-to-cart.
-    if (!active) return;
+    if (!isCurrentRequest()) return;
     if (response) contextStore.assertApiCall(response);
     const result = response?.results?.[0];
     if (result?.productId !== id || (selectedId && result.variant?.variantId !== selectedId)) {
@@ -363,13 +365,13 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
     trackingService.trackProductView(id, selectedId ?? undefined);
   }
   catch (error) {
-    if (active) {
+    if (isCurrentRequest()) {
       loadFailed.value = true;
       console.error('Could not load product details.', error);
     }
   }
   finally {
-    if (active) isLoading.value = false;
+    if (isCurrentRequest()) isLoading.value = false;
   }
 }, { immediate: true });
 

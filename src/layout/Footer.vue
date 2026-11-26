@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { NavigationItem } from '@/App.vue';
 import Newsletter from '@/components/Newsletter.vue';
+import StorefrontLogo from '@/components/StorefrontLogo.vue';
 import type { PropType } from 'vue';
 
 defineProps({
+    logoUrl: String,
     hasChildCategories: { type: Boolean, required: true },
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
     footer: { type: Object as PropType<NavigationItem[]>, required: true },
@@ -12,10 +14,7 @@ defineProps({
 
 <template>
   <div class="waves-pink" />
-  <footer
-    class="!text-brand-500"
-    style="background-color: #FFC1D7;"
-  >
+  <footer class="shop-footer">
     <div class="container px-6 py-12 mx-auto">
       <div class="flex flex-col lg:flex-row gap-8">
         <div class="flex-grow">
@@ -39,7 +38,7 @@ defineProps({
                 >
                   <RouterLink
                     :to="{ name: 'category', params: { id: child.category.categoryId } }"
-                    class="text-brand-500 transition-colors duration-200 hover:underline hover:text-brand-500"
+                    class="transition-colors duration-200 hover:underline"
                   >
                     {{ child.category.displayName }}
                   </RouterLink>
@@ -59,7 +58,7 @@ defineProps({
               >
                 <RouterLink
                   :to="{ name: 'category', params: { id: cat.id } }"
-                  class="text-brand-500 transition-colors duration-200 hover:underline hover:text-brand-500"
+                  class="transition-colors duration-200 hover:underline"
                 >
                   {{ cat.category.displayName }}
                 </RouterLink>
@@ -76,16 +75,17 @@ defineProps({
 
       <hr
         v-if="hasChildCategories || mainCategories.length > 0"
-        class="my-6 border-[#e4a8bd] md:my-5"
+        class="footer-divider my-6 md:my-5"
       >
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <img
-          src="/logo.svg"
-          class="h-11"
-          alt="Relewise"
-        >
+        <StorefrontLogo
+          :logo-url="logoUrl"
+          fallback-src="/logo.svg"
+          fallback-alt="Relewise"
+          image-class="h-11 max-w-full object-contain"
+        />
 
-        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-sm text-slate-900 sm:justify-end sm:text-right">
+        <div class="footer-attribution flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-sm text-slate-900 sm:justify-end sm:text-right">
           <span>© Copyright {{ new Date().getFullYear() }}</span>
           <span class="text-slate-500">·</span>
           <a

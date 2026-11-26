@@ -124,7 +124,7 @@ async function search() {
       .pagination(pagination => pagination
         .setPage(page.value)
         .setPageSize(pageSize))
-      .filters(filters => contextStore.userClassificationBasedFilters(filters)), contextStore.context.value);
+      .filters(filters => contextStore.productAvailabilityFilters(filters)), contextStore.context.value);
 
     const response = await contextStore.getSearcher().searchProducts(builder.build());
 

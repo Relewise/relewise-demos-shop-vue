@@ -25,7 +25,7 @@
             :href="value.value"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-brand-500 hover:underline"
+            class="text-brand-link hover:underline"
           >
             {{ value.value }}
           </a>

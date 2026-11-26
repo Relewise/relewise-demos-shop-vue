@@ -22,11 +22,14 @@ function mapDataKey(data: Record<string, DataValue>) {
 
         if (dataKey.toLowerCase().includes('image')) {
             const value = data[dataKey];
-
-            if (value?.type === 'String') {
-                return value.value;
-            } else if (value?.type === 'StringList') {
-                return value.value.$values[0];
+            if (value?.type === 'String' && value.value?.trim()) {
+                return value.value.trim();
+            }
+            if (value?.type === 'StringList') {
+                const image = value.value?.$values?.find((entry: string | null) => entry?.trim());
+                if (image) {
+                    return image.trim();
+                }
             }
         }
     }

@@ -38,7 +38,7 @@
           <div class="shrink-0 items-end">
             <button
               type="button"
-              class="rounded bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
+              class="shop-cart-action rounded px-4 py-2 text-sm font-semibold transition-colors"
               :class="topButtonClass"
               @click="addProductToBasket"
             >
@@ -147,7 +147,7 @@ import FeedContentTile from '@/components/FeedContentTile.vue';
 import ProductTile from '@/components/ProductTile.vue';
 import Image from '@/components/Image.vue';
 import contextStore from '@/stores/context.store';
-import { FeedRecommendationInitializationBuilder, FeedRecommendationNextItemsBuilder, type FeedCompositionResult, type ProductResult, type ContentResult } from '@relewise/client';
+import { FeedRecommendationInitializationBuilder, FeedRecommendationNextItemsBuilder, type FeedCompositionBuilder, type FeedCompositionResult, type ProductResult, type ContentResult } from '@relewise/client';
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { findImage } from '@/helpers/imageHelper';
@@ -228,16 +228,18 @@ async function fetchNextItems(): Promise<void> {
 async function initialize(): Promise<void> {
     const isMobile = breakpointService.active.value === 'mobile';
     const feedLayout = getFeedLayout(isMobile);
+    const filterProductComposition = (composition: FeedCompositionBuilder) =>
+        composition.filters(filters => contextStore.companyAssortmentFilter(filters));
 
     const builder = new FeedRecommendationInitializationBuilder(contextStore.defaultSettings, { minimumPageSize: feedLayout.minimumPageSize })
         .setSelectedContentProperties(contextStore.selectedContentProperties)
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .allowProductsCurrentlyInCart()
         // Each desktop preset totals 15 grid columns and never places Full after 4 mod 5 items.
-        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.leadProducts, upperBoundInclusive: feedLayout.leadProducts } } })
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.leadProducts, upperBoundInclusive: feedLayout.leadProducts } }, settingsBuilder: filterProductComposition })
         .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.leadContent, upperBoundInclusive: feedLayout.leadContent } } })
-        .addComposition({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } } })
-        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.tailProducts, upperBoundInclusive: feedLayout.tailProducts } } })
+        .addComposition({ options: { name: 'Full', type: 'Product', count: { lowerBoundInclusive: 1, upperBoundInclusive: 1 } }, settingsBuilder: filterProductComposition })
+        .addComposition({ options: { type: 'Product', count: { lowerBoundInclusive: feedLayout.tailProducts, upperBoundInclusive: feedLayout.tailProducts } }, settingsBuilder: filterProductComposition })
         .addComposition({ options: { type: 'Content', count: { lowerBoundInclusive: feedLayout.tailContent, upperBoundInclusive: feedLayout.tailContent } } });
 
     // If route contains an id for product-feed/:id or content-feed/:id, seed the initialization
@@ -245,13 +247,18 @@ async function initialize(): Promise<void> {
     if (idParam && !Array.isArray(idParam)) {
         const path = route.path ?? '';
         if (path.includes('/product-feed/') || path.includes('product-feed')) {
-            // fetch product details to show at the top
-            topProduct.value = await fetchProduct(idParam);
-            builder.seed({
-                productAndVariantIds: [{ productId: idParam }],
-            });
+            const contextRevision = contextStore.activeContextRevision.value;
+            const product = await fetchProduct(idParam);
+            // The old route or company may have changed during the product lookup.
+            if (path !== route.path || contextRevision !== contextStore.activeContextRevision.value) return;
 
-            trackingService.trackProductView(idParam);
+            topProduct.value = product;
+            if (product) {
+                builder.seed({
+                    productAndVariantIds: [{ productId: idParam }],
+                });
+                trackingService.trackProductView(idParam);
+            }
         } else if (path.includes('/content-feed/') || path.includes('content-feed')) {
             topContent.value = await fetchContent(idParam);
             builder.seed({

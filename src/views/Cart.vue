@@ -67,7 +67,7 @@
               </p>
               <RouterLink
                 :to="productRoute(item)"
-                class="mt-2 block text-lg font-semibold leading-snug text-slate-900 transition hover:text-brand-500 sm:text-xl"
+                class="mt-2 block text-lg font-semibold leading-snug text-slate-900 transition hover:text-brand-link sm:text-xl"
               >
                 {{ item.product.displayName }}
               </RouterLink>
@@ -176,7 +176,7 @@
         </dl>
         <div class="space-y-3">
           <button
-            class="w-full text-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
+            class="brand-action w-full text-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
             :disabled="!canPlaceOrder || isPlacingOrder"
             :title="!canPlaceOrder ? placeOrderDisabledMessage : undefined"
             @click="checkout"
