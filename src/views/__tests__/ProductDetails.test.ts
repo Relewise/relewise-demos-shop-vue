@@ -12,7 +12,8 @@ vi.mock('@/stores/context.store', () => ({
         defaultSettings: { language: 'en', currency: 'EUR', displayedAtLocation: 'Product details', user: {} },
         selectedProductProperties: { allData: true, displayName: true },
         language: { value: 'en' },
-        userClassificationBasedFilters: vi.fn(),
+        activeContextRevision: { value: 0 },
+        productAvailabilityFilters: vi.fn(),
         getSearcher: () => ({ searchProducts }),
     },
 }));

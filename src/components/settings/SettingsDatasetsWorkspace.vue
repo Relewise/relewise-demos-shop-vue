@@ -11,7 +11,10 @@
         v-if="datasets.length > 0"
         #actions
       >
-        <button @click="startCreatingDataset">
+        <button
+          class="brand-action"
+          @click="startCreatingDataset"
+        >
           Add new dataset
         </button>
       </template>
@@ -21,7 +24,7 @@
         class="py-14 text-center"
       >
         <button
-          class="mt-2"
+          class="brand-action mt-2"
           @click="startCreatingDataset"
         >
           Add new dataset
@@ -52,7 +55,7 @@
                 </h3>
                 <span
                   v-if="dataset.datasetId === activeDatasetId"
-                  class="rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white"
+                  class="brand-action rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
                 >
                   Active
                 </span>
@@ -196,7 +199,10 @@
         </ul>
 
         <div class="mt-6 flex items-center justify-end gap-3">
-          <button @click="createDataset">
+          <button
+            class="brand-action"
+            @click="createDataset"
+          >
             Add dataset
           </button>
         </div>

@@ -117,7 +117,7 @@
           label="Companies"
           placeholder="Select company"
           :disabled="availableCompanyIds.length === 0"
-          :help="availableCompanyIds.length > 0 ? 'Select one or more companies that can be paired with this user in the context switcher.' : 'Add companies to the dataset before associating them with a user.'"
+          :help="availableCompanyIds.length > 0 ? 'Save company associations for this user. The active company is selected separately in Switch Context.' : 'Add companies to the dataset before associating them with a user.'"
         />
       </div>
     </div>

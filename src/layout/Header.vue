@@ -7,11 +7,13 @@ import type { NavigationItem } from '@/App.vue';
 import SideMenu from '@/components/SideMenu.vue';
 import Popover from '@/components/Popover.vue';
 import ContextSwitcher from '@/components/ContextSwitcher.vue';
+import StorefrontLogo from '@/components/StorefrontLogo.vue';
 import contextStore from '@/stores/context.store';
 import { formatCompanyDetails, formatUserDetails, getSelectedUser, getSelectedUserLabel } from '@/helpers/contextSummary';
 import { useHeaderInteraction } from '@/composables/useHeaderInteraction';
 
 defineProps({
+    logoUrl: String,
     lineItemsCount: { type: Number, required: true },
     hasChildCategories: { type: Boolean, required: true },
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
@@ -76,10 +78,10 @@ function resetConversationalSearch() {
             to="/"
             class="font-semibold text-2xl uppercase text-black leading-normal block hover:opacity-70 transitions ease-in-out delay-150"
           >
-            <img
-              src="/demoshopwise.png"
-              style="height: 40px;"
-            >
+            <StorefrontLogo
+              :logo-url="logoUrl"
+              image-class="h-10 max-w-[min(28vw,16rem)] object-contain object-left"
+            />
           </RouterLink>
         </div>
         <div class="ml-0 flex min-w-0 flex-1 items-center gap-2">
@@ -229,7 +231,7 @@ function resetConversationalSearch() {
             >
               <RouterLink
                 :to="{ name: 'category', params: { id: category.id } }"
-                class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-link transitions ease-in-out delay-150 cursor-pointer"
                 @mouseover="handleMouseOver(category.id)"
               >
                 {{ category.category.displayName ?? category.category.categoryId }}
@@ -287,7 +289,7 @@ function resetConversationalSearch() {
             >
               <RouterLink
                 to="/feed"
-                class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+                class="flex items-center font-semibold uppercase py-3 leading-none text-md text-slate-700 hover:text-brand-700 whitespace-nowrap hover:text-brand-link transitions ease-in-out delay-150 cursor-pointer"
               >
                 Shoppertainment
               </RouterLink>
@@ -295,7 +297,7 @@ function resetConversationalSearch() {
           </ul>
           <ul v-else-if="hasActiveDataset && mainCategories.length > 0">
             <div
-              class="font-semibold uppercase py-3 leading-none text-lg text-slate-700 whitespace-nowrap hover:text-brand-500 transitions ease-in-out delay-150 cursor-pointer"
+              class="font-semibold uppercase py-3 leading-none text-lg text-slate-700 whitespace-nowrap hover:text-brand-link transitions ease-in-out delay-150 cursor-pointer"
               @mouseover="handleMouseOver('1')"
             >
               Categories

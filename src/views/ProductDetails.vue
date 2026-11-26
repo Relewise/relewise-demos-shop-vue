@@ -87,7 +87,7 @@
 
           <div class="text-left mt-5">
             <button
-              class="w-full text-lg bg-slate-900 transition-transform duration-300 hover:bg-slate-700"
+              class="shop-cart-action w-full text-lg transition-transform duration-300"
               :class="buttonClass"
               @click="addToBasket"
             >
@@ -168,7 +168,7 @@
               >
                 <RouterLink
                   :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-                  class="text-brand-500 hover:underline"
+                  class="text-brand-link hover:underline"
                 >
                   {{ product.brand.displayName }}
                 </RouterLink>
@@ -178,6 +178,12 @@
         </div>
       </div>
     </div>
+    <p
+      v-else-if="product === undefined"
+      class="py-10 text-slate-600"
+    >
+      Product unavailable.
+    </p>
     <div
       v-if="product?.data
         && product.data.SoldOut
@@ -186,7 +192,7 @@
     >
       <SimilarProductsRecommendation :product="product" />
     </div>
-    <relewise-product-recommendation-batcher v-else>
+    <relewise-product-recommendation-batcher v-else-if="product">
       <div class="mb-16 scrollbar">
         <h2 class="text-2xl mb-2 font-semibold">
           Purchased with the product
@@ -244,7 +250,7 @@
         >
           <RouterLink
             :to="{ path: '/', query: { term: '', sort: '', brand: product.brand.id, open: '1', brandName: product.brand.displayName } }"
-            class="text-brand-500 hover:underline"
+            class="text-brand-link hover:underline"
           >
             {{ product.brand.displayName }}
           </RouterLink>
@@ -279,7 +285,6 @@ const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
 const dataset = contextStore.context;
 const availability = computed(() => product.value ? getStockAvailability(product.value, dataset.value) : undefined);
-let requestSequence = 0;
 
 const details = computed(() => {
   if (!product.value) return [];
@@ -331,53 +336,47 @@ const productData = computed<DataValueEntry[]>(() => {
   ];
 });
 
-async function init() {
-  const sequence = ++requestSequence;
-  const id = route.params.id;
-  const variantIdFromRoute = route.params.variant;
+watch([() => route.params.id, () => route.params.variant], async([id, variantIdFromRoute], _previous, onCleanup) => {
+  if (!id || Array.isArray(id)) return;
 
-  if (id && !Array.isArray(id)) {
-    const requestedVariantId = typeof variantIdFromRoute === 'string' ? variantIdFromRoute : null;
-    if (productId.value !== id || variantId.value !== requestedVariantId) {
-      product.value = null;
+  let cancelled = false;
+  onCleanup(() => { cancelled = true; });
+  const contextRevision = contextStore.activeContextRevision.value;
+  const requestedVariantId = typeof variantIdFromRoute === 'string' ? variantIdFromRoute : undefined;
+  productId.value = id;
+  variantId.value = requestedVariantId ?? null;
+  product.value = null;
+  breadcrumb.value = undefined;
+
+  const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+    .setSelectedProductProperties(contextStore.selectedProductProperties)
+    .setSelectedVariantProperties({ allData: true, displayName: true })
+    .filters(f => {
+      f.addProductIdFilter([id]);
+
+      if (requestedVariantId) {
+        f.addVariantIdFilter(requestedVariantId);
+      }
+
+      contextStore.productAvailabilityFilters(f);
+    })
+    .pagination(p => p.setPageSize(1)), contextStore.context.value)
+    .build();
+
+  const searcher = contextStore.getSearcher();
+  const result = (await searcher.searchProducts(request))?.results?.[0];
+  // A superseded lookup must not record a view for a different route or company.
+  if (cancelled || contextRevision !== contextStore.activeContextRevision.value) return;
+
+  product.value = result;
+  if (result) {
+    if (result.categoryPaths) {
+      // Use the first category path for the product's breadcrumb.
+      breadcrumb.value = result.categoryPaths[0]?.pathFromRoot ?? [];
     }
-    productId.value = id;
-    variantId.value = requestedVariantId;
-
-    trackingService.trackProductView(id, variantId.value ?? undefined);
-
-    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
-      .setSelectedProductProperties(contextStore.selectedProductProperties)
-      .setSelectedVariantProperties({ allData: true, displayName: true })
-      .filters(f => {
-        f.addProductIdFilter([id]);
-
-        if (variantId.value) {
-          f.addVariantIdFilter(variantId.value);
-        }
-
-        contextStore.userClassificationBasedFilters(f);
-      })
-      .pagination(p => p.setPageSize(1)), contextStore.context.value)
-      .build();
-
-    const searcher = contextStore.getSearcher();
-    const result = (await searcher.searchProducts(request))?.results?.[0];
-    // Returning to a variant can leave multiple requests for the same ID in flight.
-    if (sequence !== requestSequence) return;
-    product.value = result;
-    if (product.value?.categoryPaths) {
-      // Taking the first path on the product to render the breadcrumb
-      breadcrumb.value = product.value?.categoryPaths[0]?.pathFromRoot ?? [];
-    }
+    trackingService.trackProductView(id, requestedVariantId);
   }
-}
-
-init();
-
-watch(route, () => {
-  init();
-});
+}, { immediate: true });
 
 function addToBasket() {
   if (!product.value) return;
