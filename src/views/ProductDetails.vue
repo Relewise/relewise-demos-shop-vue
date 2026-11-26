@@ -95,6 +95,68 @@
             </button>
           </div>
 
+          <section
+            v-if="availability"
+            aria-labelledby="store-availability-heading"
+            class="mt-5 rounded-lg border border-slate-200 p-4"
+          >
+            <h2
+              id="store-availability-heading"
+              class="text-lg font-semibold"
+            >
+              {{ availability.kind === 'stores' || (availability.kind === 'unavailable' && availability.byStore) ? 'Store availability' : 'Stock availability' }}
+            </h2>
+            <dl
+              v-if="availability.kind === 'stores'"
+              class="mt-1 divide-y divide-slate-100 text-sm"
+            >
+              <div
+                v-for="store in availability.stores"
+                :key="store.id"
+                class="flex items-baseline justify-between gap-4 py-2"
+              >
+                <dt>{{ store.name }}</dt>
+                <dd
+                  class="text-right"
+                  :class="(store.quantity ?? 0) > 0 ? 'font-medium text-emerald-700' : 'text-slate-600'"
+                >
+                  <template v-if="store.quantity === undefined">
+                    Stock unknown
+                  </template>
+                  <template v-else-if="store.quantity <= 0">
+                    Out of stock
+                  </template>
+                  <template v-else>
+                    {{ store.quantity }} in stock
+                  </template>
+                </dd>
+              </div>
+            </dl>
+            <p
+              v-else-if="availability.kind === 'summary'"
+              class="mt-2 flex items-center gap-2 text-sm font-medium"
+              :class="availability.inStock ? 'text-emerald-700' : 'text-slate-600'"
+            >
+              <CheckCircleIcon
+                v-if="availability.inStock"
+                class="size-5"
+                aria-hidden="true"
+              />
+              <XCircleIcon
+                v-else
+                class="size-5"
+                aria-hidden="true"
+              />
+              {{ availability.inStock ? (availability.quantity === undefined ? 'In stock' : `${availability.quantity} in stock`) : 'Out of stock' }}
+            </p>
+            <p
+              v-else
+              class="mt-2 text-sm text-slate-600"
+            >
+              {{ availability.byStore ? 'Store stock information is unavailable.' : 'Stock information is unavailable.' }}
+            </p>
+          </section>
+
           <div class="mt-5">
             <h3 class="text-xl inline-block">
               Highlighed details
@@ -202,6 +264,7 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline';
 import { DataValueFactory, ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -211,6 +274,7 @@ import ProductVariants from '../components/ProductVariants.vue';
 import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
 import DataValueList, { type DataValueEntry } from '../components/DataValueList.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { getStockAvailability } from '@/helpers/storeAvailability';
 
 const productId = ref<string>('');
 const variantId = ref<string | null>(null);
@@ -219,6 +283,8 @@ const route = useRoute();
 const buttonClass = ref('');
 const defaultSettings = ref(contextStore.defaultSettings);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+const dataset = contextStore.context;
+const availability = computed(() => product.value ? getStockAvailability(product.value, dataset.value) : undefined);
 
 const details = computed(() => {
   if (!product.value) return [];

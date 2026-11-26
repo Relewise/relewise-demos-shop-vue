@@ -22,6 +22,17 @@ describe('datasetConfiguration', () => {
         }).conversationalSearchEnabled).toBe(true);
     });
 
+    it('trims configured store keys without changing their case and omits blank keys', () => {
+        expect(normalizeDatasetConfiguration({
+            ...dataset,
+            storeQuantityDataKey: '  InventoryByLocation ',
+            storeNameDataKey: '  ',
+        })).toMatchObject({
+            storeQuantityDataKey: 'InventoryByLocation',
+            storeNameDataKey: undefined,
+        });
+    });
+
     it('round-trips placeholder URLs and preserves local URLs on older imports', () => {
         const configured = normalizeDatasetConfiguration({
             ...dataset,

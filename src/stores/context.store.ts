@@ -34,6 +34,8 @@ export interface IDataset {
     B2bRecommendations?: boolean;
     showVariantsBadge?: boolean;
     similarProductsOnPdp?: boolean;
+    storeQuantityDataKey?: string;
+    storeNameDataKey?: string;
     variantBasedSearchOverlay?: boolean;
     variantResolutionImages?: boolean;
     maxVariantsPerProduct?: number;
