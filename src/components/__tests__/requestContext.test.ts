@@ -55,17 +55,26 @@ function expectContext(request: unknown, second = false, recommendation = false)
 
 function expectAvailability(request: unknown, second = false, soldOut = false) {
     const items = (request as { filters: { items: unknown[] } }).filters.items;
-    expect(items).toEqual(expect.arrayContaining([
-        expect.objectContaining({ assortments: [second ? 22 : 11] }),
-        expect.objectContaining({ key: 'AvailableInMarkets', conditions: expect.objectContaining({ items: expect.arrayContaining([
-            expect.objectContaining({ value: expect.objectContaining({ value: second ? 'DE' : 'GB' }) }),
-        ]) }) }),
-        expect.objectContaining({ key: 'AvailableInChannels', conditions: expect.objectContaining({ items: expect.arrayContaining([
-            expect.objectContaining({ value: expect.objectContaining({ value: second ? 'store' : 'web' }) }),
-        ]) }) }),
-    ]));
-    expect(items.some(item => (item as { key?: string }).key === 'SoldOut')).toBe(soldOut);
-    expect(items).not.toEqual(expect.arrayContaining([expect.objectContaining({ assortments: [second ? 11 : 22] })]));
+    const eligibility = items.filter(item => {
+        const filter = item as { assortments?: number[]; key?: string };
+        return filter.assortments || ['AvailableInMarkets', 'AvailableInChannels', 'SoldOut'].includes(filter.key ?? '');
+    });
+    const dataFilter = (key: string, value: string, contains: boolean) => ({
+        $type: 'Relewise.Client.Requests.Filters.ProductDataFilter, Relewise.Client',
+        key, filterOutIfKeyIsNotFound: contains, mustMatchAllConditions: true, negated: false, settings: null,
+        conditions: { items: [{
+            $type: `Relewise.Client.Requests.Conditions.${contains ? 'Contains' : 'Equals'}Condition, Relewise.Client`,
+            value: { type: 'String', value, isCollection: false }, negated: false,
+            ...(contains ? { valueCollectionEvaluationMode: 'All' } : {}),
+        }] },
+    });
+    expect(eligibility).toEqual([
+        ...(soldOut ? [dataFilter('SoldOut', 'false', false)] : []),
+        { $type: 'Relewise.Client.Requests.Filters.ProductAssortmentFilter, Relewise.Client',
+            assortments: [second ? 22 : 11], negated: false, settings: null },
+        dataFilter('AvailableInMarkets', second ? 'DE' : 'GB', true),
+        dataFilter('AvailableInChannels', second ? 'store' : 'web', true),
+    ]);
 }
 
 async function search(query = 'missing') {
