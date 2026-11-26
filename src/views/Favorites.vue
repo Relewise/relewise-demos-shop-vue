@@ -79,7 +79,10 @@ async function search() {
         .setSelectedProductProperties(contextStore.selectedProductProperties)
         .setSelectedVariantProperties({ allData: true })
         .pagination(p => p.setPage(page.value).setPageSize(40))
-        .filters(f => f.addProductEngagementFilter({ isFavorite: true })), contextStore.context.value);
+        .filters(f => {
+            f.addProductEngagementFilter({ isFavorite: true });
+            contextStore.companyAssortmentFilter(f);
+        }), contextStore.context.value);
 
     const searcher = await contextStore.getSearcher();
 

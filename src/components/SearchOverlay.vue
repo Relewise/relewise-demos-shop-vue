@@ -328,7 +328,7 @@ async function search() {
                     f.addBrandIdFilter(brandId);
                 }
 
-                contextStore.userClassificationBasedFilters(f);
+                contextStore.productAvailabilityFilters(f);
             })
             .facets(f => getFacets(brandName ? 'Brand' : 'SearchOverlay', f, filters.value))
             .relevanceModifiers(r => addRelevanceModifiers(r))

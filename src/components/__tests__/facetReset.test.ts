@@ -40,7 +40,7 @@ vi.mock('@/stores/context.store', async() => {
             assertApiCall: vi.fn(),
             getSearcher: () => api,
             getRecommender: () => api,
-            userClassificationBasedFilters: vi.fn(),
+            productAvailabilityFilters: vi.fn(),
         },
     };
 });

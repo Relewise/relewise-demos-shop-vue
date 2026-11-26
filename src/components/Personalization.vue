@@ -5,7 +5,10 @@
       description="Manage the users available in this dataset."
     >
       <template #actions>
-        <button @click="addUser">
+        <button
+          class="brand-action"
+          @click="addUser"
+        >
           Add user
         </button>
       </template>
@@ -45,7 +48,10 @@
       description="Manage companies for this dataset. Company IDs must remain unique."
     >
       <template #actions>
-        <button @click="addCompany">
+        <button
+          class="brand-action"
+          @click="addCompany"
+        >
           Add company
         </button>
       </template>

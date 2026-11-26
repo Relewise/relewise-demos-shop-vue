@@ -7,17 +7,69 @@
     --color-brand-200: #91AAF0;
     --color-brand-300: #7392EC;
     --color-brand-400: #557BE8;
-    --color-brand-500: #3764E4;
-    --color-brand-600: #1E4FDB;
+    --color-brand-500: var(--shop-default-primary);
+    --color-brand-600: var(--shop-default-primary-dark);
     --color-brand-700: #1A44BD;
     --color-brand-800: #16399F;
     --color-brand-900: #112F82;
 }
 
+@theme inline {
+    --color-brand-link: var(--shop-primary-ink, var(--color-brand-500));
+    --color-brand-focus-ring: var(--shop-primary-ink, var(--color-brand-200));
+}
+
+@utility brand-action {
+    background-color: var(--color-brand-500);
+    color: var(--shop-on-primary, #fff);
+}
+
 :root {
+    --shop-default-primary: #3764E4;
+    --shop-default-primary-dark: #1E4FDB;
+    --shop-secondary: #FFC1D7;
     --slider-tooltip-bg: #334155;
     --slider-connect-bg: #334155;
     --slider-handle-ring-color: rgba(55, 100, 228, .188);
+}
+
+.shop-branding-preview {
+    /* Start from the defaults even when the active dataset already has a theme. */
+    --shop-primary: initial;
+    --shop-on-primary: initial;
+    --shop-primary-ink: initial;
+    --shop-cart-hover: initial;
+    --shop-secondary: initial;
+    --shop-on-secondary: initial;
+    --shop-filter-background: initial;
+    --color-brand-600: var(--shop-default-primary-dark);
+}
+
+[data-shop-primary] {
+    /* Derive the existing Tailwind shades from one editable color, keeping the default palette intact. */
+    --color-brand-50: color-mix(in srgb, var(--shop-primary) 9%, white);
+    --color-brand-100: color-mix(in srgb, var(--shop-primary) 33%, white);
+    --color-brand-200: color-mix(in srgb, var(--shop-primary) 49%, white);
+    --color-brand-300: color-mix(in srgb, var(--shop-primary) 65%, white);
+    --color-brand-400: color-mix(in srgb, var(--shop-primary) 82%, white);
+    --color-brand-500: var(--shop-primary);
+    --color-brand-600: color-mix(in srgb, var(--shop-primary-ink, var(--shop-primary)), black 12%);
+    --color-brand-700: color-mix(in srgb, var(--color-brand-600), black 11%);
+    --color-brand-800: color-mix(in srgb, var(--color-brand-600), black 22%);
+    --color-brand-900: color-mix(in srgb, var(--color-brand-600), black 34%);
+    --shop-cart-hover: color-mix(in srgb, var(--shop-primary), black 8%);
+    --slider-handle-ring-color: color-mix(in srgb, var(--shop-primary) 19%, transparent);
+}
+
+[data-shop-light-primary] {
+    /* Pale brand colors work on button fills but need a darker shade for links on white. */
+    --shop-primary-ink: color-mix(in srgb, var(--shop-primary) 45%, black);
+    /* Lighten the hover fill to preserve contrast with the dark foreground. */
+    --shop-cart-hover: color-mix(in srgb, var(--shop-primary), white 8%);
+}
+
+[data-shop-secondary] {
+    --shop-filter-background: var(--shop-secondary);
 }
 
 html,
@@ -39,7 +91,7 @@ body {
     }
 
     input[type="text"] {
-        @apply block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-hidden;
+        @apply block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-link focus:ring-2 focus:ring-brand-focus-ring focus:outline-hidden;
     }
 
     input[type="text"].small {
@@ -51,7 +103,9 @@ body {
     }
 
     button {
-        @apply px-6 py-2.5 font-semibold text-sm bg-brand-500 text-white rounded-lg shadow-xs;
+        @apply px-6 py-2.5 font-semibold text-sm text-white rounded-lg shadow-xs;
+        /* Buttons opt into the paired brand colors with brand-action. */
+        background-color: var(--shop-default-primary);
     }
 
     button:not(:disabled),
@@ -68,11 +122,11 @@ body {
     }
 
     a {
-        @apply text-brand-500;
+        @apply text-brand-link;
     }
 
     select {
-        @apply mt-1 block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-hidden;
+        @apply mt-1 block w-full rounded-md border border-slate-300 py-3 px-4 bg-white text-slate-900 shadow-xs transition focus:border-brand-link focus:ring-2 focus:ring-brand-focus-ring focus:outline-hidden;
     }
 
     select:disabled {
@@ -114,11 +168,11 @@ h4 {
 }
 
 .text-brand1 {
-    color: #3764E4;
+    color: var(--shop-primary-ink, var(--color-brand-500));
 }
 
 .text-brand2 {
-    color: #FFC1D7;
+    color: var(--shop-secondary);
 }
 
 .underline--yellow {
@@ -141,11 +195,11 @@ h4 {
 }
 
 .brand1 {
-    background-color: #3764E4;
+    background-color: var(--color-brand-500);
 }
 
 .brand2 {
-    background-color: #FFC1D7;
+    background-color: var(--shop-secondary);
 }
 
 .brand3 {
@@ -183,7 +237,46 @@ h4 {
 
 .waves-pink {
     height: 88px;
-    background-image: url("/waves-pink.svg");
+    background-color: var(--shop-secondary);
+    mask-image: url("/waves-pink.svg");
+}
+
+.shop-footer {
+    --shop-footer-foreground: var(--shop-on-secondary, var(--shop-default-primary));
+    background-color: var(--shop-secondary);
+    color: var(--shop-footer-foreground);
+}
+
+:root[data-shop-primary] .shop-footer {
+    /* The default pink footer needs dark text even when only the primary color is customized. */
+    --shop-footer-foreground: var(--shop-on-secondary, var(--color-slate-900));
+}
+
+.shop-footer a {
+    color: var(--shop-footer-foreground);
+}
+
+.shop-footer .footer-divider {
+    border-color: color-mix(in srgb, var(--shop-secondary), black 10%);
+}
+
+:root[data-shop-secondary] .footer-attribution span {
+    color: var(--shop-on-secondary);
+}
+
+.shop-cart-action {
+    background-color: var(--shop-primary, var(--color-slate-900));
+    color: var(--shop-on-primary, #fff);
+}
+
+button.shop-cart-action:hover {
+    background-color: var(--shop-cart-hover, var(--color-slate-700));
+}
+
+.shop-selected-filter {
+    background-color: var(--shop-filter-background, var(--color-brand-600));
+    border-color: var(--shop-filter-background, var(--color-brand-600));
+    color: var(--shop-on-secondary, #fff);
 }
 
 .reverse-waves {

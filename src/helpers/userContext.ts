@@ -70,8 +70,8 @@ function buildRuntimeCompany(company: Company | undefined, companies: Company[])
         return undefined;
     }
 
+    // Assortment selections belong to the storefront; only send SDK company properties.
     const normalizedCompany: Company = {
-        ...company,
         id: company.id?.trim() ?? '',
         data: company.data ? { ...company.data } : undefined,
     };
@@ -85,11 +85,9 @@ function buildRuntimeCompany(company: Company | undefined, companies: Company[])
     const parentCompany = companies.find((candidate) => candidate.id === parentId);
     normalizedCompany.parent = parentCompany
         ? {
-            ...parentCompany,
-            id: parentCompany.id?.trim() ?? '',
+            id: parentId,
             data: parentCompany.data ? { ...parentCompany.data } : undefined,
-            parent: undefined,
-        } as Company
+        }
         : { id: parentId } as Company;
 
     return normalizedCompany;

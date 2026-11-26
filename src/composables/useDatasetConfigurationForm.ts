@@ -1,6 +1,7 @@
 import { datasetFeatureFields } from '@/helpers/datasetFeatures';
 import { cloneDatasetConfiguration, createDatasetSnapshot, normalizeDatasetConfiguration, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { validateDatasetCoreFields } from '@/helpers/datasetValidation';
+import { validateDatasetBranding } from '@/helpers/datasetBranding';
 import { validatePersonalization } from '@/helpers/personalizationValidation';
 import { useStickyPinned } from '@/composables/useStickyPinned';
 import contextStore, { type IDataset } from '@/stores/context.store';
@@ -14,6 +15,7 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
     const saveBarElement = ref<HTMLElement | null>(null);
     const openSections = ref({
         general: true,
+        branding: false,
         features: false,
         personalization: true,
     });
@@ -72,6 +74,7 @@ export function useDatasetConfigurationForm(sourceDataset: MaybeRefOrGetter<IDat
         const normalizedDataset = normalizeDatasetConfiguration(editableDataset.value);
 
         errors.value.push(...validateDatasetCoreFields(normalizedDataset));
+        errors.value.push(...validateDatasetBranding(editableDataset.value.branding));
 
         if (normalizedDataset.allLanguages.length === 0) {
             errors.value.push('At least one language is required.');
