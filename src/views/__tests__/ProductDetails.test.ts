@@ -34,7 +34,7 @@ function response(variant?: VariantResult | null): { status: number; results: Pr
         status: 200,
         results: variant !== undefined ? [{
             productId: 'demo-product', displayName: 'Demo product', variant, rank: 1, salesPrice: 100, listPrice: 110,
-            filteredVariants: variants, allVariants: variants,
+            filteredVariants: variants,
         }] : [],
     };
 }
@@ -149,13 +149,27 @@ describe('product variant details', () => {
         }) });
     });
 
-    it('uses the selected variant price with an unconfigured selector', async() => {
+    it('requests specifications and lets shoppers select a variant with no configured data keys', async() => {
         contextStore.context.value.variantDimensionKeys = [];
-        mocks.searchProducts.mockResolvedValueOnce(response(variants[0]));
-        const { wrapper } = await mountProductPage();
+        mocks.searchProducts.mockResolvedValueOnce(response(null)).mockResolvedValueOnce(response(variants[0]));
+        const { router, wrapper } = await mountProductPage('/product/demo-product');
 
+        const addButton = () => wrapper.findAll('button').find(button => button.text() === 'Add to cart')!;
+        expect(wrapper.get('legend').text()).toBe('Size');
+        expect(addButton().attributes('disabled')).toBeDefined();
+        await wrapper.get('fieldset button').trigger('click');
+        await flushPromises();
+
+        expect(router.currentRoute.value.path).toBe('/product/demo-product/variant/a');
+        expect(wrapper.get('fieldset button').attributes('aria-pressed')).toBe('true');
+        expect(addButton().attributes('disabled')).toBeUndefined();
         expect(wrapper.text()).toContain('EUR 11');
         expect(wrapper.text()).not.toContain('EUR 110');
-        expect(mocks.searchProducts.mock.calls[0]?.[0]).toMatchObject({ settings: { selectedVariantProperties: { pricing: true } } });
+        expect(mocks.searchProducts.mock.lastCall?.[0]).toMatchObject({
+            settings: {
+                selectedProductProperties: { allVariants: false, filteredVariants: { inheritFiltersFromRequest: false } },
+                selectedVariantProperties: { allSpecifications: true, pricing: true },
+            },
+        });
     });
 });

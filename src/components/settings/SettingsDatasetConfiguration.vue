@@ -173,9 +173,9 @@
 
             <FormTags
               :model-value="editableDataset.variantDimensionKeys ?? []"
-              label="Product page variant dimensions"
-              placeholder="Add a variant key and press Enter"
-              help="Enter case-sensitive variant data or specification keys in selection order. Leave empty to show the variant list."
+              label="Additional variant data keys"
+              placeholder="Add a variant data key and press Enter"
+              help="Product pages always use variant specifications. Add case-sensitive variant data keys in the order they should appear after the specifications."
               class="xl:col-span-2"
               :min-items="0"
               case-sensitive

@@ -36,11 +36,11 @@ export function sanitizeCompanies(companies?: Company[]) {
     }));
 }
 
-/** Cleans saved or imported dimension keys while preserving the order shoppers choose them. */
+/** Cleans saved or imported data keys while preserving their order in the picker. */
 export function normalizeVariantDimensionKeys(value: unknown): string[] {
     if (!Array.isArray(value)) return [];
 
-    // Relewise Data Keys and specification keys are case-sensitive.
+    // Relewise Data Keys are case-sensitive, including specification keys in older settings.
     return [...new Set(value.flatMap(key => typeof key === 'string' && key.trim() ? [key.trim()] : []))];
 }
 

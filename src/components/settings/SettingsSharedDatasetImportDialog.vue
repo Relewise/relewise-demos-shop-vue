@@ -161,7 +161,7 @@
                   Current order
                 </dt>
                 <dd class="mt-1 break-words text-slate-900">
-                  {{ variantDimensionsChange.currentValue.join(' → ') || 'No dimension keys' }}
+                  {{ variantDimensionsChange.currentValue.join(' → ') || 'No additional data keys' }}
                 </dd>
               </div>
               <div class="min-w-0">
@@ -169,7 +169,7 @@
                   Imported order
                 </dt>
                 <dd class="mt-1 break-words text-slate-900">
-                  {{ variantDimensionsChange.nextValue.join(' → ') || 'No dimension keys' }}
+                  {{ variantDimensionsChange.nextValue.join(' → ') || 'No additional data keys' }}
                 </dd>
               </div>
             </dl>

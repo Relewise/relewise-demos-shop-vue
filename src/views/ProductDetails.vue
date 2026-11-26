@@ -63,7 +63,7 @@
               {{ product.displayName }}
             </h1>
             <p
-              v-if="dimensionKeys.length && variantId && product.variant?.variantId === variantId && product.variant?.displayName !== product.displayName"
+              v-if="hasVariantDimensions && variantId && product.variant?.variantId === variantId && product.variant?.displayName !== product.displayName"
               class="mb-3 text-slate-600"
             >
               {{ product.variant?.displayName }}
@@ -80,10 +80,9 @@
           <ProductVariants
             v-if="variants.length"
             :product-id="productId"
-            :variants="variants"
-            :dimension-keys="dimensionKeys"
+            :selection="variantSelection"
+            :show-variant-names="hasVariantDimensions"
             :selected-variant-id="variantId ?? undefined"
-            :language="language"
           />
           <div
             v-if="product"
@@ -236,6 +235,7 @@ import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
 import { withVariantPricing } from '@/helpers/productPricing';
+import { getVariantSelection } from '@/helpers/variantSelection';
 import { DataValueFactory, FilterBuilder, ProductSearchBuilder, type ProductResult, type VariantResult } from '@relewise/client';
 import { computed, ref, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -258,13 +258,15 @@ const loadFailed = ref(false);
 const retryAttempt = ref(0);
 const language = contextStore.language;
 const defaultSettings = contextStore.defaultSettings;
-const dimensionKeys = computed(() => contextStore.context.value.variantDimensionKeys ?? []);
+const dataDimensionKeys = computed(() => contextStore.context.value.variantDimensionKeys ?? []);
+const variantSelection = computed(() => getVariantSelection(variants.value, dataDimensionKeys.value, variantId.value ?? undefined, language.value));
+const hasVariantDimensions = computed(() => variantSelection.value.groups.length > 0 || dataDimensionKeys.value.length > 0);
 const breadcrumb = computed(() => product.value?.categoryPaths?.[0]?.pathFromRoot ?? undefined);
 const canAddToBasket = computed(() => {
   if (isLoading.value || loadFailed.value || product.value?.productId !== productId.value) return false;
   if (variantId.value) return product.value?.variant?.variantId === variantId.value;
-  // Require an explicit variant on the product route when the configured picker has options.
-  return dimensionKeys.value.length === 0 || variants.value.length === 0;
+  // Require an explicit variant on the product route when the dimension picker has variants.
+  return !hasVariantDimensions.value || variants.value.length === 0;
 });
 
 const details = computed(() => {
@@ -328,20 +330,17 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
 
   isLoading.value = true;
   loadFailed.value = false;
-  const hasDimensions = dimensionKeys.value.length > 0;
-
   try {
-    const selectedProperties = { ...contextStore.selectedProductProperties };
-    if (hasDimensions) {
-      // Apply the contextual filters without inheriting the URL's variant ID filter in the option list.
-      const variantFilters = new FilterBuilder();
-      contextStore.userClassificationBasedFilters(variantFilters);
-      selectedProperties.allVariants = false;
-      selectedProperties.filteredVariants = { filters: variantFilters.build(), inheritFiltersFromRequest: false };
-    }
+    // Apply contextual filters to the option list independently of the variant selected in the URL.
+    const variantFilters = new FilterBuilder();
+    contextStore.userClassificationBasedFilters(variantFilters);
     const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
-      .setSelectedProductProperties(selectedProperties)
-      .setSelectedVariantProperties({ allData: true, displayName: true, allSpecifications: hasDimensions, pricing: true })
+      .setSelectedProductProperties({
+        ...contextStore.selectedProductProperties,
+        allVariants: false,
+        filteredVariants: { filters: variantFilters.build(), inheritFiltersFromRequest: false },
+      })
+      .setSelectedVariantProperties({ allData: true, displayName: true, allSpecifications: true, pricing: true })
       .filters(f => {
         f.addProductIdFilter([id]);
         if (selectedId) f.addVariantIdFilter(selectedId);
@@ -359,7 +358,7 @@ watch([productId, variantId, retryAttempt], async([id, selectedId], previousRout
       loadFailed.value = true;
       return;
     }
-    variants.value = (hasDimensions ? result.filteredVariants : result.allVariants) ?? [];
+    variants.value = result.filteredVariants ?? [];
     product.value = withVariantPricing(result);
     trackingService.trackProductView(id, selectedId ?? undefined);
   }

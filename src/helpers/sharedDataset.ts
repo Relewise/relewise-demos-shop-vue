@@ -378,11 +378,11 @@ function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: Shared
 
     const currentKeys = dataset.variantDimensionKeys ?? [];
     const incomingKeys = sharedDataset.variantDimensionKeys;
-    // Picker order affects selection. An explicit empty list can clear the setting, while older links omit it.
+    // The order of extra data keys affects selection. An explicit empty list can clear it, while older links omit it.
     if (incomingKeys && (incomingKeys.length !== currentKeys.length || incomingKeys.some((key, index) => key !== currentKeys[index]))) {
         changes.push({
             key: 'variantDimensionKeys',
-            label: 'Product page variant dimensions',
+            label: 'Additional variant data keys',
             currentValue: currentKeys,
             nextValue: incomingKeys,
         });

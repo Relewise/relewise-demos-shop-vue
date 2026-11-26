@@ -46,7 +46,7 @@
             :entity="variant"
             class="mb-2 !h-[50px] !w-auto xl:!h-[100px]"
           />
-          <span v-if="dimensionKeys.length">{{ variant.displayName || variant.variantId }}</span>
+          <span v-if="showVariantNames">{{ variant.displayName || variant.variantId }}</span>
         </RouterLink>
       </div>
     </div>
@@ -54,23 +54,20 @@
 </template>
 
 <script lang="ts" setup>
-import { getVariantSelection } from '@/helpers/variantSelection';
-import type { VariantResult } from '@relewise/client';
+import type { VariantSelection } from '@/helpers/variantSelection';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Image from './Image.vue';
 
 const props = defineProps<{
     productId: string;
-    variants: VariantResult[];
-    dimensionKeys: string[];
+    selection: VariantSelection;
+    showVariantNames: boolean;
     selectedVariantId?: string;
-    language: string;
 }>();
 
 const router = useRouter();
-const selection = computed(() => getVariantSelection(props.variants, props.dimensionKeys, props.selectedVariantId, props.language));
-const linkedVariants = computed(() => [...selection.value.matchingVariants, ...selection.value.otherVariants]);
+const linkedVariants = computed(() => [...props.selection.matchingVariants, ...props.selection.otherVariants]);
 
 function variantRoute(variantId: string) {
     return { name: 'variant', params: { id: props.productId, variant: variantId } };
