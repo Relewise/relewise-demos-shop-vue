@@ -130,6 +130,68 @@
             </button>
           </div>
 
+          <section
+            v-if="availability"
+            aria-labelledby="store-availability-heading"
+            class="mt-5 rounded-lg border border-slate-200 p-4"
+          >
+            <h2
+              id="store-availability-heading"
+              class="text-lg font-semibold"
+            >
+              {{ availability.kind === 'stores' || (availability.kind === 'unavailable' && availability.byStore) ? 'Store availability' : 'Stock availability' }}
+            </h2>
+            <dl
+              v-if="availability.kind === 'stores'"
+              class="mt-1 divide-y divide-slate-100 text-sm"
+            >
+              <div
+                v-for="store in availability.stores"
+                :key="store.id"
+                class="flex items-baseline justify-between gap-4 py-2"
+              >
+                <dt>{{ store.name }}</dt>
+                <dd
+                  class="text-right"
+                  :class="(store.quantity ?? 0) > 0 ? 'font-medium text-emerald-700' : 'text-slate-600'"
+                >
+                  <template v-if="store.quantity === undefined">
+                    Stock unknown
+                  </template>
+                  <template v-else-if="store.quantity <= 0">
+                    Out of stock
+                  </template>
+                  <template v-else>
+                    {{ store.quantity }} in stock
+                  </template>
+                </dd>
+              </div>
+            </dl>
+            <p
+              v-else-if="availability.kind === 'summary'"
+              class="mt-2 flex items-center gap-2 text-sm font-medium"
+              :class="availability.inStock ? 'text-emerald-700' : 'text-slate-600'"
+            >
+              <CheckCircleIcon
+                v-if="availability.inStock"
+                class="size-5"
+                aria-hidden="true"
+              />
+              <XCircleIcon
+                v-else
+                class="size-5"
+                aria-hidden="true"
+              />
+              {{ availability.inStock ? (availability.quantity === undefined ? 'In stock' : `${availability.quantity} in stock`) : 'Out of stock' }}
+            </p>
+            <p
+              v-else
+              class="mt-2 text-sm text-slate-600"
+            >
+              {{ availability.byStore ? 'Store stock information is unavailable.' : 'Stock information is unavailable.' }}
+            </p>
+          </section>
+
           <div
             v-if="product"
             class="mt-5"
@@ -234,6 +296,7 @@
 import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline';
 import { withVariantPricing } from '@/helpers/productPricing';
 import { getVariantSelection } from '@/helpers/variantSelection';
 import { DataValueFactory, FilterBuilder, ProductSearchBuilder, type ProductResult, type VariantResult } from '@relewise/client';
@@ -245,6 +308,7 @@ import ProductVariants from '../components/ProductVariants.vue';
 import SimilarProductsRecommendation from '../components/SimilarProductsRecommendation.vue';
 import DataValueList, { type DataValueEntry } from '../components/DataValueList.vue';
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
+import { getStockAvailability } from '@/helpers/storeAvailability';
 
 const route = useRoute();
 const productId = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
@@ -268,6 +332,8 @@ const canAddToBasket = computed(() => {
   // Require an explicit variant on the product route when the dimension picker has variants.
   return !hasVariantDimensions.value || variants.value.length === 0;
 });
+// Variant options stay visible during navigation, so the stock panel follows the loaded product.
+const availability = computed(() => product.value ? getStockAvailability(product.value, contextStore.context.value) : undefined);
 
 const details = computed(() => {
   if (!product.value) return [];

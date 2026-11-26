@@ -145,6 +145,28 @@
       </template>
 
       <div class="space-y-4">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 class="mb-4 text-base font-semibold text-slate-900">
+            Stock availability
+          </h3>
+          <div class="grid gap-5 xl:grid-cols-2">
+            <InputText
+              id="store-quantity-data-key"
+              v-model="editableDataset.storeQuantityDataKey"
+              label="Stock data key"
+              help="Use a Boolean, a number, or an Object of counts by store ID. Leave blank to hide stock availability."
+              spellcheck="false"
+            />
+            <InputText
+              id="store-name-data-key"
+              v-model="editableDataset.storeNameDataKey"
+              label="Store name data key"
+              help="Optional for stock Objects. Names must use the same store IDs. Leave blank to display the IDs."
+              spellcheck="false"
+            />
+          </div>
+        </div>
+
         <template
           v-for="feature in featureFields"
           :key="feature.key"

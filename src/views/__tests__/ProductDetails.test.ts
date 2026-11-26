@@ -1,6 +1,6 @@
 import ProductDetails from '@/views/ProductDetails.vue';
 import contextStore from '@/stores/context.store';
-import type { ProductResult, VariantResult } from '@relewise/client';
+import { DataValueFactory, type ProductResult, type VariantResult } from '@relewise/client';
 import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -74,6 +74,7 @@ describe('product variant details', () => {
         mocks.addProduct.mockReset();
         vi.mocked(contextStore.productAvailabilityFilters).mockReset();
         contextStore.context.value.variantDimensionKeys = ['Size'];
+        contextStore.context.value.storeQuantityDataKey = undefined;
     });
 
     it.each(['empty result', 'rejected request'])('hides stale details and allows retry after a failed variant request (%s)', async(failure) => {
@@ -149,6 +150,33 @@ describe('product variant details', () => {
         expect(mocks.addProduct).toHaveBeenCalledWith({ quantityDelta: 1, product: expect.objectContaining({
             salesPrice: 33, listPrice: 33, variant: expect.objectContaining({ variantId: 'c' }),
         }) });
+    });
+
+    it('keeps the newest stock result when navigating from variant A to B and back to A', async() => {
+        contextStore.context.value.storeQuantityDataKey = 'Stock';
+        const firstA = pendingResponse();
+        const pendingB = pendingResponse();
+        const latestA = pendingResponse();
+        mocks.searchProducts.mockReturnValueOnce(firstA.promise)
+            .mockReturnValueOnce(pendingB.promise).mockReturnValueOnce(latestA.promise);
+        const { router, wrapper } = await mountProductPage();
+        await router.push('/product/demo-product/variant/b');
+        await router.push('/product/demo-product/variant/a');
+        expect(mocks.searchProducts).toHaveBeenCalledTimes(3);
+
+        const stockResponse = (variant: VariantResult, quantity: number) => response({
+            ...variant, data: { Stock: DataValueFactory.number(quantity) },
+        });
+        const stockPanel = 'section[aria-labelledby="store-availability-heading"]';
+        expect(wrapper.find(stockPanel).exists()).toBe(false);
+        latestA.resolve(stockResponse(variants[0]!, 8));
+        await flushPromises();
+        expect(wrapper.get(stockPanel).text()).toContain('8 in stock');
+
+        pendingB.resolve(stockResponse(variants[1]!, 4));
+        firstA.resolve(stockResponse(variants[0]!, 99));
+        await flushPromises();
+        expect(wrapper.get(stockPanel).text()).toContain('8 in stock');
     });
 
     it('requests specifications and lets shoppers select a variant with no configured data keys', async() => {
