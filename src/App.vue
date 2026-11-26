@@ -3,7 +3,7 @@ import { RouterView, useRouter } from 'vue-router';
 import contextStore from './stores/context.store';
 import { Searcher, type CategoryResult, type CategoryHierarchyFacetResult, ProductSearchBuilder, type CategoryHierarchyFacetResultCategoryNode } from '@relewise/client';
 import { ref } from 'vue';
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, watch, watchEffect } from 'vue';
 import basketService from './services/basket.service';
 import Header from './layout/Header.vue';
 import Footer from './layout/Footer.vue';
@@ -11,6 +11,7 @@ import breakpointService from './services/breakpoint.service';
 import notificationsStore from './stores/notifications.store';
 import { Toaster } from 'vue-sonner';
 import { ComputerDesktopIcon } from '@heroicons/vue/24/outline';
+import { brandForeground } from '@/helpers/datasetBranding';
 
 export type NavigationItem = { id: string, category: CategoryResult, children: CategoryHierarchyFacetResultCategoryNode[]; }
 
@@ -21,6 +22,7 @@ const router = useRouter();
 const lineItemsCount = basketService.itemsCount;
 const breakpoint = computed(() => breakpointService.active.value);
 const hasActiveDataset = computed(() => contextStore.hasActiveDataset.value);
+const branding = computed(() => contextStore.context.value?.branding);
 const activeContextRevision = computed(() => contextStore.activeContextRevision.value);
 const routeViewKey = computed(() => activeContextRevision.value.toString());
 let categoryLoadToken = 0;
@@ -29,6 +31,34 @@ init();
 
 onMounted(() => {
     notificationsStore.flushAfterReload();
+});
+
+// Apply the active dataset's colors at startup and update them when branding changes or the dataset switches.
+// Set the CSS variables on <html> so overlays teleported outside #app inherit the storefront theme.
+watchEffect(() => {
+    const root = document.documentElement;
+    const { primaryColor, secondaryColor } = branding.value ?? {};
+    const onPrimary = primaryColor ? brandForeground(primaryColor) : undefined;
+    const colorProperties = {
+        '--shop-primary': primaryColor,
+        '--shop-on-primary': onPrimary,
+        '--shop-secondary': secondaryColor,
+        '--shop-on-secondary': secondaryColor ? brandForeground(secondaryColor) : undefined,
+    };
+
+    for (const [property, value] of Object.entries(colorProperties)) {
+        if (value === undefined) {
+            // Removing the inline override restores the stylesheet default.
+            root.style.removeProperty(property);
+        }
+        else {
+            root.style.setProperty(property, value);
+        }
+    }
+
+    root.toggleAttribute('data-shop-primary', !!primaryColor);
+    root.toggleAttribute('data-shop-light-primary', onPrimary === '#000');
+    root.toggleAttribute('data-shop-secondary', !!secondaryColor);
 });
 
 watch(activeContextRevision, async() => {
@@ -125,6 +155,7 @@ function clearNavigation() {
     offset="16px"
   />
   <Header
+    :logo-url="branding?.logoUrl"
     :line-items-count="lineItemsCount"
     :has-child-categories="hasChildCategories"
     :main-categories="mainCategories"
@@ -138,6 +169,7 @@ function clearNavigation() {
   </div>
   <Footer
     v-if="hasActiveDataset"
+    :logo-url="branding?.logoUrl"
     :has-child-categories="hasChildCategories"
     :main-categories="mainCategories"
     :footer="footer"

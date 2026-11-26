@@ -15,6 +15,7 @@
 
       <template #actions>
         <button
+          class="brand-action"
           :disabled="!isDirty"
           :class="!isDirty ? 'cursor-not-allowed opacity-60' : ''"
           @click="saveChanges"
@@ -105,6 +106,14 @@
     </SettingsAccordionSection>
 
     <SettingsAccordionSection
+      title="Branding"
+      :open="openSections.branding"
+      @toggle="toggleSection('branding')"
+    >
+      <SettingsDatasetBranding v-model="editableDataset.branding" />
+    </SettingsAccordionSection>
+
+    <SettingsAccordionSection
       title="Features"
       :open="openSections.features"
       @toggle="toggleSection('features')"
@@ -148,7 +157,7 @@
               type="number"
               min="1"
               step="1"
-              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-200"
+              class="block w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-xs transition focus:border-brand-link focus:outline-hidden focus:ring-2 focus:ring-brand-focus-ring"
               @update:model-value="editableDataset.maxVariantsPerProduct = Number($event)"
             />
 
@@ -200,6 +209,7 @@ import type { DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import Personalization from '@/components/Personalization.vue';
 import SecretInput from '@/components/SecretInput.vue';
 import SettingsAccordionSection from '@/components/settings/SettingsAccordionSection.vue';
+import SettingsDatasetBranding from '@/components/settings/SettingsDatasetBranding.vue';
 import SettingsStickyActions from '@/components/settings/SettingsStickyActions.vue';
 import { useDatasetConfigurationForm } from '@/composables/useDatasetConfigurationForm';
 import { defaultMaxVariantsPerProduct } from '@/helpers/productSearchRequest';

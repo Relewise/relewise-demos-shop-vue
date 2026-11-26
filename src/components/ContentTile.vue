@@ -42,7 +42,7 @@ const displayName = computed(() => {
 <template>
   <RouterLink
     :to="{ name: 'content', params: { id: content.contentId } }"
-    class="relative flex flex-col overflow-hidden text-slate-900 hover:!text-brand-500 transition duration-200 h-full"
+    class="relative flex flex-col overflow-hidden text-slate-900 hover:!text-brand-link transition duration-200 h-full"
   >
     <div class="mt-2 flex gap-4 items-start h-full">
       <div
