@@ -154,6 +154,33 @@
             The imported dataset and your local dataset have different feature settings.
           </p>
 
+          <div
+            v-if="variantDimensionsChange"
+            class="mt-4 rounded-xl border border-slate-200 bg-white p-4"
+          >
+            <h5 class="text-sm font-semibold text-slate-900">
+              {{ variantDimensionsChange.label }}
+            </h5>
+            <dl class="mt-2 grid gap-3 text-sm sm:grid-cols-2">
+              <div class="min-w-0">
+                <dt class="text-slate-600">
+                  Current order
+                </dt>
+                <dd class="mt-1 break-words text-slate-900">
+                  {{ variantDimensionsChange.currentValue.join(' → ') || 'No additional data keys' }}
+                </dd>
+              </div>
+              <div class="min-w-0">
+                <dt class="text-slate-600">
+                  Imported order
+                </dt>
+                <dd class="mt-1 break-words text-slate-900">
+                  {{ variantDimensionsChange.nextValue.join(' → ') || 'No additional data keys' }}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
           <div class="mt-4 grid gap-3">
             <label
               class="cursor-pointer rounded-xl border p-4 transition"
@@ -171,7 +198,7 @@
                     Replace with imported feature state
                   </p>
                   <p class="mt-1 text-sm text-slate-600">
-                    Make the local feature toggles and tracking match the imported settings exactly.
+                    Use the imported feature settings and dimension order where provided.
                   </p>
                 </div>
               </div>
@@ -193,7 +220,7 @@
                     Merge feature state
                   </p>
                   <p class="mt-1 text-sm text-slate-600">
-                    Keep everything already enabled locally and also enable any imported features that are on.
+                    Keep local features enabled and enable imported features. Use the imported dimension order if the local list is empty.
                   </p>
                 </div>
               </div>
@@ -215,7 +242,7 @@
                     Keep local feature state
                   </p>
                   <p class="mt-1 text-sm text-slate-600">
-                    Ignore the incoming feature and tracking changes.
+                    Keep your local feature settings and dimension order.
                   </p>
                 </div>
               </div>
@@ -376,6 +403,7 @@ const dialogDescription = computed(() => props.pendingImport
 
 const coreFieldChanges = computed(() => props.pendingImport?.diff.coreFieldChanges ?? []);
 const featureChanges = computed(() => props.pendingImport?.diff.featureChanges ?? []);
+const variantDimensionsChange = computed(() => featureChanges.value.find(change => change.key === 'variantDimensionKeys'));
 const userChanges = computed(() => props.pendingImport?.diff.userChanges ?? {
     incomingCount: 0,
     matchedCount: 0,

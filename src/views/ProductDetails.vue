@@ -4,25 +4,46 @@
     class="container entity-page mx-auto px-2 lg:p-0"
   >
     <div
-      v-if="product"
+      v-if="loadFailed"
+      class="my-4 flex flex-wrap items-center gap-3"
+    >
+      <p
+        class="text-sm text-red-700"
+        role="status"
+      >
+        {{ variantId ? 'This variant could not be loaded.' : 'Product unavailable.' }}
+      </p>
+      <button
+        type="button"
+        class="outline"
+        @click="retryAttempt++"
+      >
+        Retry
+      </button>
+    </div>
+    <div
+      v-if="product || variants.length"
       class="mb-16"
     >
       <Breadcrumb
-        v-if="breadcrumb"
+        v-if="product && breadcrumb"
         :breadcrumb="breadcrumb"
         :product="product"
       />
 
       <div class="flex flex-wrap xl:flex-nowrap gap-8 xl:gap-20 mt-3">
-        <div class="relative flex overflow-hidden w-full xl:w-1/2 justify-center items-center">
+        <div
+          v-if="product"
+          class="relative flex overflow-hidden w-full xl:w-1/2 justify-center items-center"
+        >
           <Image
             :entity="product"
             class="!h-[300px] xl:!h-[600px] !w-auto"
           />
         </div>
 
-        <div class="bg-white w-full xl:w-1/2 relative">
-          <div>
+        <div class="bg-white w-full xl:ml-auto xl:w-1/2 relative">
+          <div v-if="product">
             <div
               class="flex items-center gap-2 mb-1"
               :class="product.brand ? 'justify-between' : 'items-end'"
@@ -41,6 +62,12 @@
             <h1 class="text-4xl mb-4 font-semibold">
               {{ product.displayName }}
             </h1>
+            <p
+              v-if="hasVariantDimensions && variantId && product.variant?.variantId === variantId && product.variant?.displayName !== product.displayName"
+              class="mb-3 text-slate-600"
+            >
+              {{ product.variant?.displayName }}
+            </p>
 
             <div
               v-if="product.data && ((product.data.description && product.data.description.value) || (product.data.Description && product.data.Description.value))"
@@ -50,13 +77,17 @@
               </p>
             </div>
           </div>
-          <div v-if="product.allVariants">
-            <ProductVariants
-              :product="product"
-              :selected-variant-id="variantId ?? undefined"
-            />
-          </div>
-          <div class="mt-6">
+          <ProductVariants
+            v-if="variants.length"
+            :product-id="productId"
+            :selection="variantSelection"
+            :show-variant-names="hasVariantDimensions"
+            :selected-variant-id="variantId ?? undefined"
+          />
+          <div
+            v-if="product"
+            class="mt-6"
+          >
             <div class="mb-2 flex gap-2">
               <span
                 v-if="product.salesPrice !== product.listPrice"
@@ -85,10 +116,14 @@
             </div>
           </div>
 
-          <div class="text-left mt-5">
+          <div
+            v-if="product"
+            class="text-left mt-5"
+          >
             <button
-              class="shop-cart-action w-full text-lg transition-transform duration-300"
+              class="shop-cart-action w-full text-lg transition-transform duration-300 disabled:cursor-not-allowed disabled:opacity-50"
               :class="buttonClass"
+              :disabled="!canAddToBasket"
               @click="addToBasket"
             >
               Add to cart
@@ -157,9 +192,12 @@
             </p>
           </section>
 
-          <div class="mt-5">
+          <div
+            v-if="product"
+            class="mt-5"
+          >
             <h3 class="text-xl inline-block">
-              Highlighed details
+              Highlighted details
             </h3>
             <DataValueList :entries="highlightedDetails">
               <template
@@ -178,12 +216,6 @@
         </div>
       </div>
     </div>
-    <p
-      v-else-if="product === undefined"
-      class="py-10 text-slate-600"
-    >
-      Product unavailable.
-    </p>
     <div
       v-if="product?.data
         && product.data.SoldOut
@@ -227,7 +259,7 @@
 
 
     <div
-      v-if="product?.variant && variantId"
+      v-if="product?.variant && product.variant.variantId === variantId"
       class="mt-10"
     >
       <h3 class="text-xl inline-block">
@@ -265,8 +297,10 @@ import basketService from '@/services/basket.service';
 import trackingService from '@/services/tracking.service';
 import contextStore from '@/stores/context.store';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline';
-import { DataValueFactory, ProductSearchBuilder, type CategoryNameAndIdResult, type ProductResult } from '@relewise/client';
-import { computed, ref, watch } from 'vue';
+import { withVariantPricing } from '@/helpers/productPricing';
+import { getVariantSelection } from '@/helpers/variantSelection';
+import { DataValueFactory, FilterBuilder, ProductSearchBuilder, type ProductResult, type VariantResult } from '@relewise/client';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Image from '../components/Image.vue';
 import Breadcrumb from '../components/Breadcrumb.vue';
@@ -276,15 +310,30 @@ import DataValueList, { type DataValueEntry } from '../components/DataValueList.
 import { applyVariantRequestSettings } from '@/helpers/productSearchRequest';
 import { getStockAvailability } from '@/helpers/storeAvailability';
 
-const productId = ref<string>('');
-const variantId = ref<string | null>(null);
-const product = ref<ProductResult | null | undefined>(null);
 const route = useRoute();
+const productId = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
+const variantId = computed(() => typeof route.params.variant === 'string' ? route.params.variant : null);
+const product = ref<ProductResult>();
+const variants = shallowRef<VariantResult[]>([]);
 const buttonClass = ref('');
-const defaultSettings = ref(contextStore.defaultSettings);
-const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
-const dataset = contextStore.context;
-const availability = computed(() => product.value ? getStockAvailability(product.value, dataset.value) : undefined);
+const isLoading = ref(false);
+const loadFailed = ref(false);
+// Retry reruns the existing loader and its stale-response guard without changing the URL.
+const retryAttempt = ref(0);
+const language = contextStore.language;
+const defaultSettings = contextStore.defaultSettings;
+const dataDimensionKeys = computed(() => contextStore.context.value.variantDimensionKeys ?? []);
+const variantSelection = computed(() => getVariantSelection(variants.value, dataDimensionKeys.value, variantId.value ?? undefined, language.value));
+const hasVariantDimensions = computed(() => variantSelection.value.groups.length > 0 || dataDimensionKeys.value.length > 0);
+const breadcrumb = computed(() => product.value?.categoryPaths?.[0]?.pathFromRoot ?? undefined);
+const canAddToBasket = computed(() => {
+  if (isLoading.value || loadFailed.value || product.value?.productId !== productId.value) return false;
+  if (variantId.value) return product.value?.variant?.variantId === variantId.value;
+  // Require an explicit variant on the product route when the dimension picker has variants.
+  return !hasVariantDimensions.value || variants.value.length === 0;
+});
+// Variant options stay visible during navigation, so the stock panel follows the loaded product.
+const availability = computed(() => product.value ? getStockAvailability(product.value, contextStore.context.value) : undefined);
 
 const details = computed(() => {
   if (!product.value) return [];
@@ -336,50 +385,64 @@ const productData = computed<DataValueEntry[]>(() => {
   ];
 });
 
-watch([() => route.params.id, () => route.params.variant], async([id, variantIdFromRoute], _previous, onCleanup) => {
-  if (!id || Array.isArray(id)) return;
+watch([productId, variantId, retryAttempt], async([id, selectedId], previousRoute, onCleanup) => {
+  let active = true;
+  onCleanup(() => { active = false; });
+  const contextRevision = contextStore.activeContextRevision;
+  const requestRevision = contextRevision.value;
+  // Route cleanup and context revisions both invalidate results before they can reach tracking or the cart.
+  const isCurrentRequest = () => active && requestRevision === contextRevision.value;
+  // Keep the same product's options usable during navigation without showing the previous variant's details.
+  product.value = undefined;
+  if (previousRoute?.[0] !== id) variants.value = [];
+  if (!id) return;
 
-  let cancelled = false;
-  onCleanup(() => { cancelled = true; });
-  const contextRevision = contextStore.activeContextRevision.value;
-  const requestedVariantId = typeof variantIdFromRoute === 'string' ? variantIdFromRoute : undefined;
-  productId.value = id;
-  variantId.value = requestedVariantId ?? null;
-  product.value = null;
-  breadcrumb.value = undefined;
+  isLoading.value = true;
+  loadFailed.value = false;
+  try {
+    // Apply contextual filters to the option list independently of the variant selected in the URL.
+    const variantFilters = new FilterBuilder();
+    contextStore.productAvailabilityFilters(variantFilters);
+    const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
+      .setSelectedProductProperties({
+        ...contextStore.selectedProductProperties,
+        allVariants: false,
+        filteredVariants: { filters: variantFilters.build(), inheritFiltersFromRequest: false },
+      })
+      .setSelectedVariantProperties({ allData: true, displayName: true, allSpecifications: true, pricing: true })
+      .filters(f => {
+        f.addProductIdFilter([id]);
+        if (selectedId) f.addVariantIdFilter(selectedId);
+        contextStore.productAvailabilityFilters(f);
+      })
+      .pagination(p => p.setPageSize(1)), contextStore.context.value)
+      .build();
 
-  const request = applyVariantRequestSettings(new ProductSearchBuilder(contextStore.defaultSettings)
-    .setSelectedProductProperties(contextStore.selectedProductProperties)
-    .setSelectedVariantProperties({ allData: true, displayName: true })
-    .filters(f => {
-      f.addProductIdFilter([id]);
-
-      if (requestedVariantId) {
-        f.addVariantIdFilter(requestedVariantId);
-      }
-
-      contextStore.productAvailabilityFilters(f);
-    })
-    .pagination(p => p.setPageSize(1)), contextStore.context.value)
-    .build();
-
-  const searcher = contextStore.getSearcher();
-  const result = (await searcher.searchProducts(request))?.results?.[0];
-  // A superseded lookup must not record a view for a different route or company.
-  if (cancelled || contextRevision !== contextStore.activeContextRevision.value) return;
-
-  product.value = result;
-  if (result) {
-    if (result.categoryPaths) {
-      // Use the first category path for the product's breadcrumb.
-      breadcrumb.value = result.categoryPaths[0]?.pathFromRoot ?? [];
+    const response = await contextStore.getSearcher().searchProducts(request);
+    if (!isCurrentRequest()) return;
+    if (response) contextStore.assertApiCall(response);
+    const result = response?.results?.[0];
+    if (result?.productId !== id || (selectedId && result.variant?.variantId !== selectedId)) {
+      loadFailed.value = true;
+      return;
     }
-    trackingService.trackProductView(id, requestedVariantId);
+    variants.value = result.filteredVariants ?? [];
+    product.value = withVariantPricing(result);
+    trackingService.trackProductView(id, selectedId ?? undefined);
+  }
+  catch (error) {
+    if (isCurrentRequest()) {
+      loadFailed.value = true;
+      console.error('Could not load product details.', error);
+    }
+  }
+  finally {
+    if (isCurrentRequest()) isLoading.value = false;
   }
 }, { immediate: true });
 
 function addToBasket() {
-  if (!product.value) return;
+  if (!canAddToBasket.value || !product.value) return;
 
   basketService.addProduct({
     product: product.value,

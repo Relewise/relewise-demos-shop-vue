@@ -80,6 +80,7 @@ const props = withDefaults(defineProps<{
     minItems?: number;
     placeholder?: string;
     uppercase?: boolean;
+    caseSensitive?: boolean;
     validateItem?: (value: string) => string | undefined;
 }>(), {
     label: '',
@@ -151,6 +152,6 @@ function normalizeValue(value: string) {
 }
 
 function isSameValue(left: string, right: string) {
-    return left.toLowerCase() === right.toLowerCase();
+    return props.caseSensitive ? left === right : left.toLowerCase() === right.toLowerCase();
 }
 </script>

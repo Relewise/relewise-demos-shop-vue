@@ -22,6 +22,13 @@ describe('datasetConfiguration', () => {
         }).conversationalSearchEnabled).toBe(true);
     });
 
+    it('preserves the order and case of valid variant dimension keys', () => {
+        expect(normalizeDatasetConfiguration({
+            ...dataset,
+            variantDimensionKeys: [' Color ', 'size', 'Color', '', 'color'],
+        }).variantDimensionKeys).toEqual(['Color', 'size', 'color']);
+    });
+
     it('trims configured store keys without changing their case and omits blank keys', () => {
         expect(normalizeDatasetConfiguration({
             ...dataset,

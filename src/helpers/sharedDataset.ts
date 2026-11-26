@@ -1,6 +1,6 @@
 import { formatCompanyDetails, formatUserDetails } from '@/helpers/contextSummary';
 import { brandingFields, normalizeDatasetBranding, type DatasetBranding } from '@/helpers/datasetBranding';
-import { normalizeDatasetConfiguration, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
+import { normalizeDatasetConfiguration, normalizeVariantDimensionKeys, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { datasetFeatureFields, type DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import { displayUser } from '@/helpers/userHelper';
 import { getUserCompanyIds, sanitizeUser, sanitizeUsers } from '@/helpers/userContext';
@@ -33,6 +33,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
     selectedUserIndex?: number;
     selectedCompanyId?: string | null;
     conversationalSearchProperties?: IDataset['conversationalSearchProperties'];
+    variantDimensionKeys?: string[];
 };
 
 export type SharedDatasetCoreFieldChange = {
@@ -42,12 +43,19 @@ export type SharedDatasetCoreFieldChange = {
     nextValue: string;
 };
 
-export type SharedDatasetFeatureChange = {
+type SharedDatasetToggleChange = {
     key: SharedDatasetFeatureKey;
     label: string;
     description: string;
     currentValue: boolean;
     nextValue: boolean;
+};
+
+export type SharedDatasetFeatureChange = SharedDatasetToggleChange | {
+    key: 'variantDimensionKeys';
+    label: string;
+    currentValue: string[];
+    nextValue: string[];
 };
 
 export type SharedDatasetUserAddition = {
@@ -152,6 +160,7 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         selectedUserIndex: normalizeOptionalUserIndex(entry.selectedUserIndex, users),
         selectedCompanyId: normalizeOptionalString(entry.selectedCompanyId),
         conversationalSearchProperties: normalizeConversationalSearchProperties(entry.conversationalSearchProperties),
+        variantDimensionKeys: Array.isArray(entry.variantDimensionKeys) ? normalizeVariantDimensionKeys(entry.variantDimensionKeys) : undefined,
     };
 }
 
@@ -190,6 +199,7 @@ export function buildSharedDataset(dataset: IDataset, {
         selectedUserIndex: normalizeOptionalUserIndex(selectedUserIndex, dataset.users),
         selectedCompanyId: normalizeOptionalString(selectedCompanyId),
         conversationalSearchProperties: dataset.conversationalSearchProperties,
+        variantDimensionKeys: normalizeVariantDimensionKeys(dataset.variantDimensionKeys),
     };
 }
 
@@ -210,6 +220,7 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         companies: sharedDataset.companies,
         trackingEnabled: sharedDataset.trackingEnabled,
         conversationalSearchProperties: sharedDataset.conversationalSearchProperties,
+        variantDimensionKeys: sharedDataset.variantDimensionKeys,
         ...pickSharedFeatureFlags(sharedDataset),
     });
 }
@@ -421,8 +432,8 @@ function formatConversationalSearchProperties(properties: NonNullable<IDataset['
         .join('\n') || 'None';
 }
 
-function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset) {
-    return getSharedFeatureDefinitions()
+function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset): SharedDatasetFeatureChange[] {
+    const changes: SharedDatasetFeatureChange[] = getSharedFeatureDefinitions()
         .map((feature) => ({
             key: feature.key,
             label: feature.label,
@@ -430,7 +441,7 @@ function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: Shared
             currentValue: Boolean(dataset[feature.key]),
             nextValue: sharedDataset[feature.key],
         }))
-        .filter((feature): feature is SharedDatasetFeatureChange => typeof feature.nextValue === 'boolean' && feature.currentValue !== feature.nextValue)
+        .filter((feature): feature is SharedDatasetToggleChange => typeof feature.nextValue === 'boolean' && feature.currentValue !== feature.nextValue)
         .map((feature) => ({
             key: feature.key,
             label: feature.label,
@@ -438,6 +449,20 @@ function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: Shared
             currentValue: feature.currentValue,
             nextValue: feature.nextValue,
         }));
+
+    const currentKeys = dataset.variantDimensionKeys ?? [];
+    const incomingKeys = sharedDataset.variantDimensionKeys;
+    // The order of extra data keys affects selection. An explicit empty list can clear it, while older links omit it.
+    if (incomingKeys && (incomingKeys.length !== currentKeys.length || incomingKeys.some((key, index) => key !== currentKeys[index]))) {
+        changes.push({
+            key: 'variantDimensionKeys',
+            label: 'Additional variant data keys',
+            currentValue: currentKeys,
+            nextValue: incomingKeys,
+        });
+    }
+
+    return changes;
 }
 
 function getSharedDatasetUserChanges(dataset: IDataset, sharedDataset: SharedDataset): SharedDatasetUserChanges {
@@ -575,6 +600,11 @@ function applySharedDatasetFeatureDecision(
         if (nextValue) {
             dataset[feature.key] = true;
         }
+    }
+
+    // Older links omit the setting. Merging adopts the imported order only if the local list is empty.
+    if (sharedDataset.variantDimensionKeys && (decision === 'replace' || !dataset.variantDimensionKeys?.length)) {
+        dataset.variantDimensionKeys = [...sharedDataset.variantDimensionKeys];
     }
 }
 

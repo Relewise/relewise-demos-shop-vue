@@ -1,3 +1,4 @@
+import { withVariantPricing } from '@/helpers/productPricing';
 import type { ProductResult } from '@relewise/client';
 import { computed, reactive } from 'vue';
 
@@ -22,7 +23,11 @@ class BasketService {
     constructor() {
         const storedBasket = localStorage.getItem('basket');
         if (storedBasket !== null) {
-            this.state.model = JSON.parse(storedBasket);
+            const basket = JSON.parse(storedBasket) as IBasket;
+            // Stored rows may predate variant pricing. Reuse any SKU price available in their saved data.
+            this.state.model = {
+                lineItems: basket.lineItems.map(item => ({ ...item, product: withVariantPricing(item.product) })),
+            };
         }
     }
 
@@ -49,6 +54,7 @@ class BasketService {
     }
 
     async addProduct({ product, quantityDelta }: { product: ProductResult, quantityDelta: number }) {
+        const pricedProduct = withVariantPricing(product);
         const productIndex = this.state.model.lineItems.findIndex(x => x.product.productId === product.productId
             && x.product.variant?.variantId === product.variant?.variantId);
 
@@ -58,8 +64,14 @@ class BasketService {
             if (lineItem.quantity <= 0) {
                 this.state.model.lineItems.splice(productIndex, 1);
             }
+            else if (quantityDelta > 0 && product.variant?.variantId && pricedProduct.salesPrice != null
+                && (product.variant.salesPrice != null || lineItem.product.variant?.salesPrice == null)) {
+                // A later result can supply a SKU price that was missing when this line was added.
+                // Keep a known SKU price when the later result only carries product-level prices.
+                lineItem.product = pricedProduct;
+            }
         } else {
-            this.model.value.lineItems.push({ product: product, quantity: quantityDelta });
+            this.model.value.lineItems.push({ product: pricedProduct, quantity: quantityDelta });
         }
 
         this.basketModified();

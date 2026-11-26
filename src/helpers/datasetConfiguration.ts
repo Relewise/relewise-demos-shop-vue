@@ -38,6 +38,14 @@ export function sanitizeCompanies(companies?: DemoCompany[]) {
     }));
 }
 
+/** Cleans saved or imported data keys while preserving their order in the picker. */
+export function normalizeVariantDimensionKeys(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+
+    // Relewise Data Keys are case-sensitive, including specification keys in older settings.
+    return [...new Set(value.flatMap(key => typeof key === 'string' && key.trim() ? [key.trim()] : []))];
+}
+
 export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput): IDataset {
     const variantBasedSearchOverlay = dataset.variantBasedSearchOverlay ?? false;
 
@@ -68,6 +76,7 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         variantResolutionImages: dataset.variantResolutionImages ?? false,
         maxVariantsPerProduct: normalizeMaxVariantsPerProduct(dataset.maxVariantsPerProduct),
         variantRequestSorting: dataset.variantRequestSorting === 'ByRelevance' ? 'ByRelevance' : defaultVariantRequestSorting,
+        variantDimensionKeys: normalizeVariantDimensionKeys(dataset.variantDimensionKeys),
         contentSearch: dataset.contentSearch ?? false,
         searchHighlight: dataset.searchHighlight ?? false,
         conversationalSearchEnabled: dataset.conversationalSearchEnabled ?? false,
