@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { type ContentSearchResponse, type SearchTermPredictionResult } from '@relewise/client';
-import { ref, watch, type PropType } from 'vue';
+import { computed, ref, watch, type PropType } from 'vue';
 import Sorting from '../components/Sorting.vue';
 import Pagination from '../components/Pagination.vue';
 import Facets from './Facets.vue';
-import { useRoute } from 'vue-router';
 import ContentTile from './ContentTile.vue';
-import router from '@/router';
 
 const props = defineProps({
     contentSearchResult: { type: Object as PropType<ContentSearchResponse>, required: true },
@@ -18,27 +16,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['search', 'update:sort', 'search-for']);
-const route = useRoute();
-
 const sortValue = ref(props.sort);
-// derive numeric page value from filters.page
-const pageValue = ref(Number((props.filters && (props.filters as any).page) ?? 1));
+const pageValue = computed(() => Number(props.filters.page ?? 1));
 
 watch(sortValue, (newVal) => {
     emit('update:sort', newVal);
     emit('search');
 });
-
-watch(pageValue, (newVal) => {
-    if (props.filters) {
-        (props.filters as any).page = String(newVal);
-        router.push({ path: route.path, query: { ...(props.filters as any) }, replace: true });
-    }
-});
-
-function search() {
-    emit('search');
-}
 
 function searchFor(term: string) {
     emit('search-for', term);
@@ -57,11 +41,11 @@ function searchFor(term: string) {
     >
       Showing results for <span class="underline--yellow inline-block">{{ term }}</span>
     </h2>
-    <div class="flex gap-10">
-      <div class="hidden lg:block lg:w-1/5">
+    <div class="lg:flex lg:gap-10">
+      <div class="lg:w-1/5">
         <div
           v-if="predictionsList.length > 0 && filters.term && filters.term.length > 0"
-          class="pb-6 bg-white mb-6 border-b border-solid border-slate-300 flex flex-col gap-1"
+          class="hidden pb-6 bg-white mb-6 border-b border-solid border-slate-300 lg:flex flex-col gap-1"
         >
           <h3 class="font-semibold text-lg">
             Suggestions
@@ -76,14 +60,11 @@ function searchFor(term: string) {
           </a>
         </div>
         <Facets
-          v-if="contentSearchResult.facets && contentSearchResult.hits > 0"
           :filters="filters"
-          :facets="contentSearchResult.facets"
-          :context="route.query.brandName ? 'Brand' : 'SearchOverlay'"
-          @search="() => {
-            pageValue = 1;
-            search();
-          }"
+          :facets="contentSearchResult.hits > 0 ? contentSearchResult.facets : null"
+          context="ContentSearch"
+          @search="emit('search', 1)"
+          @reset="emit('search', 1)"
         />
       </div>
       <div class="w-full lg:w-4/5">
@@ -114,9 +95,10 @@ function searchFor(term: string) {
           </div>
           <div class="py-3 flex justify-center">
             <Pagination
-              v-model.sync="pageValue"
+              :model-value="pageValue"
               :total="contentSearchResult.hits"
               :page-size="pageSize"
+              @update:model-value="emit('search', $event)"
             />
           </div>
         </div>

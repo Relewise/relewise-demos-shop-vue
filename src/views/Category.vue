@@ -27,14 +27,14 @@
       />
     </div>
 
-    <div class="flex gap-10">
+    <div :class="{ 'lg:flex lg:gap-10': result?.facets || childCategories?.length }">
       <div
-        v-if="result?.facets || (childCategories?.length ?? 0) > 0"
-        class="hidden lg:block w-1/5"
+        v-if="result || childCategories?.length"
+        :class="{ 'lg:w-1/5': result?.facets || childCategories?.length }"
       >
         <div
           v-if="(childCategories?.length ?? 0) > 0"
-          class="mb-6 border-b border-solid border-slate-300 pb-6"
+          class="hidden lg:block mb-6 border-b border-solid border-slate-300 pb-6"
         >
           <div class="font-semibold text-lg mb-1">
             Categories
@@ -55,11 +55,11 @@
         </div>
 
         <Facets
-          v-if="result?.facets"
           :filters="filters"
-          :facets="result.facets"
-          :context="'Category'"
+          :facets="result?.facets"
+          context="Category"
           @search="search"
+          @reset="resetFacetPage"
         />
       </div>
       <div class="w-full lg:w-4/5">
@@ -160,6 +160,7 @@ const page = ref<number>(1);
 const filters = ref<Record<string, string | string[]>>({ sort: '' });
 const renderCatoryLinks = ref<boolean | undefined>(false);
 const breadcrumb = ref<CategoryNameAndIdResult[] | undefined>();
+let searchRevision = 0;
 
 async function init() {
     const id = route.params.id;
@@ -251,7 +252,19 @@ watch(breakpointService.active, () => {
         search();
 });
 
+function resetFacetPage() {
+    delete filters.value.page;
+
+    // Changing the page already triggers a search through its watcher.
+    if (page.value !== 1) {
+        page.value = 1;
+    } else {
+        void search();
+    }
+}
+
 async function search() {
+    const revision = ++searchRevision;
     const variationName = breakpointService.active.value.toUpperCase();
     scrollTo({ top: 0 });
 
@@ -299,12 +312,15 @@ async function search() {
 
     const searcher = contextStore.getSearcher();
     const response: ProductSearchResponse | undefined = await searcher.searchProducts(request);
+    // A request with the previous filters may finish after the reset request.
+    if (revision !== searchRevision) return;
+
     contextStore.assertApiCall(response);
 
-    if (response && response.facets && response.facets.items) {
-        if (renderCatoryLinks.value && response.facets.items[0] !== null) {
-            const categoryHeirarchyFacetResult = (response.facets.items[0] as CategoryHierarchyFacetResult);
-            let root: CategoryHierarchyFacetResultCategoryNode | null = categoryHeirarchyFacetResult.nodes[0]!;
+    if (response?.facets?.items) {
+        const hierarchyFacet = response.facets.items[0] as CategoryHierarchyFacetResult | undefined;
+        if (renderCatoryLinks.value && hierarchyFacet?.nodes?.length) {
+            let root: CategoryHierarchyFacetResultCategoryNode | null = hierarchyFacet.nodes[0]!;
             while (root?.category.categoryId !== categoryId.value) {
                 if (!root?.children) {
                     root = null;

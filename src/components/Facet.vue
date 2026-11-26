@@ -8,21 +8,14 @@
     </h4>
         
     <CategoryFacet 
-      v-if="config?.type === 'Category' && context != 'ContentSearch'"
+      v-if="config?.type === 'Category'"
       :facet="facet"
       :filters="filters"
       @search="$emit('search', $event)"
     />
         
-    <CheckListFacet 
-      v-if="config?.type === 'Category' && context == 'ContentSearch'"
-      :facet="facet"
-      :filters="filters"
-      @search="$emit('search', $event)"
-    />
-
     <CheckListFacet
-      v-if="config?.renderType === 'Checklist'"
+      v-else-if="config?.renderType === 'Checklist'"
       :facet="facet" 
       @search="$emit('search', $event)"
     />
