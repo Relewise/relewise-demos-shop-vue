@@ -10,6 +10,11 @@ import type { Company, DataValue, User } from '@relewise/client';
 type SharedDatasetFeatureState = Partial<Pick<IDataset, DatasetBooleanKey | 'trackingEnabled'>>;
 type SharedDatasetFeatureKey = DatasetBooleanKey | 'trackingEnabled';
 
+const sharedPlaceholderFields = [
+    { key: 'productPlaceholderImageUrl', label: 'Product placeholder image URL' },
+    { key: 'categoryPlaceholderImageUrl', label: 'Category placeholder image URL' },
+] as const;
+
 export type SharedDataset = SharedDatasetFeatureState & {
     datasetId: string;
     apiKey: string;
@@ -19,6 +24,8 @@ export type SharedDataset = SharedDatasetFeatureState & {
     currencyCode?: string | null;
     allCurrencies?: string[];
     serverUrl?: string | null;
+    productPlaceholderImageUrl?: string | null;
+    categoryPlaceholderImageUrl?: string | null;
     branding?: DatasetBranding | null;
     users?: User[];
     companies?: Company[];
@@ -28,7 +35,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
 };
 
 export type SharedDatasetCoreFieldChange = {
-    key: 'displayName' | 'apiKey' | 'serverUrl' | 'conversationalSearchProperties' | keyof DatasetBranding;
+    key: 'displayName' | 'apiKey' | 'serverUrl' | 'conversationalSearchProperties' | keyof DatasetBranding | (typeof sharedPlaceholderFields)[number]['key'];
     label: string;
     currentValue: string;
     nextValue: string;
@@ -134,6 +141,8 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         currencyCode: normalizeOptionalCurrency(entry.currencyCode),
         allCurrencies: normalizeOptionalCurrencyArray(entry.allCurrencies),
         serverUrl: normalizeOptionalString(entry.serverUrl),
+        productPlaceholderImageUrl: normalizeSharedPlaceholder(entry.productPlaceholderImageUrl),
+        categoryPlaceholderImageUrl: normalizeSharedPlaceholder(entry.categoryPlaceholderImageUrl),
         branding: entry.branding === null ? null : normalizeDatasetBranding(entry.branding),
         users,
         companies: normalizeOptionalCompanies(entry.companies),
@@ -165,6 +174,8 @@ export function buildSharedDataset(dataset: IDataset, {
         currencyCode: normalizeOptionalCurrency(currencyCode),
         allCurrencies: uniqueNormalizedStrings(dataset.allCurrencies ?? [], { uppercase: true }),
         serverUrl: normalizeOptionalString(dataset.serverUrl),
+        productPlaceholderImageUrl: normalizeOptionalString(dataset.productPlaceholderImageUrl),
+        categoryPlaceholderImageUrl: normalizeOptionalString(dataset.categoryPlaceholderImageUrl),
         // A null value shares the defaults. Older links omit the property and preserve local branding.
         branding: normalizeDatasetBranding(dataset.branding) ?? null,
         users: sanitizeUsers(dataset.users),
@@ -187,6 +198,8 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         currencyCode: sharedDataset.currencyCode ?? undefined,
         allCurrencies: sharedDataset.allCurrencies ?? [],
         serverUrl: sharedDataset.serverUrl ?? undefined,
+        productPlaceholderImageUrl: sharedDataset.productPlaceholderImageUrl ?? undefined,
+        categoryPlaceholderImageUrl: sharedDataset.categoryPlaceholderImageUrl ?? undefined,
         branding: sharedDataset.branding ?? undefined,
         users: sharedDataset.users,
         companies: sharedDataset.companies,
@@ -262,6 +275,11 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
         dataset.displayName = sharedDataset.displayName ?? undefined;
         dataset.apiKey = sharedDataset.apiKey;
         dataset.serverUrl = sharedDataset.serverUrl ?? undefined;
+        for (const { key } of sharedPlaceholderFields) {
+            if (sharedDataset[key] !== undefined) {
+                dataset[key] = sharedDataset[key] ?? undefined;
+            }
+        }
         if (sharedDataset.branding !== undefined) {
             dataset.branding = normalizeDatasetBranding(sharedDataset.branding);
         }
@@ -354,6 +372,15 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
             currentValue: currentServerUrl,
             nextValue: nextServerUrl,
         });
+    }
+
+    for (const { key, label } of sharedPlaceholderFields) {
+        const incoming = sharedDataset[key];
+        const currentValue = normalizeOptionalString(dataset[key]) ?? '';
+        const nextValue = incoming ?? '';
+        if (incoming !== undefined && currentValue !== nextValue) {
+            changes.push({ key, label, currentValue, nextValue });
+        }
     }
 
     if (sharedDataset.branding !== undefined) {
@@ -639,6 +666,11 @@ function normalizeOptionalString(value: unknown) {
 
     const trimmedValue = value.trim();
     return trimmedValue || null;
+}
+
+function normalizeSharedPlaceholder(value: unknown) {
+    // Older share links omit this field, while new links can explicitly clear it with null.
+    return typeof value === 'string' || value === null ? normalizeOptionalString(value) : undefined;
 }
 
 function normalizeOptionalCurrency(value: unknown) {

@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { PhotoIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import { ShoppingBagIcon } from '@heroicons/vue/24/outline';
+import ImageWithFallback from '@/components/ImageWithFallback.vue';
 import type { ConversationalSearchProduct } from '@/helpers/conversationalSearchApi';
+import contextStore from '@/stores/context.store';
+
+const dataset = contextStore.context;
 
 const props = defineProps<{
     product: ConversationalSearchProduct;
@@ -30,15 +34,12 @@ function formatPrice() {
       class="flex aspect-square items-center justify-center overflow-hidden bg-slate-50"
       @click="emit('navigate')"
     >
-      <img
-        v-if="product.image"
+      <ImageWithFallback
         :src="product.image"
+        :fallback="dataset.productPlaceholderImageUrl"
         :alt="product.name"
-        class="h-full w-full object-contain p-3"
-      >
-      <PhotoIcon
-        v-else
-        class="h-16 w-16 text-slate-300"
+        image-class="h-full w-full object-contain p-3"
+        placeholder-class="h-16 w-16 text-slate-300"
       />
     </RouterLink>
     <div class="flex flex-1 flex-col p-3">

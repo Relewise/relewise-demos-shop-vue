@@ -21,6 +21,24 @@ describe('datasetConfiguration', () => {
             conversationalSearchEnabled: true,
         }).conversationalSearchEnabled).toBe(true);
     });
+
+    it('round-trips placeholder URLs and preserves local URLs on older imports', () => {
+        const configured = normalizeDatasetConfiguration({
+            ...dataset,
+            productPlaceholderImageUrl: ' /product.png ',
+            categoryPlaceholderImageUrl: ' ',
+        });
+        const shared = parseSharedDataset(JSON.parse(JSON.stringify(buildSharedDataset(configured))))!;
+        const imported = createDatasetFromSharedDataset(shared);
+        expect(imported.productPlaceholderImageUrl).toBe('/product.png');
+        expect(imported.categoryPlaceholderImageUrl).toBeUndefined();
+
+        const decision = getDefaultSharedDatasetImportDecision();
+        applySharedDatasetImportDecision(configured, parseSharedDataset(dataset)!, decision);
+        expect(configured.productPlaceholderImageUrl).toBe('/product.png');
+        applySharedDatasetImportDecision(configured, { ...shared, productPlaceholderImageUrl: null }, decision);
+        expect(configured.productPlaceholderImageUrl).toBeUndefined();
+    });
 });
 
 describe('dataset branding', () => {
@@ -50,6 +68,23 @@ describe('dataset branding', () => {
         const decision = getDefaultSharedDatasetImportDecision();
         expect(applySharedDatasetImportDecision({ ...dataset }, imported, { ...decision, coreFields: 'local' }).branding).toBeUndefined();
         expect(applySharedDatasetImportDecision({ ...dataset }, imported, decision).branding).toEqual(branding);
+    });
+
+    it('reviews and imports branding together with both placeholder URLs', () => {
+        const appearance = {
+            branding,
+            productPlaceholderImageUrl: '/product.png',
+            categoryPlaceholderImageUrl: '/category.png',
+        };
+        const shared = parseSharedDataset(JSON.parse(JSON.stringify(buildSharedDataset({ ...dataset, ...appearance }))));
+        assert.isNotNull(shared, 'Expected the shared appearance settings to parse');
+
+        expect(createDatasetFromSharedDataset(shared)).toMatchObject(appearance);
+        expect(getSharedDatasetDiff(dataset, shared).coreFieldChanges.map(change => change.key)).toEqual([
+            'productPlaceholderImageUrl', 'categoryPlaceholderImageUrl', 'logoUrl', 'primaryColor', 'secondaryColor',
+        ]);
+        expect(applySharedDatasetImportDecision({ ...dataset }, shared, getDefaultSharedDatasetImportDecision()))
+            .toMatchObject(appearance);
     });
 
     it('keeps local branding for older links and imports an explicit reset from a new link', () => {

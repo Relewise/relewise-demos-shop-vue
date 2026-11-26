@@ -103,6 +103,26 @@
           </div>
         </div>
       </div>
+
+      <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <h3 class="mb-4 text-base font-semibold text-slate-900">
+          Placeholder images
+        </h3>
+        <div class="grid gap-5 xl:grid-cols-2">
+          <InputText
+            id="product-placeholder-image-url"
+            v-model="editableDataset.productPlaceholderImageUrl"
+            label="Product placeholder image URL"
+            help="Used when a product or variant image is unavailable. Leave blank to use the default."
+          />
+          <InputText
+            id="category-placeholder-image-url"
+            v-model="editableDataset.categoryPlaceholderImageUrl"
+            label="Category placeholder image URL"
+            help="Used when a category image is unavailable. Leave blank to use the default."
+          />
+        </div>
+      </div>
     </SettingsAccordionSection>
 
     <SettingsAccordionSection

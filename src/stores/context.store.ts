@@ -20,6 +20,8 @@ export interface IDataset {
     allCurrencies: string[];
     trackingEnabled?: boolean;
     serverUrl?: string;
+    productPlaceholderImageUrl?: string;
+    categoryPlaceholderImageUrl?: string;
     branding?: DatasetBranding;
     users?: User[];
     companies?: Company[];
