@@ -3,6 +3,7 @@ import { getCompanyDataDraft, getUserMetadataDraft } from '@/helpers/keyValueMet
 import { sanitizeUsers } from '@/helpers/userContext';
 import type { Company } from '@relewise/client';
 import { defaultVariantRequestSorting } from '@/helpers/productSearchRequest';
+import { normalizeDatasetBranding, validateDatasetBranding } from '@/helpers/datasetBranding';
 
 type DatasetNormalizationInput = Partial<IDataset> & {
     language?: string;
@@ -48,6 +49,7 @@ export function normalizeDatasetConfiguration(dataset: DatasetNormalizationInput
         serverUrl: dataset.serverUrl?.trim() ?? '',
         productPlaceholderImageUrl: dataset.productPlaceholderImageUrl?.trim() || undefined,
         categoryPlaceholderImageUrl: dataset.categoryPlaceholderImageUrl?.trim() || undefined,
+        branding: normalizeDatasetBranding(dataset.branding),
         users: sanitizeUsers(dataset.users),
         companies: sanitizeCompanies(dataset.companies),
         trackingEnabled: dataset.trackingEnabled ?? false,
@@ -94,6 +96,8 @@ export function createDatasetSnapshot(dataset: IDataset, trackingEnabled = datas
         tracking: trackingEnabled,
         dataset: normalizeDatasetConfiguration(dataset),
         drafts: {
+            // Include invalid draft values so Save still runs validation when only branding changes.
+            brandingErrors: validateDatasetBranding(dataset.branding),
             users: (dataset.users ?? []).map((user) => getUserMetadataDraft(user) ?? null),
             companies: (dataset.companies ?? []).map((company) => getCompanyDataDraft(company) ?? null),
         },

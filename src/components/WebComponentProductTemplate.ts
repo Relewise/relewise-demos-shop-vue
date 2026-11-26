@@ -23,7 +23,7 @@ export const WebComponentProductTemplate = (
             }
 
              a:hover {
-                color: #1A44BD;
+                color: var(--color-brand-700, #1A44BD);
             }
 
             img {

@@ -31,7 +31,7 @@ const displayName = computed(() => {
 <template>
   <RouterLink
     :to="{ name: product.variant ? 'variant' : 'product', params: { id: product.productId, variant: product.variant?.variantId } }"
-    class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-500 transition duration-200 rounded-lg shadow-sm p-2 hover:scale-105"
+    class="relative flex flex-col overflow-hidden bg-white text-slate-900 hover:!text-brand-link transition duration-200 rounded-lg shadow-sm p-2 hover:scale-105"
   >
     <div class="relative flex h-max-[275px] justify-center">
       <Image
@@ -42,7 +42,7 @@ const displayName = computed(() => {
         <Popover
           v-if="isPromotion"
           placement="bottom-start"
-          class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-white flex items-center gap-1 rounded m-3"
+          class="bg-brand-200 px-2 py-0.5 text-center text-xs font-medium text-slate-900 flex items-center gap-1 rounded m-3"
         >
           <span @click="(e) => e.preventDefault()">PROMOTED</span>
           <ExclamationCircleIcon

@@ -3,6 +3,7 @@
     <button
       type="button"
       class="flex w-full items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-6 py-4 text-left transition hover:bg-slate-100"
+      :aria-expanded="open"
       @click="$emit('toggle')"
     >
       <div class="flex min-w-0 items-center gap-4">

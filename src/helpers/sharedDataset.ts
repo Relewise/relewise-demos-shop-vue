@@ -1,4 +1,5 @@
 import { formatCompanyDetails, formatUserDetails } from '@/helpers/contextSummary';
+import { brandingFields, normalizeDatasetBranding, type DatasetBranding } from '@/helpers/datasetBranding';
 import { normalizeDatasetConfiguration, sanitizeCompanies, uniqueNormalizedStrings } from '@/helpers/datasetConfiguration';
 import { datasetFeatureFields, type DatasetBooleanKey } from '@/helpers/datasetFeatures';
 import { displayUser } from '@/helpers/userHelper';
@@ -25,6 +26,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
     serverUrl?: string | null;
     productPlaceholderImageUrl?: string | null;
     categoryPlaceholderImageUrl?: string | null;
+    branding?: DatasetBranding | null;
     users?: User[];
     companies?: Company[];
     selectedUserIndex?: number;
@@ -33,7 +35,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
 };
 
 export type SharedDatasetCoreFieldChange = {
-    key: 'displayName' | 'apiKey' | 'serverUrl' | 'productPlaceholderImageUrl' | 'categoryPlaceholderImageUrl';
+    key: 'displayName' | 'apiKey' | 'serverUrl' | 'conversationalSearchProperties' | keyof DatasetBranding | (typeof sharedPlaceholderFields)[number]['key'];
     label: string;
     currentValue: string;
     nextValue: string;
@@ -141,6 +143,7 @@ export function parseSharedDataset(value: unknown): SharedDataset | null {
         serverUrl: normalizeOptionalString(entry.serverUrl),
         productPlaceholderImageUrl: normalizeSharedPlaceholder(entry.productPlaceholderImageUrl),
         categoryPlaceholderImageUrl: normalizeSharedPlaceholder(entry.categoryPlaceholderImageUrl),
+        branding: entry.branding === null ? null : normalizeDatasetBranding(entry.branding),
         users,
         companies: normalizeOptionalCompanies(entry.companies),
         trackingEnabled: normalizeOptionalBoolean(entry.trackingEnabled),
@@ -173,6 +176,8 @@ export function buildSharedDataset(dataset: IDataset, {
         serverUrl: normalizeOptionalString(dataset.serverUrl),
         productPlaceholderImageUrl: normalizeOptionalString(dataset.productPlaceholderImageUrl),
         categoryPlaceholderImageUrl: normalizeOptionalString(dataset.categoryPlaceholderImageUrl),
+        // A null value shares the defaults. Older links omit the property and preserve local branding.
+        branding: normalizeDatasetBranding(dataset.branding) ?? null,
         users: sanitizeUsers(dataset.users),
         companies: sanitizeCompanies(dataset.companies),
         trackingEnabled: dataset.trackingEnabled ?? false,
@@ -195,6 +200,7 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
         serverUrl: sharedDataset.serverUrl ?? undefined,
         productPlaceholderImageUrl: sharedDataset.productPlaceholderImageUrl ?? undefined,
         categoryPlaceholderImageUrl: sharedDataset.categoryPlaceholderImageUrl ?? undefined,
+        branding: sharedDataset.branding ?? undefined,
         users: sharedDataset.users,
         companies: sharedDataset.companies,
         trackingEnabled: sharedDataset.trackingEnabled,
@@ -205,7 +211,8 @@ export function createDatasetFromSharedDataset(sharedDataset: SharedDataset): ID
 
 function normalizeConversationalSearchProperties(value: unknown): IDataset['conversationalSearchProperties'] {
     if (!Array.isArray(value)) {
-        return [];
+        // An omitted field preserves local settings. An explicit empty array clears them after review.
+        return undefined;
     }
 
     return value.flatMap(property => {
@@ -268,11 +275,16 @@ export function applySharedDatasetImportDecision(dataset: IDataset, sharedDatase
         dataset.displayName = sharedDataset.displayName ?? undefined;
         dataset.apiKey = sharedDataset.apiKey;
         dataset.serverUrl = sharedDataset.serverUrl ?? undefined;
-        dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
         for (const { key } of sharedPlaceholderFields) {
             if (sharedDataset[key] !== undefined) {
                 dataset[key] = sharedDataset[key] ?? undefined;
             }
+        }
+        if (sharedDataset.branding !== undefined) {
+            dataset.branding = normalizeDatasetBranding(sharedDataset.branding);
+        }
+        if (sharedDataset.conversationalSearchProperties !== undefined) {
+            dataset.conversationalSearchProperties = sharedDataset.conversationalSearchProperties;
         }
     }
 
@@ -371,7 +383,37 @@ export function getSharedDatasetCoreFieldChanges(dataset: IDataset, sharedDatase
         }
     }
 
+    if (sharedDataset.branding !== undefined) {
+        const localBranding = normalizeDatasetBranding(dataset.branding);
+        for (const { key, label } of brandingFields) {
+            const currentValue = localBranding?.[key] ?? '';
+            const nextValue = sharedDataset.branding?.[key] ?? '';
+            if (currentValue !== nextValue) {
+                changes.push({ key, label, currentValue, nextValue });
+            }
+        }
+    }
+
+    const incomingProperties = sharedDataset.conversationalSearchProperties;
+    if (incomingProperties !== undefined) {
+        const localProperties = normalizeConversationalSearchProperties(dataset.conversationalSearchProperties) ?? [];
+        if (JSON.stringify(localProperties) !== JSON.stringify(incomingProperties)) {
+            changes.push({
+                key: 'conversationalSearchProperties',
+                label: 'Shopping Assistant properties',
+                currentValue: formatConversationalSearchProperties(localProperties),
+                nextValue: formatConversationalSearchProperties(incomingProperties),
+            });
+        }
+    }
+
     return changes;
+}
+
+function formatConversationalSearchProperties(properties: NonNullable<IDataset['conversationalSearchProperties']>) {
+    return properties
+        .map(({ key, dataKey, displayName }) => displayName ? `${displayName} (${key} → ${dataKey})` : `${key} → ${dataKey}`)
+        .join('\n') || 'None';
 }
 
 function getSharedDatasetFeatureChanges(dataset: IDataset, sharedDataset: SharedDataset) {

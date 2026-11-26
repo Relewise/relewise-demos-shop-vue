@@ -8,6 +8,7 @@ import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSes
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import type { ConversationalSearchPropertyDefinition } from '@/helpers/conversationalSearchApi';
 import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
+import type { DatasetBranding } from '@/helpers/datasetBranding';
 
 export type VariantRequestSorting = 'GroupedByProduct' | 'ByRelevance';
 
@@ -21,6 +22,7 @@ export interface IDataset {
     serverUrl?: string;
     productPlaceholderImageUrl?: string;
     categoryPlaceholderImageUrl?: string;
+    branding?: DatasetBranding;
     users?: User[];
     companies?: Company[];
     allowThirdLevelCategories?: boolean;
