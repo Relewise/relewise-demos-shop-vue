@@ -1,6 +1,7 @@
 import { displayUser } from '@/helpers/userHelper';
 import { getUserCompanyIds } from '@/helpers/userContext';
-import type { Company, User } from '@relewise/client';
+import type { User } from '@relewise/client';
+import type { DemoCompany } from '@/helpers/companyAssortments';
 
 export function getSelectedUser(users: User[] | undefined, selectedUserIndex: number | undefined) {
     if (selectedUserIndex === undefined || !users || selectedUserIndex < 0 || selectedUserIndex >= users.length) {
@@ -60,7 +61,7 @@ export function formatUserDetails(user: User | undefined) {
     return details.length > 0 ? details.join('\n') : 'Anonymous user';
 }
 
-export function formatCompanyDetails(company: Company | undefined) {
+export function formatCompanyDetails(company: DemoCompany | undefined) {
     if (!company) {
         return 'No company selected.';
     }
@@ -69,6 +70,9 @@ export function formatCompanyDetails(company: Company | undefined) {
 
     if (company.parent?.id) {
         details.push(`Parent: ${company.parent.id}`);
+    }
+    if (company.assortmentIds?.length) {
+        details.push(`Assortments: ${company.assortmentIds.join(', ')}`);
     }
 
     for (const [key, value] of Object.entries(company.data ?? {})) {

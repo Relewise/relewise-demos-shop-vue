@@ -6,6 +6,7 @@ import { displayUser } from '@/helpers/userHelper';
 import { getUserCompanyIds, sanitizeUser, sanitizeUsers } from '@/helpers/userContext';
 import type { IDataset } from '@/stores/context.store';
 import type { Company, DataValue, User } from '@relewise/client';
+import type { DemoCompany } from '@/helpers/companyAssortments';
 
 type SharedDatasetFeatureState = Partial<Pick<IDataset, DatasetBooleanKey | 'trackingEnabled'>>;
 type SharedDatasetFeatureKey = DatasetBooleanKey | 'trackingEnabled';
@@ -28,7 +29,7 @@ export type SharedDataset = SharedDatasetFeatureState & {
     categoryPlaceholderImageUrl?: string | null;
     branding?: DatasetBranding | null;
     users?: User[];
-    companies?: Company[];
+    companies?: DemoCompany[];
     selectedUserIndex?: number;
     selectedCompanyId?: string | null;
     conversationalSearchProperties?: IDataset['conversationalSearchProperties'];
@@ -179,7 +180,11 @@ export function buildSharedDataset(dataset: IDataset, {
         // A null value shares the defaults. Older links omit the property and preserve local branding.
         branding: normalizeDatasetBranding(dataset.branding) ?? null,
         users: sanitizeUsers(dataset.users),
-        companies: sanitizeCompanies(dataset.companies),
+        // An empty array clears restrictions on import. Older links omitted the field.
+        companies: sanitizeCompanies(dataset.companies).map(company => ({
+            ...company,
+            assortmentIds: company.assortmentIds ?? [],
+        })),
         trackingEnabled: dataset.trackingEnabled ?? false,
         ...buildSharedFeatureFlags(dataset),
         selectedUserIndex: normalizeOptionalUserIndex(selectedUserIndex, dataset.users),
@@ -512,7 +517,8 @@ function getSharedDatasetCompanyChanges(dataset: IDataset, sharedDataset: Shared
             continue;
         }
 
-        if (createComparableCompanyKey(existingCompany) === createComparableCompanyKey(sharedCompany)) {
+        const incomingCompany = preserveUnspecifiedAssortments(existingCompany, sharedCompany);
+        if (createComparableCompanyKey(existingCompany) === createComparableCompanyKey(incomingCompany)) {
             matchedCount += 1;
             continue;
         }
@@ -520,7 +526,7 @@ function getSharedDatasetCompanyChanges(dataset: IDataset, sharedDataset: Shared
         conflicts.push({
             companyId: sharedCompany.id,
             currentDetails: formatCompanyDetails(existingCompany),
-            nextDetails: formatCompanyDetails(sharedCompany),
+            nextDetails: formatCompanyDetails(incomingCompany),
         });
     }
 
@@ -610,16 +616,23 @@ function applySharedDatasetCompanies(dataset: IDataset, sharedDataset: SharedDat
             continue;
         }
 
-        if (createComparableCompanyKey(nextCompanies[existingCompanyIndex]!) === createComparableCompanyKey(sharedCompany)) {
+        const existingCompany = nextCompanies[existingCompanyIndex]!;
+        const incomingCompany = preserveUnspecifiedAssortments(existingCompany, sharedCompany);
+        if (createComparableCompanyKey(existingCompany) === createComparableCompanyKey(incomingCompany)) {
             continue;
         }
 
         if (decision === 'shared') {
-            nextCompanies[existingCompanyIndex] = sharedCompany;
+            nextCompanies[existingCompanyIndex] = incomingCompany;
         }
     }
 
     dataset.companies = nextCompanies;
+}
+
+function preserveUnspecifiedAssortments(existing: DemoCompany, incoming: DemoCompany): DemoCompany {
+    // Older share links omit the property. An explicitly empty list clears it.
+    return { ...incoming, assortmentIds: incoming.assortmentIds ?? existing.assortmentIds };
 }
 
 function getSharedFeatureDefinitions() {
@@ -786,13 +799,14 @@ function getUserConflictKeys(user: User) {
     return conflictKeys;
 }
 
-function createComparableCompanyKey(company: Company) {
+function createComparableCompanyKey(company: DemoCompany) {
     const [normalizedCompany] = sanitizeCompanies([company]);
 
     return JSON.stringify({
         id: normalizedCompany?.id ?? '',
         parentId: normalizeOptionalString(normalizedCompany?.parent?.id),
         data: normalizeComparableDataRecord(normalizedCompany?.data),
+        assortmentIds: normalizedCompany?.assortmentIds ?? [],
     });
 }
 

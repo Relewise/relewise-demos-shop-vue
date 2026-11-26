@@ -119,6 +119,7 @@ async function refreshActiveContext() {
 
 async function getCategories(searcher: Searcher, loadToken: number) {
     const request = new ProductSearchBuilder(contextStore.defaultSettings)
+        .filters(filters => contextStore.companyAssortmentFilter(filters))
         .pagination(p => p.setPageSize(0))
         .facets(f => f.addProductCategoryHierarchyFacet('ImmediateParent', null, { displayName: true, paths: true }))
         .build();

@@ -1,4 +1,4 @@
-import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, type Company, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
+import { type Settings, type SelectedProductPropertiesSettings, type SelectedCategoryPropertiesSettings, type User, UserFactory, type FilterBuilder, type ConditionBuilder, DataValueFactory } from '@relewise/client';
 import { computed, reactive } from 'vue';
 import basketService from '@/services/basket.service';
 import { globalProductRecommendationFilters } from './globalProductFilters';
@@ -8,6 +8,7 @@ import { clearSessionSelections, createSessionSelectionsForDataset, normalizeSes
 import { normalizeDatasetConfiguration } from '@/helpers/datasetConfiguration';
 import type { ConversationalSearchPropertyDefinition } from '@/helpers/conversationalSearchApi';
 import { loadStoredContext, persistStoredContext } from '@/helpers/contextStorage';
+import type { DemoCompany } from '@/helpers/companyAssortments';
 import type { DatasetBranding } from '@/helpers/datasetBranding';
 
 export type VariantRequestSorting = 'GroupedByProduct' | 'ByRelevance';
@@ -24,7 +25,7 @@ export interface IDataset {
     categoryPlaceholderImageUrl?: string;
     branding?: DatasetBranding;
     users?: User[];
-    companies?: Company[];
+    companies?: DemoCompany[];
     allowThirdLevelCategories?: boolean;
     hideSoldOutProducts?: boolean;
     userClassificationFilters?: boolean;
@@ -228,7 +229,19 @@ class AppContext {
         return AppContext.numberOfProductsToRecommend;
     }
 
-    public userClassificationBasedFilters(filterBuilder: FilterBuilder) {
+    public companyAssortmentFilter(filterBuilder: FilterBuilder) {
+        const assortmentIds = this.selectedCompany.value?.assortmentIds;
+        if (assortmentIds?.length) {
+            filterBuilder.addProductAssortmentFilter(assortmentIds);
+        }
+    }
+
+    public productAvailabilityFilters(filterBuilder: FilterBuilder) {
+        this.companyAssortmentFilter(filterBuilder);
+        this.userClassificationBasedFilters(filterBuilder);
+    }
+
+    private userClassificationBasedFilters(filterBuilder: FilterBuilder) {
         if (!this.user.value.classifications || !this.context.value.userClassificationFilters) {
             return;
         }
@@ -358,7 +371,7 @@ class AppContext {
     }) {
         const currentDatasetId = this.hasActiveDataset.value ? this.context.value.datasetId : '';
         const currentUserIndex = this.selectedUserIndex.value;
-        const shouldClearBasket = datasetId !== currentDatasetId || selectedUserIndex !== currentUserIndex;
+        const currentCompanyId = this.selectedCompany.value?.id;
         const nextDatasetIndex = this.state.datasets.findIndex((dataset) => dataset.datasetId === datasetId);
 
         if (nextDatasetIndex < 0) {
@@ -373,6 +386,10 @@ class AppContext {
             selectedCompanyId: selectedCompanyId || undefined,
         });
 
+        // Basket lines store product snapshots, so they are not subject to the new company's filters.
+        const shouldClearBasket = datasetId !== currentDatasetId
+            || selectedUserIndex !== currentUserIndex
+            || this.selectedCompany.value?.id !== currentCompanyId;
         this.refreshActiveContext({ clearBasket: shouldClearBasket });
     }
 

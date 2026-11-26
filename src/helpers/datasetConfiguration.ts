@@ -1,7 +1,7 @@
 import type { IDataset } from '@/stores/context.store';
 import { getCompanyDataDraft, getUserMetadataDraft } from '@/helpers/keyValueMetadata';
 import { sanitizeUsers } from '@/helpers/userContext';
-import type { Company } from '@relewise/client';
+import { normalizeCompanyAssortmentIds, type DemoCompany } from '@/helpers/companyAssortments';
 import { defaultVariantRequestSorting } from '@/helpers/productSearchRequest';
 import { normalizeDatasetBranding, validateDatasetBranding } from '@/helpers/datasetBranding';
 
@@ -28,12 +28,13 @@ export function uniqueNormalizedStrings(
     return normalized;
 }
 
-export function sanitizeCompanies(companies?: Company[]) {
+export function sanitizeCompanies(companies?: DemoCompany[]) {
     return (companies ?? []).map((company) => ({
         ...company,
         id: company.id?.trim() ?? '',
-        parent: company.parent?.id?.trim() ? { id: company.parent.id.trim() } as Company : undefined,
+        parent: company.parent?.id?.trim() ? { id: company.parent.id.trim() } : undefined,
         data: company.data ? { ...company.data } : undefined,
+        assortmentIds: normalizeCompanyAssortmentIds(company.assortmentIds),
     }));
 }
 

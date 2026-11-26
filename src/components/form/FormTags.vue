@@ -3,6 +3,7 @@
     <label
       v-if="label"
       class="block text-sm text-slate-700"
+      :for="inputId"
     >
       {{ label }}
     </label>
@@ -40,10 +41,13 @@
         </span>
 
         <input
+          :id="inputId"
           v-model="newItem"
           type="text"
           :placeholder="placeholder"
+          :aria-invalid="validationMessage ? true : undefined"
           class="h-7 min-w-[7rem] flex-1 !border-0 !bg-transparent !px-0 !py-0 text-sm text-slate-900 !shadow-none placeholder:text-slate-400 focus:!ring-0"
+          @input="validationMessage = ''"
           @keydown.enter.prevent="addItem"
           @keydown.backspace="handleBackspace"
         >
@@ -56,11 +60,18 @@
     >
       {{ help }}
     </p>
+    <p
+      v-if="validationMessage"
+      class="mt-2 text-sm text-red-700"
+      role="alert"
+    >
+      {{ validationMessage }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId } from 'vue';
 
 const props = withDefaults(defineProps<{
     modelValue: string[];
@@ -69,6 +80,7 @@ const props = withDefaults(defineProps<{
     minItems?: number;
     placeholder?: string;
     uppercase?: boolean;
+    validateItem?: (value: string) => string | undefined;
 }>(), {
     label: '',
     help: '',
@@ -82,11 +94,16 @@ const emit = defineEmits<{
 }>();
 
 const newItem = ref('');
+const inputId = useId();
+const validationMessage = ref('');
 
 const normalizedItems = computed(() => normalizeItems(props.modelValue ?? []));
 
 function addItem() {
     const value = normalizeValue(newItem.value);
+    validationMessage.value = value ? props.validateItem?.(value) ?? '' : '';
+    if (validationMessage.value) return;
+
     if (!value || normalizedItems.value.some((item) => isSameValue(item, value))) {
         newItem.value = '';
         return;
