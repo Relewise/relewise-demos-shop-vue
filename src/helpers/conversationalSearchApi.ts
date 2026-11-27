@@ -36,10 +36,22 @@ export interface ConversationalSearchFilters {
     properties?: Record<string, string | null>;
 }
 
+export interface ConversationalSearchGroup {
+    id: string;
+    title: string;
+    searchTerm: string;
+    category?: string | null;
+    brand?: string | null;
+    minPrice?: number | null;
+    maxPrice?: number | null;
+    properties: { key: string; value: string | null }[];
+}
+
 export interface ConversationalSearchState {
     searchTerm: string;
     filters?: ConversationalSearchFilters;
     result?: ConversationalSearchResult | null;
+    searches?: ConversationalSearchGroup[] | null;
 }
 
 export interface ConversationalSearchMessage {
@@ -49,6 +61,8 @@ export interface ConversationalSearchMessage {
 }
 
 export interface ConversationalSearchShoppingActivity {
+    groupId?: string | null;
+    title?: string | null;
     status: 'searching' | 'ready' | 'error' | 'cancelled';
     searchTerm: string;
     filters: ConversationalSearchFilters;
@@ -63,10 +77,11 @@ export interface ConversationalSearchProductDetailActivity {
     addedQuantity?: number;
 }
 
-export type ConversationalSearchShoppingAction =
+export type ConversationalSearchShoppingAction = (
     | { kind: 'facet'; key: string; value: string | null }
     | { kind: 'budget'; minPrice: number | null; maxPrice: number | null }
-    | { kind: 'clear' };
+    | { kind: 'clear' }
+) & { groupId?: string };
 
 export interface ConversationalSearchPropertyDefinition {
     key: string;
@@ -89,6 +104,7 @@ export interface ConversationalSearchRequest {
         selectedProductProperties: SelectedProductPropertiesSettings;
         selectedVariantProperties: SelectedVariantPropertiesSettings;
         take: number;
+        supportsSearchGroups?: boolean;
         shoppingAction?: ConversationalSearchShoppingAction;
         activityMessageId?: string;
         productContext?: {
