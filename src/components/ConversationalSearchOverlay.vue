@@ -196,6 +196,7 @@ async function run(shoppingAction?: ConversationalSearchShoppingAction, activity
                     allData: true,
                 } as SelectedVariantPropertiesSettings,
                 take: 8,
+                supportsSearchGroups: true,
                 shoppingAction,
                 activityMessageId,
                 productContext: productContext(activityMessageId),

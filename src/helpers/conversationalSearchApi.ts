@@ -104,6 +104,7 @@ export interface ConversationalSearchRequest {
         selectedProductProperties: SelectedProductPropertiesSettings;
         selectedVariantProperties: SelectedVariantPropertiesSettings;
         take: number;
+        supportsSearchGroups?: boolean;
         shoppingAction?: ConversationalSearchShoppingAction;
         activityMessageId?: string;
         productContext?: {
