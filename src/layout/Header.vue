@@ -19,7 +19,7 @@ defineProps({
     mainCategories: { type: Object as PropType<NavigationItem[]>, required: true },
 });
 
-const { open, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
+const { open, headerElement, headerHeight, handleMouseOver, handleMouseLeave } = useHeaderInteraction();
 const productSearch = ref<ComponentPublicInstance<{ openWithPrompt: (prompt?: string) => void }> | null>(null);
 const assistantActive = ref(false);
 const conversationalSearch = ref<ComponentPublicInstance<{

@@ -599,41 +599,43 @@ onBeforeUnmount(() => {
                     </button>
                 </div>
             </nav>
-            <Transition enter-active-class="transition duration-200 ease-out"
-                enter-from-class="-translate-y-2 opacity-0" enter-to-class="translate-y-0 opacity-100"
-                leave-active-class="transition duration-150 ease-in" leave-from-class="translate-y-0 opacity-100"
-                leave-to-class="-translate-y-2 opacity-0">
-                <section v-if="assistantSuggestion && !props.assistantActive"
-                    class="fixed left-1/2 top-20 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
-                    role="dialog" aria-label="Switch to Shopping Assistant">
-                    <div class="flex items-start gap-3">
-                        <span class="rounded-full bg-brand-50 p-2 text-brand-600">
-                            <SparklesIcon class="h-5 w-5" />
-                        </span>
-                        <div class="min-w-0 flex-1">
-                            <h2 class="text-base font-semibold text-slate-900">
-                                Want help from the Shopping Assistant?
-                            </h2>
-                            <p class="mt-1 text-sm leading-5 text-slate-600">
-                                This looks like a shopping request. The assistant can help narrow down the right
-                                products.
-                            </p>
-                            <div class="mt-4 flex flex-wrap justify-end gap-2">
-                                <button type="button"
-                                    class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
-                                    @click="keepSearching">
-                                    Keep searching
-                                </button>
-                                <button type="button"
-                                    class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-                                    @click="acceptAssistantSuggestion">
-                                    Use Shopping Assistant
-                                </button>
+            <Teleport to="#modal">
+                <Transition enter-active-class="transition duration-200 ease-out"
+                    enter-from-class="-translate-y-2 opacity-0" enter-to-class="translate-y-0 opacity-100"
+                    leave-active-class="transition duration-150 ease-in" leave-from-class="translate-y-0 opacity-100"
+                    leave-to-class="-translate-y-2 opacity-0">
+                    <section v-if="assistantSuggestion && !props.assistantActive"
+                        class="assistant-switch-prompt fixed left-1/2 z-[1003] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 overflow-y-auto rounded-2xl border border-brand-100 bg-white p-4 shadow-xl"
+                        role="dialog" aria-label="Switch to Shopping Assistant">
+                        <div class="flex items-start gap-3">
+                            <span class="rounded-full bg-brand-50 p-2 text-brand-600">
+                                <SparklesIcon class="h-5 w-5" />
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <h2 class="text-base font-semibold text-slate-900">
+                                    Want help from the Shopping Assistant?
+                                </h2>
+                                <p class="mt-1 text-sm leading-5 text-slate-600">
+                                    This looks like a shopping request. The assistant can help narrow down the right
+                                    products.
+                                </p>
+                                <div class="mt-4 flex flex-wrap justify-end gap-2">
+                                    <button type="button"
+                                        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-50"
+                                        @click="keepSearching">
+                                        Keep searching
+                                    </button>
+                                    <button type="button"
+                                        class="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+                                        @click="acceptAssistantSuggestion">
+                                        Use Shopping Assistant
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-            </Transition>
+                    </section>
+                </Transition>
+            </Teleport>
             <div v-if="productSearchResult || contentSearchResult" class="container mx-auto pb-10 px-2 xl:px-0">
                 <div v-if="contextStore.context.value.contentSearch && !route.query.brandName"
                     class="mb-6 flex border-b border-slate-200">
@@ -666,6 +668,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+.assistant-switch-prompt {
+    max-height: calc(100dvh - var(--header-height, 132px) - 5rem);
+    top: calc(var(--header-height, 132px) + 4rem);
+}
+
 .modal {
     background-color: #fff;
     height: calc(100% - var(--header-height, 132px) + 1px);
