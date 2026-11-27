@@ -102,6 +102,7 @@ function resetConversationalSearch() {
               ref="conversationalSearch"
               @open-search="openProductSearch"
               @closed="closeConversationalSearch"
+              @resumed="assistantActive = true"
             />
           </div>
           <div

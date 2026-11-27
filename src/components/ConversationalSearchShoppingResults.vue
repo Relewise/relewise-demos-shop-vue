@@ -27,7 +27,7 @@ const emit = defineEmits<{
 const carouselPosition = ref(0);
 const activeProducts = computed(() => props.activity.result?.products.length
     ? props.activity.result.products
-    : props.activity.result?.recommendations ?? []);
+    : props.activity.groupId ? [] : props.activity.result?.recommendations ?? []);
 const visibleProducts = computed(() => activeProducts.value.slice(carouselPosition.value, carouselPosition.value + 4));
 
 watch(() => activeProducts.value.length, length => {
@@ -52,6 +52,10 @@ function formatFacetName(key: string, displayName?: string | null) {
 }
 
 function title() {
+    if (props.activity.title) {
+        return props.activity.title;
+    }
+
     const resultCount = props.activity.result?.products.length ?? 0;
     const term = props.activity.searchTerm.trim();
     return term ? `${resultCount} results for “${term}”` : `${resultCount} products for you`;

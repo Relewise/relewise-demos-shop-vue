@@ -54,9 +54,12 @@ type ChatEntry = TextEntry | ShoppingEntry | ProductDetailEntry | PurchasedWithE
 const emit = defineEmits<{
     openSearch: [query: string];
     closed: [];
+    resumed: [];
 }>();
 
 const open = ref(false);
+const suspendedForProduct = ref(false);
+let savedConversationScroll = 0;
 const input = ref('');
 const entries = ref<ChatEntry[]>([]);
 const state = ref<ConversationalSearchState>({ searchTerm: '', filters: {} });
@@ -76,6 +79,7 @@ const handledBagOperations = new Set<string>();
 const canUseConversationalSearch = computed(() => contextStore.isConfigured.value);
 
 function openWithPrompt(prompt: string) {
+    suspendedForProduct.value = false;
     open.value = true;
     error.value = '';
     input.value = prompt.trim();
@@ -89,13 +93,31 @@ function openWithPrompt(prompt: string) {
 
 defineExpose({ openWithPrompt, resetConversation });
 
+function navigateToProduct() {
+    savedConversationScroll = scrollContainer.value?.scrollTop ?? 0;
+    suspendedForProduct.value = true;
+    open.value = false;
+    emit('closed');
+}
+
+async function resumeConversation() {
+    suspendedForProduct.value = false;
+    open.value = true;
+    emit('resumed');
+    await nextTick();
+    scrollContainer.value?.scrollTo({ top: savedConversationScroll });
+    focusInput();
+}
+
 function close() {
     open.value = false;
+    suspendedForProduct.value = false;
     clearConversation();
     emit('closed');
 }
 
 function switchToSearch() {
+    suspendedForProduct.value = false;
     const query = input.value || state.value.searchTerm;
     open.value = false;
     unlockBodyScroll();
@@ -108,6 +130,7 @@ function resetConversation() {
 }
 
 function clearConversation() {
+    suspendedForProduct.value = false;
     abortController.abort();
     abortController = new AbortController();
     threadId = crypto.randomUUID();
@@ -137,7 +160,7 @@ async function refine(activity: ShoppingEntry, action: ConversationalSearchShopp
         return;
     }
 
-    await run(action, activity.id);
+    await run({ ...action, groupId: activity.content.groupId ?? undefined }, activity.id);
 }
 
 async function run(shoppingAction?: ConversationalSearchShoppingAction, activityMessageId?: string) {
@@ -287,12 +310,22 @@ function settleActivities(status: 'error' | 'cancelled') {
 }
 
 function productContext(activityId?: string) {
-    const shoppingEntry = [...entries.value].reverse().find((entry): entry is ShoppingEntry =>
+    const relevantEntries = entries.value.filter((entry): entry is ShoppingEntry =>
         entry.role === 'activity'
         && entry.activityType === 'SHOPPING_RESULTS'
         && (!activityId || entry.id === activityId));
+    const latest = relevantEntries[relevantEntries.length - 1];
+    const groupIds = new Set(state.value.searches?.map(group => group.id) ?? []);
+    const selectedEntries = latest?.content.groupId && !activityId
+        ? [...new Map(relevantEntries
+            .filter(entry => entry.content.groupId && groupIds.has(entry.content.groupId))
+            .map(entry => [entry.content.groupId, entry])).values()]
+        : latest ? [latest] : [];
 
-    return { productIds: shoppingEntry?.content.result?.products.map(product => product.id) ?? [] };
+    return {
+        productIds: [...new Set(selectedEntries.flatMap(entry =>
+            entry.content.result?.products.map(product => product.id) ?? []))].slice(0, 60),
+    };
 }
 
 async function addProductToBasket(
@@ -402,7 +435,9 @@ async function scrollToBottom() {
 }
 
 function focusInput() {
-    nextTick(() => inputElement.value?.focus());
+    if (open.value) {
+        nextTick(() => inputElement.value?.focus());
+    }
 }
 
 function lockBodyScroll() {
@@ -449,6 +484,13 @@ onBeforeUnmount(() => {
 
 <template>
     <Teleport to="#modal">
+        <button
+            v-if="suspendedForProduct && !open"
+            type="button"
+            class="fixed bottom-5 right-5 z-[1002] rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-brand-700"
+            @click="resumeConversation">
+            Back to Shopping Assistant
+        </button>
         <div v-if="open" class="modal">
             <section class="flex h-full w-full flex-col bg-white">
                 <nav class="sticky top-0 z-10 border-b border-slate-200 bg-white px-2" aria-label="Discovery mode">
@@ -494,18 +536,18 @@ onBeforeUnmount(() => {
 
                             <ConversationalSearchShoppingResults v-else-if="entry.activityType === 'SHOPPING_RESULTS'"
                                 :activity="entry.content" :currency="contextStore.currencyCode.value"
-                                :language="contextStore.language.value" :loading="loading"
+                                :language="contextStore.language.value" :loading="loading || !!(entry.content.groupId && !state.searches?.some(group => group.id === entry.content.groupId))"
                                 :filters-visible="filtersVisible[entry.id] ?? false"
                                 @update:filters-visible="filtersVisible[entry.id] = $event"
-                                @refine="refine(entry, $event)" @add="addProductToBasket" @navigate="close" />
+                                @refine="refine(entry, $event)" @add="addProductToBasket" @navigate="navigateToProduct" />
 
                             <ConversationalSearchProductDetail v-else-if="entry.activityType === 'PRODUCT_DETAIL'"
                                 :activity="entry.content" :language="contextStore.language.value"
-                                @add="addProductToBasket" @navigate="close" />
+                                @add="addProductToBasket" @navigate="navigateToProduct" />
 
                             <ConversationalSearchPurchasedWith v-else-if="entry.activityType === 'PURCHASED_WITH'"
                                 :products="entry.content.products" :currency="entry.content.currency"
-                                :language="contextStore.language.value" @add="addProductToBasket" @navigate="close" />
+                                :language="contextStore.language.value" @add="addProductToBasket" @navigate="navigateToProduct" />
                         </template>
 
                         <div v-if="loading && !entries.some(entry => entry.role === 'assistant' && !entry.content)"
